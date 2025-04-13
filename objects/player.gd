@@ -1,14 +1,18 @@
 extends CharacterBody3D
 
 @export_subgroup("Properties")
-@export var movement_speed = 5
+@export var base_movement_speed = 5
+@export var base_slide_speed = 7
 @export var jump_strength = 8
+@export var max_slide_speed = 8
 
 @export_subgroup("Weapons")
 @export var weapons: Array[Weapon] = []
 
 var weapon: Weapon
 var weapon_index := 0
+
+var current_movement_speed = base_movement_speed
 
 var mouse_sensitivity = 700
 var gamepad_sensitivity := 0.075
@@ -34,6 +38,7 @@ var slide_speed = 0
 var can_slide = false
 var sliding = false
 var falling = false
+var play_slide_animation = false
 
 var container_offset = Vector3(1.2, -1.1, -2.75)
 
@@ -48,7 +53,7 @@ signal health_updated
 @onready var sound_footsteps = $SoundFootsteps
 @onready var blaster_cooldown = $Cooldown
 @onready var slide_check: RayCast3D = $SlideCheck
-
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 @export var crosshair:TextureRect
 
@@ -96,7 +101,7 @@ func _physics_process(delta):
 	sound_footsteps.stream_paused = true
 	
 	if is_on_floor():
-		if abs(velocity.x) > 1 or abs(velocity.z) > 1:
+		if (abs(velocity.x) > 1 or abs(velocity.z) > 1) and !sliding:
 			sound_footsteps.stream_paused = false
 	
 	# Landing after jump or falling
@@ -122,7 +127,6 @@ func _input(event):
 		rotation_target.x -= event.relative.y / mouse_sensitivity
 
 func handle_controls(_delta):
-	
 	# Mouse capture
 	if Input.is_action_just_pressed("mouse_capture"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -137,20 +141,25 @@ func handle_controls(_delta):
 	# Movement
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	
-	movement_velocity = Vector3(input.x, 0, input.y).normalized() * movement_speed
+	movement_velocity = Vector3(input.x, 0, input.y).normalized() * current_movement_speed
 	
 	if Input.is_action_just_pressed("slide"):
 		can_slide = true
 		
 	if Input.is_action_pressed("slide") and is_on_floor() and Input.is_action_pressed("move_forward") and can_slide:
-		print("Initiate slide")
+		if !play_slide_animation:
+			var slide_tween = create_tween()
+			slide_tween.tween_property(self, "scale", Vector3(1.0, 0.8, 1.0), 0.2)
+			play_slide_animation = true
 		slide()
 		
 	if Input.is_action_just_released("slide"):
-		print("Stop slide")
+		var slide_tween = create_tween()
+		slide_tween.tween_property(self, "scale", Vector3(1.0, 1.0, 1.0), 0.2)
+		play_slide_animation = false
 		can_slide = false
 		sliding = false
-		movement_speed = 5
+		current_movement_speed = base_movement_speed
 	
 	# Rotation
 	var rotation_input := Input.get_vector("camera_right", "camera_left", "camera_down", "camera_up")
@@ -193,26 +202,29 @@ func handle_gravity(delta):
 func slide():
 	if not sliding:
 		if slide_check.is_colliding() or get_floor_angle() < 0.2:
-			slide_speed = 7
+			slide_speed = base_slide_speed
 			slide_speed += fall_distance / 10
 		else:
-			slide_speed = 2
+			slide_speed = 1
 			
 	sliding = true
 	
+	# Increase sliding speed when sliding down slope
+	# else, start decreasing sliding speed
 	if slide_check.is_colliding():
+		print("slide check is colliding.. gain some speed")
 		slide_speed += get_floor_angle() / 10
 	else:
-		slide_speed -= (get_floor_angle() / 5) + 0.03
+		slide_speed -= (get_floor_angle() / 5) + 0.04
 	
-	if slide_speed > 10:
-		slide_speed = 10
+	if slide_speed > max_slide_speed:
+		slide_speed = max_slide_speed
 	
 	if slide_speed < 0:
 		can_slide = false
 		sliding = false
 	
-	movement_speed = slide_speed
+	current_movement_speed = slide_speed
 
 # Jumping
 func action_jump():
