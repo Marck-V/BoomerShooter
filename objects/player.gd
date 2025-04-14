@@ -60,8 +60,8 @@ signal health_updated
 
 
 func _ready():
-	
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	current_movement_speed = base_movement_speed
 	
 	weapon = weapons[weapon_index] # Weapon must never be nil
 	initiate_change_weapon(weapon_index)
@@ -212,10 +212,9 @@ func slide():
 	# Increase sliding speed when sliding down slope
 	# else, start decreasing sliding speed
 	if slide_check.is_colliding():
-		print("slide check is colliding.. gain some speed")
 		slide_speed += get_floor_angle() / 10
 	else:
-		slide_speed -= (get_floor_angle() / 5) + 0.04
+		slide_speed -= (get_floor_angle() / 5) + 0.1
 	
 	if slide_speed > max_slide_speed:
 		slide_speed = max_slide_speed
