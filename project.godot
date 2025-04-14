@@ -112,6 +112,10 @@ slide={
 ]
 }
 
+[physics]
+
+common/physics_interpolation=true
+
 [rendering]
 
 anti_aliasing/quality/screen_space_aa=1

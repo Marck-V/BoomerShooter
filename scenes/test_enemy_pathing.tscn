@@ -1,0 +1,71 @@
+[gd_scene load_steps=10 format=3 uid="uid://bi2uan0u8fx4y"]
+
+[ext_resource type="Script" uid="uid://4pijlebj0o3x" path="res://scripts/enemy_ui_test.gd" id="1_84ln2"]
+[ext_resource type="PackedScene" uid="uid://bh2veun7ypcig" path="res://objects/enemy_humanoid.tscn" id="1_d0ed8"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://objects/enemy_horde.tscn" id="3_48du1"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_d0ed8"]
+sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+ground_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)
+
+[sub_resource type="Sky" id="Sky_84ln2"]
+sky_material = SubResource("ProceduralSkyMaterial_d0ed8")
+
+[sub_resource type="Environment" id="Environment_48du1"]
+background_mode = 2
+sky = SubResource("Sky_84ln2")
+tonemap_mode = 2
+glow_enabled = true
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_84ln2"]
+vertices = PackedVector3Array(0.25, 0.75, -3.25, 1.75, 0.75, -3.25, 1.5, 0.75, -9.5, 0, 0.75, -2.25, -9.5, 0.75, -9.5, -9.5, 0.75, -2.25, 4, 0.75, -3.25, 4.25, 0.75, -2.25, 9.5, 0.75, -2.25, 9.5, 0.75, -9.5, 0.5, 0.75, -1.5, -9.5, 0.75, 9.5, 0.5, 0.75, 9.5, 4, 0.75, -1.5, 9.5, 0.75, 9.5)
+polygons = [PackedInt32Array(2, 1, 0), PackedInt32Array(0, 3, 2), PackedInt32Array(2, 3, 5), PackedInt32Array(2, 5, 4), PackedInt32Array(8, 7, 6), PackedInt32Array(6, 1, 2), PackedInt32Array(8, 6, 9), PackedInt32Array(9, 6, 2), PackedInt32Array(3, 10, 5), PackedInt32Array(5, 10, 12), PackedInt32Array(5, 12, 11), PackedInt32Array(7, 8, 13), PackedInt32Array(13, 8, 14), PackedInt32Array(13, 14, 12), PackedInt32Array(12, 10, 13)]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_84ln2"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_48du1"]
+
+[node name="TestEnemyPathing" type="Node3D"]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.866023, -0.433016, 0.250001, 0, 0.499998, 0.866027, -0.500003, 0.749999, -0.43301, 0, 0, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_48du1")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(-4.37114e-08, -0.79262, 0.609716, 0, 0.609716, 0.79262, -1, 3.46465e-08, -2.66516e-08, 10.3235, 6.79125, -0.0125313)
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_84ln2")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="NavigationRegion3D"]
+use_collision = true
+size = Vector3(20, 0.5, 20)
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="NavigationRegion3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.07756, 0.265076, -2.37894)
+size = Vector3(2.95728, 1.53015, 0.634033)
+
+[node name="enemy-humanoid" parent="." instance=ExtResource("1_d0ed8")]
+process_mode = 4
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.266436, -7)
+
+[node name="CharacterBody3D" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.15268, 1.25, -7.19626)
+script = ExtResource("1_84ln2")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CharacterBody3D"]
+mesh = SubResource("CapsuleMesh_84ln2")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CharacterBody3D"]
+shape = SubResource("CapsuleShape3D_48du1")
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="CharacterBody3D"]
+path_height_offset = -1.0
+debug_enabled = true
+
+[node name="enemy-horde" parent="." instance=ExtResource("3_48du1")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.91363, 0, -8.2041)
+movement_speed = 4.0
