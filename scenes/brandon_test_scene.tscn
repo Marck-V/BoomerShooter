@@ -91,11 +91,13 @@ movement_speed = 6.0
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-horde2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.82122, 0, -14.6628)
 movement_speed = 6.0
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-horde3" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.17979, 0, -12)
 movement_speed = 6.0
 movement_target_position = NodePath("../../Player")

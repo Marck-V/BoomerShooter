@@ -78,9 +78,11 @@ debug_enabled = true
 
 [node name="HitRaycast" type="RayCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-target_position = Vector3(0, 0, 0.5)
+target_position = Vector3(0, 0, 1)
+debug_shape_custom_color = Color(0, 0.471945, 8.66354e-07, 1)
 
 [node name="BiteTimer" type="Timer" parent="."]
+process_callback = 0
 wait_time = 4.2
 one_shot = true
 

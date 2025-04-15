@@ -30,7 +30,6 @@ func set_movement_target(movement_target: Vector3):
 func _physics_process(_delta):
 	if navigation_agent.is_navigation_finished():
 		reached_target = true
-		print("Player reached... bite!")
 		bite()
 	else:
 		reached_target = false
@@ -70,7 +69,7 @@ func destroy():
 	queue_free()
 	
 func bite():
-	if !bite_timer.is_stopped():
+	if bite_timer.is_stopped() != true:
 		return
 	
 	hit_raycast.force_raycast_update()
@@ -81,6 +80,7 @@ func bite():
 		if collider.has_method("damage"):  # Raycast collides with player
 			Audio.play("sounds/enemy_attack.ogg")
 
+			print("That bite hurt D:")
 			collider.damage(damage_to_player)  # Apply damage to player
 			
 		bite_timer.start()
