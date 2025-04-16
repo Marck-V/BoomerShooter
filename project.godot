@@ -26,11 +26,21 @@ Audio="*res://scripts/audio.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/always_on_top=true
 
 [editor]
 
 movie_writer/mjpeg_quality=1.0
 movie_writer/movie_file="D:/Godot/test.avi"
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/func_godot/plugin.cfg")
+
+[global_group]
+
+player=""
+enemy=""
 
 [input]
 
@@ -106,6 +116,10 @@ weapon_toggle={
 , Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":-1,"button_index":10,"pressure":0.0,"pressed":true,"script":null)
 ]
 }
+
+[physics]
+
+common/physics_interpolation=true
 
 [rendering]
 
