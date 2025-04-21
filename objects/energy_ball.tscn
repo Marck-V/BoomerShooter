@@ -1,0 +1,24 @@
+[gd_scene load_steps=5 format=3 uid="uid://ol7l062t4q7"]
+
+[ext_resource type="Script" uid="uid://bb0qevghx1yj8" path="res://objects/energy_ball.gd" id="1_ej0ga"]
+
+[sub_resource type="SphereMesh" id="SphereMesh_1pcqd"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_1pcqd"]
+albedo_color = Color(0.698062, 0.112199, 0.653689, 1)
+emission_enabled = true
+emission = Color(0.890501, 0.583657, 0.937359, 1)
+emission_energy_multiplier = 1.3
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_ej0ga"]
+radius = 0.500076
+
+[node name="Node3D" type="RigidBody3D"]
+script = ExtResource("1_ej0ga")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("SphereMesh_1pcqd")
+surface_material_override/0 = SubResource("StandardMaterial3D_1pcqd")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_ej0ga")
