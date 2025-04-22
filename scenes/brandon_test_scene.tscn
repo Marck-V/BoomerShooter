@@ -69,9 +69,9 @@ vertical_alignment = 2
 
 [node name="Enemies" type="Node" parent="."]
 
-[node name="enemy_ranged" parent="Enemies" node_paths=PackedStringArray("player") instance=ExtResource("12_tv7oe")]
+[node name="enemy_ranged" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("12_tv7oe")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6068, 0.00180632, -1.07775)
-player = NodePath("../../Player")
+movement_target_position = NodePath("../../Player")
 
 [node name="enemy-horde" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
 process_mode = 4
