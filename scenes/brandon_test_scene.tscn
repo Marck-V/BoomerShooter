@@ -71,12 +71,14 @@ vertical_alignment = 2
 
 [node name="enemy_ranged" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("12_tv7oe")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6068, 0.00180632, -1.07775)
+movement_speed = 6.0
+firing_target_offset = -0.3
+firing_rate = 3
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-horde" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
-process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12)
-movement_speed = 8.0
+movement_speed = 4.0
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-horde2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]

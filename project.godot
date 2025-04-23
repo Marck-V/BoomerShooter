@@ -32,6 +32,11 @@ window/size/viewport_height=720
 movie_writer/mjpeg_quality=1.0
 movie_writer/movie_file="D:/Godot/test.avi"
 
+[global_group]
+
+Player="For the player character"
+Enemy="For any enemy character"
+
 [input]
 
 move_right={
