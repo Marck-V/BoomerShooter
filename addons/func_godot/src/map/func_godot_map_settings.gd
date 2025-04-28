@@ -45,7 +45,7 @@ var scale_factor: float = 0.03125
 @export var material_file_extension: String = "tres"
 
 ## [Material] used as template when generating missing materials.
-@export var default_material: Material = preload("res://addons/func_godot/textures/default_material.tres")
+@export var default_material: Material = preload("res://trenchbroom/textures/default_material.tres")
 
 ## Sampler2D uniform that supplies the Albedo in a custom shader when [member default_material] is a [ShaderMaterial].
 @export var default_material_albedo_uniform: String = ""

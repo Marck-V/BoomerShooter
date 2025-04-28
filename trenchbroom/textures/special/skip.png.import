@@ -2,20 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dutip72dl002r"
-path="res://.godot/imported/origin.png-85b62dd151467f05fa8f98ed6d2927d0.ctex"
+uid="uid://bk5oo263y3u7w"
+path="res://.godot/imported/skip.png-c459aef359e4c030386b839e1750df22.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://addons/func_godot/textures/special/origin.png"
-dest_files=["res://.godot/imported/origin.png-85b62dd151467f05fa8f98ed6d2927d0.ctex"]
+source_file="res://trenchbroom/textures/special/skip.png"
+dest_files=["res://.godot/imported/skip.png-c459aef359e4c030386b839e1750df22.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=3
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/hdr_compression=1

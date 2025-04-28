@@ -34,7 +34,6 @@ flip_faces = true
 size = Vector2(2, 2)
 
 [node name="Player" type="CharacterBody3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 script = ExtResource("1_ffboj")
 weapons = Array[ExtResource("2_i825w")]([ExtResource("3_kr4p8"), ExtResource("2_6epbw")])
 
@@ -52,6 +51,7 @@ fov = 90.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Head/Camera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.956496)
+visible = false
 mesh = SubResource("QuadMesh_i8sra")
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="Head/Camera"]
