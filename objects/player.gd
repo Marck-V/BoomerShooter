@@ -1,14 +1,18 @@
 extends CharacterBody3D
 
 @export_subgroup("Properties")
-@export var movement_speed = 5
+@export var base_movement_speed = 5
+@export var base_slide_speed = 7
 @export var jump_strength = 8
+@export var max_slide_speed = 8
 
 @export_subgroup("Weapons")
 @export var weapons: Array[Weapon] = []
 
 var weapon: Weapon
 var weapon_index := 0
+
+var current_movement_speed = base_movement_speed
 
 var mouse_sensitivity = 700
 var gamepad_sensitivity := 0.075
@@ -28,6 +32,14 @@ var previously_floored := false
 var jump_single := true
 var jump_double := true
 
+# Handle Sliding
+var fall_distance = 0
+var slide_speed = 0
+var can_slide = false
+var sliding = false
+var falling = false
+var play_slide_animation = false
+
 var container_offset = Vector3(1.2, -1.1, -2.75)
 
 var tween:Tween
@@ -40,26 +52,32 @@ signal health_updated
 @onready var container = $Head/Camera/SubViewportContainer/SubViewport/CameraItem/Container
 @onready var sound_footsteps = $SoundFootsteps
 @onready var blaster_cooldown = $Cooldown
+@onready var slide_check: RayCast3D = $SlideCheck
+@onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 @export var crosshair:TextureRect
 
-# Functions
+
 
 func _ready():
-	
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+	current_movement_speed = base_movement_speed
 	
 	weapon = weapons[weapon_index] # Weapon must never be nil
 	initiate_change_weapon(weapon_index)
 
 func _physics_process(delta):
 	
-	# Handle functions
-	
+	# Handle functions	
 	handle_controls(delta)
 	handle_gravity(delta)
 	
 	# Movement
+	
+	## Sliding
+	if falling and is_on_floor() and sliding:
+		slide_speed += fall_distance / 10
+	fall_distance = -gravity
 
 	var applied_velocity: Vector3
 	
@@ -72,7 +90,6 @@ func _physics_process(delta):
 	move_and_slide()
 	
 	# Rotation
-	
 	camera.rotation.z = lerp_angle(camera.rotation.z, -input_mouse.x * 25 * delta, delta * 5)	
 	
 	camera.rotation.x = lerp_angle(camera.rotation.x, rotation_target.x, delta * 25)
@@ -81,15 +98,13 @@ func _physics_process(delta):
 	container.position = lerp(container.position, container_offset - (basis.inverse() * applied_velocity / 30), delta * 10)
 	
 	# Movement sound
-	
 	sound_footsteps.stream_paused = true
 	
 	if is_on_floor():
-		if abs(velocity.x) > 1 or abs(velocity.z) > 1:
+		if (abs(velocity.x) > 1 or abs(velocity.z) > 1) and !sliding:
 			sound_footsteps.stream_paused = false
 	
 	# Landing after jump or falling
-	
 	camera.position.y = lerp(camera.position.y, 0.0, delta * 5)
 	
 	if is_on_floor() and gravity > 1 and !previously_floored: # Landed
@@ -99,12 +114,10 @@ func _physics_process(delta):
 	previously_floored = is_on_floor()
 	
 	# Falling/respawning
-	
 	if position.y < -10:
 		get_tree().reload_current_scene()
 
 # Mouse movement
-
 func _input(event):
 	if event is InputEventMouseMotion and mouse_captured:
 		
@@ -114,9 +127,7 @@ func _input(event):
 		rotation_target.x -= event.relative.y / mouse_sensitivity
 
 func handle_controls(_delta):
-	
 	# Mouse capture
-	
 	if Input.is_action_just_pressed("mouse_capture"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		mouse_captured = true
@@ -129,25 +140,41 @@ func handle_controls(_delta):
 		get_tree().quit()
 	
 	# Movement
-	
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	
-	movement_velocity = Vector3(input.x, 0, input.y).normalized() * movement_speed
+	movement_velocity = Vector3(input.x, 0, input.y).normalized() * current_movement_speed
+	
+	if Input.is_action_just_pressed("slide"):
+		can_slide = true
+		
+	if Input.is_action_pressed("slide") and is_on_floor() and Input.is_action_pressed("move_forward") and can_slide:
+		if !play_slide_animation:
+			var slide_tween = create_tween()
+			slide_tween.tween_property(self, "scale", Vector3(1.0, 0.8, 1.0), 0.2)
+			play_slide_animation = true
+		slide()
+		
+	if Input.is_action_just_released("slide"):
+		var slide_tween = create_tween()
+		slide_tween.tween_property(self, "scale", Vector3(1.0, 1.0, 1.0), 0.2)
+		play_slide_animation = false
+		can_slide = false
+		sliding = false
+		current_movement_speed = base_movement_speed
 	
 	# Rotation
-	
 	var rotation_input := Input.get_vector("camera_right", "camera_left", "camera_down", "camera_up")
 	
 	rotation_target -= Vector3(-rotation_input.y, -rotation_input.x, 0).limit_length(1.0) * gamepad_sensitivity
 	rotation_target.x = clamp(rotation_target.x, deg_to_rad(-90), deg_to_rad(90))
 	
 	# Shooting
-	
 	action_shoot()
 	
 	# Jumping
-	
 	if Input.is_action_just_pressed("jump"):
+		if sliding:
+			slide_speed -= 1
 		
 		if jump_single or jump_double:
 			Audio.play("sounds/jump_a.ogg, sounds/jump_b.ogg, sounds/jump_c.ogg")
@@ -160,22 +187,46 @@ func handle_controls(_delta):
 		if(jump_single): action_jump()
 		
 	# Weapon switching
-	
 	action_weapon_toggle()
 
 # Handle gravity
-
 func handle_gravity(delta):
-	
 	gravity += 20 * delta
+	falling = true
 	
 	if gravity > 0 and is_on_floor():
-		
 		jump_single = true
+		falling = false
 		gravity = 0
 
-# Jumping
+# Sliding
+func slide():
+	if not sliding:
+		if slide_check.is_colliding() or get_floor_angle() < 0.2:
+			slide_speed = base_slide_speed
+			slide_speed += fall_distance / 10
+		else:
+			slide_speed = 1
+			
+	sliding = true
+	
+	# Increase sliding speed when sliding down slope
+	# else, start decreasing sliding speed
+	if slide_check.is_colliding():
+		slide_speed += get_floor_angle() / 10
+	else:
+		slide_speed -= (get_floor_angle() / 5) + 0.1
+	
+	if slide_speed > max_slide_speed:
+		slide_speed = max_slide_speed
+	
+	if slide_speed < 0:
+		can_slide = false
+		sliding = false
+	
+	current_movement_speed = slide_speed
 
+# Jumping
 func action_jump():
 	
 	gravity = -jump_strength
@@ -184,7 +235,6 @@ func action_jump():
 	jump_double = true;
 
 # Shooting
-
 func action_shoot():
 	
 	if Input.is_action_pressed("shoot"):
@@ -195,7 +245,7 @@ func action_shoot():
 		
 		container.position.z += 0.25 # Knockback of weapon visual
 		camera.rotation.x += 0.025 # Knockback of camera
-		movement_velocity += Vector3(0, 0, weapon.knockback) # Knockback
+		# movement_velocity += Vector3(0, 0, weapon.knockback) # Knockback
 		
 		# Set muzzle flash position, play animation
 		
@@ -238,7 +288,6 @@ func action_shoot():
 			impact_instance.look_at(camera.global_transform.origin, Vector3.UP, true) 
 
 # Toggle between available weapons (listed in 'weapons')
-
 func action_weapon_toggle():
 	
 	if Input.is_action_just_pressed("weapon_toggle"):
@@ -249,7 +298,6 @@ func action_weapon_toggle():
 		Audio.play("sounds/weapon_change.ogg")
 
 # Initiates the weapon changing animation (tween)
-
 func initiate_change_weapon(index):
 	
 	weapon_index = index
@@ -260,7 +308,6 @@ func initiate_change_weapon(index):
 	tween.tween_callback(change_weapon) # Changes the model
 
 # Switches the weapon model (off-screen)
-
 func change_weapon():
 	
 	weapon = weapons[weapon_index]
@@ -293,5 +340,5 @@ func damage(amount):
 	health -= amount
 	health_updated.emit(health) # Update health on HUD
 	
-	if health < 0:
+	if health <= 0:
 		get_tree().reload_current_scene() # Reset when out of health

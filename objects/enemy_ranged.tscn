@@ -1,0 +1,92 @@
+[gd_scene load_steps=4 format=3 uid="uid://cuwunojswrryo"]
+
+[ext_resource type="Script" uid="uid://uqhdxbmbjod1" path="res://objects/enemy_ranged.gd" id="1_xbodr"]
+[ext_resource type="PackedScene" uid="uid://cgkh8tkmt5d22" path="res://models/enemy-humanoid.glb" id="2_xbodr"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xbodr"]
+radius = 0.35
+height = 1.75
+
+[node name="enemy-ranged" type="CharacterBody3D" groups=["Enemy"]]
+script = ExtResource("1_xbodr")
+
+[node name="enemy-humanoid" parent="." instance=ExtResource("2_xbodr")]
+
+[node name="Skeleton3D" parent="enemy-humanoid/Armature" index="0"]
+bones/0/position = Vector3(0.831928, -2.1485, -94.6454)
+bones/0/rotation = Quaternion(-0.62251, -0.127409, 0.104879, 0.765016)
+bones/1/rotation = Quaternion(-0.0046063, -0.00520898, 0.0178856, 0.999816)
+bones/2/rotation = Quaternion(0.0650032, -0.011661, 0.0116196, 0.997749)
+bones/3/rotation = Quaternion(0.0651064, -0.0106847, 0.0119895, 0.997749)
+bones/4/position = Vector3(-5.43892e-07, 14.1458, -8.49706e-06)
+bones/4/rotation = Quaternion(-0.0260132, 0.0286852, -0.0215703, 0.999017)
+bones/5/rotation = Quaternion(-0.195972, 0.121985, -0.0351995, 0.972356)
+bones/7/position = Vector3(5.46189, 12.2307, -0.0726824)
+bones/7/rotation = Quaternion(-0.562314, -0.409166, 0.620981, -0.361619)
+bones/8/position = Vector3(-3.93952e-06, 11.5678, -1.24537e-05)
+bones/8/rotation = Quaternion(0.352153, 0.0584798, 0.163003, 0.919782)
+bones/9/position = Vector3(-8.34386e-07, 30.4723, -4.48341e-06)
+bones/9/rotation = Quaternion(0.0391781, 1.98009e-05, 0.669505, 0.741774)
+bones/10/position = Vector3(-4.37443e-06, 25.8694, -4.87557e-06)
+bones/10/rotation = Quaternion(-0.2436, 0.376185, 0.00451979, 0.893937)
+bones/11/rotation = Quaternion(0.133644, 0.0329363, 0.272, 0.952403)
+bones/12/position = Vector3(0.0913677, 3.51682, 3.25927e-06)
+bones/12/rotation = Quaternion(0.0451914, 0.0143326, -0.0388827, 0.998119)
+bones/13/position = Vector3(-0.255183, 3.47038, -1.0546e-06)
+bones/13/rotation = Quaternion(0.11607, -0.100742, -0.264171, 0.952151)
+bones/14/position = Vector3(0.163824, 3.40807, -1.21295e-05)
+bones/15/rotation = Quaternion(0.0820406, -0.0924812, 0.144101, 0.98181)
+bones/16/position = Vector3(0.334771, 5.10596, 1.5335e-05)
+bones/16/rotation = Quaternion(0.174259, -0.00387624, -0.0393036, 0.983908)
+bones/17/rotation = Quaternion(0.33543, 0.0162438, 0.132984, 0.93249)
+bones/19/position = Vector3(-5.4619, 12.2332, -0.122346)
+bones/19/rotation = Quaternion(0.612214, -0.387022, 0.569131, 0.389227)
+bones/20/position = Vector3(2.17073e-08, 11.5678, -2.95611e-06)
+bones/20/rotation = Quaternion(0.412722, 0.0141338, -0.183778, 0.892013)
+bones/21/position = Vector3(-1.85491e-06, 30.4713, -2.26175e-06)
+bones/21/rotation = Quaternion(0.0425439, -2.74397e-05, -0.695003, 0.717747)
+bones/22/position = Vector3(1.70249e-05, 25.8709, 2.06619e-08)
+bones/22/rotation = Quaternion(0.010419, -0.445094, -0.0684705, 0.892801)
+bones/23/rotation = Quaternion(-0.125958, -0.0219786, -0.419274, 0.898811)
+bones/24/position = Vector3(-0.0635127, 3.61525, 1.3991e-06)
+bones/24/rotation = Quaternion(0.104035, 0.0583506, 0.398504, 0.909377)
+bones/25/position = Vector3(0.0838446, 3.48831, -1.16256e-06)
+bones/25/rotation = Quaternion(-0.0873916, 0.0108536, -0.219236, 0.97169)
+bones/26/position = Vector3(-0.0203149, 3.02809, -1.19209e-06)
+bones/27/position = Vector3(1.54174e-06, 8.06069, 0.0842202)
+bones/27/rotation = Quaternion(-0.146496, -0.0162991, 0.0807081, 0.985779)
+bones/28/position = Vector3(-0.241986, 5.02348, -1.25349e-06)
+bones/28/rotation = Quaternion(0.365534, -0.0042577, -0.0250159, 0.930452)
+bones/29/rotation = Quaternion(0.0687624, -0.00750518, -0.127142, 0.98947)
+bones/30/position = Vector3(-0.328923, 4.16331, 6.61612e-06)
+bones/31/rotation = Quaternion(0.145806, 0.349754, 0.91121, -0.161581)
+bones/32/rotation = Quaternion(-0.368279, -0.0607827, 0.0361685, 0.927021)
+bones/33/rotation = Quaternion(0.522027, -0.0696876, -0.0987844, 0.844318)
+bones/34/rotation = Quaternion(0.305, -0.0537124, 0.0172283, 0.95068)
+bones/36/rotation = Quaternion(-0.133582, 0.299231, 0.940293, 0.0920089)
+bones/37/rotation = Quaternion(-0.370769, 0.0722377, -0.0388422, 0.925096)
+bones/38/rotation = Quaternion(0.556013, 0.0626244, 0.0829626, 0.824648)
+bones/39/rotation = Quaternion(0.301775, 0.0533931, -0.0169293, 0.951733)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, 0)
+shape = SubResource("CapsuleShape3D_xbodr")
+
+[node name="RayCast" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.939033)
+target_position = Vector3(0, 0, 10)
+debug_shape_custom_color = Color(0.6477, 0.127706, 0.42205, 1)
+
+[node name="ShootTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="EnergyBallSpawnMarker" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0.939256)
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_height_offset = 1.0
+
+[connection signal="timeout" from="ShootTimer" to="." method="_on_timer_timeout"]
+
+[editable path="enemy-humanoid"]

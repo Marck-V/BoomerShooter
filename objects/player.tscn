@@ -34,6 +34,44 @@ flip_faces = true
 size = Vector2(2, 2)
 
 [node name="Player" type="CharacterBody3D"]
+[sub_resource type="Animation" id="Animation_3rfka"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Head/Camera:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector3(0, 0, 0)]
+}
+
+[sub_resource type="Animation" id="Animation_i825w"]
+resource_name = "slide"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Head/Camera:position")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.2),
+"transitions": PackedFloat32Array(1, 1),
+"update": 0,
+"values": [Vector3(0, 0, 0), Vector3(0, -0.4, 0)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_i8sra"]
+_data = {
+&"RESET": SubResource("Animation_3rfka"),
+&"slide": SubResource("Animation_i825w")
+}
+
+[node name="Player" type="CharacterBody3D" groups=["Player"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 script = ExtResource("1_ffboj")
 weapons = Array[ExtResource("2_i825w")]([ExtResource("3_kr4p8"), ExtResource("2_6epbw")])
 
@@ -87,6 +125,10 @@ exclude_parent = false
 target_position = Vector3(0, 0, -10)
 collide_with_areas = true
 
+[node name="SlideCheck" type="RayCast3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
+target_position = Vector3(0, 0, 0.5)
+
 [node name="Shadow" type="Decal" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, 0)
 size = Vector3(1, 2, 1)
@@ -101,3 +143,8 @@ autoplay = true
 
 [node name="Cooldown" type="Timer" parent="."]
 one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+&"": SubResource("AnimationLibrary_i8sra")
+}
