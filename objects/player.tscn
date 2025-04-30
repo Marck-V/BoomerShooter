@@ -1,4 +1,4 @@
-[gd_scene load_steps=12 format=3 uid="uid://dl2ed4gkybggf"]
+[gd_scene load_steps=15 format=3 uid="uid://bdi5vfh3p5wd4"]
 
 [ext_resource type="Script" uid="uid://p77v7h50ucn" path="res://objects/player.gd" id="1_ffboj"]
 [ext_resource type="Resource" uid="uid://cu2gtxlcmbb34" path="res://weapons/blaster-repeater.tres" id="2_6epbw"]
@@ -33,7 +33,6 @@ material = SubResource("ShaderMaterial_3rfka")
 flip_faces = true
 size = Vector2(2, 2)
 
-[node name="Player" type="CharacterBody3D"]
 [sub_resource type="Animation" id="Animation_3rfka"]
 length = 0.001
 tracks/0/type = "value"
@@ -89,7 +88,6 @@ fov = 90.0
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Head/Camera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.956496)
-visible = false
 mesh = SubResource("QuadMesh_i8sra")
 
 [node name="SubViewportContainer" type="SubViewportContainer" parent="Head/Camera"]

@@ -1,8 +1,6 @@
 extends Node
 
-@onready var door: CSGBox3D = $'../Door'
-@onready var key: Area3D = $"../Key"
-@onready var door2: CSGBox3D = $'../Door2'
+
 
 var has_key = false
 var door2_unlocked = false  # Flag to track if door2 has been unlocked
@@ -12,7 +10,7 @@ func _process(delta):
 		unlock_door()
 	else:
 		if not door2_unlocked and get_enemy_count() == 0:  # Check if door2 is already unlocked
-			door2.queue_free()
+			
 			door2_unlocked = true  # Set the flag to prevent further calls
 			print("All enemies defeated, door unlocked.")
 
@@ -20,10 +18,10 @@ func _on_key_body_entered(body: Node3D) -> void:
 	if body.is_in_group("player"):
 		print(body)
 		has_key = true
-		key.queue_free()
+		#key.queue_free()
 
 func unlock_door():
-	door.queue_free()
+	#door.queue_free()
 	has_key = false
 	
 func get_enemy_count():
