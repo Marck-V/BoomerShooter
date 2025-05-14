@@ -1,36 +1,39 @@
-[gd_scene load_steps=14 format=3 uid="uid://bdi5vfh3p5wd4"]
+[gd_scene load_steps=18 format=3 uid="uid://dl2ed4gkybggf"]
 
 [ext_resource type="Script" uid="uid://p77v7h50ucn" path="res://objects/player.gd" id="1_ffboj"]
 [ext_resource type="Texture2D" uid="uid://8ggihh27mlrr" path="res://sprites/blob_shadow.png" id="2_b0fo8"]
 [ext_resource type="SpriteFrames" uid="uid://dbv3sy5qjatnl" path="res://sprites/burst_animation.tres" id="4_m6ukc"]
 [ext_resource type="AudioStream" uid="uid://cydjn1ct3hps2" path="res://sounds/walking.ogg" id="5_ics1s"]
-[ext_resource type="Shader" uid="uid://dcuhfc8jfneeb" path="res://shaders/psx.gdshader" id="6_3rfka"]
-[ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/base_weapon.tscn" id="7_i8sra"]
-[ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/shotgun.tscn" id="8_4vq5b"]
+[ext_resource type="Shader" uid="uid://bq66g58w18uyu" path="res://shaders/weapon_shader.gdshader" id="6_3rfka"]
+[ext_resource type="Texture2D" uid="uid://baupfoobd2dud" path="res://shaders/pastel-horizon-plus-1x.png" id="7_i8sra"]
+[ext_resource type="Shader" uid="uid://d1q7rkv5144uq" path="res://shaders/pixel_shader.gdshader" id="8_4vq5b"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gdq8c"]
 radius = 0.3
-height = 1.5
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_3rfka"]
-render_priority = 0
-shader = ExtResource("6_3rfka")
-shader_parameter/enable_fog = false
-shader_parameter/fog_color = Color(0.973535, 0.973535, 0.973535, 1)
-shader_parameter/noise_color = Color(0, 0, 0, 1)
-shader_parameter/fog_distance = 100.0
-shader_parameter/fog_fade_range = 50.0
-shader_parameter/enable_noise = false
-shader_parameter/noise_time_fac = 4.0
-shader_parameter/enable_color_limitation = true
-shader_parameter/color_levels = 32
-shader_parameter/enable_dithering = true
-shader_parameter/dither_strength = 1.0
+height = 1.0
 
 [sub_resource type="QuadMesh" id="QuadMesh_i8sra"]
-material = SubResource("ShaderMaterial_3rfka")
 flip_faces = true
-size = Vector2(2, 2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_i8sra"]
+render_priority = 0
+shader = ExtResource("6_3rfka")
+shader_parameter/TwixelAngle = 45.0
+shader_parameter/PixelSize = 5.0
+shader_parameter/Quantize = true
+shader_parameter/PaletteTexture = ExtResource("7_i8sra")
+shader_parameter/Posterize = true
+shader_parameter/ColorSteps = 16
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4vq5b"]
+render_priority = 0
+shader = ExtResource("8_4vq5b")
+shader_parameter/TwixelAngle = 45.0
+shader_parameter/PixelSize = 5.0
+shader_parameter/Quantize = true
+shader_parameter/PaletteTexture = ExtResource("7_i8sra")
+shader_parameter/Posterize = true
+shader_parameter/ColorSteps = 16
 
 [sub_resource type="Animation" id="Animation_3rfka"]
 length = 0.001
@@ -107,7 +110,23 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, -2.25, -6)
 layers = 2
 sprite_frames = ExtResource("4_m6ukc")
 frame = 2
-frame_progress = 1.0
+
+[node name="ShaderWeapon" type="MeshInstance3D" parent="Head/Camera/SubViewportContainer/SubViewport/CameraItem"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.92707)
+layers = 2
+mesh = SubResource("QuadMesh_i8sra")
+skeleton = NodePath("../../../../Shader")
+surface_material_override/0 = SubResource("ShaderMaterial_i8sra")
+
+[node name="RayCast" type="RayCast3D" parent="Head/Camera"]
+exclude_parent = false
+target_position = Vector3(0, 0, -10)
+collide_with_areas = true
+
+[node name="Shader" type="MeshInstance3D" parent="Head/Camera"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.0540287)
+mesh = SubResource("QuadMesh_i8sra")
+surface_material_override/0 = SubResource("ShaderMaterial_4vq5b")
 
 [node name="SlideCheck" type="RayCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
