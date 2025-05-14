@@ -73,7 +73,7 @@ func _on_timer_timeout():
 	raycast.force_raycast_update()
 
 	if raycast.is_colliding():
-		print("Locked onto target.")
+		# print("Locked onto target.")
 		var collider = raycast.get_collider()
 		
 		shoot_energy_ball()

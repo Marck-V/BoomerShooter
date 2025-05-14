@@ -1,7 +1,8 @@
 shader_type spatial;
-render_mode unshaded, depth_draw_always, cull_disabled;
+render_mode unshaded, blend_mix, depth_prepass_alpha, cull_disabled;
 
 uniform sampler2D ScreenTexture : hint_screen_texture;
+uniform sampler2D DepthTexture : hint_depth_texture;
 
 // Twixel Settings
 uniform float TwixelAngle : hint_range(0.0, 45.0) = 45.0;
@@ -38,11 +39,13 @@ vec3 quantized_color(vec3 original_color) {
 	return quantized_color;
 }
 
-vec3 posterize_color(vec3 color, int steps) {
+vec3 posterize_color(vec3 color, int steps) 
+{
 	return floor(color * float(steps)) / float(steps);
 }
 
 void fragment() {
+	float scene_depth = texture(DepthTexture, SCREEN_UV).r;
 	vec2 frag_coord = FRAGCOORD.xy;
 	vec2 screen_pixel_size = 1.0 / VIEWPORT_SIZE;
 
@@ -59,6 +62,8 @@ void fragment() {
 
 	vec3 color = textureLod(ScreenTexture, final_coord * screen_pixel_size, 0.0).rgb;
 
+
+
 	if (Posterize) {
 		color = posterize_color(color, ColorSteps);
 	}
@@ -67,6 +72,15 @@ void fragment() {
 		color = quantized_color(color);
 	}
 
+	ALBEDO = color;
+
+	// Code to remove transparent background in render
+	if (scene_depth > 0.999) {
+		discard;
+	} else {
+		ALPHA = 1.0;
+	}
+	
 	// Remove blue-ish tones
 	 //if (color.b > color.r + 0.1 && color.b > color.g + 0.1) {
 		//ALBEDO = vec3(0.0); // set to black
@@ -74,5 +88,4 @@ void fragment() {
 		//ALBEDO = color;
 	 //}
 	
-	ALBEDO = color;
 }
