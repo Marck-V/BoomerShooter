@@ -1,0 +1,40 @@
+[gd_scene load_steps=3 format=3 uid="uid://ciow4qxa67ws8"]
+
+[ext_resource type="Texture2D" uid="uid://bmhj25ijot1jn" path="res://icon.svg" id="1_tii4b"]
+[ext_resource type="Script" uid="uid://dnfcql1auv8yt" path="res://scripts/ui/upgrade_button.gd" id="2_3io4o"]
+
+[node name="UpgradeButton" type="TextureButton"]
+offset_right = 128.0
+offset_bottom = 128.0
+toggle_mode = true
+texture_normal = ExtResource("1_tii4b")
+ignore_texture_size = true
+stretch_mode = 0
+script = ExtResource("2_3io4o")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 128.0
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 0
+offset_right = 128.0
+offset_bottom = 128.0
+
+[node name="Label" type="Label" parent="MarginContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 35
+text = "0/1"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="Line2D" type="Line2D" parent="."]
+top_level = true
+z_index = -1
+default_color = Color(0.180005, 0.180005, 0.180005, 1)
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]

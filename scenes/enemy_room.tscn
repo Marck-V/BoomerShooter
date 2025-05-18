@@ -289,6 +289,10 @@ label_settings = SubResource("LabelSettings_nu0x4")
 vertical_alignment = 2
 metadata/_edit_use_anchors_ = true
 
+[node name="Label" type="Label" parent="HUD"]
+offset_right = 40.0
+offset_bottom = 23.0
+
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("6_vtbbq")
 

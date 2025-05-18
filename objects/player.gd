@@ -45,6 +45,7 @@ var container_offset = Vector3(1.2, -1.1, -2.75)
 var tween:Tween
 
 signal health_updated
+signal weapon_changed(new_weapon: Weapon)
 
 @onready var camera = $Head/Camera
 @onready var raycast = $Head/Camera/RayCast
@@ -65,7 +66,7 @@ func _ready():
 	
 	weapon = weapons[weapon_index] # Weapon must never be nil
 	initiate_change_weapon(weapon_index)
-
+	
 func _physics_process(delta):
 	
 	# Handle functions	
@@ -311,7 +312,7 @@ func initiate_change_weapon(index):
 func change_weapon():
 	
 	weapon = weapons[weapon_index]
-
+	
 	# Step 1. Remove previous weapon model(s) from container
 	
 	for n in container.get_children():
@@ -334,6 +335,7 @@ func change_weapon():
 	
 	raycast.target_position = Vector3(0, 0, -1) * weapon.max_distance
 	crosshair.texture = weapon.crosshair
+	weapon_changed.emit(weapon)
 
 func damage(amount):
 	

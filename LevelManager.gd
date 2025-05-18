@@ -1,7 +1,5 @@
 extends Node
 
-
-
 var has_key = false
 var door2_unlocked = false  # Flag to track if door2 has been unlocked
 
