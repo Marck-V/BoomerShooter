@@ -5,18 +5,63 @@ var blaster : Weapon = load("res://weapons/blaster.tres")
 var repeater : Weapon = load("res://weapons/blaster-repeater.tres")
 var damage_increase = 5
 const BLASTER_PATH = "res://weapons/blaster.tres"
-@onready var pistol_button_1: UpgradeButton = $PistolButton1
-@onready var pistol_button_2: UpgradeButton = $PistolButton1/PistolButton2
-@onready var pistol_button_3: UpgradeButton = $PistolButton1/PistolButton2/PistolButton3
+@onready var rifle_button_1: UpgradeButton = $RifleButton1
+@onready var rifle_button_2: UpgradeButton = $RifleButton1/RifleButton2
+@onready var rifle_button_3: UpgradeButton = $RifleButton1/RifleButton2/RifleButton3
+@onready var points_label: Label = $HBoxContainer/PointsLabel
+
+func _ready() -> void:
+	points_label.text = "Points: " + str(GlobalVariables.get_points())
+
+	GlobalVariables.points_changed.connect(on_points_changed)
+	
+	if GlobalVariables.has_upgrade("blaster_damage"):
+		rifle_button_1.disabled = true
 
 
+func on_points_changed(value : int):
+	points_label.text = "Points: " + str(value)
+	
+func _on_rifle_button_1_pressed() -> void:
+	
+	var cost := 5
 
-func _on_pistol_button_1_pressed() -> void:
-	blaster.damage += damage_increase
-	ResourceSaver.save(blaster, BLASTER_PATH)
-	print("Pistol damage upgraded by:", damage_increase)
+	if GlobalVariables.has_upgrade("blaster_damage"):
+		print("Upgrade already purchased!")
+		return
+
+	if GlobalVariables.spend_points(cost):
+		blaster.damage += damage_increase
+		ResourceSaver.save(blaster, BLASTER_PATH)
+		GlobalVariables.purchase_upgrade("blaster_damage")
+
+		rifle_button_1.apply_visual_upgrade()
+		print("Pistol damage upgraded!")
+	else:
+		print("Not enough points.")
+
+	
 
 
 func _on_reset_button_pressed() -> void:
+	# Reset weapon stat
 	blaster.damage = 25
 	ResourceSaver.save(blaster, BLASTER_PATH)
+
+	# Reset points
+	GlobalVariables.reset_points()
+
+	# Clear upgrades from save
+	GlobalVariables.save_data.upgrades.clear()
+	GlobalVariables.save_to_disk()
+
+	# Reset buttons visually and logically
+	rifle_button_1.reset()
+	rifle_button_2.reset()
+	rifle_button_3.reset()
+
+	print("Upgrades, points, and button visuals reset.")
+
+
+func _on_rifle_button_2_pressed() -> void:
+	rifle_button_2.apply_visual_upgrade()

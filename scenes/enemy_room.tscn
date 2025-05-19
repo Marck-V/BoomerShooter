@@ -1,4 +1,4 @@
-[gd_scene load_steps=66 format=4 uid="uid://dxnrf1ck88yxe"]
+[gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
 [ext_resource type="Script" uid="uid://bdfvqqqqskaso" path="res://LevelManager.gd" id="1_ckm7l"]
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://objects/player.tscn" id="3_gi8j2"]
@@ -16,6 +16,8 @@
 [ext_resource type="Material" uid="uid://jl6xodi8dv8f" path="res://trenchbroom/textures/world/texture_04.tres" id="15_5ubjb"]
 [ext_resource type="Material" uid="uid://csmkmcki5fshf" path="res://trenchbroom/textures/world/texture_01.tres" id="15_gj28m"]
 [ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="16_e1was"]
+[ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/upgrade_station.tscn" id="17_5ubjb"]
+[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/point_pickup.tscn" id="18_gj28m"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
 font = ExtResource("5_gtg8j")
@@ -289,9 +291,34 @@ label_settings = SubResource("LabelSettings_nu0x4")
 vertical_alignment = 2
 metadata/_edit_use_anchors_ = true
 
-[node name="Label" type="Label" parent="HUD"]
+[node name="WeaponInfoLabel" type="Label" parent="HUD"]
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="InteractLabel" type="Label" parent="HUD"]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -77.0
+offset_top = -224.835
+offset_right = 77.0
+offset_bottom = -201.835
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "Press \"E\" to Interact"
+
+[node name="PointsLabel" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+text = "Points: "
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("6_vtbbq")
@@ -300,14 +327,17 @@ environment = ExtResource("6_vtbbq")
 
 [node name="enemy-horde" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 10, 46)
+visible = false
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-horde2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 10, 45)
+visible = false
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-ranged" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 10, 64)
+visible = false
 movement_target_position = NodePath("../../Player")
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") groups=["player"] instance=ExtResource("3_gi8j2")]
@@ -468,3 +498,12 @@ shape = SubResource("ConvexPolygonShape3D_o3sul")
 
 [node name="entity_0_brush_44_collision_shape" type="CollisionShape3D" parent="NavigationRegion3D/FuncGodotMap/entity_0_worldspawn"]
 shape = SubResource("ConvexPolygonShape3D_xi3rc")
+
+[node name="UpgradeStation" parent="." instance=ExtResource("17_5ubjb")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 18.4313, 5.85269, 23.5661)
+
+[node name="GoldBar" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.0766, 5.68511, 16.4978)
+
+[node name="GoldBar2" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1091, 5.61518, 18.7511)

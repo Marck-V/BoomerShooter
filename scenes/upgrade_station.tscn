@@ -1,0 +1,33 @@
+[gd_scene load_steps=5 format=3 uid="uid://qrpq15dcfyie"]
+
+[ext_resource type="PackedScene" uid="uid://bpndyjniwfdmr" path="res://models/Computer_Retro.glb" id="1_a7e7t"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_a7e7t"]
+size = Vector3(1.54688, 3.42847, 4.5061)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_4nc2p"]
+size = Vector3(0.616089, 1, 1)
+
+[sub_resource type="QuadMesh" id="QuadMesh_a7e7t"]
+size = Vector2(0.3, 0.265)
+
+[node name="UpgradeStation" type="Node3D"]
+
+[node name="Computer_Retro" parent="." instance=ExtResource("1_a7e7t")]
+transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0)
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Computer_Retro"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Computer_Retro/StaticBody3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0283203, -0.432739, -0.00354)
+shape = SubResource("BoxShape3D_a7e7t")
+
+[node name="Area3D" type="Area3D" parent="."]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.610467, -0.358133, 0)
+shape = SubResource("BoxShape3D_4nc2p")
+
+[node name="ScreenMeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.0463436, 0.191803, 0.0224069)
+mesh = SubResource("QuadMesh_a7e7t")

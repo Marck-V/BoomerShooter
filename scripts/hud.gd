@@ -1,17 +1,24 @@
 extends CanvasLayer
 
-@onready var label: Label = $Label
+@onready var weapon_info_label: Label = $WeaponInfoLabel
 @onready var health_label: Label = $Health
 @onready var player: CharacterBody3D = $"../Player"
+@onready var upgrade_station: Node3D = $"../UpgradeStation"
+@onready var interact_label: Label = $InteractLabel
 
 var current_weapon: Weapon
 
 func _ready() -> void:
 	# Connect to the signal emitted from the Player node
+	interact_label.visible = false
 	player.weapon_changed.connect(_on_weapon_changed)
-	
-	# Optional: set an initial weapon if needed
-	# _on_weapon_changed(load("res://weapons/blaster.tres"))
+	upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
+	upgrade_station.get_node("Area3D").connect("body_exited", on_upgrade_station_body_exit)
+	GlobalVariables.points_changed.connect(on_points_changed)
+	$PointsLabel.text = "Points: " + str(GlobalVariables.get_points())
+
+func on_points_changed(value : int):
+	$PointsLabel.text = "Points: " + str(value)
 
 func _on_health_updated(health):
 	health_label.text = str(health) + "%"
@@ -25,10 +32,18 @@ func _on_weapon_changed(new_weapon: Weapon):
 func update_weapon_stats_display():
 	if current_weapon == null:
 		return
-	label.text = "Weapon Stats:\n"
-	label.text += "Damage: " + str(current_weapon.damage) + "\n"
-	label.text += "Cooldown: " + str(current_weapon.cooldown) + "\n"
-	label.text += "Max Distance: " + str(current_weapon.max_distance) + "\n"
-	label.text += "Spread: " + str(current_weapon.spread) + "\n"
-	label.text += "Shot Count: " + str(current_weapon.shot_count) + "\n"
-	label.text += "Knockback: " + str(current_weapon.knockback)
+	weapon_info_label.text = "Weapon Stats:\n"
+	weapon_info_label.text += "Damage: " + str(current_weapon.damage) + "\n"
+	weapon_info_label.text += "Cooldown: " + str(current_weapon.cooldown) + "\n"
+	weapon_info_label.text += "Max Distance: " + str(current_weapon.max_distance) + "\n"
+	weapon_info_label.text += "Spread: " + str(current_weapon.spread) + "\n"
+	weapon_info_label.text += "Shot Count: " + str(current_weapon.shot_count) + "\n"
+	weapon_info_label.text += "Knockback: " + str(current_weapon.knockback)
+
+func on_upgrade_station_body_entered(body):
+	if body.is_in_group("Player"):
+		interact_label.visible = true
+
+func on_upgrade_station_body_exit(body):
+	if body.is_in_group("Player"):
+		interact_label.visible = false

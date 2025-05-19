@@ -26,9 +26,13 @@ offset_top = 71.0
 offset_right = 694.0
 offset_bottom = 111.0
 
+[node name="PointsLabel" type="Label" parent="HBoxContainer"]
+layout_mode = 2
+text = "Points: "
+
 [node name="Button" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "Pistol"
+text = "Rifle"
 
 [node name="Button2" type="Button" parent="HBoxContainer"]
 layout_mode = 2
@@ -38,7 +42,7 @@ text = "Shotgun"
 layout_mode = 2
 text = "Reset Upgrades"
 
-[node name="Panel" type="Panel" parent="."]
+[node name="BGPanel" type="Panel" parent="."]
 visible = false
 layout_mode = 1
 anchors_preset = 15
@@ -47,7 +51,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PistolButton1" parent="." instance=ExtResource("1_e3qxy")]
+[node name="RifleButton1" parent="." instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_left = 576.0
 offset_top = 139.0
@@ -55,8 +59,9 @@ offset_right = 704.0
 offset_bottom = 267.0
 tooltip_text = "Increase your damage by 5"
 texture_normal = ExtResource("2_jkuc8")
+upgrade_id = "blaster_damage"
 
-[node name="PistolButton2" parent="PistolButton1" instance=ExtResource("1_e3qxy")]
+[node name="RifleButton2" parent="RifleButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 200.0
 offset_bottom = 328.0
@@ -64,7 +69,7 @@ tooltip_text = "Explanation of upgrade 2"
 disabled = true
 texture_normal = ExtResource("3_6vqdt")
 
-[node name="PistolButton3" parent="PistolButton1/PistolButton2" instance=ExtResource("1_e3qxy")]
+[node name="RifleButton3" parent="RifleButton1/RifleButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 210.59
 offset_bottom = 338.59
@@ -94,5 +99,21 @@ offset_top = 200.0
 offset_bottom = 328.0
 texture_normal = ExtResource("7_0isde")
 
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 0
+offset_left = 854.0
+offset_top = 150.0
+offset_right = 1218.0
+offset_bottom = 691.0
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 993.0
+offset_top = 155.0
+offset_right = 1073.0
+offset_bottom = 178.0
+text = "Upgrade 1"
+
 [connection signal="pressed" from="HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]
-[connection signal="pressed" from="PistolButton1" to="." method="_on_pistol_button_1_pressed"]
+[connection signal="pressed" from="RifleButton1" to="." method="_on_rifle_button_1_pressed"]
+[connection signal="pressed" from="RifleButton1/RifleButton2" to="." method="_on_rifle_button_2_pressed"]
