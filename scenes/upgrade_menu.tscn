@@ -32,11 +32,11 @@ text = "Points: "
 
 [node name="Button" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "Rifle"
+text = "Weapon 1"
 
 [node name="Button2" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "Shotgun"
+text = "Weapon 2"
 
 [node name="ResetButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
@@ -68,6 +68,7 @@ offset_bottom = 328.0
 tooltip_text = "Explanation of upgrade 2"
 disabled = true
 texture_normal = ExtResource("3_6vqdt")
+upgrade_id = "blaster_damage2"
 
 [node name="RifleButton3" parent="RifleButton1/RifleButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
@@ -76,6 +77,7 @@ offset_bottom = 338.59
 tooltip_text = "Explanation of upgrade 3"
 disabled = true
 texture_normal = ExtResource("4_ixicc")
+upgrade_id = "blaster_damage3"
 
 [node name="Shotgun" type="Node" parent="."]
 
@@ -95,8 +97,8 @@ texture_normal = ExtResource("6_ethjp")
 
 [node name="ShotgunButton3" parent="Shotgun/ShotgunButton1/ShotgunButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
-offset_top = 200.0
-offset_bottom = 328.0
+offset_top = 210.175
+offset_bottom = 338.175
 texture_normal = ExtResource("7_0isde")
 
 [node name="Panel" type="Panel" parent="."]
@@ -117,3 +119,4 @@ text = "Upgrade 1"
 [connection signal="pressed" from="HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="RifleButton1" to="." method="_on_rifle_button_1_pressed"]
 [connection signal="pressed" from="RifleButton1/RifleButton2" to="." method="_on_rifle_button_2_pressed"]
+[connection signal="pressed" from="RifleButton1/RifleButton2/RifleButton3" to="." method="_on_rifle_button_3_pressed"]

@@ -22,25 +22,25 @@ func _ready() -> void:
 func on_points_changed(value : int):
 	points_label.text = "Points: " + str(value)
 	
-func _on_rifle_button_1_pressed() -> void:
-	
-	var cost := 5
 
-	if GlobalVariables.has_upgrade("blaster_damage"):
+func attempt_upgrade(button: UpgradeButton, upgrade_id: String, cost: int, damage_increase: int):
+	if GlobalVariables.has_upgrade(upgrade_id):
 		print("Upgrade already purchased!")
 		return
 
 	if GlobalVariables.spend_points(cost):
 		blaster.damage += damage_increase
 		ResourceSaver.save(blaster, BLASTER_PATH)
-		GlobalVariables.purchase_upgrade("blaster_damage")
+		GlobalVariables.purchase_upgrade(upgrade_id)
 
-		rifle_button_1.apply_visual_upgrade()
-		print("Pistol damage upgraded!")
+		button.apply_visual_upgrade()
+		print("Upgrade applied:", upgrade_id)
 	else:
-		print("Not enough points.")
+		print("Not enough points for:", upgrade_id)
 
 	
+func _on_rifle_button_1_pressed() -> void:	
+	attempt_upgrade(rifle_button_1, "blaster_damage", 5, 5)
 
 
 func _on_reset_button_pressed() -> void:
@@ -64,4 +64,36 @@ func _on_reset_button_pressed() -> void:
 
 
 func _on_rifle_button_2_pressed() -> void:
-	rifle_button_2.apply_visual_upgrade()
+	var cost := 5
+
+	if GlobalVariables.has_upgrade("blaster_damage2"):
+		print("Upgrade already purchased!")
+		return
+
+	if GlobalVariables.spend_points(cost):
+		blaster.damage += damage_increase
+		ResourceSaver.save(blaster, BLASTER_PATH)
+		GlobalVariables.purchase_upgrade("blaster_damage2")
+
+		rifle_button_2.apply_visual_upgrade()
+		print("Rifledamage upgraded!")
+	else:
+		print("Not enough points.")
+
+
+func _on_rifle_button_3_pressed() -> void:
+	var cost := 5
+
+	if GlobalVariables.has_upgrade("blaster_damage3"):
+		print("Upgrade already purchased!")
+		return
+
+	if GlobalVariables.spend_points(cost):
+		blaster.damage += damage_increase
+		ResourceSaver.save(blaster, BLASTER_PATH)
+		GlobalVariables.purchase_upgrade("blaster_damage3")
+
+		rifle_button_3.apply_visual_upgrade()
+		print("Rifle damage upgraded!")
+	else:
+		print("Not enough points.")
