@@ -4,7 +4,7 @@
 [ext_resource type="Resource" uid="uid://cu2gtxlcmbb34" path="res://weapons/blaster-repeater.tres" id="2_6epbw"]
 [ext_resource type="Texture2D" uid="uid://8ggihh27mlrr" path="res://sprites/blob_shadow.png" id="2_b0fo8"]
 [ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://scripts/weapon.gd" id="2_i825w"]
-[ext_resource type="Resource" path="res://weapons/blaster.tres" id="3_kr4p8"]
+[ext_resource type="Resource" uid="uid://8ftqa7qdeh2t" path="res://weapons/blaster.tres" id="3_kr4p8"]
 [ext_resource type="SpriteFrames" uid="uid://dbv3sy5qjatnl" path="res://sprites/burst_animation.tres" id="4_m6ukc"]
 [ext_resource type="AudioStream" uid="uid://cydjn1ct3hps2" path="res://sounds/walking.ogg" id="5_ics1s"]
 [ext_resource type="Shader" uid="uid://dcuhfc8jfneeb" path="res://shaders/psx.gdshader" id="6_3rfka"]
@@ -92,8 +92,8 @@ visible = false
 mesh = SubResource("QuadMesh_i8sra")
 
 [node name="RayCast" type="RayCast3D" parent="Head/Camera"]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
-target_position = Vector3(0, -5, 0)
+target_position = Vector3(0, -5, -100)
+collision_mask = 15
 
 [node name="WeaponHolder" type="Node3D" parent="Head/Camera"]
 

@@ -331,14 +331,20 @@ environment = ExtResource("6_vtbbq")
 
 [node name="enemy-horde" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21, 10, 46)
+collision_layer = 4
+collision_mask = 5
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-horde2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8, 10, 45)
+collision_layer = 4
+collision_mask = 5
 movement_target_position = NodePath("../../Player")
 
 [node name="enemy-ranged" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 10, 64)
+collision_layer = 4
+collision_mask = 5
 movement_target_position = NodePath("../../Player")
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") groups=["player"] instance=ExtResource("3_gi8j2")]
