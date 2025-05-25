@@ -53,6 +53,7 @@ func _on_rifle_button_1_pressed() -> void:
 func _on_reset_button_pressed() -> void:
 	# Reset weapon stat
 	blaster.damage = 25
+	blaster.shot_count = 5
 	ResourceSaver.save(blaster, BLASTER_PATH)
 
 	# Reset points

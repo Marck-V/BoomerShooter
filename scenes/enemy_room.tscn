@@ -8,7 +8,7 @@
 [ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="6_vtbbq"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://objects/enemy_ranged.tscn" id="7_gj28m"]
 [ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://scripts/weapon.gd" id="8_e5j3j"]
-[ext_resource type="Resource" uid="uid://8ftqa7qdeh2t" path="res://weapons/blaster.tres" id="9_k2qbs"]
+[ext_resource type="Resource" uid="uid://7xkw24nio7w5" path="res://weapons/blaster.tres" id="9_k2qbs"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="10_ndmtw"]
 [ext_resource type="Resource" uid="uid://cu2gtxlcmbb34" path="res://weapons/blaster-repeater.tres" id="10_ryvh3"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="11_51fhi"]

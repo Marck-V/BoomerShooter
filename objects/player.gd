@@ -212,11 +212,23 @@ func action_shoot():
 		blaster_cooldown.start(weapon.cooldown)
 
 		for i in range(weapon.shot_count):
+			# Random spread angles
+			var x_spread = deg_to_rad(randf_range(-weapon.spread, weapon.spread))
+			var y_spread = deg_to_rad(randf_range(-weapon.spread, weapon.spread))
+
+			# Start with straight forward
+			var base_dir = -camera.global_transform.basis.z.normalized()
+
+			# Apply spread (rotate around camera's local X and Y axes)
+			var dir = base_dir.rotated(camera.global_transform.basis.x, y_spread)
+			dir = dir.rotated(camera.global_transform.basis.y, x_spread)
+
+			# Temporarily reposition the raycast target
+			raycast.target_position = raycast.to_local(raycast.global_transform.origin + dir * weapon.max_distance)
 			raycast.force_raycast_update()
+
 			if raycast.is_colliding():
 				var collider = raycast.get_collider()
-				print("HIT:", collider)
-
 				if collider and collider.has_method("damage"):
 					collider.damage(weapon.damage)
 
@@ -225,8 +237,7 @@ func action_shoot():
 				get_tree().root.add_child(impact)
 				impact.global_position = raycast.get_collision_point() + (raycast.get_collision_normal() / 10)
 				impact.look_at(camera.global_transform.origin, Vector3.UP, true)
-			else:
-				print("MISS")
+
 
 func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_toggle"):
