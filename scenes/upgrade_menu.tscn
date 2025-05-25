@@ -60,6 +60,8 @@ offset_bottom = 267.0
 tooltip_text = "Increase your damage by 5"
 texture_normal = ExtResource("2_jkuc8")
 upgrade_id = "blaster_damage"
+amount = 5.0
+property_name = "damage"
 
 [node name="RifleButton2" parent="RifleButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
@@ -69,6 +71,8 @@ tooltip_text = "Explanation of upgrade 2"
 disabled = true
 texture_normal = ExtResource("3_6vqdt")
 upgrade_id = "blaster_damage2"
+amount = 5.0
+property_name = "damage"
 
 [node name="RifleButton3" parent="RifleButton1/RifleButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
@@ -78,6 +82,8 @@ tooltip_text = "Explanation of upgrade 3"
 disabled = true
 texture_normal = ExtResource("4_ixicc")
 upgrade_id = "blaster_damage3"
+amount = 5.0
+property_name = "damage"
 
 [node name="Shotgun" type="Node" parent="."]
 

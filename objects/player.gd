@@ -49,8 +49,11 @@ signal weapon_changed(new_weapon: Weapon)
 
 @onready var camera = $Head/Camera
 @onready var raycast = $Head/Camera/RayCast
-@onready var muzzle = $Head/Camera/SubViewportContainer/SubViewport/CameraItem/Muzzle
-@onready var container = $Head/Camera/SubViewportContainer/SubViewport/CameraItem/Container
+
+@onready var muzzle: AnimatedSprite3D = $Head/Camera/WeaponHolder/Muzzle
+@onready var container: Node3D = $Head/Camera/WeaponHolder/Container
+
+
 @onready var sound_footsteps = $SoundFootsteps
 @onready var blaster_cooldown = $Cooldown
 @onready var slide_check: RayCast3D = $SlideCheck
@@ -329,7 +332,7 @@ func change_weapon():
 	# Step 3. Set model to only render on layer 2 (the weapon camera)
 	
 	for child in weapon_model.find_children("*", "MeshInstance3D"):
-		child.layers = 2
+		child.layers = 1
 		
 	# Set weapon data
 	

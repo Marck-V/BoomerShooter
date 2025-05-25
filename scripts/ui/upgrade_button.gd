@@ -6,6 +6,10 @@ class_name UpgradeButton
 @onready var line_2d: Line2D = $Line2D
 
 @export var upgrade_id : String = ""
+@export var cost : int = 5
+@export var amount : float = 1.0 ## Amount you want to upgrade the property by
+@export_enum ("cooldown", "max_distance", "damage", "spread", "shot_count", "knockback") var property_name : String
+
 var level: int = 0:
 	set(value):
 		level = value
