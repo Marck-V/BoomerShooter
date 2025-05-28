@@ -5,7 +5,7 @@ class_name Weapon
 @export var model: PackedScene  # Model of the weapon
 @export var position: Vector3  # On-screen position
 @export var rotation: Vector3  # On-screen rotation
-@export var scale : Vector3
+@export var scale: Vector3
 @export var muzzle_position: Vector3  # On-screen position of muzzle flash
 
 @export_subgroup("Properties")

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_d613q")
 model = ExtResource("1_lynxc")
-position = Vector3(0, 0, 0)
+position = Vector3(0, 0.495, 1.645)
 rotation = Vector3(0, 180, 0)
 scale = Vector3(0, 0, 0)
 muzzle_position = Vector3(0, 0, 0)

@@ -215,7 +215,7 @@ func action_shoot():
 			# Random spread angles
 			var x_spread = deg_to_rad(randf_range(-weapon.spread, weapon.spread))
 			var y_spread = deg_to_rad(randf_range(-weapon.spread, weapon.spread))
-
+			print(x_spread,y_spread)
 			# Start with straight forward
 			var base_dir = -camera.global_transform.basis.z.normalized()
 
@@ -245,6 +245,19 @@ func action_weapon_toggle():
 		initiate_change_weapon(weapon_index)
 		Audio.play("sounds/weapon_change.ogg")
 
+	# Direct slot switching
+	if Input.is_action_just_pressed("weapon_1") and weapons.size() >= 1:
+		initiate_change_weapon(0)
+		Audio.play("sounds/weapon_change.ogg")
+
+	if Input.is_action_just_pressed("weapon_2") and weapons.size() >= 2:
+		initiate_change_weapon(1)
+		Audio.play("sounds/weapon_change.ogg")
+
+	if Input.is_action_just_pressed("weapon_3") and weapons.size() >= 3:
+		initiate_change_weapon(2)
+		Audio.play("sounds/weapon_change.ogg")
+
 func initiate_change_weapon(index):
 	weapon_index = index
 	tween = get_tree().create_tween()
@@ -263,6 +276,8 @@ func change_weapon():
 
 	weapon_model.position = weapon.position
 	weapon_model.rotation_degrees = weapon.rotation
+	weapon_model.scale = weapon.scale
+	
 	raycast.target_position = Vector3(0, 0, -weapon.max_distance)
 
 	for child in weapon_model.find_children("*", "MeshInstance3D"):

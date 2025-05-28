@@ -12,6 +12,7 @@ func _ready() -> void:
 	# Connect to the signal emitted from the Player node
 	interact_label.visible = false
 	player.weapon_changed.connect(_on_weapon_changed)
+	player.health_updated.connect(_on_health_updated)
 	upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
 	upgrade_station.get_node("Area3D").connect("body_exited", on_upgrade_station_body_exit)
 	GlobalVariables.points_changed.connect(on_points_changed)
