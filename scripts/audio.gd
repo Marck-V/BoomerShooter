@@ -22,9 +22,6 @@ func _ready():
 func _on_stream_finished(stream):
 	available.append(stream)
 
-func play(sound_path):  # Path (or multiple, separated by commas)
-	var sounds = sound_path.split(",")
-	queue.append("res://" + sounds[randi() % sounds.size()].strip_edges())
 
 func _process(_delta):
 	if not queue.is_empty() and not available.is_empty():
@@ -33,3 +30,7 @@ func _process(_delta):
 		available[0].pitch_scale = randf_range(0.9, 1.1)
 
 		available.pop_front()
+
+func play(sound_path):  # Path (or multiple, separated by commas)
+	var sounds = sound_path.split(",")
+	queue.append("res://" + sounds[randi() % sounds.size()].strip_edges())

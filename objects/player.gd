@@ -6,27 +6,23 @@ extends CharacterBody3D
 @export var jump_strength = 8
 @export var max_slide_speed = 8
 
-@export_subgroup("Weapons")
-@export var weapons: Array[Weapon] = []
+@onready var weapon_holder = $Head/Camera/WeaponHolder
 
-var weapon: Weapon
+var weapon_nodes: Array[BaseWeapon] = []
+var current_weapon: BaseWeapon
 var weapon_index := 0
 
 var current_movement_speed = base_movement_speed
-
 var mouse_sensitivity = 700
 var gamepad_sensitivity := 0.075
-
 var mouse_captured := true
 
 var movement_velocity: Vector3
 var rotation_target: Vector3
-
 var input_mouse: Vector2
 
 var health:int = 100
 var gravity := 0.0
-
 var previously_floored := false
 
 var jump_single := true
@@ -40,16 +36,13 @@ var falling = false
 var play_slide_animation = false
 
 var container_offset = Vector3(1.2, -1.1, -2.75)
-
 var tween:Tween
 
 signal health_updated
-signal weapon_changed(new_weapon: Weapon)
+signal weapon_changed
 
 @onready var camera = $Head/Camera
 @onready var raycast = $Head/Camera/RayCast
-@onready var muzzle: AnimatedSprite3D = $Head/Camera/WeaponHolder/Muzzle
-@onready var container: Node3D = $Head/Camera/WeaponHolder/Container
 @onready var sound_footsteps = $SoundFootsteps
 @onready var blaster_cooldown = $Cooldown
 @onready var slide_check: RayCast3D = $SlideCheck
@@ -63,8 +56,17 @@ func _ready():
 	raycast.enabled = true
 	raycast.target_position = Vector3(0, 0, -100)
 
-	weapon = weapons[weapon_index]
-	initiate_change_weapon(weapon_index)
+	for child in weapon_holder.get_children():
+		if child is BaseWeapon:
+			weapon_nodes.append(child)
+			child.visible = false
+			child.set_process(false)
+
+	current_weapon = weapon_nodes[weapon_index]
+	current_weapon.visible = true
+	current_weapon.set_process(true)
+	crosshair.texture = current_weapon.data.crosshair
+	weapon_changed.emit(current_weapon)
 
 func _physics_process(delta):
 	handle_controls(delta)
@@ -83,7 +85,6 @@ func _physics_process(delta):
 	camera.rotation.z = lerp_angle(camera.rotation.z, -input_mouse.x * 25 * delta, delta * 5)
 	camera.rotation.x = lerp_angle(camera.rotation.x, rotation_target.x, delta * 25)
 	rotation.y = lerp_angle(rotation.y, rotation_target.y, delta * 25)
-	container.position = lerp(container.position, container_offset - (basis.inverse() * applied_velocity / 30), delta * 10)
 
 	sound_footsteps.stream_paused = true
 	if is_on_floor():
@@ -147,6 +148,7 @@ func handle_controls(_delta):
 
 		if jump_single or jump_double:
 			Audio.play("sounds/jump_a.ogg, sounds/jump_b.ogg, sounds/jump_c.ogg")
+			
 
 		if jump_double:
 			gravity = -jump_strength
@@ -199,97 +201,38 @@ func action_shoot():
 	if Input.is_action_pressed("shoot"):
 		if !blaster_cooldown.is_stopped():
 			return
-
-		Audio.play(weapon.sound_shoot)
-		container.position.z += 0.25
-		camera.rotation.x += 0.025
-
-		muzzle.play("default")
-		muzzle.rotation_degrees.z = randf_range(-45, 45)
-		muzzle.scale = Vector3.ONE * randf_range(0.40, 0.75)
-		muzzle.position = container.position - weapon.muzzle_position
-
-		blaster_cooldown.start(weapon.cooldown)
-
-		for i in range(weapon.shot_count):
-			# Random spread angles
-			var x_spread = deg_to_rad(randf_range(-weapon.spread, weapon.spread))
-			var y_spread = deg_to_rad(randf_range(-weapon.spread, weapon.spread))
-			print(x_spread,y_spread)
-			# Start with straight forward
-			var base_dir = -camera.global_transform.basis.z.normalized()
-
-			# Apply spread (rotate around camera's local X and Y axes)
-			var dir = base_dir.rotated(camera.global_transform.basis.x, y_spread)
-			dir = dir.rotated(camera.global_transform.basis.y, x_spread)
-
-			# Temporarily reposition the raycast target
-			raycast.target_position = raycast.to_local(raycast.global_transform.origin + dir * weapon.max_distance)
-			raycast.force_raycast_update()
-
-			if raycast.is_colliding():
-				var collider = raycast.get_collider()
-				if collider and collider.has_method("damage"):
-					collider.damage(weapon.damage)
-
-				var impact = preload("res://objects/impact.tscn").instantiate()
-				impact.play("shot")
-				get_tree().root.add_child(impact)
-				impact.global_position = raycast.get_collision_point() + (raycast.get_collision_normal() / 10)
-				impact.look_at(camera.global_transform.origin, Vector3.UP, true)
+		blaster_cooldown.start(current_weapon.data.cooldown)
+		current_weapon.fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
+		current_weapon.trigger_recoil()
 
 
 func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_toggle"):
-		weapon_index = wrap(weapon_index + 1, 0, weapons.size())
-		initiate_change_weapon(weapon_index)
-		Audio.play("sounds/weapon_change.ogg")
+		change_weapon((weapon_index + 1) % weapon_nodes.size())
 
-	# Direct slot switching
-	if Input.is_action_just_pressed("weapon_1") and weapons.size() >= 1:
-		initiate_change_weapon(0)
-		Audio.play("sounds/weapon_change.ogg")
+	if Input.is_action_just_pressed("weapon_1") and weapon_nodes.size() >= 1:
+		change_weapon(0)
+	if Input.is_action_just_pressed("weapon_2") and weapon_nodes.size() >= 2:
+		change_weapon(1)
+	if Input.is_action_just_pressed("weapon_3") and weapon_nodes.size() >= 3:
+		change_weapon(2)
 
-	if Input.is_action_just_pressed("weapon_2") and weapons.size() >= 2:
-		initiate_change_weapon(1)
-		Audio.play("sounds/weapon_change.ogg")
+func change_weapon(index):
+	if index == weapon_index:
+		return
 
-	if Input.is_action_just_pressed("weapon_3") and weapons.size() >= 3:
-		initiate_change_weapon(2)
-		Audio.play("sounds/weapon_change.ogg")
+	weapon_nodes[weapon_index].visible = false
+	weapon_nodes[weapon_index].set_process(false)
 
-func initiate_change_weapon(index):
 	weapon_index = index
-	tween = get_tree().create_tween()
-	tween.set_ease(Tween.EASE_OUT_IN)
-	tween.tween_property(container, "position", container_offset - Vector3(0, 1, 0), 0.1)
-	tween.tween_callback(change_weapon)
-
-func change_weapon():
-	weapon = weapons[weapon_index]
-
-	for n in container.get_children():
-		container.remove_child(n)
-
-	var weapon_model = weapon.model.instantiate()
-	container.add_child(weapon_model)
-
-	weapon_model.position = weapon.position
-	weapon_model.rotation_degrees = weapon.rotation
-	weapon_model.scale = weapon.scale
-	
-	raycast.target_position = Vector3(0, 0, -weapon.max_distance)
-
-	for child in weapon_model.find_children("*", "MeshInstance3D"):
-		child.layers = 1
-
-	raycast.target_position = Vector3(0, 0, -1) * weapon.max_distance
-	crosshair.texture = weapon.crosshair
-	weapon_changed.emit(weapon)
+	current_weapon = weapon_nodes[weapon_index]
+	current_weapon.visible = true
+	current_weapon.set_process(true)
+	crosshair.texture = current_weapon.data.crosshair
+	weapon_changed.emit(current_weapon)
 
 func damage(amount):
 	health -= amount
 	health_updated.emit(health)
-
 	if health <= 0:
 		get_tree().reload_current_scene()

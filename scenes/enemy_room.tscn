@@ -1,4 +1,4 @@
-[gd_scene load_steps=72 format=4 uid="uid://dxnrf1ck88yxe"]
+[gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
 [ext_resource type="Script" uid="uid://bdfvqqqqskaso" path="res://LevelManager.gd" id="1_ckm7l"]
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://objects/player.tscn" id="3_gi8j2"]
@@ -7,13 +7,9 @@
 [ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://objects/enemy_horde.tscn" id="6_5ubjb"]
 [ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="6_vtbbq"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://objects/enemy_ranged.tscn" id="7_gj28m"]
-[ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://scripts/weapon.gd" id="8_e5j3j"]
-[ext_resource type="Resource" uid="uid://7xkw24nio7w5" path="res://weapons/blaster.tres" id="9_k2qbs"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="10_ndmtw"]
-[ext_resource type="Resource" uid="uid://cu2gtxlcmbb34" path="res://weapons/blaster-repeater.tres" id="10_ryvh3"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="11_51fhi"]
 [ext_resource type="Material" uid="uid://g1l8euhy1o6" path="res://trenchbroom/textures/world/texture_02.tres" id="11_ndmtw"]
-[ext_resource type="Resource" uid="uid://cc7sr7c42im47" path="res://weapons/rocket_launcher.tres" id="11_q64sd"]
 [ext_resource type="Material" uid="uid://bketfk52opqbk" path="res://trenchbroom/textures/world/texture_13_wall.tres" id="12_51fhi"]
 [ext_resource type="Material" uid="uid://dtsera8gdg8c1" path="res://trenchbroom/textures/world/texture_11_door.tres" id="13_2vy2j"]
 [ext_resource type="Material" uid="uid://bbjxmxvepx4hr" path="res://trenchbroom/textures/world/texture_07.tres" id="14_5ubjb"]
@@ -279,7 +275,6 @@ offset_right = 20.0
 offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.35, 0.35)
 pivot_offset = Vector2(64, 64)
 metadata/_edit_use_anchors_ = true
 
@@ -350,7 +345,6 @@ movement_target_position = NodePath("../../Player")
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") groups=["player"] instance=ExtResource("3_gi8j2")]
 transform = Transform3D(1, 0, 1.39091e-08, 0, 1, 0, -1.39091e-08, 0, 1, 13.7478, 7.4, 20.6607)
 base_movement_speed = 10
-weapons = Array[ExtResource("8_e5j3j")]([ExtResource("9_k2qbs"), ExtResource("10_ryvh3"), ExtResource("11_q64sd")])
 crosshair = NodePath("../HUD/Crosshair")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
@@ -515,3 +509,13 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.0766, 5.68511, 16.4978)
 
 [node name="GoldBar2" parent="." instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1091, 5.61518, 18.7511)
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.2919, 13.531, 10.3151)
+size = Vector3(36.7252, 1.16211, 31.1978)
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 7, 9)
+light_energy = 16.0
+shadow_enabled = true
+omni_range = 31.3

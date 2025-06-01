@@ -6,7 +6,7 @@ extends CanvasLayer
 @onready var upgrade_station: Node3D = $"../UpgradeStation"
 @onready var interact_label: Label = $InteractLabel
 
-var current_weapon: Weapon
+var current_weapon: Node3D
 
 func _ready() -> void:
 	# Connect to the signal emitted from the Player node
@@ -25,21 +25,27 @@ func _on_health_updated(health):
 	health_label.text = str(health) + "%"
 
 # Called when the player emits the weapon_changed signal
-func _on_weapon_changed(new_weapon: Weapon):
-	current_weapon = new_weapon
+func _on_weapon_changed(new_weapon_node):
+	current_weapon = new_weapon_node
 	update_weapon_stats_display()
+
+
 
 # Updates the label with the current weapon’s stats
 func update_weapon_stats_display():
 	if current_weapon == null:
+		weapon_info_label.text = "No weapon selected."
 		return
+
+	
 	weapon_info_label.text = "Weapon Stats:\n"
-	weapon_info_label.text += "Damage: " + str(current_weapon.damage) + "\n"
-	weapon_info_label.text += "Cooldown: " + str(current_weapon.cooldown) + "\n"
-	weapon_info_label.text += "Max Distance: " + str(current_weapon.max_distance) + "\n"
-	weapon_info_label.text += "Spread: " + str(current_weapon.spread) + "\n"
-	weapon_info_label.text += "Shot Count: " + str(current_weapon.shot_count) + "\n"
-	weapon_info_label.text += "Knockback: " + str(current_weapon.knockback)
+	weapon_info_label.text += "Damage: " + str(current_weapon.data.damage) + "\n"
+	weapon_info_label.text += "Cooldown: " + str(current_weapon.data.cooldown) + "\n"
+	weapon_info_label.text += "Max Distance: " + str(current_weapon.data.max_distance) + "\n"
+	weapon_info_label.text += "Spread: " + str(current_weapon.data.spread) + "\n"
+	weapon_info_label.text += "Shot Count: " + str(current_weapon.data.shot_count)
+
+	
 
 func on_upgrade_station_body_entered(body):
 	if body.is_in_group("Player"):
