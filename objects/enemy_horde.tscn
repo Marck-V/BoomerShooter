@@ -9,6 +9,7 @@ height = 1.75
 
 [node name="enemy-horde" type="CharacterBody3D" groups=["Enemy"]]
 script = ExtResource("1_jjlyi")
+damage_to_player = 25.0
 
 [node name="enemy-humanoid" parent="." instance=ExtResource("2_x2h17")]
 

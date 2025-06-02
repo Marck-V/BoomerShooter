@@ -343,8 +343,10 @@ collision_mask = 5
 movement_target_position = NodePath("../../Player")
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") groups=["player"] instance=ExtResource("3_gi8j2")]
-transform = Transform3D(1, 0, 1.39091e-08, 0, 1, 0, -1.39091e-08, 0, 1, 13.7478, 7.4, 20.6607)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 13.7478, 5.60947, 17.3559)
 base_movement_speed = 10
+base_slide_speed = 11
+max_slide_speed = 12
 crosshair = NodePath("../HUD/Crosshair")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
@@ -517,5 +519,4 @@ size = Vector3(36.7252, 1.16211, 31.1978)
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 7, 9)
 light_energy = 16.0
-shadow_enabled = true
 omni_range = 31.3

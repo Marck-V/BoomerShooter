@@ -3,6 +3,7 @@ extends CharacterBody3D
 @export var movement_speed: float = 2.0
 @export var movement_target_position: CharacterBody3D
 @export var damage_to_player: float = 50
+@export var health : int = 100
 
 @onready var navigation_agent: NavigationAgent3D = $NavigationAgent3D
 @onready var animation_player = $"enemy-humanoid/AnimationPlayer"
@@ -10,7 +11,7 @@ extends CharacterBody3D
 @onready var bite_timer = $BiteTimer
 
 var reached_target : bool = false
-var health : int = 100
+
 var destroyed : bool = false
 
 func _ready():

@@ -35,7 +35,7 @@ var sliding = false
 var falling = false
 var play_slide_animation = false
 
-var container_offset = Vector3(1.2, -1.1, -2.75)
+
 var tween:Tween
 
 signal health_updated
@@ -55,7 +55,8 @@ func _ready():
 
 	raycast.enabled = true
 	raycast.target_position = Vector3(0, 0, -100)
-
+	
+	rotation_target = Vector3(camera.rotation.x, rotation.y, 0)
 	for child in weapon_holder.get_children():
 		if child is BaseWeapon:
 			weapon_nodes.append(child)
@@ -221,9 +222,11 @@ func change_weapon(index):
 	if index == weapon_index:
 		return
 
+	# Disable currently equipped weapon
 	weapon_nodes[weapon_index].visible = false
 	weapon_nodes[weapon_index].set_process(false)
 
+	# Activate weapon you are swapping to 
 	weapon_index = index
 	current_weapon = weapon_nodes[weapon_index]
 	current_weapon.visible = true
