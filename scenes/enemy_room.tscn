@@ -15,7 +15,7 @@
 [ext_resource type="Material" uid="uid://jl6xodi8dv8f" path="res://trenchbroom/textures/world/texture_04.tres" id="15_5ubjb"]
 [ext_resource type="Material" uid="uid://csmkmcki5fshf" path="res://trenchbroom/textures/world/texture_01.tres" id="15_gj28m"]
 [ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="16_e1was"]
-[ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/upgrade_station.tscn" id="17_5ubjb"]
+[ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="17_5ubjb"]
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player.tscn" id="18_e1was"]
 [ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/point_pickup.tscn" id="18_gj28m"]
 
@@ -327,6 +327,10 @@ environment = ExtResource("6_vtbbq")
 [node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5267, 10.0018, 45.4238)
 movement_target_position = NodePath("../../Player")
+
+[node name="Panel" type="Panel" parent="Enemies/MeleeEnemy"]
+offset_right = 144.0
+offset_bottom = 164.0
 
 [node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)

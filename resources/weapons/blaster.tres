@@ -1,15 +1,15 @@
-[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://bndfjatt4luhd"]
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://krbe75oiwy3e"]
 
-[ext_resource type="Texture2D" uid="uid://b04itxu8xnusv" path="res://assets/sprites/white_crosshairs/crosshair002.png" id="1_uworq"]
-[ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://scripts/weapon.gd" id="2_107w7"]
+[ext_resource type="Texture2D" uid="uid://b04itxu8xnusv" path="res://assets/images/white_crosshairs/crosshair002.png" id="1_uworq"]
+[ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://resources/weapon.gd" id="2_107w7"]
 
 [resource]
 script = ExtResource("2_107w7")
 cooldown = 0.2
 max_distance = 10
-damage = 40.0
+damage = 25.0
 spread = 0.0
-shot_count = 1
+shot_count = 5
 recoil_strength = 1
 sound = "assets/sounds/blaster.ogg"
 crosshair = ExtResource("1_uworq")

@@ -1,10 +1,10 @@
 extends Control
 
 # File paths for each weapon
-var blaster : Weapon = load("res://weapons/blaster.tres")
-var repeater : Weapon = load("res://weapons/blaster-repeater.tres")
+var blaster : Weapon = load("res://resources/weapons/blaster.tres")
+var repeater : Weapon = load("res://resources/weapons/blaster-repeater.tres")
 var damage_increase = 5
-const BLASTER_PATH = "res://weapons/blaster.tres"
+const BLASTER_PATH = "res://resources/weapons/blaster.tres"
 @onready var rifle_button_1: UpgradeButton = $RifleButton1
 @onready var rifle_button_2: UpgradeButton = $RifleButton1/RifleButton2
 @onready var rifle_button_3: UpgradeButton = $RifleButton1/RifleButton2/RifleButton3

@@ -25,6 +25,7 @@ GlobalVariables="*res://scripts/global_variables.gd"
 window/size/viewport_width=1280
 window/size/viewport_height=720
 window/size/always_on_top=true
+window/stretch/mode="viewport"
 
 [editor]
 
@@ -154,3 +155,5 @@ common/physics_interpolation=true
 [rendering]
 
 anti_aliasing/quality/screen_space_aa=1
+2d/snap/snap_2d_transforms_to_pixel=true
+2d/snap/snap_2d_vertices_to_pixel=true

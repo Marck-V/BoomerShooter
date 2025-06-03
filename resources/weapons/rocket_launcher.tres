@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cc7sr7c42im47"]
 
-[ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://scripts/weapon.gd" id="1_d613q"]
-[ext_resource type="PackedScene" uid="uid://bomndvm6fkul" path="res://models/kenney_blaster_pack/blasterA.glb" id="1_lynxc"]
+[ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://resources/weapon.gd" id="1_d613q"]
+[ext_resource type="PackedScene" uid="uid://cghmepb5xyeve" path="res://models/kenney_blaster_pack/blasterA.glb" id="1_lynxc"]
 
 [resource]
 script = ExtResource("1_d613q")
