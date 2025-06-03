@@ -1,11 +1,17 @@
 extends Node3D
 class_name BaseWeapon
 
+@onready var muzzle_location: Marker3D = $MuzzleLocation
 @export var data: Weapon
-
 @export var rest_position := Vector3.ZERO
 var recoil_offset := Vector3.ZERO
 var recoil_timer := 0.0
+var sway_time := 0.0
+var walk_bob_speed := 7.0         # Slightly slower bobbing, less "jumpy"
+var walk_bob_amount := 0.005      # Subtle vertical motion
+var walk_sway_amount := 0.003     # Gentle left-right sway
+var is_moving := false
+var bob_offset := Vector3.ZERO
 
 
 func _ready():
@@ -15,9 +21,19 @@ func _process(delta):
 	if recoil_timer > 0:
 		recoil_timer -= delta
 		recoil_offset = recoil_offset.lerp(Vector3.ZERO, delta)
-		position = rest_position + recoil_offset
 	else:
-		position = rest_position
+		recoil_offset = Vector3.ZERO
+
+	if is_moving:
+		sway_time += delta * walk_bob_speed
+		bob_offset.y = sin(sway_time * 2.0) * walk_bob_amount
+		bob_offset.x = sin(sway_time) * walk_sway_amount
+	else:
+		sway_time = 0.0  # Snap reset
+		# No lerp, no residual offset
+
+	position = rest_position + recoil_offset + bob_offset
+
 
 func trigger_recoil():
 	recoil_offset.z = -0.01 * data.recoil_strength # You can export this as a weapon stat if you want more control
@@ -52,3 +68,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 			get_tree().root.add_child(impact)
 			impact.global_position = raycast.get_collision_point() + (raycast.get_collision_normal() / 10)
 			impact.look_at(camera.global_transform.origin, Vector3.UP, true)
+			
+func set_movement_state(moving: bool):
+	is_moving = moving
+	print("is_moving: ", is_moving)

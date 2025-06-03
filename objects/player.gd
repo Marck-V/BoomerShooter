@@ -73,6 +73,15 @@ func _physics_process(delta):
 	handle_controls(delta)
 	handle_gravity(delta)
 
+	if current_weapon:
+		var is_walking = is_on_floor() and (
+			Input.get_action_strength("move_forward") > 0.0 or
+			Input.get_action_strength("move_back") > 0.0 or
+			Input.get_action_strength("move_left") > 0.0 or
+			Input.get_action_strength("move_right") > 0.0
+		)
+		current_weapon.set_movement_state(is_walking)
+		
 	if falling and is_on_floor() and sliding:
 		slide_speed += fall_distance / 10
 	fall_distance = -gravity
@@ -98,6 +107,7 @@ func _physics_process(delta):
 		camera.position.y = -0.1
 
 	previously_floored = is_on_floor()
+	
 
 	if position.y < -10:
 		get_tree().reload_current_scene()
@@ -232,6 +242,7 @@ func change_weapon(index):
 	current_weapon.visible = true
 	current_weapon.set_process(true)
 	crosshair.texture = current_weapon.data.crosshair
+	Audio.play("sounds/weapon_change.ogg")
 	weapon_changed.emit(current_weapon)
 
 func damage(amount):

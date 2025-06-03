@@ -44,8 +44,11 @@ cast_shadow = 0
 pixel_size = 0.0025
 double_sided = false
 no_depth_test = true
+render_priority = 1
 sprite_frames = SubResource("SpriteFrames_nwydm")
 animation = &"shot"
+frame = 3
+frame_progress = 1.0
 script = ExtResource("2_k826h")
 
 [connection signal="animation_finished" from="." to="." method="_on_animation_finished"]

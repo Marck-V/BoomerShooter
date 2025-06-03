@@ -7,7 +7,7 @@
 radius = 0.35
 height = 1.75
 
-[node name="enemy-ranged" type="CharacterBody3D" groups=["Enemy"]]
+[node name="RangedEnemy" type="CharacterBody3D" groups=["Enemy"]]
 script = ExtResource("1_xbodr")
 
 [node name="enemy-humanoid" parent="." instance=ExtResource("2_xbodr")]

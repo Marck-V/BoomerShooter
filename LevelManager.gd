@@ -8,6 +8,7 @@ var upgrade_station_camera
 var player_camera
 var area_occupied
 
+
 func _ready() -> void:
 	upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
 	upgrade_station.get_node("Area3D").connect("body_exited", on_upgrade_station_body_exited)
@@ -26,6 +27,7 @@ func _process(delta):
 	if Input.is_action_just_pressed("interact") and area_occupied:
 			player_camera.clear_current()
 			upgrade_station_camera.make_current()
+			
 			
 	if Input.is_action_just_pressed("back") and area_occupied:
 		upgrade_station_camera.clear_current()
@@ -50,7 +52,10 @@ func on_upgrade_station_body_entered(body):
 		print(body)
 		area_occupied = true
 		
+		
 func on_upgrade_station_body_exited(body):
 	if body.is_in_group("Player"):
 		print(body)
 		area_occupied = false
+
+	

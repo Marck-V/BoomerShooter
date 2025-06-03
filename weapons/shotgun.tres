@@ -7,8 +7,8 @@
 script = ExtResource("1_ekq0h")
 cooldown = 0.5
 max_distance = 10
-damage = 50.0
-spread = 3.0
+damage = 100.0
+spread = 2.0
 shot_count = 1
 recoil_strength = 5
 sound = "sounds/doom_shotgun.mp3"
