@@ -63,7 +63,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 			if collider and collider.has_method("damage"):
 				collider.damage(data.damage)
 
-			var impact = preload("res://objects/impact.tscn").instantiate()
+			var impact = preload("res://scenes/impact.tscn").instantiate()
 			impact.play("shot")
 			get_tree().root.add_child(impact)
 			impact.global_position = raycast.get_collision_point() + (raycast.get_collision_normal() / 10)
@@ -71,4 +71,4 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 			
 func set_movement_state(moving: bool):
 	is_moving = moving
-	print("is_moving: ", is_moving)
+	

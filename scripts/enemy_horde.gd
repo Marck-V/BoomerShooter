@@ -13,6 +13,7 @@ extends CharacterBody3D
 var reached_target : bool = false
 
 var destroyed : bool = false
+var death_sound : String = "assets/sounds/enemy_hurt.ogg"
 
 func _ready():
 	# Make sure to not await during _ready.
@@ -56,7 +57,7 @@ func handle_animations():
 
 # Take damage from player
 func damage(amount):
-	Audio.play("sounds/enemy_hurt.ogg")
+	Audio.play(death_sound)
 
 	health -= amount
 
@@ -64,7 +65,7 @@ func damage(amount):
 		destroy()
 
 func destroy():
-	Audio.play("sounds/enemy_destroy.ogg")
+	Audio.play(death_sound)
 
 	destroyed = true
 	queue_free()
@@ -79,9 +80,9 @@ func bite():
 		var collider = hit_raycast.get_collider()
 
 		if collider.has_method("damage"):  # Raycast collides with player
-			Audio.play("sounds/enemy_attack.ogg")
-
-			print("That bite hurt D:")
+			Audio.play("assets/sounds/enemy_attack.ogg")
+			
+			print(collider)
 			collider.damage(damage_to_player)  # Apply damage to player
 			
 		bite_timer.start()

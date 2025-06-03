@@ -1,12 +1,11 @@
 [gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
-[ext_resource type="Script" uid="uid://bdfvqqqqskaso" path="res://LevelManager.gd" id="1_ckm7l"]
-[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://objects/player.tscn" id="3_gi8j2"]
+[ext_resource type="Script" path="res://scripts/level_manager.gd" id="1_gj28m"]
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/hud.gd" id="4_yxwn6"]
-[ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://fonts/lilita_one_regular.ttf" id="5_gtg8j"]
-[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://objects/enemy_horde.tscn" id="6_5ubjb"]
+[ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="5_gtg8j"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemy_horde.tscn" id="6_5ubjb"]
 [ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="6_vtbbq"]
-[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://objects/enemy_ranged.tscn" id="7_gj28m"]
+[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemy_ranged.tscn" id="7_gj28m"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="10_ndmtw"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="11_51fhi"]
 [ext_resource type="Material" uid="uid://g1l8euhy1o6" path="res://trenchbroom/textures/world/texture_02.tres" id="11_ndmtw"]
@@ -17,6 +16,7 @@
 [ext_resource type="Material" uid="uid://csmkmcki5fshf" path="res://trenchbroom/textures/world/texture_01.tres" id="15_gj28m"]
 [ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="16_e1was"]
 [ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/upgrade_station.tscn" id="17_5ubjb"]
+[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player.tscn" id="18_e1was"]
 [ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/point_pickup.tscn" id="18_gj28m"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
@@ -258,7 +258,7 @@ points = PackedVector3Array(60, 7, 57.75, 60, 6.75, 57.75, 60.25, 6.75, 57.75, 6
 [node name="Node3D" type="Node3D"]
 
 [node name="LevelManager" type="Node" parent="."]
-script = ExtResource("1_ckm7l")
+script = ExtResource("1_gj28m")
 
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("4_yxwn6")
@@ -335,13 +335,6 @@ movement_target_position = NodePath("../../Player")
 [node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1609, 10.0018, 48.8328)
 movement_target_position = NodePath("../../Player")
-
-[node name="Player" parent="." node_paths=PackedStringArray("crosshair") groups=["player"] instance=ExtResource("3_gi8j2")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 13.7478, 5.60947, 17.3559)
-base_movement_speed = 10
-base_slide_speed = 11
-max_slide_speed = 12
-crosshair = NodePath("../HUD/Crosshair")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
@@ -514,3 +507,7 @@ size = Vector3(36.7252, 1.16211, 31.1978)
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 7, 9)
 light_energy = 16.0
 omni_range = 31.3
+
+[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
+crosshair = NodePath("../HUD/Crosshair")

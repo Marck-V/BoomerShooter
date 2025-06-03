@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://dnkv2vua3h5ta" path="res://scripts/base_weapon.gd" id="1_5qynp"]
 [ext_resource type="Texture2D" uid="uid://b5hxnjwvrxuji" path="res://models/Textures/colormap.png" id="2_5qynp"]
-[ext_resource type="Resource" uid="uid://bndfjatt4luhd" path="res://weapons/blaster.tres" id="2_menj3"]
+[ext_resource type="Resource" uid="uid://bndfjatt4luhd" path="res://resources/weapons/blaster.tres" id="2_menj3"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o47iy"]
 resource_name = "colormap"
