@@ -1,12 +1,12 @@
 extends Node
 
-var save_data: PlayerSaveData
+var save_data: PlayerVariables
 signal points_changed(new_value: int)
 
 func _ready():
 	# Load from disk or use default save
 	if ResourceLoader.exists("user://player_save.res"):
-		save_data = ResourceLoader.load("user://player_save.res") as PlayerSaveData
+		save_data = ResourceLoader.load("user://player_save.res") as PlayerVariables
 	else:
 		save_data = load("res://resources/default_player_save.tres").duplicate(true)
 		save_to_disk()

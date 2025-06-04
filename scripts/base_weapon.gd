@@ -2,6 +2,8 @@ extends Node3D
 class_name BaseWeapon
 
 @onready var muzzle_location: Marker3D = $MuzzleLocation
+@onready var muzzle: AnimatedSprite3D = $Muzzle
+
 @export var data: Weapon
 @export var rest_position := Vector3.ZERO
 var recoil_offset := Vector3.ZERO
@@ -45,6 +47,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 		return
 
 	Audio.play(data.sound)
+	muzzle.play("default")
 	trigger_recoil()
 
 	for i in range(data.shot_count):

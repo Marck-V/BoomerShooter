@@ -24,8 +24,7 @@ GlobalVariables="*res://scripts/global_variables.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
-window/size/always_on_top=true
-window/stretch/mode="viewport"
+window/stretch/mode="canvas_items"
 
 [editor]
 
@@ -38,8 +37,6 @@ enabled=PackedStringArray("res://addons/func_godot/plugin.cfg")
 
 [global_group]
 
-player=""
-enemy=""
 Player="For the player character"
 Enemy="For any enemy character"
 

@@ -1,6 +1,6 @@
 [gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
-[ext_resource type="Script" path="res://scripts/level_manager.gd" id="1_gj28m"]
+[ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/level_manager.gd" id="1_gj28m"]
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/hud.gd" id="4_yxwn6"]
 [ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="5_gtg8j"]
 [ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemy_horde.tscn" id="6_5ubjb"]
@@ -263,6 +263,10 @@ script = ExtResource("1_gj28m")
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("4_yxwn6")
 
+[node name="Panel" type="Panel" parent="HUD"]
+offset_right = 144.0
+offset_bottom = 164.0
+
 [node name="Crosshair" type="TextureRect" parent="HUD"]
 anchors_preset = 8
 anchor_left = 0.5
@@ -308,7 +312,7 @@ offset_bottom = -201.835
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_font_sizes/font_size = 30
-text = "Press \"E\" to Interact"
+text = "\"E\" Interact"
 
 [node name="PointsLabel" type="Label" parent="HUD"]
 anchors_preset = 1
@@ -327,10 +331,6 @@ environment = ExtResource("6_vtbbq")
 [node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5267, 10.0018, 45.4238)
 movement_target_position = NodePath("../../Player")
-
-[node name="Panel" type="Panel" parent="Enemies/MeleeEnemy"]
-offset_right = 144.0
-offset_bottom = 164.0
 
 [node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)

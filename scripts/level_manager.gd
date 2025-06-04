@@ -34,7 +34,7 @@ func _process(delta):
 		player_camera.make_current()
 			
 func _on_key_body_entered(body: Node3D) -> void:
-	if body.is_in_group("player"):
+	if body.is_in_group("Player"):
 		print(body)
 		has_key = true
 		#key.queue_free()

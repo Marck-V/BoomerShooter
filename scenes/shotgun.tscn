@@ -7,7 +7,6 @@
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3qwk3"]
 resource_name = "Material.002"
-transparency = 4
 cull_mode = 2
 albedo_texture = ExtResource("4_w47vr")
 texture_filter = 2
@@ -85,7 +84,7 @@ script = ExtResource("2_gnj2g")
 data = ExtResource("3_1ya1i")
 
 [node name="MuzzleLocation" parent="." index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0324371, 0.12155)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0100878, 0.0184962, 0.178285)
 
 [node name="WeaponMesh" parent="." index="1"]
 transform = Transform3D(-0.2, 0, -1.74846e-08, 0, 0.2, 0, 1.74846e-08, 0, -0.2, 0, 0, 0)
@@ -95,3 +94,6 @@ mesh = SubResource("ArrayMesh_ma6dp")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.51314e-09, 0.0292825, -0.536827)
 mesh = SubResource("ArrayMesh_lmvec")
 skeleton = NodePath("")
+
+[node name="Muzzle" parent="." index="2"]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0.0167849, 0.174328)

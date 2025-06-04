@@ -124,7 +124,10 @@ func handle_controls(_delta):
 		mouse_captured = true
 
 	if Input.is_action_just_pressed("mouse_capture_exit"):
-		get_tree().quit()
+		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		mouse_captured = false
+		
+		input_mouse = Vector2.ZERO
 
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	movement_velocity = Vector3(input.x, 0, input.y).normalized() * current_movement_speed

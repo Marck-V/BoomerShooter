@@ -1,8 +1,9 @@
-[gd_scene load_steps=7 format=4 uid="uid://qts30miglt2c"]
+[gd_scene load_steps=8 format=4 uid="uid://qts30miglt2c"]
 
 [ext_resource type="Script" uid="uid://dnkv2vua3h5ta" path="res://scripts/base_weapon.gd" id="1_5qynp"]
 [ext_resource type="Texture2D" uid="uid://b5hxnjwvrxuji" path="res://models/Textures/colormap.png" id="2_5qynp"]
-[ext_resource type="Resource" uid="uid://bndfjatt4luhd" path="res://resources/weapons/blaster.tres" id="2_menj3"]
+[ext_resource type="Resource" uid="uid://krbe75oiwy3e" path="res://resources/weapons/blaster.tres" id="2_menj3"]
+[ext_resource type="SpriteFrames" uid="uid://dbv3sy5qjatnl" path="res://assets/images/burst_animation.tres" id="4_ar26g"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_o47iy"]
 resource_name = "colormap"
@@ -49,9 +50,15 @@ script = ExtResource("1_5qynp")
 data = ExtResource("2_menj3")
 
 [node name="MuzzleLocation" type="Marker3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.0447594, 0.0960123)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0243644, 0.0396758, 0.0740144)
 
 [node name="WeaponMesh" type="MeshInstance3D" parent="."]
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
 mesh = SubResource("ArrayMesh_menj3")
 skeleton = NodePath("")
+
+[node name="Muzzle" type="AnimatedSprite3D" parent="."]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0.0229546, 0.048306)
+sprite_frames = ExtResource("4_ar26g")
+frame = 2
+frame_progress = 1.0

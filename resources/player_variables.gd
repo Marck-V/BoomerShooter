@@ -1,5 +1,5 @@
 extends Resource
-class_name PlayerSaveData
+class_name PlayerVariables
 
 @export var points: int = 0
 @export var upgrades: Dictionary = {
