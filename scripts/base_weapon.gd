@@ -18,6 +18,7 @@ var bob_offset := Vector3.ZERO
 
 func _ready():
 	rest_position = position
+	muzzle.position = muzzle_location.position
 
 func _process(delta):
 	if recoil_timer > 0:

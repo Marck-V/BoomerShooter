@@ -2,17 +2,20 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dip2aaa07nod0"
-path.s3tc="res://.godot/imported/crosshair007.png-0d1444004092edc6851a5345cfefec4c.s3tc.ctex"
+uid="uid://cfs0y0dk57yu0"
+path.s3tc="res://.godot/imported/Handcannon_untitled.png-0c2a34312ae0e32334b949ed881bdd14.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
+generator_parameters={
+"md5": "43484abb517a32675ab2bc3e0ebdc157"
+}
 
 [deps]
 
-source_file="res://assets/images/white_crosshairs/crosshair007.png"
-dest_files=["res://.godot/imported/crosshair007.png-0d1444004092edc6851a5345cfefec4c.s3tc.ctex"]
+source_file="res://models/weapons/Handcannon_untitled.png"
+dest_files=["res://.godot/imported/Handcannon_untitled.png-0c2a34312ae0e32334b949ed881bdd14.s3tc.ctex"]
 
 [params]
 
