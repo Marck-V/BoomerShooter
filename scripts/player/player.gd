@@ -138,7 +138,7 @@ func handle_controls(_delta):
 	if Input.is_action_pressed("slide") and is_on_floor() and Input.is_action_pressed("move_forward") and can_slide:
 		if !play_slide_animation:
 			var slide_tween = create_tween()
-			slide_tween.tween_property(self, "scale", Vector3(1.0, 0.8, 1.0), 0.2)
+			slide_tween.tween_property(self, "scale", Vector3(1.0, 0.5, 1.0), 0.2)
 			play_slide_animation = true
 		slide()
 
@@ -184,19 +184,18 @@ func handle_gravity(delta):
 
 func slide():
 	if not sliding:
-		if slide_check.is_colliding() or get_floor_angle() < 5:
-			print(get_floor_angle())
+		if slide_check.is_colliding() or get_floor_angle() < 0.2:
 			slide_speed = base_slide_speed
 			slide_speed += fall_distance / 10
 		else:
-			slide_speed = 1
+			slide_speed = 2
 
 	sliding = true
 
 	if slide_check.is_colliding():
 		slide_speed += get_floor_angle() / 10
 	else:
-		slide_speed -= (get_floor_angle() / 5) + 0.1
+		slide_speed -= (get_floor_angle() / 5) + .5
 
 	if slide_speed > max_slide_speed:
 		slide_speed = max_slide_speed
