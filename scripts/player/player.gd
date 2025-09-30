@@ -184,7 +184,8 @@ func handle_gravity(delta):
 
 func slide():
 	if not sliding:
-		if slide_check.is_colliding() or get_floor_angle() < 0.2:
+		if slide_check.is_colliding() or get_floor_angle() < 5:
+			print(get_floor_angle())
 			slide_speed = base_slide_speed
 			slide_speed += fall_distance / 10
 		else:

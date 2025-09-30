@@ -3,7 +3,7 @@ extends CharacterBody3D
 @export var movement_speed: float = 2.0
 @export var firing_target_offset := -0.1
 @export var firing_rate := 5
-@export var range := 10
+@export var shoot_range := 10
 @export var health := 100
 
 @onready var raycast = $RayCast
@@ -20,7 +20,7 @@ var death_sound : String = "assets/sounds/enemy_hurt.ogg"
 func _ready():
 	# Make sure to not await during _ready.
 	actor_setup.call_deferred()
-	raycast.target_position = Vector3(0, 0, range)
+	raycast.target_position = Vector3(0, 0, shoot_range)
 	shoot_timer.wait_time = firing_rate
 
 func actor_setup():
@@ -33,7 +33,7 @@ func actor_setup():
 func set_movement_target(movement_target: Vector3):
 	navigation_agent.set_target_position(movement_target)
 	
-func _physics_process(delta):
+func _physics_process(_delta):
 	# Update the target location to player's current location
 	var current_agent_position: Vector3 = global_position
 	set_movement_target(movement_target_position.global_position)
@@ -42,7 +42,7 @@ func _physics_process(delta):
 	self.look_at(Vector3(movement_target_position.global_position.x, global_position.y, movement_target_position.global_position.z - firing_target_offset), Vector3.UP, true)  # Look at player
 	
 	# If enemy is range, then stop and shoot, else get in range
-	if navigation_agent.distance_to_target() <= range:
+	if navigation_agent.distance_to_target() <= shoot_range:
 		if shoot_timer.is_stopped():
 			shoot_energy_ball()
 			shoot_timer.start()
@@ -74,7 +74,7 @@ func _on_timer_timeout():
 
 	if raycast.is_colliding():
 		# print("Locked onto target.")
-		var collider = raycast.get_collider()
+		var _collider = raycast.get_collider()
 		
 		shoot_energy_ball()
 

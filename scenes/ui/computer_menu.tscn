@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://sniyba3rrnog"]
 
-[ext_resource type="Script" uid="uid://cshqojeert58b" path="res://scenes/Desktop_Controller.gd" id="1_mk7bw"]
+[ext_resource type="Script" uid="uid://cshqojeert58b" path="res://scripts/ui/Desktop_Controller.gd" id="1_nxwkt"]
 
 [node name="ComputerMenu" type="Control"]
 layout_mode = 3
@@ -9,7 +9,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_mk7bw")
+script = ExtResource("1_nxwkt")
 
 [node name="PCBorder" type="ColorRect" parent="."]
 layout_mode = 1

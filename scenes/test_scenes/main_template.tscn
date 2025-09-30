@@ -1,6 +1,6 @@
 [gd_scene load_steps=12 format=3 uid="uid://dxvvlck8lej3f"]
 
-[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="1_q8fpv"]
+[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://resources/main-environment.tres" id="1_q8fpv"]
 [ext_resource type="PackedScene" path="res://objects/player.tscn" id="2_elriq"]
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="3_s8mkj"]
 [ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="3_w27de"]
@@ -10,6 +10,7 @@
 [ext_resource type="PackedScene" uid="uid://bvx5cvigosg0s" path="res://scenes/template_environment_components/platform_large_grass.tscn" id="7_wggef"]
 [ext_resource type="PackedScene" uid="uid://d2g78tpqbyf5g" path="res://scenes/enemies/enemy.tscn" id="8_7ty2f"]
 [ext_resource type="PackedScene" path="res://objects/cloud.tscn" id="10_5ksau"]
+
 
 
 [sub_resource type="LabelSettings" id="LabelSettings_fpmwk"]

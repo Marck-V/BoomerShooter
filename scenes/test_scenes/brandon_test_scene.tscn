@@ -1,9 +1,9 @@
-[gd_scene load_steps=14 format=3 uid="uid://t3k3es580mfg"]
+[gd_scene load_steps=15 format=3 uid="uid://t3k3es580mfg"]
 
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="1_doao0"]
 [ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="2_trjcb"]
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="3_0rg4w"]
-[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="4_yjhc3"]
+[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://resources/main-environment.tres" id="4_yjhc3"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="5_d6mpo"]
 [ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="6_khumw"]
 [ext_resource type="PackedScene" uid="uid://r7rt7pth4u7o" path="res://scenes/template_environment_components/wall_low.tscn" id="7_st5yh"]
@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://c71evdjblk5wp" path="res://scenes/template_environment_components/wall_high.tscn" id="9_kib7f"]
 [ext_resource type="PackedScene" uid="uid://bvx5cvigosg0s" path="res://scenes/template_environment_components/platform_large_grass.tscn" id="10_8fsq0"]
 [ext_resource type="PackedScene" uid="uid://oqfhfp1a80qd" path="res://scenes/template_environment_components/cloud.tscn" id="11_3qt0s"]
+[ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="12_trjcb"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_m85j0"]
 font = ExtResource("2_trjcb")
@@ -87,11 +88,6 @@ offset_bottom = 23.0
 grow_horizontal = 0
 text = "Points: "
 
-[node name="Player" parent="." instance=ExtResource("3_0rg4w")]
-base_movement_speed = 8
-base_slide_speed = 9
-max_slide_speed = 11
-
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = ExtResource("4_yjhc3")
 
@@ -107,42 +103,42 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6068, 0.00180632, -1.0777
 movement_speed = 6.0
 firing_target_offset = -0.3
 firing_rate = 3
-movement_target_position = NodePath("../../Player")
+movement_target_position = NodePath("")
 
 [node name="enemy-horde" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12)
 movement_speed = 4.0
-movement_target_position = NodePath("../../Player")
+movement_target_position = NodePath("")
 
 [node name="enemy-horde2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.82122, 0, -14.6628)
 movement_speed = 8.0
-movement_target_position = NodePath("../../Player")
+movement_target_position = NodePath("")
 
 [node name="enemy-horde3" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.17979, 0, -12)
 movement_speed = 8.0
-movement_target_position = NodePath("../../Player")
+movement_target_position = NodePath("")
 
 [node name="enemy-horde4" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.0049, 0, -15.6041)
 movement_speed = 8.0
-movement_target_position = NodePath("../../Player")
+movement_target_position = NodePath("")
 
 [node name="enemy-horde5" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.05556, 0, -15.1545)
 movement_speed = 8.0
-movement_target_position = NodePath("../../Player")
+movement_target_position = NodePath("")
 
 [node name="enemy-horde6" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.7452, 0, -12)
 movement_speed = 8.0
-movement_target_position = NodePath("../../Player")
+movement_target_position = NodePath("")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_hysi3")
@@ -216,3 +212,11 @@ transform = Transform3D(1.73205, 0, 1, 0, 2, 0, -1, 0, 1.73205, -30.1261, 2.4268
 
 [node name="cube4" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(1.12202, 1.39419, -2.40776, 1.53922, 1.85165, 1.78946, 2.31773, -1.90463, -0.0227883, -0.881504, 13.0297, -30.1859)
+
+[node name="UpgradeStation" parent="." instance=ExtResource("12_trjcb")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 3.99539, 1.13871, 0)
+
+[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("3_0rg4w")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
+wall_min_slide_angle = 0.0523599
+crosshair = NodePath("")

@@ -42,7 +42,7 @@ func trigger_recoil():
 	recoil_timer = 0.1
 	
 
-func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
+func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	if !data or !raycast:
 		return
 
