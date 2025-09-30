@@ -73,6 +73,6 @@ void fragment() {
 	 //} else {
 		//ALBEDO = color;
 	 //}
-	
+
 	ALBEDO = color;
 }

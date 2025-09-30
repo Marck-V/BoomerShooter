@@ -1,16 +1,16 @@
 [gd_scene load_steps=14 format=3 uid="uid://t3k3es580mfg"]
 
 [ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="1_hysi3"]
-[ext_resource type="PackedScene" uid="uid://dl2ed4gkybggf" path="res://objects/player.tscn" id="2_m85j0"]
+[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player.tscn" id="2_m85j0"]
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/hud.gd" id="3_tv7oe"]
-[ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://fonts/lilita_one_regular.ttf" id="4_atogf"]
-[ext_resource type="PackedScene" uid="uid://r7rt7pth4u7o" path="res://objects/wall_low.tscn" id="6_a4y6h"]
-[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://objects/enemy_horde.tscn" id="6_m85j0"]
-[ext_resource type="PackedScene" uid="uid://dpm3l05d7fu35" path="res://objects/platform.tscn" id="7_bf361"]
-[ext_resource type="PackedScene" uid="uid://c71evdjblk5wp" path="res://objects/wall_high.tscn" id="8_nfdda"]
-[ext_resource type="PackedScene" uid="uid://bvx5cvigosg0s" path="res://objects/platform_large_grass.tscn" id="9_6uufr"]
-[ext_resource type="PackedScene" uid="uid://oqfhfp1a80qd" path="res://objects/cloud.tscn" id="10_0opn3"]
-[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://objects/enemy_ranged.tscn" id="12_tv7oe"]
+[ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="4_atogf"]
+[ext_resource type="PackedScene" uid="uid://r7rt7pth4u7o" path="res://scenes/wall_low.tscn" id="6_a4y6h"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemy_horde.tscn" id="6_m85j0"]
+[ext_resource type="PackedScene" uid="uid://dpm3l05d7fu35" path="res://scenes/platform.tscn" id="7_bf361"]
+[ext_resource type="PackedScene" uid="uid://c71evdjblk5wp" path="res://scenes/wall_high.tscn" id="8_nfdda"]
+[ext_resource type="PackedScene" uid="uid://bvx5cvigosg0s" path="res://scenes/platform_large_grass.tscn" id="9_6uufr"]
+[ext_resource type="PackedScene" uid="uid://oqfhfp1a80qd" path="res://scenes/cloud.tscn" id="10_0opn3"]
+[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemy_ranged.tscn" id="12_tv7oe"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_fpmwk"]
 font = ExtResource("4_atogf")
@@ -39,6 +39,7 @@ shadow_enabled = true
 shadow_opacity = 0.75
 
 [node name="HUD" type="CanvasLayer" parent="."]
+process_mode = 4
 script = ExtResource("3_tv7oe")
 
 [node name="Crosshair" type="TextureRect" parent="HUD"]
