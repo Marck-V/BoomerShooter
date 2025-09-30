@@ -1,8 +1,9 @@
 [gd_scene load_steps=10 format=3 uid="uid://bi2uan0u8fx4y"]
 
-[ext_resource type="Script" uid="uid://4pijlebj0o3x" path="res://scripts/enemy_horde.gd" id="1_84ln2"]
-[ext_resource type="PackedScene" uid="uid://bh2veun7ypcig" path="res://objects/enemy_humanoid.tscn" id="1_d0ed8"]
-[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://objects/enemy_horde.tscn" id="3_48du1"]
+[ext_resource type="Script" uid="uid://4pijlebj0o3x" path="res://scripts/enemies/enemy_horde.gd" id="1_84ln2"]
+[ext_resource type="PackedScene" path="res://objects/enemy_humanoid.tscn" id="1_d0ed8"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="3_48du1"]
+
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_d0ed8"]
 sky_horizon_color = Color(0.662243, 0.671743, 0.686743, 1)

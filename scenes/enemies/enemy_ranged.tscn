@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://cuwunojswrryo"]
 
-[ext_resource type="Script" uid="uid://uqhdxbmbjod1" path="res://scripts/enemy_ranged.gd" id="1_xbodr"]
+[ext_resource type="Script" uid="uid://uqhdxbmbjod1" path="res://scripts/enemies/enemy_ranged.gd" id="1_xbodr"]
 [ext_resource type="PackedScene" uid="uid://cgkh8tkmt5d22" path="res://models/enemy-humanoid.glb" id="2_xbodr"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xbodr"]

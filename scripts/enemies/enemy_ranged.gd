@@ -14,7 +14,7 @@ extends CharacterBody3D
 @export var movement_target_position: CharacterBody3D
 
 var destroyed := false
-var energy_ball = load("res://scenes/energy_ball.tscn")
+var energy_ball = load("res://scenes/enemies/energy_ball.tscn")
 var death_sound : String = "assets/sounds/enemy_hurt.ogg"
 
 func _ready():

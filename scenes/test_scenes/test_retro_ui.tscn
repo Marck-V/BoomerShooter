@@ -1,7 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://dsoiywm3v2wod"]
+[gd_scene load_steps=4 format=3 uid="uid://by0jrcnsl7tqw"]
 
-[ext_resource type="Texture2D" uid="uid://cwa015sh4bna4" path="res://assets/images/RetroWindowsGUI/Windows_Example_Main.png" id="1_rdn0j"]
-[ext_resource type="Theme" uid="uid://csix15cdk72y3" path="res://Windows95.tres" id="2_1masj"]
+[ext_resource type="Texture2D" uid="uid://cwa015sh4bna4" path="res://assets/images/RetroWindowsGUI/Windows_Example_Main.png" id="1_w30g5"]
+[ext_resource type="Theme" uid="uid://csix15cdk72y3" path="res://Windows95.tres" id="2_jacap"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rdn0j"]
 bg_color = Color(0.12549, 0.54902, 0.443137, 1)
@@ -22,7 +22,7 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_rdn0j")
 
 [node name="WindowsExampleMain" type="Sprite2D" parent="."]
 position = Vector2(1604, 340)
-texture = ExtResource("1_rdn0j")
+texture = ExtResource("1_w30g5")
 
 [node name="PanelContainer" type="PanelContainer" parent="."]
 layout_mode = 1
@@ -35,7 +35,7 @@ offset_right = -402.0
 offset_bottom = -478.0
 grow_horizontal = 2
 grow_vertical = 2
-theme = ExtResource("2_1masj")
+theme = ExtResource("2_jacap")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
 layout_mode = 2
@@ -109,6 +109,6 @@ offset_left = 428.0
 offset_top = 25.0
 offset_right = 488.0
 offset_bottom = 49.0
-theme = ExtResource("2_1masj")
+theme = ExtResource("2_jacap")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Settings"

@@ -1,19 +1,19 @@
 [gd_scene load_steps=14 format=3 uid="uid://t3k3es580mfg"]
 
-[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="1_hysi3"]
-[ext_resource type="PackedScene" uid="uid://dl2ed4gkybggf" path="res://objects/player.tscn" id="2_m85j0"]
-[ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/hud.gd" id="3_tv7oe"]
-[ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://fonts/lilita_one_regular.ttf" id="4_atogf"]
-[ext_resource type="PackedScene" uid="uid://r7rt7pth4u7o" path="res://objects/wall_low.tscn" id="6_a4y6h"]
-[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://objects/enemy_horde.tscn" id="6_m85j0"]
-[ext_resource type="PackedScene" uid="uid://dpm3l05d7fu35" path="res://objects/platform.tscn" id="7_bf361"]
-[ext_resource type="PackedScene" uid="uid://c71evdjblk5wp" path="res://objects/wall_high.tscn" id="8_nfdda"]
-[ext_resource type="PackedScene" uid="uid://bvx5cvigosg0s" path="res://objects/platform_large_grass.tscn" id="9_6uufr"]
-[ext_resource type="PackedScene" uid="uid://oqfhfp1a80qd" path="res://objects/cloud.tscn" id="10_0opn3"]
-[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://objects/enemy_ranged.tscn" id="12_tv7oe"]
+[ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="1_doao0"]
+[ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="2_trjcb"]
+[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="3_0rg4w"]
+[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="4_yjhc3"]
+[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="5_d6mpo"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="6_khumw"]
+[ext_resource type="PackedScene" uid="uid://r7rt7pth4u7o" path="res://scenes/template_environment_components/wall_low.tscn" id="7_st5yh"]
+[ext_resource type="PackedScene" uid="uid://dpm3l05d7fu35" path="res://scenes/template_environment_components/platform.tscn" id="8_ax8sj"]
+[ext_resource type="PackedScene" uid="uid://c71evdjblk5wp" path="res://scenes/template_environment_components/wall_high.tscn" id="9_kib7f"]
+[ext_resource type="PackedScene" uid="uid://bvx5cvigosg0s" path="res://scenes/template_environment_components/platform_large_grass.tscn" id="10_8fsq0"]
+[ext_resource type="PackedScene" uid="uid://oqfhfp1a80qd" path="res://scenes/template_environment_components/cloud.tscn" id="11_3qt0s"]
 
-[sub_resource type="LabelSettings" id="LabelSettings_fpmwk"]
-font = ExtResource("4_atogf")
+[sub_resource type="LabelSettings" id="LabelSettings_m85j0"]
+font = ExtResource("2_trjcb")
 font_size = 36
 outline_size = 12
 outline_color = Color(0, 0, 0, 0.470588)
@@ -24,22 +24,12 @@ polygons = [PackedInt32Array(2, 1, 0), PackedInt32Array(8, 7, 3), PackedInt32Arr
 
 [node name="Main" type="Node3D"]
 
-[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("2_m85j0")]
-base_movement_speed = 8
-base_slide_speed = 9
-max_slide_speed = 11
-crosshair = NodePath("../HUD/Crosshair")
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = ExtResource("1_hysi3")
-
-[node name="Sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-0.422618, -0.694272, 0.582563, 0, 0.642788, 0.766044, -0.906308, 0.323744, -0.271654, 0, 0, 0)
-shadow_enabled = true
-shadow_opacity = 0.75
-
 [node name="HUD" type="CanvasLayer" parent="."]
-script = ExtResource("3_tv7oe")
+script = ExtResource("1_doao0")
+
+[node name="Panel" type="Panel" parent="HUD"]
+offset_right = 144.0
+offset_bottom = 164.0
 
 [node name="Crosshair" type="TextureRect" parent="HUD"]
 anchors_preset = 8
@@ -53,8 +43,8 @@ offset_right = 20.0
 offset_bottom = 20.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.35, 0.35)
 pivot_offset = Vector2(64, 64)
+metadata/_edit_use_anchors_ = true
 
 [node name="Health" type="Label" parent="HUD"]
 offset_left = 48.0
@@ -64,48 +54,91 @@ offset_bottom = 672.0
 size_flags_horizontal = 0
 size_flags_vertical = 8
 text = "100%"
-label_settings = SubResource("LabelSettings_fpmwk")
+label_settings = SubResource("LabelSettings_m85j0")
 vertical_alignment = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="WeaponInfoLabel" type="Label" parent="HUD"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="InteractLabel" type="Label" parent="HUD"]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -77.0
+offset_top = -224.835
+offset_right = 77.0
+offset_bottom = -201.835
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "\"E\" Interact"
+
+[node name="PointsLabel" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+text = "Points: "
+
+[node name="Player" parent="." instance=ExtResource("3_0rg4w")]
+base_movement_speed = 8
+base_slide_speed = 9
+max_slide_speed = 11
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("4_yjhc3")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(-0.422618, -0.694272, 0.582563, 0, 0.642788, 0.766044, -0.906308, 0.323744, -0.271654, 0, 0, 0)
+shadow_enabled = true
+shadow_opacity = 0.75
 
 [node name="Enemies" type="Node" parent="."]
 
-[node name="enemy_ranged" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("12_tv7oe")]
+[node name="enemy_ranged" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("5_d6mpo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -12.6068, 0.00180632, -1.07775)
 movement_speed = 6.0
 firing_target_offset = -0.3
 firing_rate = 3
 movement_target_position = NodePath("../../Player")
 
-[node name="enemy-horde" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+[node name="enemy-horde" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -12)
 movement_speed = 4.0
 movement_target_position = NodePath("../../Player")
 
-[node name="enemy-horde2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+[node name="enemy-horde2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.82122, 0, -14.6628)
 movement_speed = 8.0
 movement_target_position = NodePath("../../Player")
 
-[node name="enemy-horde3" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+[node name="enemy-horde3" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.17979, 0, -12)
 movement_speed = 8.0
 movement_target_position = NodePath("../../Player")
 
-[node name="enemy-horde4" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+[node name="enemy-horde4" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.0049, 0, -15.6041)
 movement_speed = 8.0
 movement_target_position = NodePath("../../Player")
 
-[node name="enemy-horde5" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+[node name="enemy-horde5" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.05556, 0, -15.1545)
 movement_speed = 8.0
 movement_target_position = NodePath("../../Player")
 
-[node name="enemy-horde6" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_m85j0")]
+[node name="enemy-horde6" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_khumw")]
 process_mode = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -11.7452, 0, -12)
 movement_speed = 8.0
@@ -116,31 +149,31 @@ navigation_mesh = SubResource("NavigationMesh_hysi3")
 
 [node name="Level" type="Node" parent="NavigationRegion3D"]
 
-[node name="wall-low" parent="NavigationRegion3D/Level" instance=ExtResource("6_a4y6h")]
+[node name="wall-low" parent="NavigationRegion3D/Level" instance=ExtResource("7_st5yh")]
 transform = Transform3D(0.965926, 0, 0.258819, 0, 1, 0, -0.258819, 0, 0.965926, -3.55333, 0.05, -8.26898)
 
-[node name="wall-low3" parent="NavigationRegion3D/Level" instance=ExtResource("6_a4y6h")]
+[node name="wall-low3" parent="NavigationRegion3D/Level" instance=ExtResource("7_st5yh")]
 transform = Transform3D(-1, 0, -1.19209e-07, 0, 1, 0, 1.19209e-07, 0, -1, 3.63223, 0.05, 10.4473)
 
-[node name="platform" parent="NavigationRegion3D/Level" instance=ExtResource("7_bf361")]
+[node name="platform" parent="NavigationRegion3D/Level" instance=ExtResource("8_ax8sj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.5, 1, 6.5)
 
-[node name="platform2" parent="NavigationRegion3D/Level" instance=ExtResource("7_bf361")]
+[node name="platform2" parent="NavigationRegion3D/Level" instance=ExtResource("8_ax8sj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.5, 2.5, -2.5)
 
-[node name="platform3" parent="NavigationRegion3D/Level" instance=ExtResource("7_bf361")]
+[node name="platform3" parent="NavigationRegion3D/Level" instance=ExtResource("8_ax8sj")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.5, 3, -3.5)
 
-[node name="platform4" parent="NavigationRegion3D/Level" instance=ExtResource("7_bf361")]
+[node name="platform4" parent="NavigationRegion3D/Level" instance=ExtResource("8_ax8sj")]
 transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 7, 1, 7)
 
-[node name="wall-high" parent="NavigationRegion3D/Level" instance=ExtResource("8_nfdda")]
+[node name="wall-high" parent="NavigationRegion3D/Level" instance=ExtResource("9_kib7f")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -5.5, 0, 10)
 
-[node name="wall-high2" parent="NavigationRegion3D/Level" instance=ExtResource("8_nfdda")]
+[node name="wall-high2" parent="NavigationRegion3D/Level" instance=ExtResource("9_kib7f")]
 transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 4.5, 0, -11.5)
 
-[node name="platform-large-grass" parent="NavigationRegion3D/Level" instance=ExtResource("9_6uufr")]
+[node name="platform-large-grass" parent="NavigationRegion3D/Level" instance=ExtResource("10_8fsq0")]
 transform = Transform3D(10, 0, 0, 0, 1, 0, 0, 0, 10, 0, -0.5, 0)
 
 [node name="CSGPolygon3D" type="CSGPolygon3D" parent="NavigationRegion3D/Level"]
@@ -151,37 +184,35 @@ depth = 5.78
 
 [node name="Decoration" type="Node" parent="NavigationRegion3D"]
 
-[node name="cube2" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube2" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(1.49603, 0.232188, 3.70243, 1.85892, 3.40786, -0.964843, -3.21035, 2.08149, 1.16666, -9.48509, 8.49799, 20.5554)
 
-[node name="cube9" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube9" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(1.49603, 1.85892, -3.21035, 0.232188, 3.40786, 2.08149, 3.70243, -0.964843, 1.16666, 25.5597, 6.35221, -12.1167)
 
-[node name="cube5" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube5" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(3.0771, 1.12972, -2.29242, -0.0239142, 3.60054, 1.74228, 2.55556, -1.32658, 2.77656, 6.4111, 6.35221, -28.6551)
 
-[node name="cube3" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube3" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(2.12132, 0, 2.12132, 0, 3, 0, -2.12132, 0, 2.12132, -2.75413, 2.42683, 25.3984)
 
-[node name="cube10" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube10" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(0.776457, -2.89778, 2.66454e-15, 1.44889, 0.388229, -2.59808, 2.50955, 0.672432, 1.5, 27.5131, 12.0265, -5.37209)
 
-[node name="cube11" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube11" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(0.672432, 2.89778, -0.388229, -2.50955, 0.776457, 1.44889, 1.5, 0, 2.59808, -28.6125, 16.2998, -4.89238)
 
-[node name="cube12" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube12" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(0.672432, 2.89778, -0.388229, -2.50955, 0.776457, 1.44889, 1.5, 0, 2.59808, -25.14, 8.80719, -24.2564)
 
-[node name="cube6" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube6" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(-1.73205, 0.965926, 0.258819, -1, -1.67303, -0.448288, 0, -0.517638, 1.93185, 14.1295, 10.1139, 17.5347)
 
-[node name="cube7" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube7" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(1.41421, 0, -1.41421, 1, 1.41421, 1, 1, -1.41421, 1, -5.11081, 2.42683, -36.641)
 
-[node name="cube8" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube8" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(1.73205, 0, 1, 0, 2, 0, -1, 0, 1.73205, -30.1261, 2.42683, -13.7339)
 
-[node name="cube4" parent="NavigationRegion3D/Decoration" instance=ExtResource("10_0opn3")]
+[node name="cube4" parent="NavigationRegion3D/Decoration" instance=ExtResource("11_3qt0s")]
 transform = Transform3D(1.12202, 1.39419, -2.40776, 1.53922, 1.85165, 1.78946, 2.31773, -1.90463, -0.0227883, -0.881504, 13.0297, -30.1859)
-
-[connection signal="health_updated" from="Player" to="HUD" method="_on_health_updated"]

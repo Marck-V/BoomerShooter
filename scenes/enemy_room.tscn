@@ -1,11 +1,11 @@
 [gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
-[ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/level_manager.gd" id="1_gj28m"]
-[ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/hud.gd" id="4_yxwn6"]
+[ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
+[ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="4_yxwn6"]
 [ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="5_gtg8j"]
-[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemy_horde.tscn" id="6_5ubjb"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="6_5ubjb"]
 [ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="6_vtbbq"]
-[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemy_ranged.tscn" id="7_gj28m"]
+[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="7_gj28m"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="10_ndmtw"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="11_51fhi"]
 [ext_resource type="Material" uid="uid://g1l8euhy1o6" path="res://trenchbroom/textures/world/texture_02.tres" id="11_ndmtw"]
@@ -16,8 +16,8 @@
 [ext_resource type="Material" uid="uid://csmkmcki5fshf" path="res://trenchbroom/textures/world/texture_01.tres" id="15_gj28m"]
 [ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="16_e1was"]
 [ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="17_5ubjb"]
-[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player.tscn" id="18_e1was"]
-[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/point_pickup.tscn" id="18_gj28m"]
+[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_e1was"]
+[ext_resource type="PackedScene" uid="uid://dug2tjykhiij" path="res://scenes/pickups/point_pickup.tscn" id="18_gj28m"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
 font = ExtResource("5_gtg8j")
