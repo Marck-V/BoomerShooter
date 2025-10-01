@@ -294,6 +294,18 @@ label_settings = SubResource("LabelSettings_nu0x4")
 vertical_alignment = 2
 metadata/_edit_use_anchors_ = true
 
+[node name="AmmoLabel" type="Label" parent="HUD"]
+offset_left = 1150.0
+offset_top = 627.0
+offset_right = 1240.0
+offset_bottom = 672.0
+size_flags_horizontal = 0
+size_flags_vertical = 8
+text = "x30"
+label_settings = SubResource("LabelSettings_nu0x4")
+vertical_alignment = 2
+metadata/_edit_use_anchors_ = true
+
 [node name="WeaponInfoLabel" type="Label" parent="HUD"]
 offset_right = 40.0
 offset_bottom = 23.0
@@ -501,7 +513,8 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 18.431
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.0766, 5.68511, 16.4978)
 
 [node name="GoldBar2" parent="." instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1091, 5.61518, 18.7511)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
+type = "Health"
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.2919, 13.531, 10.3151)
@@ -515,3 +528,18 @@ omni_range = 31.3
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
 crosshair = NodePath("../HUD/Crosshair")
+
+[node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.0485, 5.5, 12.7723)
+type = "Ammo"
+weapon_id = "rifle"
+
+[node name="BasePickup2" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.6176, 5.5, 12.8587)
+type = "Ammo"
+weapon_id = "pistol"
+
+[node name="BasePickup3" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.1708, 5.5, 9.65415)
+type = "Ammo"
+weapon_id = "shotgun"

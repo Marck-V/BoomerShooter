@@ -11,5 +11,6 @@ damage = 25.0
 spread = 4.215
 shot_count = 3
 recoil_strength = 1
+weapon_id = ""
 sound = "assets/sounds/blaster_repeater.ogg"
 crosshair = ExtResource("1_uworq")

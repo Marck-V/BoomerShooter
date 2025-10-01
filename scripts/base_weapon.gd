@@ -17,6 +17,7 @@ var bob_offset := Vector3.ZERO
 
 
 func _ready():
+	GlobalVariables.refill_all_ammo()
 	rest_position = position
 	muzzle.position = muzzle_location.position
 
@@ -46,7 +47,9 @@ func trigger_recoil():
 func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	if !data or !raycast:
 		return
-
+	if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, 1):
+		return
+		
 	Audio.play(data.sound)
 	muzzle.play("default")
 	trigger_recoil()

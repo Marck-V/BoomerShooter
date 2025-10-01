@@ -1,22 +1,9 @@
-[gd_scene load_steps=10 format=4 uid="uid://c12i6qjrmdcxb"]
+[gd_scene load_steps=8 format=4 uid="uid://c12i6qjrmdcxb"]
 
 [ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/base_weapon.tscn" id="1_buff3"]
 [ext_resource type="Texture2D" uid="uid://cfs0y0dk57yu0" path="res://models/weapons/Handcannon_untitled.png" id="2_1e3ry"]
 [ext_resource type="Script" uid="uid://cqkd4kxagbamh" path="res://scripts/weapons/pistol.gd" id="2_t6oaa"]
-[ext_resource type="Texture2D" uid="uid://b04itxu8xnusv" path="res://assets/images/white_crosshairs/crosshair002.png" id="3_4hq71"]
-[ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://resources/weapon.gd" id="3_t6oaa"]
-
-[sub_resource type="Resource" id="Resource_4hq71"]
-script = ExtResource("3_t6oaa")
-cooldown = 0.2
-max_distance = 10
-damage = 25.0
-spread = 0.0
-shot_count = 1
-recoil_strength = 1
-sound = "assets/sounds/single_pistol_shot.mp3"
-crosshair = ExtResource("3_4hq71")
-metadata/_custom_type_script = "uid://c6gxnumnbxeyb"
+[ext_resource type="Resource" uid="uid://dijqr03ylcofg" path="res://resources/weapons/pistol.tres" id="3_t6oaa"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4pccq"]
 resource_name = "Material.001"
@@ -60,7 +47,7 @@ shadow_mesh = SubResource("ArrayMesh_x87pf")
 
 [node name="Pistol" instance=ExtResource("1_buff3")]
 script = ExtResource("2_t6oaa")
-data = SubResource("Resource_4hq71")
+data = ExtResource("3_t6oaa")
 
 [node name="MuzzleLocation" parent="." index="0"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00203377, 0.0106153, 0.0762429)
