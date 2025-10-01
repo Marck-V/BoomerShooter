@@ -7,8 +7,11 @@ class_name BasePickup
 @export_category("Points")
 @export var points_amount = 500
 @onready var mesh_instance_3d: MeshInstance3D = $MeshInstance3D
+
 var model_scale = Vector3.ONE
 var gold_bar_scale_factor = 0.1
+var health_scale_factor = 0.5
+var healing_amount = 25
 
 var ammo_paths = {
 	"pistol": "res://models/weapons/pistol_ammo_mesh.tscn",
@@ -22,7 +25,7 @@ var model_paths = {
 }
 
 var scale_map = {
-	"Health": Vector3(0.5,0.5,0.5),
+	"Health": Vector3(health_scale_factor, health_scale_factor, health_scale_factor),
 	"Ammo": Vector3.ONE,
 	"Points": Vector3(gold_bar_scale_factor,gold_bar_scale_factor,gold_bar_scale_factor)
 }
@@ -51,7 +54,7 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 			Audio.play("assets/sounds/reload.mp3")
 		
 		"Health":
-			pass
+			GlobalVariables.add_health(healing_amount)
 		"Points":
 			GlobalVariables.add_points(points_amount)
 			Audio.play("assets/sounds/money_pickup.mp3")

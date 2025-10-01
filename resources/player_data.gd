@@ -3,9 +3,9 @@ class_name PlayerData
 
 @export var points: int = 0
 @export var upgrades: Dictionary = {
-	"blaster_damage" : false,
-	"blaster_damage2" : false,
-	"blaster_damage3" : false
+	"pistol_upgrade1" : false,
+	"pistol_upgrade2" : false,
+	"pistol_upgrade3" : false
 }
 @export var ammo: Dictionary = {
 	"pistol": 50,

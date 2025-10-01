@@ -1,8 +1,9 @@
 extends Control
 
 # File paths for each weapon
-var blaster : Weapon = load("res://resources/weapons/blaster.tres")
-var repeater : Weapon = load("res://resources/weapons/blaster-repeater.tres")
+var blaster : Weapon = load("res://resources/weapons/pistol.tres")
+var shotgun : Weapon = load("res://resources/weapons/shotgun.tres")
+var rifle : Weapon = load("res://resources/weapons/rifle.tres")
 var damage_increase = 5
 const BLASTER_PATH = "res://resources/weapons/blaster.tres"
 @onready var rifle_button_1: UpgradeButton = $RifleButton1
@@ -11,11 +12,13 @@ const BLASTER_PATH = "res://resources/weapons/blaster.tres"
 @onready var points_label: Label = $HBoxContainer/PointsLabel
 
 func _ready() -> void:
+	# Show cursor and pause game
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	points_label.text = "Points: " + str(GlobalVariables.get_points())
 
 	GlobalVariables.points_changed.connect(on_points_changed)
-	
-	if GlobalVariables.has_upgrade("blaster_damage"):
+
+	if GlobalVariables.has_upgrade("pistol_upgrade1"):
 		rifle_button_1.disabled = true
 
 

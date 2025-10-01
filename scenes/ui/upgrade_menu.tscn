@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dpl4ejb65qb1c"]
+[gd_scene load_steps=10 format=3 uid="uid://dpl4ejb65qb1c"]
 
 [ext_resource type="PackedScene" uid="uid://ciow4qxa67ws8" path="res://scenes/ui/upgrade_button.tscn" id="1_e3qxy"]
 [ext_resource type="Script" uid="uid://dv8ufg80ig1s6" path="res://scripts/ui/upgrade_menu.gd" id="1_ethjp"]
@@ -9,7 +9,11 @@
 [ext_resource type="Texture2D" uid="uid://doi3intbu4wv3" path="res://assets/images/skill_icons/250 WARRIOR ICONS (pack by batareya)/1.png" id="6_ethjp"]
 [ext_resource type="Texture2D" uid="uid://b7mh23nwow8vo" path="res://assets/images/skill_icons/250 WARRIOR ICONS (pack by batareya)/3.png" id="7_0isde"]
 
-[node name="Control" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_on7o7"]
+bg_color = Color(0.12549, 0.54902, 0.443137, 1)
+
+[node name="UpgradeMenu" type="Control"]
+process_mode = 2
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,6 +21,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ethjp")
+
+[node name="GreenBG" type="Panel" parent="."]
+visible = false
+offset_right = 1279.0
+offset_bottom = 720.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_on7o7")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 top_level = true
@@ -32,11 +42,15 @@ text = "Points: "
 
 [node name="Button" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "Weapon 1"
+text = "Pistol"
 
 [node name="Button2" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "Weapon 2"
+text = "Shotgun"
+
+[node name="Button3" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Rifle"
 
 [node name="ResetButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2

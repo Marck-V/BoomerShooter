@@ -67,6 +67,7 @@ func _ready():
 	current_weapon.visible = true
 	current_weapon.set_process(true)
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
+	GlobalVariables.player = self
 	crosshair.texture = current_weapon.data.crosshair
 	weapon_changed.emit(current_weapon)
 

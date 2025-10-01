@@ -258,6 +258,7 @@ points = PackedVector3Array(60, 7, 57.75, 60, 6.75, 57.75, 60.25, 6.75, 57.75, 6
 [node name="Node3D" type="Node3D"]
 
 [node name="LevelManager" type="Node" parent="."]
+process_mode = 3
 script = ExtResource("1_gj28m")
 
 [node name="HUD" type="CanvasLayer" parent="."]

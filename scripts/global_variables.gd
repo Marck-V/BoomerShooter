@@ -2,9 +2,11 @@ extends Node
 
 var save_data: PlayerData
 var current_weapon
+var player
 
 signal points_changed(new_value: int)
 signal ammo_changed(weapon_id, new_value: int)
+signal health_changed(new_value: int)
 
 func _ready():
 	# Load from disk or use default save
@@ -80,3 +82,11 @@ func refill_all_ammo():
 		save_data.ammo[weapon_id] = max_ammo
 		ammo_changed.emit(weapon_id, max_ammo)
 	
+# Health
+
+func get_health():
+	return player.health
+
+func add_health(amount: int):
+	player.health = clamp(player.health + amount, 0, 100)
+	health_changed.emit(player.health)	

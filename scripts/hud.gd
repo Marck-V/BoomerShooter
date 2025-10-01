@@ -17,6 +17,7 @@ func _ready() -> void:
 	upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
 	upgrade_station.get_node("Area3D").connect("body_exited", on_upgrade_station_body_exit)
 	GlobalVariables.points_changed.connect(on_points_changed)
+	GlobalVariables.health_changed.connect(_on_health_updated)
 	$PointsLabel.text = "Points: " + str(GlobalVariables.get_points())
 
 func on_points_changed(value : int):
@@ -31,11 +32,10 @@ func _on_weapon_changed(new_weapon_node):
 	$AmmoLabel.text = "x" + str(GlobalVariables.get_ammo(current_weapon.data.weapon_id))
 	update_weapon_stats_display()
 
-func on_ammo_changed(weapon_id, new_value: int):
+func on_ammo_changed(weapon_id, new_value):
 	if weapon_id == GlobalVariables.current_weapon:
 		$AmmoLabel.text = "x" + str(GlobalVariables.get_ammo(weapon_id))
 	
-
 # Updates the label with the current weapon’s stats
 func update_weapon_stats_display():
 	if current_weapon == null:
