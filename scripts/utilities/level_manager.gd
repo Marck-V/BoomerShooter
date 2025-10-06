@@ -18,7 +18,7 @@ func _ready() -> void:
 	upgrade_station_camera = upgrade_station.get_node("Camera3D")
 	player_camera = player.get_node("Head/Camera")
 	
-func _process(delta):
+func _process(_delta):
 	if has_key:
 		unlock_door()
 	else:

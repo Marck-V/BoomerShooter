@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://ciow4qxa67ws8"]
 
-[ext_resource type="Texture2D" uid="uid://bmhj25ijot1jn" path="res://icon.svg" id="1_tii4b"]
+[ext_resource type="Texture2D" uid="uid://vydttdet7ha4" path="res://icon.svg" id="1_tii4b"]
 [ext_resource type="Script" uid="uid://dnfcql1auv8yt" path="res://scripts/ui/upgrade_button.gd" id="2_3io4o"]
 
 [node name="UpgradeButton" type="TextureButton"]

@@ -78,7 +78,7 @@ class IdleState:
 		enemy.anim.play("Idle")
 		enemy.velocity = Vector3.ZERO
 
-	func update(delta):
+	func update(_delta):
 		if not enemy.target: return
 		var dist = enemy.global_position.distance_to(enemy.target.global_position)
 		if dist <= enemy.vision_range:
@@ -91,7 +91,7 @@ class ChaseState:
 	func enter():
 		enemy.anim.play("Run")
 
-	func update(delta):
+	func update(_delta):
 		# Continuously update the chase target
 		enemy.nav.set_target_position(enemy.target.global_position)
 		
@@ -122,7 +122,7 @@ class AttackState:
 	func enter():
 		enemy.anim.play("Bite")
 
-	func update(delta):
+	func update(_delta):
 		if not enemy.target:
 			enemy.change_state("Idle")
 			return
