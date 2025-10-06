@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://dpl4ejb65qb1c"]
+[gd_scene load_steps=10 format=3 uid="uid://dpl4ejb65qb1c"]
 
 [ext_resource type="PackedScene" uid="uid://ciow4qxa67ws8" path="res://scenes/ui/upgrade_button.tscn" id="1_e3qxy"]
 [ext_resource type="Script" uid="uid://dv8ufg80ig1s6" path="res://scripts/ui/upgrade_menu.gd" id="1_ethjp"]
@@ -9,7 +9,11 @@
 [ext_resource type="Texture2D" uid="uid://doi3intbu4wv3" path="res://assets/images/skill_icons/250 WARRIOR ICONS (pack by batareya)/1.png" id="6_ethjp"]
 [ext_resource type="Texture2D" uid="uid://b7mh23nwow8vo" path="res://assets/images/skill_icons/250 WARRIOR ICONS (pack by batareya)/3.png" id="7_0isde"]
 
-[node name="Control" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_on7o7"]
+bg_color = Color(0.12549, 0.54902, 0.443137, 1)
+
+[node name="UpgradeMenu" type="Control"]
+process_mode = 2
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -17,6 +21,12 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_ethjp")
+
+[node name="GreenBG" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 1279.0
+offset_bottom = 720.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_on7o7")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="."]
 top_level = true
@@ -30,13 +40,17 @@ offset_bottom = 111.0
 layout_mode = 2
 text = "Points: "
 
-[node name="Button" type="Button" parent="HBoxContainer"]
+[node name="PistolMenuButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "Weapon 1"
+text = "Pistol"
 
-[node name="Button2" type="Button" parent="HBoxContainer"]
+[node name="ShotgunMenuButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
-text = "Weapon 2"
+text = "Shotgun"
+
+[node name="RifleMenuButton" type="Button" parent="HBoxContainer"]
+layout_mode = 2
+text = "Rifle"
 
 [node name="ResetButton" type="Button" parent="HBoxContainer"]
 layout_mode = 2
@@ -51,7 +65,66 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="RifleButton1" parent="." instance=ExtResource("1_e3qxy")]
+[node name="Pistol" type="Control" parent="."]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="PistolButton1" parent="Pistol" instance=ExtResource("1_e3qxy")]
+layout_mode = 0
+offset_left = 576.0
+offset_top = 139.0
+offset_right = 704.0
+offset_bottom = 267.0
+upgrade_id = "pistol_upgrade1"
+
+[node name="PistolButton2" parent="Pistol/PistolButton1" instance=ExtResource("1_e3qxy")]
+layout_mode = 0
+offset_top = 200.0
+offset_bottom = 328.0
+upgrade_id = "pistol_upgrade2"
+
+[node name="PistolButton3" parent="Pistol/PistolButton1/PistolButton2" instance=ExtResource("1_e3qxy")]
+layout_mode = 0
+offset_top = 210.175
+offset_bottom = 338.175
+upgrade_id = "pistol_upgrade3"
+
+[node name="Shotgun" type="Control" parent="."]
+visible = false
+anchors_preset = 0
+
+[node name="ShotgunButton1" parent="Shotgun" instance=ExtResource("1_e3qxy")]
+layout_mode = 0
+offset_left = 576.0
+offset_top = 139.0
+offset_right = 704.0
+offset_bottom = 267.0
+texture_normal = ExtResource("5_chbti")
+upgrade_id = "shotgun_upgrade1"
+
+[node name="ShotgunButton2" parent="Shotgun/ShotgunButton1" instance=ExtResource("1_e3qxy")]
+layout_mode = 0
+offset_top = 200.0
+offset_bottom = 328.0
+texture_normal = ExtResource("6_ethjp")
+upgrade_id = "shotgun_upgrade2"
+
+[node name="ShotgunButton3" parent="Shotgun/ShotgunButton1/ShotgunButton2" instance=ExtResource("1_e3qxy")]
+layout_mode = 0
+offset_top = 210.175
+offset_bottom = 338.175
+texture_normal = ExtResource("7_0isde")
+upgrade_id = "shotgun_upgrade3"
+
+[node name="Rifle" type="Control" parent="."]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="RifleButton1" parent="Rifle" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_left = 576.0
 offset_top = 139.0
@@ -59,53 +132,31 @@ offset_right = 704.0
 offset_bottom = 267.0
 tooltip_text = "Increase your damage by 5"
 texture_normal = ExtResource("2_jkuc8")
-upgrade_id = "blaster_damage"
+upgrade_id = "rifle_upgrade1"
 amount = 5.0
 property_name = "damage"
 
-[node name="RifleButton2" parent="RifleButton1" instance=ExtResource("1_e3qxy")]
+[node name="RifleButton2" parent="Rifle/RifleButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 200.0
 offset_bottom = 328.0
 tooltip_text = "Explanation of upgrade 2"
 disabled = true
 texture_normal = ExtResource("3_6vqdt")
-upgrade_id = "blaster_damage2"
+upgrade_id = "rifle_upgrade2"
 amount = 5.0
 property_name = "damage"
 
-[node name="RifleButton3" parent="RifleButton1/RifleButton2" instance=ExtResource("1_e3qxy")]
+[node name="RifleButton3" parent="Rifle/RifleButton1/RifleButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 210.59
 offset_bottom = 338.59
 tooltip_text = "Explanation of upgrade 3"
 disabled = true
 texture_normal = ExtResource("4_ixicc")
-upgrade_id = "blaster_damage3"
+upgrade_id = "rifle_upgrade3"
 amount = 5.0
 property_name = "damage"
-
-[node name="Shotgun" type="Node" parent="."]
-
-[node name="ShotgunButton1" parent="Shotgun" instance=ExtResource("1_e3qxy")]
-visible = false
-offset_left = 576.0
-offset_top = 139.0
-offset_right = 704.0
-offset_bottom = 267.0
-texture_normal = ExtResource("5_chbti")
-
-[node name="ShotgunButton2" parent="Shotgun/ShotgunButton1" instance=ExtResource("1_e3qxy")]
-layout_mode = 0
-offset_top = 200.0
-offset_bottom = 328.0
-texture_normal = ExtResource("6_ethjp")
-
-[node name="ShotgunButton3" parent="Shotgun/ShotgunButton1/ShotgunButton2" instance=ExtResource("1_e3qxy")]
-layout_mode = 0
-offset_top = 210.175
-offset_bottom = 338.175
-texture_normal = ExtResource("7_0isde")
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0
@@ -123,6 +174,6 @@ offset_bottom = 178.0
 text = "Upgrade 1"
 
 [connection signal="pressed" from="HBoxContainer/ResetButton" to="." method="_on_reset_button_pressed"]
-[connection signal="pressed" from="RifleButton1" to="." method="_on_rifle_button_1_pressed"]
-[connection signal="pressed" from="RifleButton1/RifleButton2" to="." method="_on_rifle_button_2_pressed"]
-[connection signal="pressed" from="RifleButton1/RifleButton2/RifleButton3" to="." method="_on_rifle_button_3_pressed"]
+[connection signal="pressed" from="Rifle/RifleButton1" to="." method="_on_rifle_button_1_pressed"]
+[connection signal="pressed" from="Rifle/RifleButton1/RifleButton2" to="." method="_on_rifle_button_2_pressed"]
+[connection signal="pressed" from="Rifle/RifleButton1/RifleButton2/RifleButton3" to="." method="_on_rifle_button_3_pressed"]

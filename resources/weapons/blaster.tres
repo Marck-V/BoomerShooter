@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://krbe75oiwy3e"]
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://dt7w04y4uhu87"]
 
 [ext_resource type="Texture2D" uid="uid://b04itxu8xnusv" path="res://assets/images/white_crosshairs/crosshair002.png" id="1_uworq"]
 [ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://resources/weapon.gd" id="2_107w7"]
@@ -7,9 +7,11 @@
 script = ExtResource("2_107w7")
 cooldown = 0.2
 max_distance = 10
-damage = 25.0
+damage = 40.0
 spread = 0.0
-shot_count = 1
+shot_count = 5
 recoil_strength = 1
-sound = "assets/sounds/blaster_repeater.ogg"
+weapon_id = "pistol"
+sound = "assets/sounds/single_pistol_shot.mp3"
 crosshair = ExtResource("1_uworq")
+metadata/_custom_type_script = "uid://c6gxnumnbxeyb"

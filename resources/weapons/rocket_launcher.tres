@@ -1,20 +1,14 @@
-[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://cc7sr7c42im47"]
+[gd_resource type="Resource" script_class="Weapon" load_steps=2 format=3 uid="uid://cc7sr7c42im47"]
 
 [ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://resources/weapon.gd" id="1_d613q"]
-[ext_resource type="PackedScene" uid="uid://cghmepb5xyeve" path="res://models/kenney_blaster_pack/blasterA.glb" id="1_lynxc"]
 
 [resource]
 script = ExtResource("1_d613q")
-model = ExtResource("1_lynxc")
-position = Vector3(0, 0.495, 1.955)
-rotation = Vector3(0, 180, 0)
-scale = Vector3(0.5, 0.5, 0.5)
-muzzle_position = Vector3(0, 0, 0)
 cooldown = 0.1
 max_distance = 10
 damage = 25.0
 spread = 0.0
 shot_count = 1
-knockback = 20
-sound_shoot = ""
+recoil_strength = 1
+sound = ""
 metadata/_custom_type_script = "uid://c6gxnumnbxeyb"
