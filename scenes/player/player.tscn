@@ -1,8 +1,8 @@
 [gd_scene load_steps=13 format=3 uid="uid://bdi5vfh3p5wd4"]
 
 [ext_resource type="Script" uid="uid://kwdn6ccjucs4" path="res://scripts/player/player.gd" id="1_fjrip"]
-[ext_resource type="Texture2D" uid="uid://8ggihh27mlrr" path="res://assets/images/blob_shadow.png" id="2_b0fo8"]
-[ext_resource type="AudioStream" uid="uid://cydjn1ct3hps2" path="res://assets/sounds/walking.ogg" id="5_ics1s"]
+[ext_resource type="Texture2D" uid="uid://l5u2f3ub1u3t" path="res://assets/images/blob_shadow.png" id="2_b0fo8"]
+[ext_resource type="AudioStream" uid="uid://c7a8a5uokopub" path="res://assets/sounds/walking.ogg" id="5_ics1s"]
 [ext_resource type="Shader" uid="uid://dcuhfc8jfneeb" path="res://shaders/psx.gdshader" id="6_3rfka"]
 [ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/weapons/base_weapon.tscn" id="7_i8sra"]
 [ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/weapons/shotgun.tscn" id="8_4vq5b"]
@@ -100,7 +100,7 @@ visible = false
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.14, -0.099, -0.092)
 
 [node name="SlideCheck" type="RayCast3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0.100717)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
 target_position = Vector3(0, 0, 1)
 
 [node name="Shadow" type="Decal" parent="."]
