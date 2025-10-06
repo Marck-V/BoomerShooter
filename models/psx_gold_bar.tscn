@@ -1,5 +1,5 @@
 [gd_scene load_steps=2 format=3 uid="uid://c4rylydd6qvtg"]
 
-[ext_resource type="PackedScene" uid="uid://boa06lwnona2u" path="res://models/PSXGoldBar.glb" id="1_1xxbl"]
+[ext_resource type="PackedScene" uid="uid://iq68sg6rok4h" path="res://models/PSXGoldBar.glb" id="1_1xxbl"]
 
 [node name="PSXGoldBar" instance=ExtResource("1_1xxbl")]

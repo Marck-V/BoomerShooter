@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=4 uid="uid://qts30miglt2c"]
 
-[ext_resource type="Script" uid="uid://dnkv2vua3h5ta" path="res://scripts/base_weapon.gd" id="1_5qynp"]
-[ext_resource type="Texture2D" uid="uid://b5hxnjwvrxuji" path="res://models/Textures/colormap.png" id="2_5qynp"]
+[ext_resource type="Script" uid="uid://dnkv2vua3h5ta" path="res://scripts/weapons/base_weapon.gd" id="1_5qynp"]
+[ext_resource type="Texture2D" uid="uid://cmjdjyfgmdpfk" path="res://models/Textures/colormap.png" id="2_5qynp"]
 [ext_resource type="Resource" uid="uid://dt7w04y4uhu87" path="res://resources/weapons/blaster.tres" id="2_menj3"]
 [ext_resource type="SpriteFrames" uid="uid://dbv3sy5qjatnl" path="res://assets/images/burst_animation.tres" id="4_ar26g"]
 

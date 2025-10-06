@@ -87,7 +87,7 @@ class IdleState:
 		enemy.anim.play("Idle")
 		enemy.velocity = Vector3.ZERO
 
-	func update(delta):
+	func update(_delta):
 		# Do nothing unless vision triggers Chase
 		pass
 
@@ -98,7 +98,7 @@ class ChaseState:
 	func enter():
 		enemy.anim.play("Run")
 
-	func update(delta):
+	func update(_delta):
 		if not enemy.target: return
 		
 		# Pathfinding toward target
@@ -126,7 +126,7 @@ class ShootState:
 		enemy.anim.play("Idle")
 		enemy.velocity = Vector3.ZERO
 
-	func update(delta):
+	func update(_delta):
 		if not enemy.target:
 			enemy.change_state("Idle")
 			return

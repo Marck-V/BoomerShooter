@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=4 uid="uid://dhaqmvj4myymc"]
 
-[ext_resource type="Texture2D" uid="uid://bjplwms2oca11" path="res://models/weapons/Shotgun_Ammo.png" id="1_l20sb"]
+[ext_resource type="Texture2D" uid="uid://dtohss140v7f3" path="res://models/weapons/Shotgun_Ammo.png" id="1_l20sb"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_hnqrj"]
 resource_name = "Slug"

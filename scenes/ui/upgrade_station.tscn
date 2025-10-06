@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://qrpq15dcfyie"]
 
-[ext_resource type="PackedScene" uid="uid://bpndyjniwfdmr" path="res://models/Computer_Retro.glb" id="1_a7e7t"]
+[ext_resource type="PackedScene" uid="uid://ca7yoq3ekxj1g" path="res://models/Computer_Retro.glb" id="1_a7e7t"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_a7e7t"]
 size = Vector3(1.54688, 3.42847, 4.5061)
