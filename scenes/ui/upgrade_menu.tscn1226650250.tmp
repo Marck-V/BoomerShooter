@@ -23,6 +23,7 @@ grow_vertical = 2
 script = ExtResource("1_ethjp")
 
 [node name="GreenBG" type="Panel" parent="."]
+visible = false
 layout_mode = 0
 offset_right = 1279.0
 offset_bottom = 720.0
@@ -40,15 +41,15 @@ offset_bottom = 111.0
 layout_mode = 2
 text = "Points: "
 
-[node name="PistolMenuButton" type="Button" parent="HBoxContainer"]
+[node name="Button" type="Button" parent="HBoxContainer"]
 layout_mode = 2
 text = "Pistol"
 
-[node name="ShotgunMenuButton" type="Button" parent="HBoxContainer"]
+[node name="Button2" type="Button" parent="HBoxContainer"]
 layout_mode = 2
 text = "Shotgun"
 
-[node name="RifleMenuButton" type="Button" parent="HBoxContainer"]
+[node name="Button3" type="Button" parent="HBoxContainer"]
 layout_mode = 2
 text = "Rifle"
 
@@ -66,6 +67,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Pistol" type="Control" parent="."]
+visible = false
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -101,24 +103,20 @@ offset_top = 139.0
 offset_right = 704.0
 offset_bottom = 267.0
 texture_normal = ExtResource("5_chbti")
-upgrade_id = "shotgun_upgrade1"
 
 [node name="ShotgunButton2" parent="Shotgun/ShotgunButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 200.0
 offset_bottom = 328.0
 texture_normal = ExtResource("6_ethjp")
-upgrade_id = "shotgun_upgrade2"
 
 [node name="ShotgunButton3" parent="Shotgun/ShotgunButton1/ShotgunButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 210.175
 offset_bottom = 338.175
 texture_normal = ExtResource("7_0isde")
-upgrade_id = "shotgun_upgrade3"
 
 [node name="Rifle" type="Control" parent="."]
-visible = false
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
@@ -132,7 +130,7 @@ offset_right = 704.0
 offset_bottom = 267.0
 tooltip_text = "Increase your damage by 5"
 texture_normal = ExtResource("2_jkuc8")
-upgrade_id = "rifle_upgrade1"
+upgrade_id = "blaster_damage"
 amount = 5.0
 property_name = "damage"
 
@@ -143,7 +141,7 @@ offset_bottom = 328.0
 tooltip_text = "Explanation of upgrade 2"
 disabled = true
 texture_normal = ExtResource("3_6vqdt")
-upgrade_id = "rifle_upgrade2"
+upgrade_id = "blaster_damage2"
 amount = 5.0
 property_name = "damage"
 
@@ -154,7 +152,7 @@ offset_bottom = 338.59
 tooltip_text = "Explanation of upgrade 3"
 disabled = true
 texture_normal = ExtResource("4_ixicc")
-upgrade_id = "rifle_upgrade3"
+upgrade_id = "blaster_damage3"
 amount = 5.0
 property_name = "damage"
 
