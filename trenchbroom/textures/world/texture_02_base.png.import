@@ -2,8 +2,8 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dkea34lfmtrfh"
-path.s3tc="res://.godot/imported/texture_13_wall.png-01b41c846991168dd20222404b27c8d6.s3tc.ctex"
+uid="uid://bbackuole0gfi"
+path.s3tc="res://.godot/imported/texture_02_base.png-a43a00b1b80b1ae3530d8eb6beebd892.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
@@ -11,8 +11,8 @@ metadata={
 
 [deps]
 
-source_file="res://trenchbroom/textures/world/texture_13_wall.png"
-dest_files=["res://.godot/imported/texture_13_wall.png-01b41c846991168dd20222404b27c8d6.s3tc.ctex"]
+source_file="res://trenchbroom/textures/world/texture_02_base.png"
+dest_files=["res://.godot/imported/texture_02_base.png-a43a00b1b80b1ae3530d8eb6beebd892.s3tc.ctex"]
 
 [params]
 

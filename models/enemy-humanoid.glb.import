@@ -3632,6 +3632,12 @@ _subresources={
 "slice_99/start_frame": 0,
 "slices/amount": 0
 }
+},
+"materials": {
+"Humanoid_NotOverlapping": {
+"use_external/enabled": true,
+"use_external/path": "uid://brpn84awqb5q7"
+}
 }
 }
 gltf/naming_version=1
