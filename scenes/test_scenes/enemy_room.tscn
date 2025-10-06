@@ -1,29 +1,37 @@
-[gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
+[gd_scene load_steps=70 format=4 uid="uid://dxnrf1ck88yxe"]
 
-[ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_ffe0c"]
-[ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="2_o841n"]
-[ext_resource type="FontFile" uid="uid://cfxfvqdxhxg26" path="res://assets/fonts/lilita_one_regular.ttf" id="3_h1y2p"]
-[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://resources/main-environment.tres" id="4_x8tsf"]
-[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="5_wic1c"]
-[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="6_oqbgo"]
-[ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="7_uokx7"]
-[ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="8_7li7f"]
-[ext_resource type="Material" uid="uid://g1l8euhy1o6" path="res://trenchbroom/textures/world/texture_02.tres" id="9_qjlkt"]
-[ext_resource type="Material" uid="uid://bketfk52opqbk" path="res://trenchbroom/textures/world/texture_13_wall.tres" id="10_fuscs"]
-[ext_resource type="Material" uid="uid://dtsera8gdg8c1" path="res://trenchbroom/textures/world/texture_11_door.tres" id="11_q1ikm"]
-[ext_resource type="Material" uid="uid://bbjxmxvepx4hr" path="res://trenchbroom/textures/world/texture_07.tres" id="12_ol7nt"]
-[ext_resource type="Material" uid="uid://jl6xodi8dv8f" path="res://trenchbroom/textures/world/texture_04.tres" id="13_sxc34"]
-[ext_resource type="Material" uid="uid://csmkmcki5fshf" path="res://trenchbroom/textures/world/texture_01.tres" id="14_cdj1t"]
-[ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="15_36gnp"]
-[ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="16_8ml05"]
-[ext_resource type="PackedScene" uid="uid://dug2tjykhiij" path="res://scenes/pickups/point_pickup.tscn" id="17_utiqf"]
-[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_3gtg4"]
+[ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
+[ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="4_yxwn6"]
+[ext_resource type="FontFile" uid="uid://cfxfvqdxhxg26" path="res://assets/fonts/lilita_one_regular.ttf" id="5_gtg8j"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="6_5ubjb"]
+[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="7_gj28m"]
+[ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="10_ndmtw"]
+[ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="11_51fhi"]
+[ext_resource type="Material" uid="uid://g1l8euhy1o6" path="res://trenchbroom/textures/world/texture_02.tres" id="11_ndmtw"]
+[ext_resource type="Material" uid="uid://bketfk52opqbk" path="res://trenchbroom/textures/world/texture_13_wall.tres" id="12_51fhi"]
+[ext_resource type="Material" uid="uid://dtsera8gdg8c1" path="res://trenchbroom/textures/world/texture_11_door.tres" id="13_2vy2j"]
+[ext_resource type="Material" uid="uid://bbjxmxvepx4hr" path="res://trenchbroom/textures/world/texture_07.tres" id="14_5ubjb"]
+[ext_resource type="Material" uid="uid://jl6xodi8dv8f" path="res://trenchbroom/textures/world/texture_04.tres" id="15_5ubjb"]
+[ext_resource type="Material" uid="uid://csmkmcki5fshf" path="res://trenchbroom/textures/world/texture_01.tres" id="15_gj28m"]
+[ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="16_e1was"]
+[ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="17_5ubjb"]
+[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_e1was"]
+[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
-font = ExtResource("3_h1y2p")
+font = ExtResource("5_gtg8j")
 font_size = 36
 outline_size = 12
 outline_color = Color(0, 0, 0, 0.470588)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
+
+[sub_resource type="Sky" id="Sky_v2erg"]
+sky_material = SubResource("ProceduralSkyMaterial_v2erg")
+
+[sub_resource type="Environment" id="Environment_v2erg"]
+background_mode = 2
+sky = SubResource("Sky_v2erg")
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_5ubjb"]
 vertices = PackedVector3Array(12.75, 5.75, 25.5, 16, 5.75, 25.5, 16.25, 5.5, 23.5, 12.5, 5.5, 23.5, 28, 5.5, 0.75, 0.75, 5.5, 0.75, 28, 5.5, 23.5, 0.75, 5.5, 23.5, 12.75, 10, 38, 16, 10, 38.25, 12.75, 10.5, 39.75, 16.25, 10.5, 40.25, 18.5, 10.5, 50, 20, 10.5, 50, 19.75, 10.5, 40.25, 12.25, 10.5, 40.25, 10.25, 10.5, 50.75, 10.25, 10.5, 52, 18, 10.5, 52.25, 18, 10.5, 50.5, 8.25, 10.5, 40.25, 8, 10.5, 50, 9.5, 10.5, 50, 2.25, 10.5, 51.5, 7, 10.5, 51.5, 7, 10.5, 50.5, 2.25, 10.5, 40.25, 21.25, 10.5, 50.75, 21.25, 10.5, 51.5, 26, 10.5, 51.5, 26, 10.5, 40.25, -11.75, 10.5, 58.5, -11.75, 10.5, 55.5, -14, 10.5, 55.25, -14, 10.5, 58.75, -30, 10.5, 48.5, -30, 10.5, 65.5, -14, 10.5, 48.5, -14, 10.5, 65.5, 39.75, 10.5, 55.5, 39.75, 10.5, 58.5, 42, 10.5, 58.75, 42, 10.5, 55.25, 58, 10.5, 65.5, 58, 10.5, 48.5, 42, 10.5, 65.5, 42, 10.5, 48.5, 8, 19, 51, 8.25, 19, 52.25, 9.25, 19, 51.75, 9, 19, 51, 19, 19, 51, 19.25, 19, 52.25, 20.25, 19, 51.75, 20, 19, 51, 8.25, 10.5, 51.25, 8.25, 10.5, 51.75, 8.75, 10.5, 51.75, 8.75, 10.5, 51.25, 19.25, 10.5, 51.25, 19.25, 10.5, 51.75, 19.75, 10.5, 51.75, 19.75, 10.5, 51.25, 7.5, 10.5, 59, 8.75, 10.5, 59, 8.75, 10.5, 58, 8, 10.5, 57.5, 7, 10.5, 52.5, 9, 10.5, 54.5, 8.75, 10.5, 53.25, 7.75, 10.5, 53.25, 8, 10.5, 55, 2.25, 10.5, 60.5, 7, 10.5, 60.5, 20.5, 10.5, 55.75, 19.25, 11.75, 56, 20.5, 10.5, 56.75, 20, 10.5, 58, 19.25, 10.75, 57.75, 19.25, 10.5, 59, 20.5, 10.5, 59, 21.25, 10.5, 59.75, 26, 10.5, 60.5, 21.25, 10.5, 52.25, 20.5, 10.5, 57.5, 20.25, 10.5, 53.25, 19.5, 10.5, 53.25, 19.25, 10.5, 54.5, 20.5, 10.5, 55, 21.25, 10.5, 60.5, 11.5, 10.5, 55.75, 10.25, 11.75, 56, 11.5, 10.5, 56.75, 17, 10.5, 57.25, 17, 10.5, 55, 18.75, 10.5, 53.25, 17.5, 10.5, 54.5, 11.5, 10.5, 57.25, 11, 10.5, 54.5, 11.5, 10.5, 55, 0.5, 10.5, 58.5, 0.5, 10.5, 55.5, 27.75, 10.5, 55.5, 27.75, 10.5, 58.5, 18.5, 11.25, 57.25, 18.25, 10.5, 58, 10.25, 10.5, 58, 10, 11.25, 57.25, 9.5, 11.25, 57.25, 9.25, 10.5, 58, 9.5, 10.5, 59, 18, 10.5, 59.5, 17.5, 10.5, 58, 18.25, 10.5, 61.75, 11, 10.5, 58, 10.25, 10.5, 59.75, 10.25, 10.5, 61.25, 9.25, 10.5, 62.25, 8, 10.5, 62.25, 8, 10.5, 72, 18.25, 10.5, 72, 8, 19, 60, 8.25, 19, 61.25, 9.25, 19, 60.75, 9, 19, 60, 19, 19, 60, 19.25, 19, 61.25, 20.25, 19, 60.75, 20, 19, 60, 8.25, 10.5, 60.25, 8.25, 10.5, 60.75, 8.75, 10.5, 60.75, 8.75, 10.5, 60.25, 19.25, 10.5, 60.25, 19.25, 10.5, 60.75, 19.75, 10.5, 60.75, 19.75, 10.5, 60.25, 7, 10.5, 61.5, 2.25, 10.5, 72, 21.25, 10.5, 61.25, 20.25, 10.5, 62.25, 26, 10.5, 72, 18.75, 10.5, 62.25)
@@ -36,7 +44,7 @@ _surfaces = [{
 "format": 34359742487,
 "index_count": 36,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcA"),
-"material": ExtResource("9_qjlkt"),
+"material": ExtResource("11_ndmtw"),
 "name": "world/texture_02",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
@@ -48,7 +56,7 @@ _surfaces = [{
 "format": 34359742487,
 "index_count": 900,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAGAAZABoAGAAaABsAHAAdAB4AHAAeAB8AIAAhACIAIAAiACMAJAAlACYAJAAmACcAKAApACoAKAAqACsALAAtAC4ALAAuAC8AMAAxADIAMAAyADMANAA1ADYANAA2ADcAOAA5ADoAOAA6ADsAPAA9AD4APAA+AD8AQABBAEIAQABCAEMARABFAEYARABGAEcASABJAEoASABKAEsATABNAE4ATABOAE8AUABRAFIAUABSAFMAVABVAFYAVABWAFcAWABZAFoAWABaAFsAXABdAF4AXABeAF8AYABhAGIAYABiAGMAZABlAGYAZABmAGcAaABpAGoAaABqAGsAbABtAG4AbABuAG8AcABxAHIAcAByAHMAdAB1AHYAdAB2AHcAeAB5AHoAeAB6AHsAfAB9AH4AfAB+AH8AgACBAIIAgACCAIMAhACFAIYAhACGAIcAiACJAIoAiACKAIsAjACNAI4AjACOAI8AkACRAJIAkACSAJMAlACVAJYAlACWAJcAmACZAJoAmACaAJsAnACdAJ4AnACeAJ8AoAChAKIAoACiAKMApAClAKYApACmAKcAqACpAKoAqACqAKsArACtAK4ArACuAK8AsACxALIAsACyALMAtAC1ALYAtAC2ALcAuAC5ALoAuAC6ALsAvAC9AL4AvAC+AL8AwADBAMIAwADCAMMAxADFAMYAxADGAMcAyADJAMoAyADKAMsAzADNAM4AzADOAM8A0ADRANIA0ADSANMA1ADVANYA1ADWANcA2ADZANoA2ADaANsA3ADdAN4A3ADeAN8A4ADhAOIA4ADiAOMA5ADlAOYA5ADmAOcA6ADpAOoA6ADqAOsA7ADtAO4A7ADuAO8A8ADxAPIA8ADyAPMA9AD1APYA9AD2APcA+AD5APoA+AD6APsA/AD9AP4A/AD+AP8AAAEBAQIBAAECAQMBBAEFAQYBBAEGAQcBCAEJAQoBCAEKAQsBDAENAQ4BDAEOAQ8BEAERARIBEAESARMBFAEVARYBFAEWARcBGAEZARoBGAEaARsBHAEdAR4BHAEeAR8BIAEhASIBIAEiASMBJAElASYBJAEmAScBKAEpASoBKAEqASsBLAEtAS4BLAEuAS8BMAExATIBMAEyATMBNAE1ATYBNAE2ATcBOAE5AToBOAE6ATsBPAE9AT4BPAE+AT8BQAFBAUIBQAFCAUMBRAFFAUYBRAFGAUcBSAFJAUoBSAFKAUsBTAFNAU4BTAFOAU8BUAFRAVIBUAFSAVMBVAFVAVYBVAFWAVcBWAFZAVoBWAFaAVsBXAFdAV4BXAFeAV8BYAFhAWIBYAFiAWMBZAFlAWYBZAFmAWcBaAFpAWoBaAFqAWsBbAFtAW4BbAFuAW8BcAFxAXIBcAFyAXMBdAF1AXYBdAF2AXcBeAF5AXoBeAF6AXsBfAF9AX4BfAF+AX8BgAGBAYIBgAGCAYMBhAGFAYYBhAGGAYcBiAGJAYoBiAGKAYsBjAGNAY4BjAGOAY8BkAGRAZIBkAGSAZMBlAGVAZYBlAGWAZcBmAGZAZoBmAGaAZsBnAGdAZ4BnAGeAZ8BoAGhAaIBoAGiAaMBpAGlAaYBpAGmAacBqAGpAaoBqAGqAasBrAGtAa4BrAGuAa8BsAGxAbIBsAGyAbMBtAG1AbYBtAG2AbcBuAG5AboBuAG6AbsBvAG9Ab4BvAG+Ab8BwAHBAcIBwAHCAcMBxAHFAcYBxAHGAccByAHJAcoByAHKAcsBzAHNAc4BzAHOAc8B0AHRAdIB0AHSAdMB1AHVAdYB1AHWAdcB2AHZAdoB2AHaAdsB3AHdAd4B3AHeAd8B4AHhAeIB4AHiAeMB5AHlAeYB5AHmAecB6AHpAeoB6AHqAesB7AHtAe4B7AHuAe8B8AHxAfIB8AHyAfMB9AH1AfYB9AH2AfcB+AH5AfoB+AH6AfsB/AH9Af4B/AH+Af8BAAIBAgICAAICAgMCBAIFAgYCBAIGAgcCCAIJAgoCCAIKAgsCDAINAg4CDAIOAg8CEAIRAhICEAISAhMCFAIVAhYCFAIWAhcCGAIZAhoCGAIaAhsCHAIdAh4CHAIeAh8CIAIhAiICIAIiAiMCJAIlAiYCJAImAicCKAIpAioCKAIqAisCLAItAi4CLAIuAi8CMAIxAjICMAIyAjMCNAI1AjYCNAI2AjcCOAI5AjoCOAI6AjsCPAI9Aj4CPAI+Aj8CQAJBAkICQAJCAkMCRAJFAkYCRAJGAkcCSAJJAkoCSAJKAksCTAJNAk4CTAJOAk8CUAJRAlICUAJSAlMCVAJVAlYCVAJWAlcC"),
-"material": ExtResource("10_fuscs"),
+"material": ExtResource("12_51fhi"),
 "name": "world/texture_13_wall",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
@@ -60,7 +68,7 @@ _surfaces = [{
 "format": 34359742487,
 "index_count": 36,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcA"),
-"material": ExtResource("11_q1ikm"),
+"material": ExtResource("13_2vy2j"),
 "name": "world/texture_11_door",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
@@ -72,7 +80,7 @@ _surfaces = [{
 "format": 34359742487,
 "index_count": 36,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcA"),
-"material": ExtResource("12_ol7nt"),
+"material": ExtResource("14_5ubjb"),
 "name": "world/texture_07",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
@@ -84,7 +92,7 @@ _surfaces = [{
 "format": 34359742487,
 "index_count": 36,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcA"),
-"material": ExtResource("13_sxc34"),
+"material": ExtResource("15_5ubjb"),
 "name": "world/texture_04",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
@@ -96,7 +104,7 @@ _surfaces = [{
 "format": 34359742487,
 "index_count": 216,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcAGAAZABoAGAAaABsAHAAdAB4AHAAeAB8AIAAhACIAIAAiACMAJAAlACYAJAAmACcAKAApACoAKAAqACsALAAtAC4ALAAuAC8AMAAxADIAMAAyADMANAA1ADYANAA2ADcAOAA5ADoAOAA6ADsAPAA9AD4APAA+AD8AQABBAEIAQABCAEMARABFAEYARABGAEcASABJAEoASABKAEsATABNAE4ATABOAE8AUABRAFIAUABSAFMAVABVAFYAVABWAFcAWABZAFoAWABaAFsAXABdAF4AXABeAF8AYABhAGIAYABiAGMAZABlAGYAZABmAGcAaABpAGoAaABqAGsAbABtAG4AbABuAG8AcABxAHIAcAByAHMAdAB1AHYAdAB2AHcAeAB5AHoAeAB6AHsAfAB9AH4AfAB+AH8AgACBAIIAgACCAIMAhACFAIYAhACGAIcAiACJAIoAiACKAIsAjACNAI4AjACOAI8A"),
-"material": ExtResource("14_cdj1t"),
+"material": ExtResource("15_gj28m"),
 "name": "world/texture_01",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
@@ -108,7 +116,7 @@ _surfaces = [{
 "format": 34359742487,
 "index_count": 840,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAEAATABQAEAAUABUAEAAVABYAEAAWABcAGAAZABoAGAAaABsAGAAbABwAGAAcAB0AGAAdAB4AGAAeAB8AIAAhACIAIAAiACMAJAAlACYAJAAmACcAKAApACoAKAAqACsALAAtAC4ALAAuAC8AMAAxADIAMAAyADMANAA1ADYANAA2ADcAOAA5ADoAOAA6ADsAPAA9AD4APAA+AD8AQABBAEIAQABCAEMAQABDAEQAQABEAEUAQABFAEYAQABGAEcASABJAEoASABKAEsASABLAEwASABMAE0ASABNAE4ASABOAE8AUABRAFIAUABSAFMAVABVAFYAVABWAFcAWABZAFoAWABaAFsAXABdAF4AXABeAF8AYABhAGIAYABiAGMAZABlAGYAZABmAGcAaABpAGoAaABqAGsAbABtAG4AbABuAG8AcABxAHIAcAByAHMAcABzAHQAcAB0AHUAcAB1AHYAcAB2AHcAeAB5AHoAeAB6AHsAeAB7AHwAeAB8AH0AeAB9AH4AeAB+AH8AgACBAIIAgACCAIMAhACFAIYAhACGAIcAiACJAIoAiACKAIsAjACNAI4AjACOAI8AkACRAJIAkACSAJMAlACVAJYAlACWAJcAmACZAJoAmACaAJsAnACdAJ4AnACeAJ8AoAChAKIAoACiAKMAoACjAKQAoACkAKUAoAClAKYAoACmAKcAqACpAKoAqACqAKsAqACrAKwAqACsAK0AqACtAK4AqACuAK8AsACxALIAsACyALMAtAC1ALYAtAC2ALcAuAC5ALoAuAC6ALsAvAC9AL4AvAC+AL8AwADBAMIAwADCAMMAxADFAMYAxADGAMcAyADJAMoAyADKAMsAzADNAM4AzADOAM8A0ADRANIA0ADSANMA0ADTANQA0ADUANUA0ADVANYA0ADWANcA2ADZANoA2ADaANsA2ADbANwA2ADcAN0A2ADdAN4A2ADeAN8A4ADhAOIA4ADiAOMA5ADlAOYA5ADmAOcA6ADpAOoA6ADqAOsA7ADtAO4A7ADuAO8A8ADxAPIA8ADyAPMA9AD1APYA9AD2APcA+AD5APoA+AD6APsA/AD9AP4A/AD+AP8AAAEBAQIBAAECAQMBAAEDAQQBAAEEAQUBAAEFAQYBAAEGAQcBCAEJAQoBCAEKAQsBCAELAQwBCAEMAQ0BCAENAQ4BCAEOAQ8BEAERARIBEAESARMBFAEVARYBFAEWARcBGAEZARoBGAEaARsBHAEdAR4BHAEeAR8BIAEhASIBIAEiASMBJAElASYBJAEmAScBKAEpASoBKAEqASsBLAEtAS4BLAEuAS8BMAExATIBMAEyATMBMAEzATQBMAE0ATUBMAE1ATYBMAE2ATcBOAE5AToBOAE6ATsBOAE7ATwBOAE8AT0BOAE9AT4BOAE+AT8BQAFBAUIBQAFCAUMBRAFFAUYBRAFGAUcBSAFJAUoBSAFKAUsBTAFNAU4BTAFOAU8BUAFRAVIBUAFSAVMBVAFVAVYBVAFWAVcBWAFZAVoBWAFaAVsBXAFdAV4BXAFeAV8BYAFhAWIBYAFiAWMBYAFjAWQBYAFkAWUBYAFlAWYBYAFmAWcBaAFpAWoBaAFqAWsBaAFrAWwBaAFsAW0BaAFtAW4BaAFuAW8BcAFxAXIBcAFyAXMBdAF1AXYBdAF2AXcBeAF5AXoBeAF6AXsBfAF9AX4BfAF+AX8BgAGBAYIBgAGCAYMBhAGFAYYBhAGGAYcBiAGJAYoBiAGKAYsBjAGNAY4BjAGOAY8BkAGRAZIBkAGSAZMBkAGTAZQBkAGUAZUBkAGVAZYBkAGWAZcBmAGZAZoBmAGaAZsBmAGbAZwBmAGcAZ0BmAGdAZ4BmAGeAZ8BoAGhAaIBoAGiAaMBpAGlAaYBpAGmAacBqAGpAaoBqAGqAasBrAGtAa4BrAGuAa8BsAGxAbIBsAGyAbMBtAG1AbYBtAG2AbcBuAG5AboBuAG6AbsBvAG9Ab4BvAG+Ab8BwAHBAcIBwAHCAcMBwAHDAcQBwAHEAcUBwAHFAcYBwAHGAccByAHJAcoByAHKAcsByAHLAcwByAHMAc0ByAHNAc4ByAHOAc8B0AHRAdIB0AHSAdMB1AHVAdYB1AHWAdcB2AHZAdoB2AHaAdsB3AHdAd4B3AHeAd8B"),
-"material": ExtResource("15_36gnp"),
+"material": ExtResource("16_e1was"),
 "name": "world/texture_08",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
@@ -258,10 +266,11 @@ points = PackedVector3Array(60, 7, 57.75, 60, 6.75, 57.75, 60.25, 6.75, 57.75, 6
 [node name="Node3D" type="Node3D"]
 
 [node name="LevelManager" type="Node" parent="."]
-script = ExtResource("1_ffe0c")
+process_mode = 3
+script = ExtResource("1_gj28m")
 
 [node name="HUD" type="CanvasLayer" parent="."]
-script = ExtResource("2_o841n")
+script = ExtResource("4_yxwn6")
 
 [node name="Panel" type="Panel" parent="HUD"]
 offset_right = 144.0
@@ -290,6 +299,18 @@ offset_bottom = 672.0
 size_flags_horizontal = 0
 size_flags_vertical = 8
 text = "100%"
+label_settings = SubResource("LabelSettings_nu0x4")
+vertical_alignment = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="AmmoLabel" type="Label" parent="HUD"]
+offset_left = 1150.0
+offset_top = 627.0
+offset_right = 1240.0
+offset_bottom = 672.0
+size_flags_horizontal = 0
+size_flags_vertical = 8
+text = "x30"
 label_settings = SubResource("LabelSettings_nu0x4")
 vertical_alignment = 2
 metadata/_edit_use_anchors_ = true
@@ -324,28 +345,27 @@ grow_horizontal = 0
 text = "Points: "
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = ExtResource("4_x8tsf")
+environment = SubResource("Environment_v2erg")
 
 [node name="Enemies" type="Node" parent="."]
 
-[node name="MeleeEnemy" parent="Enemies" instance=ExtResource("5_wic1c")]
+[node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5267, 10.0018, 45.4238)
 
-[node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("5_wic1c")]
+[node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
 
-[node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_oqbgo")]
+[node name="RangedEnemy" parent="Enemies" instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1609, 10.0018, 48.8328)
-movement_target_position = NodePath("../../Player")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
 
 [node name="FuncGodotMap" type="Node3D" parent="NavigationRegion3D"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
-script = ExtResource("7_uokx7")
+script = ExtResource("10_ndmtw")
 local_map_file = "uid://nxws172kpbj8"
-map_settings = ExtResource("8_7li7f")
+map_settings = ExtResource("11_51fhi")
 metadata/_custom_type_script = "uid://bc6mfq3ssor4q"
 
 [node name="entity_0_worldspawn" type="StaticBody3D" parent="NavigationRegion3D/FuncGodotMap"]
@@ -492,20 +512,15 @@ shape = SubResource("ConvexPolygonShape3D_o3sul")
 [node name="entity_0_brush_44_collision_shape" type="CollisionShape3D" parent="NavigationRegion3D/FuncGodotMap/entity_0_worldspawn"]
 shape = SubResource("ConvexPolygonShape3D_xi3rc")
 
-[node name="CSGPolygon3D" type="CSGPolygon3D" parent="NavigationRegion3D"]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 10.363, 5, 8.784)
-use_collision = true
-polygon = PackedVector2Array(0, 0, 1.60592, 0.993088, 3, 1, 3, 0)
-depth = 5.78
-
-[node name="UpgradeStation" parent="." instance=ExtResource("16_8ml05")]
+[node name="UpgradeStation" parent="." instance=ExtResource("17_5ubjb")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 18.4313, 5.85269, 23.5661)
 
-[node name="GoldBar" parent="." instance=ExtResource("17_utiqf")]
+[node name="GoldBar" parent="." instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.0766, 5.68511, 16.4978)
 
-[node name="GoldBar2" parent="." instance=ExtResource("17_utiqf")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1091, 5.61518, 18.7511)
+[node name="GoldBar2" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
+type = "Health"
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.2919, 13.531, 10.3151)
@@ -516,6 +531,21 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 7, 9)
 light_energy = 16.0
 omni_range = 31.3
 
-[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_3gtg4")]
+[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
 crosshair = NodePath("../HUD/Crosshair")
+
+[node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.0485, 5.5, 12.7723)
+type = "Ammo"
+weapon_id = "rifle"
+
+[node name="BasePickup2" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.6176, 5.5, 12.8587)
+type = "Ammo"
+weapon_id = "pistol"
+
+[node name="BasePickup3" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.1708, 5.5, 9.65415)
+type = "Ammo"
+weapon_id = "shotgun"

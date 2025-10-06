@@ -1,9 +1,9 @@
 [gd_scene load_steps=10 format=4 uid="uid://dj4fos65tkh47"]
 
-[ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/base_weapon.tscn" id="1_voyse"]
-[ext_resource type="Script" uid="uid://dlyy5kmcigar6" path="res://scripts/shotgun.gd" id="2_gnj2g"]
-[ext_resource type="Resource" uid="uid://d2be2uyhfq6ou" path="res://resources/weapons/shotgun.tres" id="3_1ya1i"]
-[ext_resource type="Texture2D" uid="uid://blhyd6avhn2pg" path="res://models/weapons/Shotgun_Shotgun_Texture_2.png" id="4_w47vr"]
+[ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/weapons/base_weapon.tscn" id="1_voyse"]
+[ext_resource type="Script" uid="uid://dlyy5kmcigar6" path="res://scripts/weapons/shotgun.gd" id="2_gnj2g"]
+[ext_resource type="Resource" uid="uid://hkbppdgftkpy" path="res://resources/weapons/shotgun.tres" id="3_1ya1i"]
+[ext_resource type="Texture2D" uid="uid://cxd43cw5aepj0" path="res://models/weapons/Shotgun_Shotgun_Texture_2.png" id="4_w47vr"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_3qwk3"]
 resource_name = "Material.002"
@@ -45,7 +45,7 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_mn70v")
 
-[sub_resource type="ArrayMesh" id="ArrayMesh_aehmx"]
+[sub_resource type="ArrayMesh" id="ArrayMesh_uukpr"]
 _surfaces = [{
 "aabb": AABB(-0.0256262, -0.0284281, -0.119331, 0.0512525, 0.0453576, 0.238685),
 "format": 34896613377,
@@ -77,7 +77,7 @@ _surfaces = [{
 "vertex_data": PackedByteArray("HeFU/QAAsN77jZHf6f9g1TKmHuMCANHaHeH+/+b/sN76jebcAwBg1QNy5twDAGDVzFnJ5en/U9DhHv//5v8rzeEeVP0AACvN/v+PHhUA+8Qd4f7/5v976x3hVP0AAHvrHeGqAv7/+8Qd4QAAGAD7xB3hqgL+//+/+42R3+n//78d4f7/5v//v+EeqgL///+/zFnJ5en//7/hHv//5v//v+EeqgL///PG4R5U/QAAA8fhHv//5v8Dx+EeAAAYAPPG4R4AABgASNUd4aoC/v9I1R3hAAAYAEjV4R6qAv//SNXhHgAAGADw/wNy5twDAPD/4R5U/QAA8P/+/48eFQDw/x3hAAAYAPD/+o3m3AMA8P8yph7jAgDw/x3hVP0AAPD/M6bJ5en/sN4yph7jAgCw3v7/jx4VAEjV//9v4en/SNX+/8TeAgBI1f7/OiH8/0jV/v86Ifz//78AADoh/P//v///b+Hp//+/M6bJ5en//78EcpHf6f//vwAAb+Hp//+/AAA6Ifz//78AAMTeAgD/vwAAb+Hp//+/AACPHhUA/78AADoh/P/zxgAAjx4VAPPGAADE3gIAA8cAAG/h6f8Dx/7/OiH8//vE//9v4en/e+v+/8TeAgB76wAAjx4VAPD/AADE3gIA8P/LWR7jAgDw//7/xN4CAPD/y1ke4wIAU9AEcpHf6f9T0ANy5twDAFPQBHKR3+n/YNX6jebcAwDR2jOmyeXp/9Ha+42R3+n/0drLWR7jAgArzcxZyeXp/yvNct/BL03VsSpz28Mtct/BL03VsSpN1bEqrc5jJ8nJ8iTJyfIkghsHSe81PBTvNTwUghsHSYIbB0ne/yAA3v8gAN7/IADe/yAA3v8gAN7/IAAaQ53hf54hw3+eIcMaQ53hXFVcVVxVXFVcVVxVXFVcVQdACEAHQAdAB0AHQAdAB0AHQAdACEAIQAdAB0AHQAdAct/BL3LfwS+4KqMquCqjKrgqoyq4KqMq3v8gAN7/IADe/yAA3v8gAN7/IADe/yAAQIDe/0CA3v9AgN7/QIDe/xpDneEaQ53hf54hw3+eIcOCGwdJ7zU8FO81PBQHQAdAB0AHQAhACEAHQAdArc5jJ63OYyetzmMnTdWxKnPbwy1z28Mtc9vDLcnJ8iTJyfIk")
 }]
 blend_shape_mode = 0
-shadow_mesh = SubResource("ArrayMesh_aehmx")
+shadow_mesh = SubResource("ArrayMesh_uukpr")
 
 [node name="Shotgun" instance=ExtResource("1_voyse")]
 script = ExtResource("2_gnj2g")
