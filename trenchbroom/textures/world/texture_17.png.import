@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dvaq268jhyg55"
-path="res://.godot/imported/texture_05.png-7a9b392dad79b167ed77f227f5850ddd.ctex"
+uid="uid://cj64yolh0cxc8"
+path="res://.godot/imported/texture_17.png-f713a32c4cc8dc13347d1be43a46256e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://trenchbroom/textures/world/texture_05.png"
-dest_files=["res://.godot/imported/texture_05.png-7a9b392dad79b167ed77f227f5850ddd.ctex"]
+source_file="res://trenchbroom/textures/world/texture_17.png"
+dest_files=["res://.godot/imported/texture_17.png-f713a32c4cc8dc13347d1be43a46256e.ctex"]
 
 [params]
 
