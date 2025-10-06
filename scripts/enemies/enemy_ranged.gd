@@ -1,85 +1,154 @@
 extends CharacterBody3D
 
+# --- Enemy properties ---
 @export var movement_speed: float = 2.0
+@export var shoot_range: float = 10.0
+@export var firing_rate: float = 1.5  # seconds between shots
+@export var health: int = 100
+@export var target: Node3D
 @export var firing_target_offset := -0.1
-@export var firing_rate := 5
-@export var shoot_range := 10
-@export var health := 100
 
-@onready var raycast = $RayCast
-@onready var energy_ball_spawn_marker = $EnergyBallSpawnMarker
-@onready var shoot_timer = $ShootTimer
+# --- Scene references ---
+@onready var nav: NavigationAgent3D = $NavigationAgent3D
+@onready var anim: AnimationPlayer = $"enemy-humanoid/AnimationPlayer"
+@onready var raycast: RayCast3D = $RayCast
+@onready var shoot_timer: Timer = $ShootTimer
+@onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
+@onready var vision_area: Area3D = $VisionArea
 
-@onready var navigation_agent = $NavigationAgent3D
-@export var movement_target_position: CharacterBody3D
+# --- State machine ---
+var state = null
+var states = {}
 
-var destroyed := false
+# --- General vars ---
+var destroyed: bool = false
 var energy_ball = load("res://scenes/enemies/energy_ball.tscn")
-var death_sound : String = "assets/sounds/enemy_hurt.ogg"
+var death_sound: String = "assets/sounds/enemy_hurt.ogg"
 
+# ---------------------------
+#  Lifecycle
+# ---------------------------
 func _ready():
-	# Make sure to not await during _ready.
-	actor_setup.call_deferred()
-	raycast.target_position = Vector3(0, 0, shoot_range)
+	states = {
+		"Idle": IdleState.new(self),
+		"Chase": ChaseState.new(self),
+		"Shoot": ShootState.new(self),
+		"Dead": DeadState.new(self),
+	}
+	change_state("Idle")
+	
 	shoot_timer.wait_time = firing_rate
 
-func actor_setup():
-	# Wait for the first physics frame so the NavigationServer can sync.
-	await get_tree().physics_frame
+func _physics_process(delta):
+	if state:
+		state.update(delta)
 
-	# Now that the navigation map is no longer empty, set the movement target.
-	set_movement_target(movement_target_position.global_position)
+func _on_vision_area_body_entered(body: Node3D) -> void:
+	if body == target and state != states["Dead"]:
+		change_state("Chase")
 
-func set_movement_target(movement_target: Vector3):
-	navigation_agent.set_target_position(movement_target)
-	
-func _physics_process(_delta):
-	# Update the target location to player's current location
-	var current_agent_position: Vector3 = global_position
-	set_movement_target(movement_target_position.global_position)
-	var next_path_position: Vector3 = navigation_agent.get_next_path_position()
-	
-	self.look_at(Vector3(movement_target_position.global_position.x, global_position.y, movement_target_position.global_position.z - firing_target_offset), Vector3.UP, true)  # Look at player
-	
-	# If enemy is range, then stop and shoot, else get in range
-	if navigation_agent.distance_to_target() <= shoot_range:
-		if shoot_timer.is_stopped():
-			shoot_energy_ball()
-			shoot_timer.start()
-		return
-	else:
-		velocity = current_agent_position.direction_to(next_path_position) * movement_speed
+func _on_vision_area_body_exited(body: Node3D) -> void:
+	if body == target and state != states["Dead"]:
+		change_state("Idle")
 
-		move_and_slide()
+# ---------------------------
+#  State Management
+# ---------------------------
+func change_state(name: String):
+	if not states.has(name): return
+	if state and state.has_method("exit"):
+		state.exit()
+	state = states[name]
+	if state and state.has_method("enter"):
+		state.enter()
 
-# Take damage from player
-func damage(amount):
-	Audio.play(death_sound)
-
+# ---------------------------
+#  Combat + Damage
+# ---------------------------
+func damage(amount: int):
 	health -= amount
-
-	if health <= 0 and !destroyed:
-		destroy()
-
-# Destroy the enemy when out of healt
-func destroy():
-	Audio.play(death_sound)
-	
-	destroyed = true
-	queue_free()
-
-# Shoot when timer hits 0
-func _on_timer_timeout():
-	raycast.force_raycast_update()
-
-	if raycast.is_colliding():
-		# print("Locked onto target.")
-		var _collider = raycast.get_collider()
-		
-		shoot_energy_ball()
+	if health <= 0 and not destroyed:
+		change_state("Dead")
 
 func shoot_energy_ball():
 	var energy_ball_instance = energy_ball.instantiate() as Area3D
-	energy_ball_instance.position = energy_ball_spawn_marker.global_position
-	energy_ball_instance.transform.basis = energy_ball_spawn_marker.global_basis
+	energy_ball_instance.position = spawn_marker.global_position
+	energy_ball_instance.transform.basis = spawn_marker.global_basis
 	get_parent().add_child(energy_ball_instance)
+
+# ---------------------------
+#  States
+# ---------------------------
+class IdleState:
+	var enemy
+	func _init(e): enemy = e
+
+	func enter():
+		enemy.anim.play("Idle")
+		enemy.velocity = Vector3.ZERO
+
+	func update(delta):
+		# Do nothing unless vision triggers Chase
+		pass
+
+class ChaseState:
+	var enemy
+	func _init(e): enemy = e
+
+	func enter():
+		enemy.anim.play("Run")
+
+	func update(delta):
+		if not enemy.target: return
+		
+		# Pathfinding toward target
+		enemy.nav.set_target_position(enemy.target.global_position)
+		var next_pos = enemy.nav.get_next_path_position()
+		var dir = (next_pos - enemy.global_position).normalized()
+		enemy.velocity = dir * enemy.movement_speed
+		
+		if dir.length() > 0.01:
+			enemy.look_at(enemy.global_position + dir, Vector3.UP)
+		
+		enemy.move_and_slide()
+		
+		# If within shooting range, switch to Shoot state
+		var dist = enemy.global_position.distance_to(enemy.target.global_position)
+		if dist <= enemy.shoot_range:
+			enemy.change_state("Shoot")
+
+class ShootState:
+	var enemy
+	func _init(e): enemy = e
+
+	func enter():
+		enemy.anim.play("Shoot")  # Make sure you have a shoot animation
+		enemy.velocity = Vector3.ZERO
+
+	func update(delta):
+		if not enemy.target:
+			enemy.change_state("Idle")
+			return
+		
+		# Face target
+		enemy.look_at(Vector3(enemy.target.global_position.x, enemy.global_position.y, enemy.target.global_position.z - enemy.firing_target_offset), Vector3.UP, true)
+		
+		# Out of range? Chase again
+		var dist = enemy.global_position.distance_to(enemy.target.global_position)
+		if dist > enemy.shoot_range:
+			enemy.change_state("Chase")
+			return
+		
+		# Fire if cooldown finished
+		if enemy.shoot_timer.is_stopped():
+			enemy.shoot_energy_ball()
+			enemy.shoot_timer.start()
+
+class DeadState:
+	var enemy
+	func _init(e): enemy = e
+
+	func enter():
+		enemy.destroyed = true
+		enemy.anim.play("Death")
+		enemy.queue_free()
