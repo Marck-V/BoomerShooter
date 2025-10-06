@@ -8,7 +8,7 @@ class_name UpgradeButton
 @export var upgrade_id : String = ""
 @export var cost : int = 5
 @export var amount : float = 1.0 ## Amount you want to upgrade the property by
-@export_enum ("cooldown", "max_distance", "damage", "spread", "shot_count") var property_name : String
+@export_enum ("cooldown", "max_distance", "damage", "spread", "shot_count", "knockback") var property_name : String
 
 
 var level: int = 0:
@@ -17,9 +17,7 @@ var level: int = 0:
 		label.text = str(level) + "/1"
 
 func _ready() -> void:
-	z_index = 2
 	if get_parent() is UpgradeButton:
-		line_2d.z_index = 1
 		line_2d.add_point(global_position + size / 2)
 		line_2d.add_point(get_parent().global_position + size / 2)
 		

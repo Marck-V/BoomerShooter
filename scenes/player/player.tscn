@@ -1,13 +1,11 @@
-[gd_scene load_steps=15 format=3 uid="uid://bdi5vfh3p5wd4"]
+[gd_scene load_steps=13 format=3 uid="uid://bdi5vfh3p5wd4"]
 
-[ext_resource type="Script" uid="uid://kwdn6ccjucs4" path="res://scripts/player.gd" id="1_fjrip"]
-[ext_resource type="Texture2D" uid="uid://8ggihh27mlrr" path="res://assets/images/blob_shadow.png" id="2_b0fo8"]
-[ext_resource type="PackedScene" uid="uid://c12i6qjrmdcxb" path="res://scenes/pistol.tscn" id="3_smehm"]
-[ext_resource type="PackedScene" uid="uid://j4exufyutty0" path="res://scenes/rifle.tscn" id="5_fjrip"]
-[ext_resource type="AudioStream" uid="uid://cydjn1ct3hps2" path="res://assets/sounds/walking.ogg" id="5_ics1s"]
+[ext_resource type="Script" uid="uid://kwdn6ccjucs4" path="res://scripts/player/player.gd" id="1_fjrip"]
+[ext_resource type="Texture2D" uid="uid://l5u2f3ub1u3t" path="res://assets/images/blob_shadow.png" id="2_b0fo8"]
+[ext_resource type="AudioStream" uid="uid://c7a8a5uokopub" path="res://assets/sounds/walking.ogg" id="5_ics1s"]
 [ext_resource type="Shader" uid="uid://dcuhfc8jfneeb" path="res://shaders/psx.gdshader" id="6_3rfka"]
-[ext_resource type="Resource" uid="uid://ddlsyv6it1jcm" path="res://resources/weapons/rifle.tres" id="6_smehm"]
-[ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/shotgun.tscn" id="8_4vq5b"]
+[ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/weapons/base_weapon.tscn" id="7_i8sra"]
+[ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/weapons/shotgun.tscn" id="8_4vq5b"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gdq8c"]
 radius = 0.3
@@ -86,7 +84,6 @@ fov = 90.0
 
 [node name="PSXShader" type="MeshInstance3D" parent="Head/Camera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.68787)
-visible = false
 mesh = SubResource("QuadMesh_i8sra")
 
 [node name="RayCast" type="RayCast3D" parent="Head/Camera"]
@@ -95,17 +92,12 @@ collision_mask = 15
 
 [node name="WeaponHolder" type="Node3D" parent="Head/Camera"]
 
-[node name="Pistol" parent="Head/Camera/WeaponHolder" instance=ExtResource("3_smehm")]
-transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0.095, -0.065, -0.06)
+[node name="BaseWeapon" parent="Head/Camera/WeaponHolder" instance=ExtResource("7_i8sra")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.113, -0.094, -0.094)
+visible = false
 
 [node name="Shotgun" parent="Head/Camera/WeaponHolder" instance=ExtResource("8_4vq5b")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.14, -0.099, -0.092)
-visible = false
-
-[node name="Rifle" parent="Head/Camera/WeaponHolder" instance=ExtResource("5_fjrip")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.075, -0.099, -0.092)
-visible = false
-data = ExtResource("6_smehm")
 
 [node name="SlideCheck" type="RayCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.075, 0)
