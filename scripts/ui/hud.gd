@@ -13,9 +13,11 @@ func _ready() -> void:
 	interact_label.visible = false
 	player.weapon_changed.connect(_on_weapon_changed)
 	player.health_updated.connect(_on_health_updated)
+	GlobalVariables.ammo_changed.connect(on_ammo_changed)
 	upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
 	upgrade_station.get_node("Area3D").connect("body_exited", on_upgrade_station_body_exit)
 	GlobalVariables.points_changed.connect(on_points_changed)
+	GlobalVariables.health_changed.connect(_on_health_updated)
 	$PointsLabel.text = "Points: " + str(GlobalVariables.get_points())
 
 func on_points_changed(value : int):
@@ -27,17 +29,19 @@ func _on_health_updated(health):
 # Called when the player emits the weapon_changed signal
 func _on_weapon_changed(new_weapon_node):
 	current_weapon = new_weapon_node
+	$AmmoLabel.text = "x" + str(GlobalVariables.get_ammo(current_weapon.data.weapon_id))
 	update_weapon_stats_display()
 
-
-
+func on_ammo_changed(weapon_id, new_value):
+	if weapon_id == GlobalVariables.current_weapon:
+		$AmmoLabel.text = "x" + str(GlobalVariables.get_ammo(weapon_id))
+	
 # Updates the label with the current weapon’s stats
 func update_weapon_stats_display():
 	if current_weapon == null:
 		weapon_info_label.text = "No weapon selected."
 		return
 
-	
 	weapon_info_label.text = "Weapon Stats:\n"
 	weapon_info_label.text += "Damage: " + str(current_weapon.data.damage) + "\n"
 	weapon_info_label.text += "Cooldown: " + str(current_weapon.data.cooldown) + "\n"
