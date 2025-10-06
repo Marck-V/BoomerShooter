@@ -122,7 +122,8 @@ class ShootState:
 	func _init(e): enemy = e
 
 	func enter():
-		enemy.anim.play("Shoot")  # Make sure you have a shoot animation
+		# enemy.anim.play("Shoot")  /// UPDATE WHEN SHOOT ANIMATION IS ADDED
+		enemy.anim.play("Idle")
 		enemy.velocity = Vector3.ZERO
 
 	func update(delta):
