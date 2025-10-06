@@ -66,6 +66,8 @@ func _ready():
 	current_weapon = weapon_nodes[weapon_index]
 	current_weapon.visible = true
 	current_weapon.set_process(true)
+	GlobalVariables.current_weapon = current_weapon.data.weapon_id
+	GlobalVariables.player = self
 	crosshair.texture = current_weapon.data.crosshair
 	weapon_changed.emit(current_weapon)
 
@@ -246,6 +248,7 @@ func change_weapon(index):
 	current_weapon.set_process(true)
 	crosshair.texture = current_weapon.data.crosshair
 	Audio.play("assets/sounds/weapon_change.ogg")
+	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	weapon_changed.emit(current_weapon)
 
 func damage(amount):
