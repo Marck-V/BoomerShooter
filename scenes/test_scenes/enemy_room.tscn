@@ -18,6 +18,16 @@
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_e1was"]
 [ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
 
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
+sky_energy_multiplier = 2.0
+
+[sub_resource type="Sky" id="Sky_ffe0c"]
+sky_material = SubResource("ProceduralSkyMaterial_v2erg")
+
+[sub_resource type="Environment" id="Environment_v2erg"]
+background_mode = 2
+sky = SubResource("Sky_ffe0c")
+
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
 font = ExtResource("5_gtg8j")
 font_size = 36
@@ -254,16 +264,10 @@ points = PackedVector3Array(59.75, 6.75, 57.75, 59.75, 6.5, 57.75, 60, 6.5, 57.7
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_xi3rc"]
 points = PackedVector3Array(60, 7, 57.75, 60, 6.75, 57.75, 60.25, 6.75, 57.75, 60.25, 7, 57.75, 60, 7, 62.5, 60, 6.75, 62.5, 60.25, 6.75, 62.5, 60.25, 7, 62.5)
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
-
-[sub_resource type="Sky" id="Sky_ffe0c"]
-sky_material = SubResource("ProceduralSkyMaterial_v2erg")
-
-[sub_resource type="Environment" id="Environment_o841n"]
-background_mode = 2
-sky = SubResource("Sky_ffe0c")
-
 [node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_v2erg")
 
 [node name="LevelManager" type="Node" parent="."]
 process_mode = 3
@@ -546,6 +550,3 @@ weapon_id = "pistol"
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.1708, 5.5, 9.65415)
 type = "Ammo"
 weapon_id = "shotgun"
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_o841n")
