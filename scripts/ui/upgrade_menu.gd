@@ -1,7 +1,7 @@
 extends Control
 
 # File paths for each weapon
-var blaster: Weapon = load("res://resources/weapons/pistol.tres")
+var pistol: Weapon = load("res://resources/weapons/pistol.tres")
 var shotgun: Weapon = load("res://resources/weapons/shotgun.tres")
 var rifle: Weapon = load("res://resources/weapons/rifle.tres")
 var damage_increase = 5
@@ -79,7 +79,7 @@ func _on_upgrade_button_pressed(button: UpgradeButton, weapon_name: String) -> v
 
 	match weapon_name:
 		"pistol":
-			resource = blaster
+			resource = pistol
 			resource_path = PISTOL_PATH
 		"shotgun":
 			resource = shotgun
@@ -96,27 +96,44 @@ func attempt_upgrade(button: UpgradeButton, resource: Resource, resource_path: S
 	var cost = button.cost
 	var amount = button.amount
 	var property_name = button.property_name
+	var is_stat_upgrade = button.is_stat_upgrade  # ← new field in UpgradeButton
 
+	# Prevent repurchasing
 	if GlobalVariables.has_upgrade(id):
 		print("Upgrade already owned, ID:", id)
 		return
 
-	if not property_name in resource:
-		print("Property not found:", property_name)
+	if not GlobalVariables.spend_points(cost):
+		print("Not enough points for upgrade:", id)
 		return
 
-	if GlobalVariables.spend_points(cost):
-		var current = resource.get(property_name)
-		resource.set(property_name, current + amount)
-		ResourceSaver.save(resource, resource_path)
-		GlobalVariables.purchase_upgrade(id)
-		button.apply_visual_upgrade()
+	# Handle stat-based upgrades (old behavior)
+	if is_stat_upgrade:
+		if property_name in resource:
+			var current = resource.get(property_name)
+			resource.set(property_name, current + amount)
+			ResourceSaver.save(resource, resource_path)
+			print("Upgraded property:", property_name, "→", current + amount)
+		else:
+			print("Property not found:", property_name)
+			return
+	else:
+		# For behavioral upgrades, no resource modification
+		print("Behavioral upgrade purchased:", id)
+
+	# Record upgrade in global save
+	GlobalVariables.purchase_upgrade(id)
+
+	# Apply visuals
+	button.apply_visual_upgrade()
+
 
 
 func _on_reset_button_pressed() -> void:
 	# Reset weapon stats
 	rifle.damage = 25
 	shotgun.shot_count = 5
+	shotgun.spread = 5
 	ResourceSaver.save(shotgun, SHOTGUN_PATH)
 
 	# Reset points and upgrades

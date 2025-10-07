@@ -66,6 +66,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Pistol" type="Control" parent="."]
+visible = false
 anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
@@ -76,19 +77,22 @@ offset_left = 576.0
 offset_top = 139.0
 offset_right = 704.0
 offset_bottom = 267.0
-upgrade_id = "pistol_upgrade1"
+tooltip_text = "Ammo Refund"
+upgrade_id = "pistol_ammo_refund"
 
 [node name="PistolButton2" parent="Pistol/PistolButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 200.0
 offset_bottom = 328.0
-upgrade_id = "pistol_upgrade2"
+tooltip_text = "Piercing Shot"
+upgrade_id = "pistol_piercing"
 
 [node name="PistolButton3" parent="Pistol/PistolButton1/PistolButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 210.175
 offset_bottom = 338.175
-upgrade_id = "pistol_upgrade3"
+tooltip_text = "Lifesteal on kills"
+upgrade_id = "pistol_lifesteal"
 
 [node name="Shotgun" type="Control" parent="."]
 visible = false
@@ -101,21 +105,24 @@ offset_top = 139.0
 offset_right = 704.0
 offset_bottom = 267.0
 texture_normal = ExtResource("5_chbti")
-upgrade_id = "shotgun_upgrade1"
+upgrade_id = "shotgun_precision"
+property_name = "spread"
+amount = -3.0
+is_stat_upgrade = true
 
 [node name="ShotgunButton2" parent="Shotgun/ShotgunButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 200.0
 offset_bottom = 328.0
 texture_normal = ExtResource("6_ethjp")
-upgrade_id = "shotgun_upgrade2"
+upgrade_id = "shotgun_shield_break"
 
 [node name="ShotgunButton3" parent="Shotgun/ShotgunButton1/ShotgunButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
 offset_top = 210.175
 offset_bottom = 338.175
 texture_normal = ExtResource("7_0isde")
-upgrade_id = "shotgun_upgrade3"
+upgrade_id = "shotgun_glitch_shot"
 
 [node name="Rifle" type="Control" parent="."]
 visible = false
@@ -133,8 +140,8 @@ offset_bottom = 267.0
 tooltip_text = "Increase your damage by 5"
 texture_normal = ExtResource("2_jkuc8")
 upgrade_id = "rifle_upgrade1"
-amount = 5.0
 property_name = "damage"
+amount = 5.0
 
 [node name="RifleButton2" parent="Rifle/RifleButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
@@ -144,8 +151,8 @@ tooltip_text = "Explanation of upgrade 2"
 disabled = true
 texture_normal = ExtResource("3_6vqdt")
 upgrade_id = "rifle_upgrade2"
-amount = 5.0
 property_name = "damage"
+amount = 5.0
 
 [node name="RifleButton3" parent="Rifle/RifleButton1/RifleButton2" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
@@ -155,8 +162,8 @@ tooltip_text = "Explanation of upgrade 3"
 disabled = true
 texture_normal = ExtResource("4_ixicc")
 upgrade_id = "rifle_upgrade3"
-amount = 5.0
 property_name = "damage"
+amount = 5.0
 
 [node name="Panel" type="Panel" parent="."]
 layout_mode = 0

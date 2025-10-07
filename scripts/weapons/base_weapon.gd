@@ -64,7 +64,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 
 		raycast.target_position = raycast.to_local(raycast.global_transform.origin + dir * data.max_distance)
 		raycast.force_raycast_update()
-
+ 
 		if raycast.is_colliding():
 			var collider = raycast.get_collider()
 			if collider and collider.has_method("damage"):
@@ -78,4 +78,3 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 			
 func set_movement_state(moving: bool):
 	is_moving = moving
-	
