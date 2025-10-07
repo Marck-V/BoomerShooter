@@ -40,7 +40,7 @@ func _ready():
 	shoot_timer.wait_time = firing_rate
 
 func _physics_process(delta):
-	if state:
+	if state and state.has_method("update"):
 		state.update(delta)
 
 func _on_vision_area_body_entered(body: Node3D) -> void:
@@ -153,3 +153,6 @@ class DeadState:
 		enemy.destroyed = true
 		enemy.anim.play("Death")
 		enemy.queue_free()
+		
+	func update(_delta):
+		pass
