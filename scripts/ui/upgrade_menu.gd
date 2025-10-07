@@ -134,7 +134,10 @@ func _on_reset_button_pressed() -> void:
 	rifle.damage = 25
 	shotgun.shot_count = 5
 	shotgun.spread = 5
+
 	ResourceSaver.save(shotgun, SHOTGUN_PATH)
+	ResourceSaver.save(rifle, RIFLE_PATH)
+	ResourceSaver.save(pistol, PISTOL_PATH)
 
 	# Reset points and upgrades
 	GlobalVariables.reset_points()

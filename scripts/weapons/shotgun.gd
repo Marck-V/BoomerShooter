@@ -32,9 +32,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(Callable(self, "_reset_rotation"))
 	
-	print(has_glitch_shot)
 	if has_glitch_shot:
-		print(shot_tracker)
 		shot_tracker += 1
 		if shot_tracker >= 3:
 			data.damage *= dmg_multiplier
