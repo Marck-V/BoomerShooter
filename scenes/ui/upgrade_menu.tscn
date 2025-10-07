@@ -139,7 +139,7 @@ offset_right = 704.0
 offset_bottom = 267.0
 tooltip_text = "Increase your damage by 5"
 texture_normal = ExtResource("2_jkuc8")
-upgrade_id = "rifle_upgrade1"
+upgrade_id = "rifle_firerate"
 property_name = "damage"
 amount = 5.0
 
@@ -150,7 +150,7 @@ offset_bottom = 328.0
 tooltip_text = "Explanation of upgrade 2"
 disabled = true
 texture_normal = ExtResource("3_6vqdt")
-upgrade_id = "rifle_upgrade2"
+upgrade_id = "rifle_quickness"
 property_name = "damage"
 amount = 5.0
 
@@ -161,7 +161,7 @@ offset_bottom = 338.59
 tooltip_text = "Explanation of upgrade 3"
 disabled = true
 texture_normal = ExtResource("4_ixicc")
-upgrade_id = "rifle_upgrade3"
+upgrade_id = "rifle_chain_shot"
 property_name = "damage"
 amount = 5.0
 
