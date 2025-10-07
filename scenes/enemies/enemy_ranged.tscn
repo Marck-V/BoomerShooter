@@ -12,7 +12,7 @@ radius = 15.0
 
 [node name="RangedEnemy" type="CharacterBody3D" groups=["Enemy"]]
 script = ExtResource("1_xbodr")
-movement_speed = 5.0
+movement_speed = 6.0
 
 [node name="enemy-humanoid" parent="." instance=ExtResource("2_xbodr")]
 
