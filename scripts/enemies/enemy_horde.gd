@@ -146,5 +146,5 @@ class DeadState:
 
 	func enter():
 		enemy.destroyed = true
-		enemy.anim.play("Death")
+		#enemy.anim.play("Death")
 		enemy.queue_free()
