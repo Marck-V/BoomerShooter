@@ -7,10 +7,8 @@ var player
 signal points_changed(new_value: int)
 signal ammo_changed(weapon_id, new_value: int)
 signal health_changed(new_value: int)
-signal upgrade_purchased(upgrade_id: String)
 
-
-func _init():
+func _ready():
 	# Load from disk or use default save
 	if ResourceLoader.exists("user://player_save.res"):
 		save_data = ResourceLoader.load("user://player_save.res") as PlayerData
@@ -21,8 +19,7 @@ func _init():
 	for weapon_id in ["pistol", "shotgun", "rifle"]:
 		if not save_data.ammo.has(weapon_id):
 			save_data.ammo[weapon_id] = 50
-
-func _ready():
+			
 	# Emit current value to HUD, etc.
 	points_changed.emit(save_data.points)
 
@@ -54,7 +51,6 @@ func has_upgrade(id: String) -> bool:
 
 func purchase_upgrade(id: String):
 	save_data.upgrades[id] = true
-	upgrade_purchased.emit(id)
 	save_to_disk()
 
 func save_to_disk():
@@ -87,14 +83,14 @@ func refill_all_ammo():
 		ammo_changed.emit(weapon_id, max_ammo)
 	
 # Health
+
 func get_health():
 	return player.health
 
 func add_health(amount: int):
 	player.health = clamp(player.health + amount, 0, 100)
 	health_changed.emit(player.health)	
-	
-# Helper Functions
+
 func get_all_children(node) -> Array:
 	var nodes : Array = []
 	for n in node.get_children():

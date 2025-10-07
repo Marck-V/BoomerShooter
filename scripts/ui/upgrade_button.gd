@@ -7,8 +7,10 @@ class_name UpgradeButton
 
 @export var upgrade_id : String = ""
 @export var cost : int = 5
-@export var amount : float = 1.0 ## Amount you want to upgrade the property by
+@export_subgroup("Upgrade Effect")
 @export_enum ("cooldown", "max_distance", "damage", "spread", "shot_count") var property_name : String
+@export var amount : float = 1.0 ## Amount you want to upgrade the property by
+@export var is_stat_upgrade: bool = false  ## True if you want to modify a weapon stat, false if you want the upgrade to unlock a new behavior on the weapon.
 
 
 var level: int = 0:
