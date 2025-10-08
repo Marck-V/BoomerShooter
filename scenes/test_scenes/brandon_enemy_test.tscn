@@ -1,8 +1,9 @@
-[gd_scene load_steps=65 format=4 uid="uid://u1e4jr10rnn2"]
+[gd_scene load_steps=66 format=4 uid="uid://u1e4jr10rnn2"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_n06gy"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_6q1ol"]
 [ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="5_ghwmg"]
+[ext_resource type="PackedScene" uid="uid://c7i0pfrqlkigr" path="res://scenes/enemies/shield.tscn" id="5_r6rxp"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="6_230vx"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="7_e3xtb"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="8_tb78y"]
@@ -269,17 +270,19 @@ crosshair = NodePath("../HUD/Crosshair")
 
 [node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("5_ghwmg")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 19.5227, 9.98895, 45.4074)
-movement_speed = 7.0
 target = NodePath("../../Player")
+
+[node name="Shield" parent="Enemies/MeleeEnemy" instance=ExtResource("5_r6rxp")]
 
 [node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("5_ghwmg")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 6.3707, 10.0018, 45.2967)
-movement_speed = 7.0
 target = NodePath("../../Player")
 
 [node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_230vx")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 55.8655)
 target = NodePath("../../Player")
+
+[node name="Shield" parent="Enemies/RangedEnemy" instance=ExtResource("5_r6rxp")]
 
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_230vx")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 51.7679)
@@ -454,6 +457,11 @@ size = Vector3(36.7252, 1.16211, 31.1978)
 
 [node name="OmniLight3D" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 7, 9)
+light_energy = 16.0
+omni_range = 31.3
+
+[node name="OmniLight3D2" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.0592, 14.8221, 55.927)
 light_energy = 16.0
 omni_range = 31.3
 
