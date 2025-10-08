@@ -247,7 +247,7 @@ points = PackedVector3Array(59.75, 6.75, 57.75, 59.75, 6.5, 57.75, 60, 6.5, 57.7
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_xi3rc"]
 points = PackedVector3Array(60, 7, 57.75, 60, 6.75, 57.75, 60.25, 6.75, 57.75, 60.25, 7, 57.75, 60, 7, 62.5, 60, 6.75, 62.5, 60.25, 6.75, 62.5, 60.25, 7, 62.5)
 
-[node name="Node3D" type="Node3D"]
+[node name="Node3D2" type="Node3D"]
 
 [node name="LevelManager" type="Node" parent="."]
 process_mode = 3

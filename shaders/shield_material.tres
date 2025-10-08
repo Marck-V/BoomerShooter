@@ -1,0 +1,18 @@
+[gd_resource type="ShaderMaterial" load_steps=4 format=3 uid="uid://c5f7xh7s0yiw1"]
+
+[ext_resource type="Shader" uid="uid://bu3y87igib5xl" path="res://shaders/shield_shader.gdshader" id="1_nmejy"]
+
+[sub_resource type="Gradient" id="Gradient_nmejy"]
+colors = PackedColorArray(0.744469, 0, 0.0919504, 1, 0.267485, 0.665585, 0.931713, 1)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture1D_e4wo6"]
+gradient = SubResource("Gradient_nmejy")
+
+[resource]
+render_priority = 0
+shader = ExtResource("1_nmejy")
+shader_parameter/fresnel_power = 3.0
+shader_parameter/emission_power = 3.0
+shader_parameter/white_lerp = 0.2
+shader_parameter/scroll_speed = 0.2
+shader_parameter/colors_texture = SubResource("GradientTexture1D_e4wo6")
