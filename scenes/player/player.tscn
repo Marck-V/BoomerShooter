@@ -15,7 +15,7 @@ radius = 0.3
 height = 1.5
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_3rfka"]
-render_priority = 0
+render_priority = 2
 shader = ExtResource("6_3rfka")
 shader_parameter/enable_fog = false
 shader_parameter/fog_color = Color(0.973535, 0.973535, 0.973535, 1)
@@ -88,6 +88,7 @@ fov = 90.0
 [node name="PSXShader" type="MeshInstance3D" parent="Head/Camera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.68787)
 visible = false
+transparency = 0.2
 mesh = SubResource("QuadMesh_i8sra")
 
 [node name="RayCast" type="RayCast3D" parent="Head/Camera"]
