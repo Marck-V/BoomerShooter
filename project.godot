@@ -146,6 +146,14 @@ back={
 ]
 }
 
+[layer_names]
+
+3d_physics/layer_1="Player"
+3d_physics/layer_2="Environment"
+3d_physics/layer_3="Enemy Body"
+3d_physics/layer_4="Enemy Hurtbox"
+3d_physics/layer_5="Bullets"
+
 [physics]
 
 common/physics_interpolation=true
