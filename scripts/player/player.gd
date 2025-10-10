@@ -83,10 +83,10 @@ func _physics_process(delta):
 			Input.get_action_strength("move_left") > 0.0 or
 			Input.get_action_strength("move_right") > 0.0
 		)
-		current_weapon.set_movement_state(is_walking)
+		current_weapon.set_movement_state(is_walking and not sliding)
 		
 	if falling and is_on_floor() and sliding:
-		slide_speed += fall_distance / 10
+		slide_speed += fall_distance / 10.0
 	fall_distance = -gravity
 
 	movement_velocity = transform.basis * movement_velocity

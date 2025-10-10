@@ -82,21 +82,23 @@ func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
 # ---------------------------
 #  State Management
 # ---------------------------
-func change_state(name: String):
-	if not states.has(name):
+func change_state(state_name: String):
+	if not states.has(state_name):
 		return
 	if state and state.has_method("exit"):
 		state.exit()
-	state = states[name]
+	state = states[state_name]
 	if state and state.has_method("enter"):
 		state.enter()
 
 # ---------------------------
 #  Combat + Damage
 # ---------------------------
-func damage(amount: int):
+func damage(amount: float, multiplier : float):
 	if shield:
 		amount = shield.absorb_damage(amount)
+	else:
+		amount *= multiplier
 	health -= amount
 	if health <= 0 and not destroyed:
 		change_state("Dead")
@@ -188,7 +190,7 @@ class DeadState:
 
 	func enter():
 		enemy.destroyed = true
-		enemy.anim.play("Death")
+		#enemy.anim.play("Death")
 		enemy.queue_free()
 		
 	func update(_delta):

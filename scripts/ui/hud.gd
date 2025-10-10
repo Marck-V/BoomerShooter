@@ -32,7 +32,7 @@ func _on_weapon_changed(new_weapon_node):
 	$AmmoLabel.text = "x" + str(GlobalVariables.get_ammo(current_weapon.data.weapon_id))
 	update_weapon_stats_display()
 
-func on_ammo_changed(weapon_id, new_value):
+func on_ammo_changed(weapon_id, _new_value):
 	if weapon_id == GlobalVariables.current_weapon:
 		$AmmoLabel.text = "x" + str(GlobalVariables.get_ammo(weapon_id))
 	
