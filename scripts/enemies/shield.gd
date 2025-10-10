@@ -2,18 +2,19 @@ extends Node3D
 
 signal shield_destroyed
 
-@export var max_hp := 50
+@export var max_hp := 50.0
 @export var damage_reduction := 0.5 # 50% less damage while shielded
 @export var shield_material : ShaderMaterial
 
 var hp := max_hp
 
-@onready var mesh = $MeshInstance3D
+#@onready var mesh = $MeshInstance3D
 
 
 func _ready():
-	if shield_material:
-		mesh.material_override = shield_material
+	pass
+	#if shield_material:
+		#mesh.material_override = shield_material
 		
 
 func absorb_damage(amount: float) -> float:
