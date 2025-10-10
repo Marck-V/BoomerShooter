@@ -7,6 +7,7 @@ extends CharacterBody3D
 @export var target: Node3D                  # Player node to chase
 @export var attack_cooldown: float = 1.2
 @export var vision_range: float = 10.0      # Detection radius
+@export var debug := false
 
 # --- State machine ---
 var state = null

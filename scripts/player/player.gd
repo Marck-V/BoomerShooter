@@ -55,6 +55,7 @@ func _ready():
 
 	raycast.enabled = true
 	raycast.target_position = Vector3(0, 0, -100)
+	raycast.collision_mask = (1 << 3) | (1 << 1)
 	
 	rotation_target = Vector3(camera.rotation.x, rotation.y, 0)
 	for child in weapon_holder.get_children():
