@@ -1,4 +1,4 @@
-[gd_scene load_steps=66 format=4 uid="uid://u1e4jr10rnn2"]
+[gd_scene load_steps=67 format=4 uid="uid://u1e4jr10rnn2"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_n06gy"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_6q1ol"]
@@ -6,6 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://c7i0pfrqlkigr" path="res://scenes/enemies/shield.tscn" id="5_r6rxp"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="6_230vx"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="7_e3xtb"]
+[ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="7_o2kcv"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="8_tb78y"]
 [ext_resource type="Material" uid="uid://g1l8euhy1o6" path="res://trenchbroom/textures/world/texture_02.tres" id="9_j26d1"]
 [ext_resource type="Material" uid="uid://bketfk52opqbk" path="res://trenchbroom/textures/world/texture_13_wall.tres" id="10_2ufef"]
@@ -289,6 +290,9 @@ target = NodePath("../../Player")
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_230vx")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 51.7679)
 target = NodePath("../../Player")
+
+[node name="CharacterBody3D" parent="Enemies" instance=ExtResource("7_o2kcv")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.11756, 5.85333, 17.1114)
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
