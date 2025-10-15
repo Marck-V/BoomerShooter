@@ -271,28 +271,34 @@ crosshair = NodePath("../HUD/Crosshair")
 
 [node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("5_ghwmg")]
 process_mode = 4
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 19.5227, 9.98895, 45.4074)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 19.5227, 9.98895, 68.4047)
 target = NodePath("../../Player")
 
 [node name="Shield" parent="Enemies/MeleeEnemy" instance=ExtResource("5_r6rxp")]
 
 [node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("5_ghwmg")]
 process_mode = 4
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 6.3707, 10.0018, 45.2967)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 6.3707, 10.0018, 68.294)
 target = NodePath("../../Player")
 
 [node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_230vx")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 55.8655)
+process_mode = 4
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 67.8386)
 target = NodePath("../../Player")
 
 [node name="Shield" parent="Enemies/RangedEnemy" instance=ExtResource("5_r6rxp")]
 
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_230vx")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 51.7679)
+process_mode = 4
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 65.6403)
 target = NodePath("../../Player")
 
-[node name="CharacterBody3D" parent="Enemies" instance=ExtResource("7_o2kcv")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.11756, 5.85333, 17.1114)
+[node name="GodotBoss" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_o2kcv")]
+transform = Transform3D(-2, 0, 1.74846e-07, 0, 2, 0, -1.74846e-07, 0, -2, 14.571, 10.4313, 55.0967)
+movement_speed = 7.5
+target = NodePath("../../Player")
+debug = true
+charge_duration = 1.5
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
