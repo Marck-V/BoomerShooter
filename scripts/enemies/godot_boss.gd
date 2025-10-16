@@ -16,6 +16,7 @@ extends CharacterBody3D
 @export var charge_cooldown: float = 4.0
 @export var charge_windup_time: float = 1.3
 @export var charge_recovery_time: float = 2.1
+@export var charge_material: StandardMaterial3D = preload("res://shaders/boss_charge_shader.tres")
 
 # --- State machine ---
 var state = null
@@ -26,6 +27,8 @@ var destroyed: bool = false
 var original_material : Material
 var shield_material : ShaderMaterial = preload("res://shaders/glass_shader.tres")
 var animation_done := false
+var just_charged := false
+
 # --- Scene references ---
 @onready var nav: NavigationAgent3D = $NavigationAgent3D
 @onready var anim: AnimationPlayer = $"godotman/AnimationPlayer"
@@ -46,6 +49,7 @@ func _ready():
 		"Idle": IdleState.new(self),
 		"Chase": ChaseState.new(self),
 		"Attack": AttackState.new(self),
+		"Recovery": RecoveryState.new(self),
 		"Dead": DeadState.new(self),
 		"Charge": ChargeState.new(self),
 	}
@@ -58,11 +62,14 @@ func _ready():
 	else:
 		original_material = model.mesh.surface_get_material(0)
 
+	model.set_surface_override_material(0, original_material)
+
 	if shield:
 		shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
 		apply_shield_material()
 
 	anim.connect("animation_finished", Callable(self, "_on_animation_finished"))
+	charge_timer.connect("timeout", Callable(self, "_on_charge_timer_timeout"))
 
 	if debug_label:
 		debug_label.visible = debug
@@ -81,9 +88,9 @@ func _on_vision_area_body_entered(body: Node3D) -> void:
 	if body == target and state != states["Dead"]:
 		change_state("Chase")
 
-func _on_vision_area_body_exited(body: Node3D) -> void:
-	if body == target and state != states["Dead"]:
-		change_state("Idle")
+# func _on_vision_area_body_exited(body: Node3D) -> void:
+# 	if body == target and state != states["Dead"]:
+# 		change_state("Idle")
 
 func apply_shield_material():
 	$ShieldShader.visible = true
@@ -93,6 +100,20 @@ func remove_shield_material():
 	$ShieldShader.visible = false
 	model.set_surface_override_material(0, original_material)
 
+func apply_charge_material():
+	if model:
+		model.set_surface_override_material(0, charge_material)
+
+		if debug:
+			print("[Boss] Charge material applied")
+
+func remove_charge_material():
+	if model:
+		model.set_surface_override_material(0, original_material)
+
+		if debug:
+			print("[Boss] Charge material removed.")
+
 func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
 	var mesh = mesh_instance.mesh.duplicate()
 	for i in range(mesh.get_surface_count()):
@@ -101,12 +122,45 @@ func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
 			mesh.surface_set_material(i, mat.duplicate())
 	mesh_instance.mesh = mesh
 
+func set_charge_glow(active: bool, instant: bool = false):
+	var mat = model.get_surface_override_material(0)
+	if mat == null:
+		return
+
+	var target_emission := 3.0 if active else 0.0
+	var target_color := Color(1.0, 0.4, 0.1) if active else Color(0, 0, 0)
+
+	if instant:
+		mat.emission_enabled = active
+		mat.emission = target_color
+		mat.emission_energy_multiplier = target_emission
+	else:
+		var tween = create_tween()
+		tween.tween_property(mat, "emission_energy_multiplier", target_emission, 0.6)
+		if active:
+			mat.emission_enabled = true
+			mat.emission = target_color
+		else:
+			tween.tween_callback(Callable(self, "_disable_emission_if_inactive"))
+
+func _disable_emission_if_inactive():
+	var mat = model.get_surface_override_material(0)
+	if mat and mat.emission_energy_multiplier <= 0.1:
+		mat.emission_enabled = false
+
 func _on_animation_finished(anim_name: String):
 	# Only mark done for attack animation
 	if anim_name == "attack":
 		animation_done = true
 		if debug:
 			print("[Boss] Attack animation finished.")
+
+func _on_charge_timer_timeout():
+	if debug:
+		print("[Boss] Charge cooldown finished — ready to charge again.")
+
+	if state == states["Chase"]:
+		change_state("Charge")
 
 # ---------------------------
 #  State Management
@@ -130,8 +184,7 @@ func change_state(state_name: String):
 	if debug:
 		print("[Boss] Entering state:", state_name)
 	if debug_label:
-		var format_debug = "State: " + state_name + "\nCharge Timer: %s"
-		debug_label.text = format_debug % snappedf(charge_timer.time_left, 0.01)
+		debug_label.text = "State: %s\nCharge CD: %.2f" % [get_state_name(state), charge_timer.time_left]
 
 func get_state_name(current_state):
 	for state_name in states.keys():
@@ -190,7 +243,8 @@ class ChaseState:
 
 	func update(_delta):
 		# if enemy.debug:
-		# 	print("[Boss] Chase: charge timer stopped =", enemy.charge_timer.is_stopped())
+		# 	print("[Boss] Chase: charge timer stopped = %s, time left %s" 
+		# 			% [enemy.charge_timer.is_stopped(), snappedf(enemy.charge_timer.time_left, 0.01)])
 
 		if enemy.charge_timer.is_stopped():
 			enemy.change_state("Charge")
@@ -228,10 +282,8 @@ class AttackState:
 
 	func update(_delta):
 		if not enemy.target:
-			enemy.change_state("Idle")
 			return
 
-		# Only deal damage once during the attack
 		if not damage_done:
 			enemy.ray.force_raycast_update()
 			if enemy.ray.is_colliding() and enemy.ray.get_collider() == enemy.target:
@@ -239,14 +291,24 @@ class AttackState:
 				if col and col.has_method("damage"):
 					col.damage(enemy.damage_to_player)
 					damage_done = true
+					
 					if enemy.debug:
-						print("[Boss] Dealt", enemy.damage_to_player, "damage to player.")
+						print("[Boss] Dealt", enemy.damage_to_player, "damage to player")
 
-		# Wait until the animation finishes before changing state
 		if enemy.animation_done:
 			if enemy.debug:
-				print("[Boss] Attack animation complete — returning to Chase.")
-			enemy.change_state("Chase")
+				print("[Boss] Attack animation complete")
+			
+			if enemy.just_charged:
+				enemy.just_charged = false
+				# Remove the charge material when leaving the charge state
+				enemy.remove_charge_material()
+				# Fade glow down
+				enemy.set_charge_glow(false)
+				enemy.change_state("Recovery")
+			else:
+				enemy.change_state("Chase")
+				
 
 class ChargeState:
 	var enemy
@@ -261,22 +323,22 @@ class ChargeState:
 		elapsed = 0.0
 		enemy.velocity = Vector3.ZERO
 
-		# --- WIND-UP PHASE ---
-		# Temporarily use the idle animation to simulate the boss "preparing" to charge.
-		# You can later replace this with a custom "charge_windup" or "roar" animation.
-		enemy.anim.play("idle")
-		enemy.anim.speed_scale = 0.8  # slightly slower to emphasize buildup
-
-		# Start the cooldown so boss can’t charge again immediately after.
-		enemy.charge_timer.start(enemy.charge_cooldown)
-
-		# Save the direction towards the player now (so charge goes straight)
 		if enemy.target:
 			enemy.nav.set_target_position(enemy.target.global_position)
 			direction = (enemy.target.global_position - enemy.global_position).normalized()
 
+		# Apply visual indicator
+		enemy.apply_charge_material()
+
+		# Turn on charge glow
+		enemy.set_charge_glow(true)
+
+		# Wind-up animation (temp)
+		enemy.anim.play("idle")
+		enemy.anim.speed_scale = 0.7
+
 		if enemy.debug:
-			print("[Boss] Entering Charge state — WIND-UP phase.")
+			print("[Boss] Charge: WIND-UP started!")
 
 	func update(delta):
 		elapsed += delta
@@ -286,38 +348,84 @@ class ChargeState:
 				# Wait during wind-up before starting the charge
 				if elapsed >= enemy.charge_windup_time:
 					enemy.anim.speed_scale = 1.0  # reset animation speed
-					if enemy.debug:
-						print("[Boss] Wind-up complete — CHARGING!")
 					enemy.anim.play("run")
 					phase = "charging"
 					elapsed = 0.0
 
+					if enemy.debug:
+						print("[Boss] Wind-up complete — CHARGING!")
+
 			"charging":
+				enemy.just_charged = true
+
+				# Charge "steering" logic, like Rein from OW
+				if enemy.target:
+					var to_target = (enemy.target.global_position - enemy.global_position).normalized()
+					
+					# Adjust how sharply boss turns (smaller = tighter turns)
+					var turn_speed = 2.0  # radians per second — tweak to tune responsiveness
+					
+					# Smoothly rotate the direction vector toward the target
+					direction = direction.slerp(to_target, turn_speed * delta).normalized()
+
+				# Apply velocity and movement — KEEP ONLY THIS FOR LINEAR CHARGE
 				enemy.velocity = direction * enemy.charge_speed
 				enemy.move_and_slide()
 
+				# Make boss face movement direction — REMOVE TO REMOVE "STEERING"
+				var look_point = enemy.global_position + direction
+				enemy.look_at(look_point, Vector3.UP)
+				enemy.rotate_y(deg_to_rad(180))
+				
+				# Collision Check
 				enemy.ray.force_raycast_update()
 				if enemy.ray.is_colliding() and enemy.ray.get_collider() == enemy.target:
 					if enemy.target.has_method("damage"):
 						enemy.target.damage(enemy.charge_damage)
 						if enemy.debug:
 							print("[Boss] Charge hit player — dealt", enemy.charge_damage, "damage.")
-					# Immediately follow up with an attack
 					enemy.change_state("Attack")
 					return
 
 				if elapsed >= enemy.charge_duration:
 					if enemy.debug:
-						print("[Boss] Charge duration ended — follow-up attack next.")
+						print("[Boss] Charge duration ended — following up with Attack.")
 					enemy.change_state("Attack")
 					return
+	
+	""" If we want charge shader to end immediately after done charging,
+		Uncomment this code and modifiy the just_charged logic in AttackState"""
+	# func exit():
+	# 	# Remove the charge material when leaving the charge state
+	# 	enemy.remove_charge_material()
 
-			"recovery":
-				# Optional: Add recovery delay after charging (if you want a pause before resuming chase)
-				if elapsed >= enemy.charge_recovery_time:
-					if enemy.debug:
-						print("[Boss] Charge recovery finished. Returning to Chase.")
-					enemy.change_state("Chase")
+	# 	# Fade glow down
+	# 	enemy.set_charge_glow(false)
+
+class RecoveryState:
+	var enemy
+	var elapsed = 0.0
+
+	func _init(e): enemy = e
+
+	func enter():
+		elapsed = 0.0
+		enemy.velocity = Vector3.ZERO
+		enemy.anim.play("idle") # for the time being
+
+		if enemy.debug:
+			print("[Boss] Entering recovery phase after attack.")
+
+	func update(delta):
+		elapsed += delta
+		if elapsed >= enemy.charge_recovery_time:
+			if enemy.debug:
+				print("[Boss] Recovery done — starting charge cooldown.")
+			
+			# Start charge cooldown
+			enemy.charge_timer.start(enemy.charge_cooldown)
+
+			enemy.change_state("Chase")
 
 
 class DeadState:

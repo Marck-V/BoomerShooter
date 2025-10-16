@@ -294,11 +294,17 @@ transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.160
 target = NodePath("../../Player")
 
 [node name="GodotBoss" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_o2kcv")]
-transform = Transform3D(-2, 0, 1.74846e-07, 0, 2, 0, -1.74846e-07, 0, -2, 14.571, 10.4313, 55.0967)
-movement_speed = 7.5
+transform = Transform3D(-2, 0, 1.74846e-07, 0, 2, 0, -1.74846e-07, 0, -2, 14.571, 10.0353, 55.0967)
+movement_speed = 8.5
 target = NodePath("../../Player")
 debug = true
+charge_speed = 13.0
 charge_duration = 1.5
+charge_cooldown = 8.0
+charge_recovery_time = 1.5
+
+[node name="ChargeTimer" parent="Enemies/GodotBoss" index="4"]
+one_shot = true
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
@@ -478,3 +484,5 @@ light_energy = 16.0
 omni_range = 31.3
 
 [editable path="HUD"]
+[editable path="Enemies/GodotBoss"]
+[editable path="Enemies/GodotBoss/godotman"]
