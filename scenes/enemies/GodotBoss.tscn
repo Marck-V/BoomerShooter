@@ -100,7 +100,7 @@ bones/42/position = Vector3(-0.441344, 0.130449, -0.18991)
 bones/42/rotation = Quaternion(0.707087, -0.00524543, -0.00524543, 0.707087)
 
 [node name="HeadAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="1"]
-transform = Transform3D(1, 2.84217e-14, 4.76837e-07, 3.39289e-07, 0.702645, -0.71154, -3.35047e-07, 0.71154, 0.702645, -3.25882e-13, 2.7266, 0.145971)
+transform = Transform3D(1, -2.18847e-12, 4.76838e-07, 3.3929e-07, 0.702646, -0.711539, -3.35047e-07, 0.711539, 0.702646, -4.03429e-12, 2.72661, 0.14597)
 bone_name = "head"
 bone_idx = 4
 
@@ -116,7 +116,7 @@ shape = SubResource("BoxShape3D_tivg1")
 debug_color = Color(0.997749, 0, 0.158895, 0.42)
 
 [node name="ChestAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="2"]
-transform = Transform3D(1, -1.13687e-13, 2.38418e-07, 1.11563e-13, 1, 8.90774e-09, -2.38418e-07, -8.90789e-09, 1, -2.38285e-13, 1.53549, -0.123056)
+transform = Transform3D(1, -1.3074e-12, 2.38418e-07, 1.30527e-12, 1, 8.90773e-09, -2.38418e-07, -8.90788e-09, 1, -2.20623e-12, 1.53549, -0.123056)
 bone_name = "body.002"
 bone_idx = 2
 
@@ -132,7 +132,7 @@ shape = SubResource("BoxShape3D_btt32")
 debug_color = Color(0.797064, 0.423296, 5.77569e-07, 0.42)
 
 [node name="TorsoAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="3"]
-transform = Transform3D(1, -1.7053e-13, 2.38418e-07, 1.7053e-13, 1, -1.42109e-13, -2.38418e-07, 0, 1, -1.13807e-13, 0.791659, -0.123056)
+transform = Transform3D(1, -1.36424e-12, 2.38418e-07, 1.36424e-12, 1, -1.49686e-13, -2.38418e-07, 0, 1, -1.19383e-12, 0.791659, -0.123056)
 bone_name = "body.001"
 bone_idx = 1
 
@@ -148,7 +148,7 @@ shape = SubResource("BoxShape3D_j1mxd")
 debug_color = Color(0.786286, 0.432205, 9.62615e-07, 0.42)
 
 [node name="LeftThighAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="4"]
-transform = Transform3D(0.999841, 0.0172169, -0.00459549, 0.0162342, -0.986408, -0.16351, -0.00734811, 0.16341, -0.986531, 0.436948, 0.90013, -0.152154)
+transform = Transform3D(0.999841, 0.0172168, -0.00459483, 0.0162341, -0.986408, -0.16351, -0.00734735, 0.16341, -0.986531, 0.436948, 0.90013, -0.152154)
 bone_name = "foot.L.001"
 bone_idx = 32
 
@@ -164,7 +164,7 @@ shape = SubResource("CapsuleShape3D_btt32")
 debug_color = Color(0.801515, 0.419505, 7.70092e-07, 0.42)
 
 [node name="LeftCalfAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="5"]
-transform = Transform3D(0.999794, -0.00329102, -0.0200251, 0.000993184, -0.977646, 0.210254, -0.0202693, -0.21023, -0.977442, 0.442806, 0.564552, -0.0965614)
+transform = Transform3D(0.999794, -0.00329086, -0.0200245, 0.00099312, -0.977647, 0.210253, -0.0202686, -0.21023, -0.977442, 0.442806, 0.564552, -0.0965619)
 bone_name = "foot.L.002"
 bone_idx = 33
 
@@ -180,7 +180,7 @@ shape = SubResource("CapsuleShape3D_4ckck")
 debug_color = Color(0.805803, 0.415788, 5.77569e-07, 0.42)
 
 [node name="RightThighAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="6"]
-transform = Transform3D(0.999841, -0.017217, 0.00459531, -0.0162343, -0.986408, -0.163511, 0.00734809, 0.16341, -0.986531, -0.436948, 0.90013, -0.152154)
+transform = Transform3D(0.999841, -0.0172166, 0.00459492, -0.0162337, -0.986408, -0.163511, 0.00734742, 0.16341, -0.986531, -0.436948, 0.90013, -0.152154)
 bone_name = "foot.R.001"
 bone_idx = 35
 
@@ -196,7 +196,7 @@ shape = SubResource("CapsuleShape3D_j1mxd")
 debug_color = Color(0.827497, 0.395928, 0, 0.42)
 
 [node name="RightCalfAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="7"]
-transform = Transform3D(0.999794, 0.00329087, 0.0200249, -0.000993272, -0.977646, 0.210254, 0.0202693, -0.21023, -0.977442, -0.442806, 0.564552, -0.0965611)
+transform = Transform3D(0.999794, 0.00329115, 0.0200244, -0.000992737, -0.977647, 0.210253, 0.0202686, -0.210229, -0.977442, -0.442805, 0.564552, -0.0965618)
 bone_name = "foot.R.002"
 bone_idx = 36
 
@@ -212,7 +212,7 @@ shape = SubResource("CapsuleShape3D_4ckck")
 debug_color = Color(0.805803, 0.415788, 5.77569e-07, 0.42)
 
 [node name="LeftBicepAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="8"]
-transform = Transform3D(-0.572052, 0.807931, 0.141433, -0.820217, -0.563499, -0.0985541, 7.24141e-05, -0.172384, 0.98503, 1.06053, 2.24742, -0.208511)
+transform = Transform3D(-0.572051, 0.807932, 0.141433, -0.820218, -0.563498, -0.0985538, 7.24746e-05, -0.172384, 0.98503, 1.06053, 2.24742, -0.208512)
 bone_name = "hand.L.001"
 bone_idx = 6
 
@@ -228,7 +228,7 @@ shape = SubResource("CylinderShape3D_btt32")
 debug_color = Color(0.822928, 0.400265, 0, 0.42)
 
 [node name="RightBicepAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="9"]
-transform = Transform3D(-0.572052, -0.807931, -0.141433, 0.820217, -0.563499, -0.0985541, -7.22902e-05, -0.172384, 0.985029, -1.06053, 2.24742, -0.208511)
+transform = Transform3D(-0.572051, -0.807932, -0.141433, 0.820218, -0.563498, -0.098554, -7.22082e-05, -0.172384, 0.985029, -1.06053, 2.24742, -0.208512)
 bone_name = "hand.R.001"
 bone_idx = 19
 
@@ -244,7 +244,7 @@ shape = SubResource("CylinderShape3D_btt32")
 debug_color = Color(0.822928, 0.400265, 0, 0.42)
 
 [node name="RightHandAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="10"]
-transform = Transform3D(-0.888878, -0.345014, 0.30143, 0.456849, -0.716914, 0.526615, 0.0344103, 0.605804, 0.794868, -1.85044, 1.35544, -0.0516921)
+transform = Transform3D(-0.888878, -0.345014, 0.30143, 0.456849, -0.716914, 0.526614, 0.0344102, 0.605804, 0.794869, -1.85044, 1.35545, -0.0516927)
 bone_name = "handIK.R"
 bone_idx = 22
 
@@ -260,7 +260,7 @@ shape = SubResource("CylinderShape3D_j1mxd")
 debug_color = Color(0.791319, 0.428091, 0, 0.42)
 
 [node name="LeftHandAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="11"]
-transform = Transform3D(-0.888878, 0.345014, -0.30143, -0.456849, -0.716914, 0.526614, -0.0344103, 0.605804, 0.794869, 1.85044, 1.35544, -0.0516919)
+transform = Transform3D(-0.888878, 0.345014, -0.30143, -0.456849, -0.716914, 0.526614, -0.0344102, 0.605804, 0.794869, 1.85044, 1.35545, -0.0516924)
 bone_name = "handIK.L"
 bone_idx = 9
 
@@ -290,7 +290,7 @@ one_shot = true
 wait_time = 4.0
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
-path_height_offset = 1.0
+path_height_offset = 0.5
 debug_enabled = true
 
 [node name="HitRaycast" type="RayCast3D" parent="."]
