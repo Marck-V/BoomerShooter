@@ -22,7 +22,7 @@ func _ready():
 func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	# Call the original BaseWeapon fire logic
 	super.fire(origin, direction, camera, raycast)
-
+	
 	# Reset rotation and tween
 	rotation_degrees.x = 0
 
