@@ -55,7 +55,6 @@ func _ready():
 
 	raycast.enabled = true
 	raycast.target_position = Vector3(0, 0, -100)
-	raycast.collision_mask = (1 << 3) | (1 << 1)
 	
 	rotation_target = Vector3(camera.rotation.x, rotation.y, 0)
 	for child in weapon_holder.get_children():
@@ -83,10 +82,10 @@ func _physics_process(delta):
 			Input.get_action_strength("move_left") > 0.0 or
 			Input.get_action_strength("move_right") > 0.0
 		)
-		current_weapon.set_movement_state(is_walking and not sliding)
+		current_weapon.set_movement_state(is_walking)
 		
 	if falling and is_on_floor() and sliding:
-		slide_speed += fall_distance / 10.0
+		slide_speed += fall_distance / 10
 	fall_distance = -gravity
 
 	movement_velocity = transform.basis * movement_velocity

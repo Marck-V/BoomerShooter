@@ -25,11 +25,11 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 
 	# Reset rotation and tween
 	rotation_degrees.x = 0
+	tween.kill()  # Stop any ongoing tween
 
 	# Add a 360° backflip around the X axis
-	var tween = create_tween()
-	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5) \
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween = create_tween()
+	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(Callable(self, "_reset_rotation"))
 	
 	if has_glitch_shot:

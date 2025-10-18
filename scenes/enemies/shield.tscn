@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://c7i0pfrqlkigr"]
-
-[ext_resource type="Script" uid="uid://lntasjp1tjyj" path="res://scripts/enemies/shield.gd" id="1_8ngx5"]
-
-[node name="Shield" type="Node3D"]
-script = ExtResource("1_8ngx5")
