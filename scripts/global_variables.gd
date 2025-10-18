@@ -91,6 +91,8 @@ func add_health(amount: int):
 	player.health = clamp(player.health + amount, 0, 100)
 	health_changed.emit(player.health)	
 
+# Utility
+
 func get_all_children(node) -> Array:
 	var nodes : Array = []
 	for n in node.get_children():

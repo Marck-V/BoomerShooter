@@ -22,7 +22,7 @@ func absorb_damage(amount: float) -> float:
 	var reduced_damage = amount * damage_reduction
 	hp -= reduced_damage
 	if hp <= 0:
-		emit_signal("shield_destroyed")
+		shield_destroyed.emit()
 		queue_free()
 		
 		return 0 # Leave uncommented if we want the shield to absorb all extra damage
