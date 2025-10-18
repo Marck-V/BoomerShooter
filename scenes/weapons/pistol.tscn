@@ -2,7 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/weapons/base_weapon.tscn" id="1_buff3"]
 [ext_resource type="Texture2D" uid="uid://cfs0y0dk57yu0" path="res://models/weapons/Handcannon_untitled.png" id="2_1e3ry"]
-[ext_resource type="Script" path="res://scripts/weapons/pistol.gd" id="2_t6oaa"]
+[ext_resource type="Script" uid="uid://cqkd4kxagbamh" path="res://scripts/weapons/pistol.gd" id="2_t6oaa"]
 [ext_resource type="Resource" uid="uid://dijqr03ylcofg" path="res://resources/weapons/pistol.tres" id="3_t6oaa"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_4pccq"]
