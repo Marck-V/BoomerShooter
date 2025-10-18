@@ -13,10 +13,13 @@ signal upgrade_purchased(upgrade_id: String)
 func _init():
 	# Load from disk or use default save
 	if ResourceLoader.exists("user://player_save.res"):
+		print("Existing save found! Loading the save...")
 		save_data = ResourceLoader.load("user://player_save.res") as PlayerData
 	else:
+		print("No existing save found. Creating new save..")
 		save_data = load("res://resources/default_player_save.tres").duplicate(true)
 		save_to_disk()
+		
 	
 	for weapon_id in ["pistol", "shotgun", "rifle"]:
 		if not save_data.ammo.has(weapon_id):

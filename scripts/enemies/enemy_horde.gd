@@ -7,13 +7,7 @@ extends CharacterBody3D
 @export var target: Node3D                  # Player node to chase
 @export var attack_cooldown: float = 1.2
 @export var vision_range: float = 10.0      # Detection radius
-
-# --- Scene references ---
-@onready var nav: NavigationAgent3D = $NavigationAgent3D
-@onready var anim: AnimationPlayer = $"enemy-humanoid/AnimationPlayer"
-@onready var ray: RayCast3D = $HitRaycast
-@onready var bite_timer: Timer = $BiteTimer
-@onready var vision_area: Area3D = $VisionArea
+@export var debug := false
 
 # --- State machine ---
 var state = null
@@ -21,6 +15,18 @@ var states = {}
 
 # --- General vars ---
 var destroyed: bool = false
+var original_material : Material
+var shield_material : ShaderMaterial = preload("res://shaders/glass_shader.tres")
+
+
+# --- Scene references ---
+@onready var nav: NavigationAgent3D = $NavigationAgent3D
+@onready var anim: AnimationPlayer = $"enemy-humanoid/AnimationPlayer"
+@onready var ray: RayCast3D = $HitRaycast
+@onready var bite_timer: Timer = $BiteTimer
+@onready var vision_area: Area3D = $VisionArea
+@onready var model = $"enemy-humanoid/Armature/Skeleton3D/HumanoidBase_NotOverlapping"
+@onready var shield = $Shield if has_node("Shield") else null
 
 # ---------------------------
 #  Lifecycle
@@ -33,9 +39,20 @@ func _ready():
 		"Dead": DeadState.new(self),
 	}
 	change_state("Idle")
+	
+	model.mesh = model.mesh.duplicate()
+	make_mesh_materials_unique(model)	
+	if model.get_surface_override_material(0):
+		original_material = model.get_surface_override_material(0)
+	else:
+		original_material = model.mesh.surface_get_material(0)
+
+	if shield:
+		shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
+		apply_shield_material()
 
 func _physics_process(delta):
-	if state:
+	if state and state.has_method("update"):
 		state.update(delta)
 
 func _on_vision_area_body_entered(body: Node3D) -> void:
@@ -46,26 +63,53 @@ func _on_vision_area_body_exited(body: Node3D) -> void:
 	if body == target and state != states["Dead"]:
 		change_state("Idle")
 
+func apply_shield_material():
+	$ShieldShader.visible = true
+	model.set_surface_override_material(0, shield_material)
+	
+func remove_shield_material():
+	$ShieldShader.visible = false
+	model.set_surface_override_material(0, original_material)
+
+func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
+	var mesh = mesh_instance.mesh.duplicate()
+	for i in range(mesh.get_surface_count()):
+		var mat = mesh.surface_get_material(i)
+		if mat:
+			mesh.surface_set_material(i, mat.duplicate())
+	mesh_instance.mesh = mesh
 
 # ---------------------------
 #  State Management
 # ---------------------------
-func change_state(name: String):
-	if not states.has(name):
+func change_state(state_name: String):
+	if not states.has(state_name):
 		return
 	if state and state.has_method("exit"):
 		state.exit()
-	state = states[name]
+	state = states[state_name]
 	if state and state.has_method("enter"):
 		state.enter()
 
 # ---------------------------
 #  Combat + Damage
 # ---------------------------
-func damage(amount: int):
+func damage(amount: float, multiplier : float):
+	if shield:
+		amount = shield.absorb_damage(amount)
+	else:
+		amount *= multiplier
 	health -= amount
 	if health <= 0 and not destroyed:
 		change_state("Dead")
+
+func add_shield():
+	var shield_scene = preload("res://scenes/enemies/shield.tscn")
+	var shield_instance = shield_scene.instantiate()
+	add_child(shield_instance)
+
+func _on_shield_destroyed():
+	remove_shield_material()
 
 # ---------------------------
 #  States
@@ -148,3 +192,6 @@ class DeadState:
 		enemy.destroyed = true
 		#enemy.anim.play("Death")
 		enemy.queue_free()
+		
+	func update(_delta):
+		pass

@@ -8,6 +8,19 @@ extends CharacterBody3D
 @export var target: Node3D
 @export var firing_target_offset := -0.1
 
+# --- State machine ---
+var state = null
+var states = {}
+
+# --- General vars ---
+var destroyed: bool = false
+var energy_ball = preload("res://scenes/enemies/energy_ball.tscn")
+var death_sound: String = "assets/sounds/enemy_hurt.ogg"
+
+# --- Shield System ---
+var original_material : Material
+var shield_material : ShaderMaterial = preload("res://shaders/glass_shader.tres")
+
 # --- Scene references ---
 @onready var nav: NavigationAgent3D = $NavigationAgent3D
 @onready var anim: AnimationPlayer = $"enemy-humanoid/AnimationPlayer"
@@ -15,15 +28,11 @@ extends CharacterBody3D
 @onready var shoot_timer: Timer = $ShootTimer
 @onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
 @onready var vision_area: Area3D = $VisionArea
+@onready var model = $"enemy-humanoid/Armature/Skeleton3D/HumanoidBase_NotOverlapping"
+@onready var shield = $Shield if has_node("Shield") else null
 
-# --- State machine ---
-var state = null
-var states = {}
-
-# --- General vars ---
-var destroyed: bool = false
-var energy_ball = load("res://scenes/enemies/energy_ball.tscn")
-var death_sound: String = "assets/sounds/enemy_hurt.ogg"
+# Optional overlay mesh for the shield shader (if used)
+@onready var shield_shader_overlay = $ShieldShader if has_node("ShieldShader") else null
 
 # ---------------------------
 #  Lifecycle
@@ -37,10 +46,26 @@ func _ready():
 	}
 	change_state("Idle")
 	
+	# Initialize shooting
 	shoot_timer.wait_time = firing_rate
 
+	# Make mesh materials unique to avoid shared material side effects
+	model.mesh = model.mesh.duplicate()
+	make_mesh_materials_unique(model)
+	
+	# Cache original material
+	if model.get_surface_override_material(0):
+		original_material = model.get_surface_override_material(0)
+	else:
+		original_material = model.mesh.surface_get_material(0)
+
+	# Initialize shield
+	if shield:
+		shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
+		apply_shield_material()
+
 func _physics_process(delta):
-	if state:
+	if state and state.has_method("update"):
 		state.update(delta)
 
 func _on_vision_area_body_entered(body: Node3D) -> void:
@@ -52,23 +77,56 @@ func _on_vision_area_body_exited(body: Node3D) -> void:
 		change_state("Idle")
 
 # ---------------------------
+#  Shield Visual Management
+# ---------------------------
+func apply_shield_material():
+	if shield_shader_overlay:
+		shield_shader_overlay.visible = true
+	model.set_surface_override_material(0, shield_material)
+	
+func remove_shield_material():
+	if shield_shader_overlay:
+		shield_shader_overlay.visible = false
+	model.set_surface_override_material(0, original_material)
+
+func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
+	var mesh = mesh_instance.mesh.duplicate()
+	for i in range(mesh.get_surface_count()):
+		var mat = mesh.surface_get_material(i)
+		if mat:
+			mesh.surface_set_material(i, mat.duplicate())
+	mesh_instance.mesh = mesh
+
+# ---------------------------
 #  State Management
 # ---------------------------
-func change_state(name: String):
-	if not states.has(name): return
+func change_state(state_name: String):
+	if not states.has(state_name): return
 	if state and state.has_method("exit"):
 		state.exit()
-	state = states[name]
+	state = states[state_name]
 	if state and state.has_method("enter"):
 		state.enter()
 
 # ---------------------------
 #  Combat + Damage
 # ---------------------------
-func damage(amount: int):
+func damage(amount: int, multiplier: float):
+	if shield:
+		amount = shield.absorb_damage(amount)
+	else:
+		amount *= multiplier
 	health -= amount
 	if health <= 0 and not destroyed:
 		change_state("Dead")
+
+func add_shield():
+	var shield_scene = preload("res://scenes/enemies/shield.tscn")
+	var shield_instance = shield_scene.instantiate()
+	add_child(shield_instance)
+
+func _on_shield_destroyed():
+	remove_shield_material()
 
 func shoot_energy_ball():
 	var energy_ball_instance = energy_ball.instantiate() as Area3D
@@ -88,7 +146,6 @@ class IdleState:
 		enemy.velocity = Vector3.ZERO
 
 	func update(_delta):
-		# Do nothing unless vision triggers Chase
 		pass
 
 class ChaseState:
@@ -122,8 +179,7 @@ class ShootState:
 	func _init(e): enemy = e
 
 	func enter():
-		# enemy.anim.play("Shoot")  /// UPDATE WHEN SHOOT ANIMATION IS ADDED
-		enemy.anim.play("Idle")
+		enemy.anim.play("Idle")  # Update when shoot animation is available
 		enemy.velocity = Vector3.ZERO
 
 	func update(_delta):
@@ -132,7 +188,11 @@ class ShootState:
 			return
 		
 		# Face target
-		enemy.look_at(Vector3(enemy.target.global_position.x, enemy.global_position.y, enemy.target.global_position.z - enemy.firing_target_offset), Vector3.UP, true)
+		enemy.look_at(
+			Vector3(enemy.target.global_position.x, enemy.global_position.y, enemy.target.global_position.z - enemy.firing_target_offset),
+			Vector3.UP,
+			true
+		)
 		
 		# Out of range? Chase again
 		var dist = enemy.global_position.distance_to(enemy.target.global_position)
@@ -151,5 +211,8 @@ class DeadState:
 
 	func enter():
 		enemy.destroyed = true
-		enemy.anim.play("Death")
+		#enemy.anim.play("Death")
 		enemy.queue_free()
+		
+	func update(_delta):
+		pass
