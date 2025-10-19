@@ -13,11 +13,17 @@ var has_glitch_shot = false
 var shot_tracker = 0
 var dmg_multiplier = 1.25
 var base_dmg
+
 func _ready():
 	super._ready()
 	GlobalVariables.upgrade_purchased.connect(on_upgrade_purchased)
 	base_dmg = data.damage
 	_refresh_upgrades()
+
+func get_shield_multiplier() -> float:
+	if has_shield_break:
+		return 1.5
+	return 1.0
 
 func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	# Call the original BaseWeapon fire logic
@@ -31,14 +37,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(Callable(self, "_reset_rotation"))
 
-	var result = raycast.get_collider()
-	if result and has_shield_break:
-		if result.is_in_group("Shield"):
-			print("Hit a shield!")
-			if result.get_parent().has_method("absorb_damage"):
-				result.get_parent().absorb_damage(data.damage * 2.5)
-				print("Hit shield for ", data.damage * 2.5, " damage.")
-			return  # Exit early if we hit a shield
+	
 	# Reset rotation and tween
 	_reset_rotation()
 

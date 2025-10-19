@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://d4k8pg5sk2tuc"]
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://d0m45a21mudhk"]
 
 [ext_resource type="Texture2D" uid="uid://cc1n7457w25vl" path="res://assets/images/white_crosshairs/crosshair185.png" id="1_4rfis"]
 [ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://resources/weapon.gd" id="2_eea6l"]
@@ -8,8 +8,8 @@ script = ExtResource("2_eea6l")
 cooldown = 0.5
 max_distance = 10
 damage = 25.0
-spread = 5.0
-shot_count = 5
+spread = 2.0
+shot_count = 4
 recoil_strength = 5
 weapon_id = "shotgun"
 sound = "assets/sounds/doom_shotgun.mp3"
