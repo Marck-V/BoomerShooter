@@ -183,28 +183,37 @@ func _find_next_enemy_from_position(pos: Vector3, visited: Array, radius: float)
 	return best
 
 
-
 func _spawn_lightning_arc(start: Vector3, end: Vector3):
-	var mesh_instance = MeshInstance3D.new()
-	var mesh = ImmediateMesh.new()
+	var mesh_instance := MeshInstance3D.new()
+	var mesh := ImmediateMesh.new()
 	mesh_instance.mesh = mesh
 
-	var mat = StandardMaterial3D.new()
-	mat.emission_enabled = true
-	mat.emission = Color(0.3, 0.8, 1.0)
-	mat.emission_energy = 100.0
-	mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var mat := ShaderMaterial.new()
+	mat.shader = preload("res://shaders/lightning.gdshader")
+	mat.set_shader_parameter("glow_strength", 60.0)
 	mesh_instance.material_override = mat
-
-	var start_adj = start + Vector3.UP * 1.0
-	var end_adj = end + Vector3.UP * 1.0
-
-	mesh.surface_begin(Mesh.PRIMITIVE_LINES)
-	mesh.surface_add_vertex(start_adj)
-	mesh.surface_add_vertex(end_adj)
-	mesh.surface_end()
-
 	get_tree().current_scene.add_child(mesh_instance)
 
-	await get_tree().create_timer(0.12).timeout
-	mesh_instance.queue_free()
+	# --- Raise both points slightly (center of body rather than feet) ---
+	var height_offset := Vector3(0, 1.0, 0) # tweak 0.5–1.2 depending on model height
+	start += height_offset
+	end += height_offset
+
+	# --- Draw jagged line directly in world space ---
+	var segment_count := 10
+	mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+	for i in range(segment_count + 1):
+		var t := float(i) / float(segment_count)
+		var pos := start.lerp(end, t)
+		var offset := Vector3(
+			randf_range(-0.2, 0.2),
+			randf_range(-0.2, 0.2),
+			randf_range(-0.2, 0.2)
+		)
+		mesh.surface_add_vertex(pos + offset)
+	mesh.surface_end()
+
+	# --- Fade out and remove ---
+	var tween := create_tween()
+	tween.tween_property(mat, "shader_parameter/glow_strength", 0.0, 0.2)
+	tween.tween_callback(Callable(mesh_instance, "queue_free"))
