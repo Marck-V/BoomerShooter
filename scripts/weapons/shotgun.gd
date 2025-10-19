@@ -23,7 +23,6 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 	# Call the original BaseWeapon fire logic
 	super.fire(origin, direction, camera, raycast)
 	
-	# Reset rotation and tween
 	rotation_degrees.x = 0
 
 	# Add a 360° backflip around the X axis
@@ -31,7 +30,18 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(Callable(self, "_reset_rotation"))
-	
+
+	var result = raycast.get_collider()
+	if result:
+		if result.is_in_group("Shield"):
+			print("Hit a shield!")
+			if result.get_parent().has_method("absorb_damage"):
+				result.get_parent().absorb_damage(data.damage * 2.5)
+				print("Hit shield for ", data.damage * 2.5, " damage.")
+			return  # Exit early if we hit a shield
+	# Reset rotation and tween
+	_reset_rotation()
+
 	if has_glitch_shot:
 		shot_tracker += 1
 		if shot_tracker >= 3:

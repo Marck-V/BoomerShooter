@@ -1,8 +1,7 @@
-[gd_scene load_steps=69 format=4 uid="uid://dxnrf1ck88yxe"]
+[gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_7mx1b"]
-[ext_resource type="PackedScene" uid="uid://c7i0pfrqlkigr" path="res://scenes/enemies/shield.tscn" id="4_v2erg"]
 [ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="6_5ubjb"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="7_gj28m"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="10_ndmtw"]
@@ -273,8 +272,7 @@ script = ExtResource("1_gj28m")
 
 [node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
-
-[node name="Shield" parent="Enemies/MeleeEnemy" instance=ExtResource("4_v2erg")]
+give_shield = true
 
 [node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)

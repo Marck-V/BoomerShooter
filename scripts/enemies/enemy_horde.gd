@@ -8,7 +8,8 @@ extends CharacterBody3D
 @export var attack_cooldown: float = 1.2
 @export var vision_range: float = 10.0      # Detection radius
 @export var debug := false
-
+@export var give_shield = false
+var is_shielded = false
 # --- State machine ---
 var state = null
 var states = {}
@@ -26,7 +27,8 @@ var shield_material : ShaderMaterial = preload("res://shaders/glass_shader.tres"
 @onready var bite_timer: Timer = $BiteTimer
 @onready var vision_area: Area3D = $VisionArea
 @onready var model = $"enemy-humanoid/Armature/Skeleton3D/HumanoidBase_NotOverlapping"
-@onready var shield = $Shield if has_node("Shield") else null
+
+var shield
 
 # ---------------------------
 #  Lifecycle
@@ -46,6 +48,10 @@ func _ready():
 		original_material = model.get_surface_override_material(0)
 	else:
 		original_material = model.mesh.surface_get_material(0)
+
+	if give_shield:
+		shield = add_shield()
+		is_shielded = true
 
 	if shield:
 		shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
@@ -107,8 +113,10 @@ func add_shield():
 	var shield_scene = preload("res://scenes/enemies/shield.tscn")
 	var shield_instance = shield_scene.instantiate()
 	add_child(shield_instance)
+	return shield_instance
 
 func _on_shield_destroyed():
+	is_shielded = false
 	remove_shield_material()
 
 # ---------------------------

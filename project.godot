@@ -40,6 +40,7 @@ enabled=PackedStringArray("res://addons/func_godot/plugin.cfg")
 
 Player="For the player character"
 Enemy="For any enemy character"
+Shield=""
 
 [input]
 
