@@ -3,6 +3,8 @@
 [ext_resource type="Script" uid="uid://lntasjp1tjyj" path="res://scripts/enemies/shield.gd" id="1_8ngx5"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_8ngx5"]
+radius = 0.4
+height = 1.8
 
 [node name="Shield" type="Node3D"]
 script = ExtResource("1_8ngx5")
