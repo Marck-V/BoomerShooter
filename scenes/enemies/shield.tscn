@@ -1,6 +1,17 @@
-[gd_scene load_steps=2 format=3 uid="uid://c7i0pfrqlkigr"]
+[gd_scene load_steps=3 format=3 uid="uid://c7i0pfrqlkigr"]
 
 [ext_resource type="Script" uid="uid://lntasjp1tjyj" path="res://scripts/enemies/shield.gd" id="1_8ngx5"]
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_8ngx5"]
+
 [node name="Shield" type="Node3D"]
 script = ExtResource("1_8ngx5")
+
+[node name="ShieldHitbox" type="Area3D" parent="." groups=["Shield"]]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+collision_layer = 8
+collision_mask = 8
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ShieldHitbox"]
+shape = SubResource("CapsuleShape3D_8ngx5")
+debug_color = Color(0.996893, 0, 0.177575, 0.42)
