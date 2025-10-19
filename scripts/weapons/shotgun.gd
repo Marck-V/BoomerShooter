@@ -32,7 +32,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 	tween.tween_callback(Callable(self, "_reset_rotation"))
 
 	var result = raycast.get_collider()
-	if result:
+	if result and has_shield_break:
 		if result.is_in_group("Shield"):
 			print("Hit a shield!")
 			if result.get_parent().has_method("absorb_damage"):
@@ -62,8 +62,8 @@ func _refresh_upgrades() -> void:
 
 func on_upgrade_purchased(upgrade_id: String) -> void:
 	if upgrade_id == precision:
-		pass
+		has_precision = true
 	if upgrade_id == shield_break:
-		pass
+		has_shield_break = true
 	if upgrade_id == glitch_shot:
 		has_glitch_shot = true
