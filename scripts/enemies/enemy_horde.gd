@@ -106,6 +106,7 @@ func damage(amount: float, multiplier : float):
 	else:
 		amount *= multiplier
 	health -= amount
+	print("Enemy took ", amount, " damage. Remaining HP: ", health)
 	if health <= 0 and not destroyed:
 		change_state("Dead")
 
