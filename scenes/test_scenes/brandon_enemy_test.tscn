@@ -269,12 +269,14 @@ crosshair = NodePath("../HUD/Crosshair")
 [node name="Enemies" type="Node" parent="."]
 
 [node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("5_ghwmg")]
+process_mode = 4
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 19.5227, 9.98895, 45.4074)
 target = NodePath("../../Player")
 
 [node name="Shield" parent="Enemies/MeleeEnemy" instance=ExtResource("5_r6rxp")]
 
 [node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("5_ghwmg")]
+process_mode = 4
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 6.3707, 10.0018, 45.2967)
 target = NodePath("../../Player")
 
