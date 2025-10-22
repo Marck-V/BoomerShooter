@@ -434,10 +434,8 @@ class DeadState:
 
 	func enter():
 		enemy.destroyed = true
+		enemy.velocity = Vector3.ZERO
 		enemy.anim.play("die")
 		if enemy.debug:
 			print("[Boss] Died and despawned.")
-		enemy.queue_free()
 		
-	func update(_delta):
-		pass
