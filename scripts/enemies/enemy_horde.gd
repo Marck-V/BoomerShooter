@@ -1,197 +1,53 @@
-extends CharacterBody3D
+extends EnemyBase
+class_name EnemyHorde
 
-# --- Enemy properties ---
-@export var movement_speed: float = 2.0
+const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
+
 @export var damage_to_player: float = 50
-@export var health: int = 100
-@export var target: Node3D                  # Player node to chase
 @export var attack_cooldown: float = 1.2
-@export var vision_range: float = 10.0      # Detection radius
-@export var debug := false
+@export var vision_range: float = 10.0
 
-# --- State machine ---
-var state = null
-var states = {}
-
-# --- General vars ---
-var destroyed: bool = false
-var original_material : Material
-var shield_material : ShaderMaterial = preload("res://shaders/glass_shader.tres")
-
-
-# --- Scene references ---
-@onready var nav: NavigationAgent3D = $NavigationAgent3D
-@onready var anim: AnimationPlayer = $"enemy-humanoid/AnimationPlayer"
 @onready var ray: RayCast3D = $HitRaycast
 @onready var bite_timer: Timer = $BiteTimer
 @onready var vision_area: Area3D = $VisionArea
-@onready var model = $"enemy-humanoid/Armature/Skeleton3D/HumanoidBase_NotOverlapping"
-@onready var shield = $Shield if has_node("Shield") else null
 
-# ---------------------------
-#  Lifecycle
-# ---------------------------
 func _ready():
-	states = {
-		"Idle": IdleState.new(self),
-		"Chase": ChaseState.new(self),
-		"Attack": AttackState.new(self),
-		"Dead": DeadState.new(self),
+	super()
+	vision_area.connect("body_entered", Callable(self, "_on_body_entered"))
+	vision_area.connect("body_exited", Callable(self, "_on_body_exited"))
+
+	attack_animation = "Bite"
+
+func get_state_definitions() -> Dictionary:
+	return {
+		"Idle": ENEMY_STATES.IdleState.new(self),
+		"Chase": ENEMY_STATES.ChaseState.new(self),
+		"Attack": ENEMY_STATES.AttackState.new(self),
+		"Dead": ENEMY_STATES.DeadState.new(self),
 	}
-	change_state("Idle")
-	
-	model.mesh = model.mesh.duplicate()
-	make_mesh_materials_unique(model)	
-	if model.get_surface_override_material(0):
-		original_material = model.get_surface_override_material(0)
-	else:
-		original_material = model.mesh.surface_get_material(0)
 
-	if shield:
-		shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
-		apply_shield_material()
-
-func _physics_process(delta):
-	if state and state.has_method("update"):
-		state.update(delta)
-
-func _on_vision_area_body_entered(body: Node3D) -> void:
-	if body == target and state != states["Dead"]:
+func _on_body_entered(body: Node3D):
+	if body == target:
 		change_state("Chase")
 
-func _on_vision_area_body_exited(body: Node3D) -> void:
-	if body == target and state != states["Dead"]:
+func _on_body_exited(body: Node3D):
+	if body == target:
 		change_state("Idle")
 
-func apply_shield_material():
-	$ShieldShader.visible = true
-	model.set_surface_override_material(0, shield_material)
-	
-func remove_shield_material():
-	$ShieldShader.visible = false
-	model.set_surface_override_material(0, original_material)
+func can_attack() -> bool:
+	# Ready to attack if cooldown finished and ray hits player
+	ray.force_raycast_update()
+	if not ray.is_colliding() or ray.get_collider() != target:
+		return false
 
-func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
-	var mesh = mesh_instance.mesh.duplicate()
-	for i in range(mesh.get_surface_count()):
-		var mat = mesh.surface_get_material(i)
-		if mat:
-			mesh.surface_set_material(i, mat.duplicate())
-	mesh_instance.mesh = mesh
+	return true
 
-# ---------------------------
-#  State Management
-# ---------------------------
-func change_state(state_name: String):
-	if not states.has(state_name):
-		return
-	if state and state.has_method("exit"):
-		state.exit()
-	state = states[state_name]
-	if state and state.has_method("enter"):
-		state.enter()
+func perform_attack():
+	ray.force_raycast_update()
 
-# ---------------------------
-#  Combat + Damage
-# ---------------------------
-func damage(amount: float, multiplier : float):
-	if shield:
-		amount = shield.absorb_damage(amount)
-	else:
-		amount *= multiplier
-	health -= amount
-	if health <= 0 and not destroyed:
-		change_state("Dead")
-
-func add_shield():
-	var shield_scene = preload("res://scenes/enemies/shield.tscn")
-	var shield_instance = shield_scene.instantiate()
-	add_child(shield_instance)
-
-func _on_shield_destroyed():
-	remove_shield_material()
-
-# ---------------------------
-#  States
-# ---------------------------
-class IdleState:
-	var enemy
-	func _init(e): enemy = e
-
-	func enter():
-		enemy.anim.play("Idle")
-		enemy.velocity = Vector3.ZERO
-
-	func update(_delta):
-		if not enemy.target: return
-		var dist = enemy.global_position.distance_to(enemy.target.global_position)
-		if dist <= enemy.vision_range:
-			enemy.change_state("Chase")
-
-class ChaseState:
-	var enemy
-	func _init(e): enemy = e
-
-	func enter():
-		enemy.anim.play("Run")
-
-	func update(_delta):
-		# Continuously update the chase target
-		enemy.nav.set_target_position(enemy.target.global_position)
-		
-		# Get next path point from NavigationAgent
-		var next_pos = enemy.nav.get_next_path_position()
-		var dir = (next_pos - enemy.global_position).normalized()
-		
-		# Apply velocity
-		enemy.velocity = dir * enemy.movement_speed
-		
-		# Rotate toward movement direction (if moving)
-		if dir.length() > 0.01:
-			var target_look_at = Vector3(enemy.target.global_position.x, enemy.global_position.y, enemy.target.global_position.z) + dir
-			enemy.look_at(target_look_at, Vector3.UP, true)
-		
-		# Move
-		enemy.move_and_slide()
-		
-		# Transition: if the raycast hits the player, switch to attack
-		enemy.ray.force_raycast_update()
-		if enemy.ray.is_colliding() and enemy.ray.get_collider() == enemy.target:
-			enemy.change_state("Attack")
-
-class AttackState:
-	var enemy
-	func _init(e): enemy = e
-
-	func enter():
-		enemy.anim.play("Bite")
-
-	func update(_delta):
-		if not enemy.target:
-			enemy.change_state("Idle")
-			return
-
-		# If ray no longer hits, return to chase
-		enemy.ray.force_raycast_update()
-		if not enemy.ray.is_colliding() or enemy.ray.get_collider() != enemy.target:
-			enemy.change_state("Chase")
-			return
-
-		# Perform bite if cooldown expired
-		if enemy.bite_timer.is_stopped():
-			var col = enemy.ray.get_collider()
-			if col and col.has_method("damage"):
-				col.damage(enemy.damage_to_player)
-			enemy.bite_timer.start(enemy.attack_cooldown)
-
-class DeadState:
-	var enemy
-	func _init(e): enemy = e
-
-	func enter():
-		enemy.destroyed = true
-		#enemy.anim.play("Death")
-		enemy.queue_free()
-		
-	func update(_delta):
-		pass
+	# Perform bite if cooldown expired
+	if bite_timer.is_stopped():
+		var col = ray.get_collider()
+		if col and col.has_method("damage"):
+			col.damage(damage_to_player)
+		bite_timer.start(attack_cooldown)

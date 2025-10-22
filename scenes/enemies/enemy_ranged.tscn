@@ -216,6 +216,7 @@ radius = 15.0
 collision_layer = 4
 collision_mask = 3
 script = ExtResource("1_xbodr")
+firing_rate = 3.0
 
 [node name="enemy-humanoid" parent="." instance=ExtResource("2_xbodr")]
 
@@ -276,7 +277,7 @@ bones/38/rotation = Quaternion(0.538706, 0.00302565, -0.0267141, 0.842065)
 bones/39/rotation = Quaternion(0.616505, 0.068893, -0.0247963, 0.783939)
 
 [node name="HeadBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="1"]
-transform = Transform3D(0.999369, 0.00571624, 0.0350651, -0.0353388, 0.0582037, 0.997679, 0.00366213, -0.998289, 0.0583689, -3.71986, 18.0049, -146.545)
+transform = Transform3D(0.999369, 0.00571639, 0.0350649, -0.0353385, 0.0582035, 0.997679, 0.00366229, -0.998289, 0.0583687, -3.71986, 18.0049, -146.545)
 bone_name = "mixamorig_Head"
 bone_idx = 5
 
@@ -292,7 +293,7 @@ shape = SubResource("CapsuleShape3D_w85hd")
 debug_color = Color(0.983519, 0.126856, 0, 0.42)
 
 [node name="NeckBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="2"]
-transform = Transform3D(0.994659, -0.0995991, 0.0270946, -0.00118597, 0.251452, 0.967869, -0.103212, -0.962732, 0.249991, -2.8667, 13.8744, -138.275)
+transform = Transform3D(0.994659, -0.099599, 0.0270943, -0.00118574, 0.251452, 0.967869, -0.103212, -0.962732, 0.249991, -2.86669, 13.8743, -138.275)
 bone_name = "mixamorig_Neck"
 bone_idx = 4
 
@@ -308,7 +309,7 @@ shape = SubResource("CapsuleShape3D_1hukp")
 debug_color = Color(0.983519, 0.126856, 0, 0.42)
 
 [node name="ChestBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="3"]
-transform = Transform3D(0.994723, -0.0968219, 0.0339277, 0.00762405, 0.399545, 0.916682, -0.10231, -0.911586, 0.398175, -1.49708, 8.22252, -125.38)
+transform = Transform3D(0.994723, -0.0968218, 0.0339274, 0.00762426, 0.399545, 0.916682, -0.10231, -0.911586, 0.398175, -1.49708, 8.22252, -125.38)
 bone_name = "mixamorig_Spine2"
 bone_idx = 3
 
@@ -324,7 +325,7 @@ shape = SubResource("CapsuleShape3D_56qeu")
 debug_color = Color(0.509629, 0.423667, 1, 0.42)
 
 [node name="TorsoBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="4"]
-transform = Transform3D(0.994366, -0.0809257, -0.0684696, 0.0870289, 0.254445, 0.963163, -0.060523, -0.963695, 0.260054, 0.526369, 1.30201, -102.952)
+transform = Transform3D(0.994366, -0.0809257, -0.0684698, 0.0870291, 0.254444, 0.963163, -0.0605229, -0.963696, 0.260054, 0.52637, 1.30201, -102.952)
 bone_name = "mixamorig_Spine"
 bone_idx = 1
 
@@ -339,7 +340,7 @@ transform = Transform3D(0.998506, -0.0476776, 0.0266615, 0.0496128, 0.995767, -0
 shape = SubResource("CapsuleShape3D_mt7bm")
 
 [node name="LeftArmBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="5"]
-transform = Transform3D(0.469265, 0.488401, -0.7357, -0.49529, -0.544173, -0.677174, -0.73108, 0.682159, -0.0134611, 13.0747, 15.3685, -132.429)
+transform = Transform3D(0.469265, 0.488402, -0.7357, -0.49529, -0.544172, -0.677174, -0.73108, 0.682159, -0.0134608, 13.0747, 15.3685, -132.429)
 bone_name = "mixamorig_LeftArm"
 bone_idx = 8
 
@@ -355,7 +356,7 @@ shape = SubResource("CapsuleShape3D_qhlw0")
 debug_color = Color(0.30775, 0.49391, 1, 0.42)
 
 [node name="LeftForearmBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="6"]
-transform = Transform3D(0.652313, 0.13193, -0.74638, -0.717602, -0.209508, -0.664195, -0.244, 0.968866, -0.0419911, 27.9574, -1.21364, -111.642)
+transform = Transform3D(0.652313, 0.13193, -0.746379, -0.717601, -0.209507, -0.664195, -0.243999, 0.968866, -0.0419908, 27.9574, -1.21364, -111.642)
 bone_name = "mixamorig_LeftForeArm"
 bone_idx = 9
 
@@ -370,7 +371,7 @@ transform = Transform3D(0.873888, 0.103717, 0.474936, -0.0818227, 0.994418, -0.0
 shape = SubResource("CapsuleShape3D_h7dxy")
 
 [node name="LeftHandBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="7"]
-transform = Transform3D(0.622563, -0.0749813, -0.778969, -0.782492, -0.0456579, -0.620984, 0.010996, 0.996139, -0.0870972, 31.3703, -6.63348, -86.5779)
+transform = Transform3D(0.622564, -0.0749814, -0.778969, -0.782492, -0.0456571, -0.620985, 0.0109966, 0.996139, -0.0870968, 31.3704, -6.63345, -86.5779)
 bone_name = "mixamorig_LeftHand"
 bone_idx = 10
 
@@ -385,7 +386,7 @@ transform = Transform3D(-0.461914, 0.0936065, -0.881971, -0.0477533, -0.995597, 
 shape = SubResource("CapsuleShape3D_1p3ep")
 
 [node name="RightArmBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="8"]
-transform = Transform3D(0.589875, -0.228055, 0.774622, 0.793886, 0.339161, -0.504693, -0.147623, 0.912667, 0.381112, -18.1054, 12.1856, -130.235)
+transform = Transform3D(0.589875, -0.228056, 0.774621, 0.793886, 0.339161, -0.504693, -0.147623, 0.912667, 0.381113, -18.1054, 12.1857, -130.235)
 bone_name = "mixamorig_RightArm"
 bone_idx = 20
 
@@ -401,7 +402,7 @@ shape = SubResource("CapsuleShape3D_qhlw0")
 debug_color = Color(0.30775, 0.49391, 1, 0.42)
 
 [node name="RightForearmBoneAttach2" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="9"]
-transform = Transform3D(0.366549, 0.535404, 0.760911, -0.0551081, 0.828891, -0.55669, -0.928765, 0.162122, 0.333334, -25.0546, 22.5203, -102.425)
+transform = Transform3D(0.36655, 0.535403, 0.76091, -0.0551075, 0.828891, -0.55669, -0.928765, 0.162123, 0.333335, -25.0546, 22.5203, -102.425)
 bone_name = "mixamorig_RightForeArm"
 bone_idx = 21
 
@@ -416,7 +417,7 @@ transform = Transform3D(0.999878, 0.00647312, 0.0142523, -0.00598285, 0.999396, 
 shape = SubResource("CapsuleShape3D_h7dxy")
 
 [node name="RightHandBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="10"]
-transform = Transform3D(0.943283, 0.0809124, 0.321979, -0.139674, 0.976557, 0.16379, -0.301178, -0.199472, 0.932471, -11.2032, 43.9644, -98.2307)
+transform = Transform3D(0.943283, 0.0809121, 0.321978, -0.139673, 0.976558, 0.16379, -0.301177, -0.199471, 0.932472, -11.2032, 43.9645, -98.2308)
 bone_name = "mixamorig_RightHand"
 bone_idx = 22
 
@@ -431,7 +432,7 @@ transform = Transform3D(0.569219, 0.165481, -0.805361, -0.0840978, 0.986117, 0.1
 shape = SubResource("CapsuleShape3D_yixtv")
 
 [node name="LeftThighBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="11"]
-transform = Transform3D(-0.994304, -0.102777, -0.0286763, -0.0924407, 0.695458, 0.712596, -0.0532959, 0.711178, -0.700989, 8.50612, 0.257308, -87.923)
+transform = Transform3D(-0.994304, -0.102777, -0.0286763, -0.0924409, 0.695459, 0.712595, -0.053296, 0.711178, -0.700989, 8.50612, 0.25731, -87.923)
 bone_name = "mixamorig_LeftUpLeg"
 bone_idx = 31
 
@@ -446,7 +447,7 @@ transform = Transform3D(0.8814, -0.0459091, 0.470134, 0.00575691, 0.996237, 0.08
 shape = SubResource("CapsuleShape3D_xdndl")
 
 [node name="LeftCalfBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="12"]
-transform = Transform3D(-0.99646, 0.0729455, 0.0421009, -0.0480476, -0.902877, 0.427206, 0.0691723, 0.423666, 0.903174, 3.76142, 32.3631, -55.0914)
+transform = Transform3D(-0.99646, 0.0729455, 0.0421008, -0.0480476, -0.902877, 0.427206, 0.0691723, 0.423666, 0.903174, 3.76141, 32.3632, -55.0915)
 bone_name = "mixamorig_LeftLeg"
 bone_idx = 32
 
@@ -461,7 +462,7 @@ transform = Transform3D(0.95772, 0.00181869, -0.287695, -0.00188687, -0.999919, 
 shape = SubResource("CapsuleShape3D_u0ype")
 
 [node name="LeftFootBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="13"]
-transform = Transform3D(-0.867067, 0.385851, -0.315183, -0.315632, 0.0640598, 0.946717, 0.385476, 0.920337, 0.0662409, 6.95615, -7.17938, -36.5365)
+transform = Transform3D(-0.867068, 0.38585, -0.315182, -0.315631, 0.0640595, 0.946717, 0.385475, 0.920338, 0.0662406, 6.95614, -7.17935, -36.5365)
 bone_name = "mixamorig_LeftFoot"
 bone_idx = 33
 
@@ -476,7 +477,7 @@ transform = Transform3D(0.980761, -0.149197, -0.125895, 0.0414504, 0.789351, -0.
 shape = SubResource("CapsuleShape3D_37p8u")
 
 [node name="RightThighBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="14"]
-transform = Transform3D(-0.942475, -0.0733223, -0.326172, -0.334196, 0.232789, 0.913305, 0.0089638, 0.969759, -0.243899, -8.64816, -2.37501, -89.0607)
+transform = Transform3D(-0.942475, -0.0733222, -0.326172, -0.334196, 0.232789, 0.913305, 0.00896377, 0.969759, -0.243898, -8.64816, -2.37501, -89.0607)
 bone_name = "mixamorig_RightUpLeg"
 bone_idx = 36
 
@@ -491,7 +492,7 @@ transform = Transform3D(0.893125, 0.0617179, 0.445555, -0.0712313, 0.99745, 0.00
 shape = SubResource("CapsuleShape3D_xdndl")
 
 [node name="RightCalfBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="15"]
-transform = Transform3D(-0.873591, 0.248649, -0.418373, -0.464447, -0.682816, 0.563964, -0.145441, 0.686977, 0.711976, -12.0333, 8.37235, -44.289)
+transform = Transform3D(-0.873591, 0.248648, -0.418373, -0.464447, -0.682816, 0.563964, -0.145441, 0.686977, 0.711976, -12.0333, 8.37233, -44.289)
 bone_name = "mixamorig_RightLeg"
 bone_idx = 37
 
@@ -506,7 +507,7 @@ transform = Transform3D(0.918084, -0.0089181, 0.396284, -0.0130741, -0.999884, 0
 shape = SubResource("CapsuleShape3D_yora2")
 
 [node name="RightFootBoneAttach" type="BoneAttachment3D" parent="enemy-humanoid/Armature/Skeleton3D" index="16"]
-transform = Transform3D(-0.868531, -0.317676, -0.380473, -0.454387, 0.203626, 0.867221, -0.198018, 0.926078, -0.321199, -1.14526, -21.5274, -14.2071)
+transform = Transform3D(-0.868531, -0.317676, -0.380472, -0.454387, 0.203627, 0.867221, -0.198018, 0.926077, -0.3212, -1.14527, -21.5274, -14.2071)
 bone_name = "mixamorig_RightFoot"
 bone_idx = 38
 
