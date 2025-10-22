@@ -8,15 +8,6 @@ signal shield_destroyed
 
 var hp := max_hp
 
-#@onready var mesh = $MeshInstance3D
-
-
-func _ready():
-	pass
-	#if shield_material:
-		#mesh.material_override = shield_material
-		
-
 func absorb_damage(amount: float) -> float:
 	# Damage that shield takes directly
 	var reduced_damage = amount * damage_reduction
