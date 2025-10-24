@@ -1,9 +1,11 @@
 [gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
-[ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
-[ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_7mx1b"]
-[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="6_5ubjb"]
-[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="7_gj28m"]
+[ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/level_manager.gd" id="1_gj28m"]
+[ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/hud.gd" id="4_yxwn6"]
+[ext_resource type="FontFile" uid="uid://biqtga8moh7ah" path="res://assets/fonts/lilita_one_regular.ttf" id="5_gtg8j"]
+[ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemy_horde.tscn" id="6_5ubjb"]
+[ext_resource type="Environment" uid="uid://jvmpkdwaeaq" path="res://scenes/main-environment.tres" id="6_vtbbq"]
+[ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemy_ranged.tscn" id="7_gj28m"]
 [ext_resource type="Script" uid="uid://bc6mfq3ssor4q" path="res://addons/func_godot/src/map/func_godot_map.gd" id="10_ndmtw"]
 [ext_resource type="Resource" uid="uid://bkhxcqsquw1yg" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="11_51fhi"]
 [ext_resource type="Material" uid="uid://g1l8euhy1o6" path="res://trenchbroom/textures/world/texture_02.tres" id="11_ndmtw"]
@@ -14,18 +16,14 @@
 [ext_resource type="Material" uid="uid://csmkmcki5fshf" path="res://trenchbroom/textures/world/texture_01.tres" id="15_gj28m"]
 [ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="16_e1was"]
 [ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="17_5ubjb"]
-[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_e1was"]
-[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
+[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player.tscn" id="18_e1was"]
+[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/point_pickup.tscn" id="18_gj28m"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
-sky_energy_multiplier = 2.0
-
-[sub_resource type="Sky" id="Sky_ffe0c"]
-sky_material = SubResource("ProceduralSkyMaterial_v2erg")
-
-[sub_resource type="Environment" id="Environment_v2erg"]
-background_mode = 2
-sky = SubResource("Sky_ffe0c")
+[sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
+font = ExtResource("5_gtg8j")
+font_size = 36
+outline_size = 12
+outline_color = Color(0, 0, 0, 0.470588)
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_5ubjb"]
 vertices = PackedVector3Array(12.75, 5.75, 25.5, 16, 5.75, 25.5, 16.25, 5.5, 23.5, 12.5, 5.5, 23.5, 28, 5.5, 0.75, 0.75, 5.5, 0.75, 28, 5.5, 23.5, 0.75, 5.5, 23.5, 12.75, 10, 38, 16, 10, 38.25, 12.75, 10.5, 39.75, 16.25, 10.5, 40.25, 18.5, 10.5, 50, 20, 10.5, 50, 19.75, 10.5, 40.25, 12.25, 10.5, 40.25, 10.25, 10.5, 50.75, 10.25, 10.5, 52, 18, 10.5, 52.25, 18, 10.5, 50.5, 8.25, 10.5, 40.25, 8, 10.5, 50, 9.5, 10.5, 50, 2.25, 10.5, 51.5, 7, 10.5, 51.5, 7, 10.5, 50.5, 2.25, 10.5, 40.25, 21.25, 10.5, 50.75, 21.25, 10.5, 51.5, 26, 10.5, 51.5, 26, 10.5, 40.25, -11.75, 10.5, 58.5, -11.75, 10.5, 55.5, -14, 10.5, 55.25, -14, 10.5, 58.75, -30, 10.5, 48.5, -30, 10.5, 65.5, -14, 10.5, 48.5, -14, 10.5, 65.5, 39.75, 10.5, 55.5, 39.75, 10.5, 58.5, 42, 10.5, 58.75, 42, 10.5, 55.25, 58, 10.5, 65.5, 58, 10.5, 48.5, 42, 10.5, 65.5, 42, 10.5, 48.5, 8, 19, 51, 8.25, 19, 52.25, 9.25, 19, 51.75, 9, 19, 51, 19, 19, 51, 19.25, 19, 52.25, 20.25, 19, 51.75, 20, 19, 51, 8.25, 10.5, 51.25, 8.25, 10.5, 51.75, 8.75, 10.5, 51.75, 8.75, 10.5, 51.25, 19.25, 10.5, 51.25, 19.25, 10.5, 51.75, 19.75, 10.5, 51.75, 19.75, 10.5, 51.25, 7.5, 10.5, 59, 8.75, 10.5, 59, 8.75, 10.5, 58, 8, 10.5, 57.5, 7, 10.5, 52.5, 9, 10.5, 54.5, 8.75, 10.5, 53.25, 7.75, 10.5, 53.25, 8, 10.5, 55, 2.25, 10.5, 60.5, 7, 10.5, 60.5, 20.5, 10.5, 55.75, 19.25, 11.75, 56, 20.5, 10.5, 56.75, 20, 10.5, 58, 19.25, 10.75, 57.75, 19.25, 10.5, 59, 20.5, 10.5, 59, 21.25, 10.5, 59.75, 26, 10.5, 60.5, 21.25, 10.5, 52.25, 20.5, 10.5, 57.5, 20.25, 10.5, 53.25, 19.5, 10.5, 53.25, 19.25, 10.5, 54.5, 20.5, 10.5, 55, 21.25, 10.5, 60.5, 11.5, 10.5, 55.75, 10.25, 11.75, 56, 11.5, 10.5, 56.75, 17, 10.5, 57.25, 17, 10.5, 55, 18.75, 10.5, 53.25, 17.5, 10.5, 54.5, 11.5, 10.5, 57.25, 11, 10.5, 54.5, 11.5, 10.5, 55, 0.5, 10.5, 58.5, 0.5, 10.5, 55.5, 27.75, 10.5, 55.5, 27.75, 10.5, 58.5, 18.5, 11.25, 57.25, 18.25, 10.5, 58, 10.25, 10.5, 58, 10, 11.25, 57.25, 9.5, 11.25, 57.25, 9.25, 10.5, 58, 9.5, 10.5, 59, 18, 10.5, 59.5, 17.5, 10.5, 58, 18.25, 10.5, 61.75, 11, 10.5, 58, 10.25, 10.5, 59.75, 10.25, 10.5, 61.25, 9.25, 10.5, 62.25, 8, 10.5, 62.25, 8, 10.5, 72, 18.25, 10.5, 72, 8, 19, 60, 8.25, 19, 61.25, 9.25, 19, 60.75, 9, 19, 60, 19, 19, 60, 19.25, 19, 61.25, 20.25, 19, 60.75, 20, 19, 60, 8.25, 10.5, 60.25, 8.25, 10.5, 60.75, 8.75, 10.5, 60.75, 8.75, 10.5, 60.25, 19.25, 10.5, 60.25, 19.25, 10.5, 60.75, 19.75, 10.5, 60.75, 19.75, 10.5, 60.25, 7, 10.5, 61.5, 2.25, 10.5, 72, 21.25, 10.5, 61.25, 20.25, 10.5, 62.25, 26, 10.5, 72, 18.75, 10.5, 62.25)
@@ -259,29 +257,88 @@ points = PackedVector3Array(60, 7, 57.75, 60, 6.75, 57.75, 60.25, 6.75, 57.75, 6
 
 [node name="Node3D" type="Node3D"]
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
-environment = SubResource("Environment_v2erg")
-
 [node name="LevelManager" type="Node" parent="."]
-process_mode = 3
 script = ExtResource("1_gj28m")
 
-[node name="HUD" parent="." instance=ExtResource("2_7mx1b")]
+[node name="HUD" type="CanvasLayer" parent="."]
+script = ExtResource("4_yxwn6")
+
+[node name="Panel" type="Panel" parent="HUD"]
+offset_right = 144.0
+offset_bottom = 164.0
+
+[node name="Crosshair" type="TextureRect" parent="HUD"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -20.0
+offset_right = 20.0
+offset_bottom = 20.0
+grow_horizontal = 2
+grow_vertical = 2
+pivot_offset = Vector2(64, 64)
+metadata/_edit_use_anchors_ = true
+
+[node name="Health" type="Label" parent="HUD"]
+offset_left = 48.0
+offset_top = 627.0
+offset_right = 138.0
+offset_bottom = 672.0
+size_flags_horizontal = 0
+size_flags_vertical = 8
+text = "100%"
+label_settings = SubResource("LabelSettings_nu0x4")
+vertical_alignment = 2
+metadata/_edit_use_anchors_ = true
+
+[node name="WeaponInfoLabel" type="Label" parent="HUD"]
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="InteractLabel" type="Label" parent="HUD"]
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -77.0
+offset_top = -224.835
+offset_right = 77.0
+offset_bottom = -201.835
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 30
+text = "\"E\" Interact"
+
+[node name="PointsLabel" type="Label" parent="HUD"]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -40.0
+offset_bottom = 23.0
+grow_horizontal = 0
+text = "Points: "
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("6_vtbbq")
 
 [node name="Enemies" type="Node" parent="."]
 
-[node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
+[node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5267, 10.0018, 45.4238)
+movement_target_position = NodePath("../../Player")
 
-[node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("6_5ubjb")]
+[node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
+movement_target_position = NodePath("../../Player")
 
-[node name="RangedEnemy" parent="Enemies" instance=ExtResource("7_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
-
-[node name="RangedEnemy2" parent="Enemies" instance=ExtResource("7_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.465, 10.0018, 47.4998)
-has_shield = true
+[node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("movement_target_position") instance=ExtResource("7_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1609, 10.0018, 48.8328)
+movement_target_position = NodePath("../../Player")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
@@ -294,7 +351,6 @@ map_settings = ExtResource("11_51fhi")
 metadata/_custom_type_script = "uid://bc6mfq3ssor4q"
 
 [node name="entity_0_worldspawn" type="StaticBody3D" parent="NavigationRegion3D/FuncGodotMap"]
-collision_layer = 3
 collision_mask = 0
 
 [node name="entity_0_mesh_instance" type="MeshInstance3D" parent="NavigationRegion3D/FuncGodotMap/entity_0_worldspawn"]
@@ -445,8 +501,7 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 18.431
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.0766, 5.68511, 16.4978)
 
 [node name="GoldBar2" parent="." instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
-type = "Health"
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.1091, 5.61518, 18.7511)
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.2919, 13.531, 10.3151)
@@ -458,22 +513,5 @@ light_energy = 16.0
 omni_range = 31.3
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 13.3246, 10.2107, 42.7107)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
 crosshair = NodePath("../HUD/Crosshair")
-
-[node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.0485, 5.5, 12.7723)
-type = "Ammo"
-weapon_id = "rifle"
-
-[node name="BasePickup2" parent="." instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.6176, 5.5, 12.8587)
-type = "Ammo"
-weapon_id = "pistol"
-
-[node name="BasePickup3" parent="." instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.1708, 5.5, 9.65415)
-type = "Ammo"
-weapon_id = "shotgun"
-
-[editable path="HUD"]
