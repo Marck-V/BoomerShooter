@@ -2,14 +2,11 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d3evbph8cxg27"
+uid="uid://6eedbf76ij2i"
 path.s3tc="res://.godot/imported/Misc_Bottle_1_1024.png-8e2e44d017e64abf17789597929f6681.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
-}
-generator_parameters={
-"md5": "d32841cbe1de126f0f7a30b22445d54a"
 }
 
 [deps]

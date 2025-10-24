@@ -549,6 +549,7 @@ wait_time = 4.2
 one_shot = true
 
 [node name="VisionArea" type="Area3D" parent="."]
+collision_layer = 4
 
 [node name="ChaseRangeCollider" type="CollisionShape3D" parent="VisionArea"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.992432, 0)
