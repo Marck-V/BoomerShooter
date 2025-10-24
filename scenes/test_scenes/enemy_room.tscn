@@ -1,4 +1,4 @@
-[gd_scene load_steps=65 format=4 uid="uid://bvky4vqcgh4od"]
+[gd_scene load_steps=68 format=4 uid="uid://dxnrf1ck88yxe"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_7mx1b"]
@@ -15,7 +15,17 @@
 [ext_resource type="Material" uid="uid://udrxfcfrha6k" path="res://trenchbroom/textures/world/texture_08.tres" id="16_e1was"]
 [ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="17_5ubjb"]
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_e1was"]
-[ext_resource type="PackedScene" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
+[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
+sky_energy_multiplier = 2.0
+
+[sub_resource type="Sky" id="Sky_ffe0c"]
+sky_material = SubResource("ProceduralSkyMaterial_v2erg")
+
+[sub_resource type="Environment" id="Environment_v2erg"]
+background_mode = 2
+sky = SubResource("Sky_ffe0c")
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_5ubjb"]
 vertices = PackedVector3Array(12.75, 5.75, 25.5, 16, 5.75, 25.5, 16.25, 5.5, 23.5, 12.5, 5.5, 23.5, 28, 5.5, 0.75, 0.75, 5.5, 0.75, 28, 5.5, 23.5, 0.75, 5.5, 23.5, 12.75, 10, 38, 16, 10, 38.25, 12.75, 10.5, 39.75, 16.25, 10.5, 40.25, 18.5, 10.5, 50, 20, 10.5, 50, 19.75, 10.5, 40.25, 12.25, 10.5, 40.25, 10.25, 10.5, 50.75, 10.25, 10.5, 52, 18, 10.5, 52.25, 18, 10.5, 50.5, 8.25, 10.5, 40.25, 8, 10.5, 50, 9.5, 10.5, 50, 2.25, 10.5, 51.5, 7, 10.5, 51.5, 7, 10.5, 50.5, 2.25, 10.5, 40.25, 21.25, 10.5, 50.75, 21.25, 10.5, 51.5, 26, 10.5, 51.5, 26, 10.5, 40.25, -11.75, 10.5, 58.5, -11.75, 10.5, 55.5, -14, 10.5, 55.25, -14, 10.5, 58.75, -30, 10.5, 48.5, -30, 10.5, 65.5, -14, 10.5, 48.5, -14, 10.5, 65.5, 39.75, 10.5, 55.5, 39.75, 10.5, 58.5, 42, 10.5, 58.75, 42, 10.5, 55.25, 58, 10.5, 65.5, 58, 10.5, 48.5, 42, 10.5, 65.5, 42, 10.5, 48.5, 8, 19, 51, 8.25, 19, 52.25, 9.25, 19, 51.75, 9, 19, 51, 19, 19, 51, 19.25, 19, 52.25, 20.25, 19, 51.75, 20, 19, 51, 8.25, 10.5, 51.25, 8.25, 10.5, 51.75, 8.75, 10.5, 51.75, 8.75, 10.5, 51.25, 19.25, 10.5, 51.25, 19.25, 10.5, 51.75, 19.75, 10.5, 51.75, 19.75, 10.5, 51.25, 7.5, 10.5, 59, 8.75, 10.5, 59, 8.75, 10.5, 58, 8, 10.5, 57.5, 7, 10.5, 52.5, 9, 10.5, 54.5, 8.75, 10.5, 53.25, 7.75, 10.5, 53.25, 8, 10.5, 55, 2.25, 10.5, 60.5, 7, 10.5, 60.5, 20.5, 10.5, 55.75, 19.25, 11.75, 56, 20.5, 10.5, 56.75, 20, 10.5, 58, 19.25, 10.75, 57.75, 19.25, 10.5, 59, 20.5, 10.5, 59, 21.25, 10.5, 59.75, 26, 10.5, 60.5, 21.25, 10.5, 52.25, 20.5, 10.5, 57.5, 20.25, 10.5, 53.25, 19.5, 10.5, 53.25, 19.25, 10.5, 54.5, 20.5, 10.5, 55, 21.25, 10.5, 60.5, 11.5, 10.5, 55.75, 10.25, 11.75, 56, 11.5, 10.5, 56.75, 17, 10.5, 57.25, 17, 10.5, 55, 18.75, 10.5, 53.25, 17.5, 10.5, 54.5, 11.5, 10.5, 57.25, 11, 10.5, 54.5, 11.5, 10.5, 55, 0.5, 10.5, 58.5, 0.5, 10.5, 55.5, 27.75, 10.5, 55.5, 27.75, 10.5, 58.5, 18.5, 11.25, 57.25, 18.25, 10.5, 58, 10.25, 10.5, 58, 10, 11.25, 57.25, 9.5, 11.25, 57.25, 9.25, 10.5, 58, 9.5, 10.5, 59, 18, 10.5, 59.5, 17.5, 10.5, 58, 18.25, 10.5, 61.75, 11, 10.5, 58, 10.25, 10.5, 59.75, 10.25, 10.5, 61.25, 9.25, 10.5, 62.25, 8, 10.5, 62.25, 8, 10.5, 72, 18.25, 10.5, 72, 8, 19, 60, 8.25, 19, 61.25, 9.25, 19, 60.75, 9, 19, 60, 19, 19, 60, 19.25, 19, 61.25, 20.25, 19, 60.75, 20, 19, 60, 8.25, 10.5, 60.25, 8.25, 10.5, 60.75, 8.75, 10.5, 60.75, 8.75, 10.5, 60.25, 19.25, 10.5, 60.25, 19.25, 10.5, 60.75, 19.75, 10.5, 60.75, 19.75, 10.5, 60.25, 7, 10.5, 61.5, 2.25, 10.5, 72, 21.25, 10.5, 61.25, 20.25, 10.5, 62.25, 26, 10.5, 72, 18.75, 10.5, 62.25)
@@ -247,7 +257,10 @@ points = PackedVector3Array(59.75, 6.75, 57.75, 59.75, 6.5, 57.75, 60, 6.5, 57.7
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_xi3rc"]
 points = PackedVector3Array(60, 7, 57.75, 60, 6.75, 57.75, 60.25, 6.75, 57.75, 60.25, 7, 57.75, 60, 7, 62.5, 60, 6.75, 62.5, 60.25, 6.75, 62.5, 60.25, 7, 62.5)
 
-[node name="Node3D2" type="Node3D"]
+[node name="Node3D" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_v2erg")
 
 [node name="LevelManager" type="Node" parent="."]
 process_mode = 3
@@ -257,17 +270,15 @@ script = ExtResource("1_gj28m")
 
 [node name="Enemies" type="Node" parent="."]
 
-[node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.5267, 10.0018, 45.4238)
-target = NodePath("../../Player")
+[node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
+give_shield = true
 
-[node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+[node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
-target = NodePath("../../Player")
 
-[node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.1609, 10.0018, 48.8328)
-target = NodePath("../../Player")
+[node name="RangedEnemy" parent="Enemies" instance=ExtResource("7_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
@@ -280,6 +291,7 @@ map_settings = ExtResource("11_51fhi")
 metadata/_custom_type_script = "uid://bc6mfq3ssor4q"
 
 [node name="entity_0_worldspawn" type="StaticBody3D" parent="NavigationRegion3D/FuncGodotMap"]
+collision_layer = 3
 collision_mask = 0
 
 [node name="entity_0_mesh_instance" type="MeshInstance3D" parent="NavigationRegion3D/FuncGodotMap/entity_0_worldspawn"]
@@ -431,6 +443,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.0766, 5.68511, 16.4978)
 
 [node name="GoldBar2" parent="." instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
+type = "Health"
 
 [node name="CSGBox3D" type="CSGBox3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.2919, 13.531, 10.3151)
@@ -442,16 +455,22 @@ light_energy = 16.0
 omni_range = 31.3
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 13.3246, 10.2107, 42.7107)
 crosshair = NodePath("../HUD/Crosshair")
 
 [node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.0485, 5.5, 12.7723)
+type = "Ammo"
+weapon_id = "rifle"
 
 [node name="BasePickup2" parent="." instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.6176, 5.5, 12.8587)
+type = "Ammo"
+weapon_id = "pistol"
 
 [node name="BasePickup3" parent="." instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.1708, 5.5, 9.65415)
+type = "Ammo"
+weapon_id = "shotgun"
 
 [editable path="HUD"]

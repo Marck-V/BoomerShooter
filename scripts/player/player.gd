@@ -158,6 +158,7 @@ func handle_controls(_delta):
 	rotation_target.x = clamp(rotation_target.x, deg_to_rad(-90), deg_to_rad(90))
 
 	action_shoot()
+	action_alt_fire()
 
 	if Input.is_action_just_pressed("jump"):
 		if sliding:
@@ -222,6 +223,11 @@ func action_shoot():
 		current_weapon.fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
 		current_weapon.trigger_recoil()
 
+func action_alt_fire():
+	if current_weapon.has_method("alt_fire"):
+		if Input.is_action_just_pressed("alt_fire"):
+			print("Alt Fire")
+			current_weapon.alt_fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
 
 func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_toggle"):

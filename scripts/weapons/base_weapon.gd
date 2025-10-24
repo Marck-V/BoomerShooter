@@ -43,6 +43,8 @@ func trigger_recoil():
 	recoil_offset.z = -0.01 * data.recoil_strength # You can export this as a weapon stat if you want more control
 	recoil_timer = 0.1
 	
+func get_shield_multiplier() -> float:
+	return 1.0
 
 func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	if !data or !raycast:
@@ -64,11 +66,16 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 
 		raycast.target_position = raycast.to_local(raycast.global_transform.origin + dir * data.max_distance)
 		raycast.force_raycast_update()
-
+ 
 		if raycast.is_colliding():
 			var collider = raycast.get_collider()
+
 			if collider and collider.has_method("damage"):
 				collider.damage(data.damage)
+
+			if collider.is_in_group("Shield"):
+				var mult = get_shield_multiplier()
+				collider.get_parent().absorb_damage(data.damage * mult)
 
 			var impact = preload("res://scenes/weapons/impact.tscn").instantiate()
 			impact.play("shot")
@@ -78,4 +85,3 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 			
 func set_movement_state(moving: bool):
 	is_moving = moving
-	
