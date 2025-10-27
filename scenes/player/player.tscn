@@ -99,7 +99,7 @@ collide_with_areas = true
 [node name="WeaponHolder" type="Node3D" parent="Head/Camera"]
 
 [node name="Pistol" parent="Head/Camera/WeaponHolder" instance=ExtResource("3_smehm")]
-transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 0.095, -0.065, -0.06)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.095, -0.065, -0.06)
 
 [node name="Shotgun" parent="Head/Camera/WeaponHolder" instance=ExtResource("8_4vq5b")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.14, -0.099, -0.092)

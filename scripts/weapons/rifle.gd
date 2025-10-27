@@ -112,8 +112,9 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 	if is_instance_valid(next_target) and next_target.has_method("damage"):
 		next_target.damage(damage, 1)
 
-	await get_tree().create_timer(0.1).timeout
+	#await get_tree().create_timer(0.1).timeout
 	if is_instance_valid(next_target):
+		print("Chaining to:", next_target.name, " | Depth:", depth, " | Damage:", damage * 0.8)
 		_start_chain_lightning(next_target, damage * 0.8, depth + 1, visited)
 	else:
 		_continue_chain_from_position(end_pos, damage * 0.8, depth + 1, visited)
@@ -126,7 +127,7 @@ func _continue_chain_from_position(position: Vector3, damage: float, depth: int,
 		_spawn_lightning_arc(position, next_target.global_position)
 		if next_target.has_method("damage"):
 			next_target.damage(damage, 1)
-		await get_tree().create_timer(0.1).timeout
+		#await get_tree().create_timer(0.1).timeout
 		_start_chain_lightning(next_target, damage * 0.8, depth + 1, visited)
 
 func _find_next_enemy_sphere(last_target: Node3D, visited: Array, radius: float) -> Node3D:
@@ -221,17 +222,20 @@ func _spawn_lightning_arc(start: Vector3, end: Vector3):
 # Quickness / Kill Streak
 # ---------------------------
 func on_enemy_died(enemy: Node3D):
-	enemies_killed += 1
-	print("Enemy died:", enemy.name, " | Total killed:", enemies_killed)
+	# Only count kills made with the rifle
+	if GlobalVariables.current_weapon != "rifle":
+		return
 
-	# Restart timer every kill (extends 5-second window)
+	enemies_killed += 1
+	print("Enemy killed with rifle:", enemy.name, " | Total killed:", enemies_killed)
+
 	expiration_timer.start()
 
-	# Trigger quickness after 3 kills within window
 	if enemies_killed >= 3 and not quickness_active:
 		activate_quickness_boost()
 		enemies_killed = 0
 		expiration_timer.stop()
+
 
 func _on_expiration_timeout():
 	print("Kill streak expired — counter reset.")

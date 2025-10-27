@@ -25,6 +25,8 @@ func get_shield_multiplier() -> float:
 		return 1.5
 	return 1.0
 
+# TODO: Glitch shot damage multipler does NOT deal increased damage to shields.
+
 func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	# Call the original BaseWeapon fire logic
 	super.fire(origin, direction, camera, raycast)

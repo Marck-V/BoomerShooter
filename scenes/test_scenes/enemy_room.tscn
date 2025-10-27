@@ -280,6 +280,10 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
 [node name="RangedEnemy" parent="Enemies" instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
 
+[node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6797, 10.0018, 46.8296)
+target = NodePath("../../Player")
+
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
 
