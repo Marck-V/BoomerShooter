@@ -272,16 +272,13 @@ script = ExtResource("1_gj28m")
 
 [node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
+give_shield = true
 
 [node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
 
 [node name="RangedEnemy" parent="Enemies" instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
-
-[node name="RangedEnemy2" parent="Enemies" instance=ExtResource("7_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.465, 10.0018, 47.4998)
-has_shield = true
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")

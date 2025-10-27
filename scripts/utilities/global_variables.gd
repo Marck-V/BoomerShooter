@@ -9,10 +9,6 @@ signal ammo_changed(weapon_id, new_value: int)
 signal health_changed(new_value: int)
 signal upgrade_purchased(upgrade_id: String)
 
-# Enemy tracking
-signal enemy_died(enemy: Node3D)
-
-
 
 func _init():
 	# Load from disk or use default save

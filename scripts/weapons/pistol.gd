@@ -21,10 +21,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
         GlobalVariables.add_ammo("pistol", 10)
         Audio.play("assets/sounds/reload.mp3")
         print("Pistol Ammo Refunded")
-    if has_lifesteal:
-        GlobalVariables.add_health(2)
-        print("Pistol Lifesteal Activated: +2 Health")
-
+    
 func _refresh_upgrades() -> void:
     has_ammo_refund = GlobalVariables.has_upgrade(refund)
     has_piercing = GlobalVariables.has_upgrade(piercing)
