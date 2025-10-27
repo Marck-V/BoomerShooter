@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://dsoiywm3v2wod"]
 
-[ext_resource type="Texture2D" uid="uid://j2pvfbf04cfq" path="res://assets/images/RetroWindowsGUI/Windows_Example_Main.png" id="1_rdn0j"]
+[ext_resource type="Texture2D" uid="uid://cwa015sh4bna4" path="res://assets/images/RetroWindowsGUI/Windows_Example_Main.png" id="1_rdn0j"]
 [ext_resource type="Theme" uid="uid://csix15cdk72y3" path="res://Windows95.tres" id="2_1masj"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rdn0j"]
