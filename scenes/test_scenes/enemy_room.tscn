@@ -272,7 +272,7 @@ script = ExtResource("1_gj28m")
 
 [node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
-give_shield = true
+has_shield = true
 
 [node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
