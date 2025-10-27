@@ -5,7 +5,7 @@
 
 [resource]
 script = ExtResource("1_1vsk4")
-cooldown = 0.2
+cooldown = 0.3
 max_distance = 10
 damage = 15.0
 spread = 0.0
