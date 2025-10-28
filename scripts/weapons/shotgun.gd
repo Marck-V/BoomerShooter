@@ -28,28 +28,29 @@ func get_shield_multiplier() -> float:
 # TODO: Glitch shot damage multipler does NOT deal increased damage to shields.
 
 func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
-	# Call the original BaseWeapon fire logic
-	super.fire(origin, direction, camera, raycast)
-	
-	rotation_degrees.x = 0
-
-	# Add a 360° backflip around the X axis
-	var tween = create_tween()
-	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5) \
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_callback(Callable(self, "_reset_rotation"))
-
-	
-	# Reset rotation and tween
-	_reset_rotation()
-
+	# Apply glitch shot before firing
 	if has_glitch_shot:
 		shot_tracker += 1
 		if shot_tracker >= 3:
 			data.damage *= dmg_multiplier
 			print("Glitch Shot Activated! Damage:", data.damage)
-			data.damage = base_dmg
 			shot_tracker = 0
+	else:
+		data.damage = base_dmg
+
+	# Now run the base firing logic
+	super.fire(origin, direction, camera, raycast)
+	
+	# Reset rotation / recoil animation
+	rotation_degrees.x = 0
+	var tween = create_tween()
+	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5) \
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(Callable(self, "_reset_rotation"))
+
+	# Reset damage after firing so next shot isn't permanently boosted
+	data.damage = base_dmg
+
 			
 			
 

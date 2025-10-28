@@ -112,7 +112,7 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 	if is_instance_valid(next_target) and next_target.has_method("damage"):
 		next_target.damage(damage, 1)
 
-	#await get_tree().create_timer(0.1).timeout
+	await get_tree().create_timer(0.1).timeout
 	if is_instance_valid(next_target):
 		print("Chaining to:", next_target.name, " | Depth:", depth, " | Damage:", damage * 0.8)
 		_start_chain_lightning(next_target, damage * 0.8, depth + 1, visited)
@@ -127,7 +127,7 @@ func _continue_chain_from_position(position: Vector3, damage: float, depth: int,
 		_spawn_lightning_arc(position, next_target.global_position)
 		if next_target.has_method("damage"):
 			next_target.damage(damage, 1)
-		#await get_tree().create_timer(0.1).timeout
+		await get_tree().create_timer(0.1).timeout
 		_start_chain_lightning(next_target, damage * 0.8, depth + 1, visited)
 
 func _find_next_enemy_sphere(last_target: Node3D, visited: Array, radius: float) -> Node3D:
