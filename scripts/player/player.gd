@@ -226,7 +226,6 @@ func action_shoot():
 func action_alt_fire():
 	if current_weapon.has_method("alt_fire"):
 		if Input.is_action_just_pressed("alt_fire"):
-			print("Alt Fire")
 			current_weapon.alt_fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
 
 func action_weapon_toggle():
