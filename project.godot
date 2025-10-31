@@ -24,6 +24,7 @@ GlobalVariables="*res://scripts/utilities/global_variables.gd"
 
 window/size/viewport_width=1280
 window/size/viewport_height=720
+window/size/mode=3
 window/stretch/mode="canvas_items"
 window/per_pixel_transparency/allowed=true
 
