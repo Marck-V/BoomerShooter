@@ -530,7 +530,6 @@ skeleton = NodePath("../enemy-humanoid/Armature/Skeleton3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.875, 0)
-visible = false
 shape = SubResource("CapsuleShape3D_xbodr")
 
 [node name="RayCast" type="RayCast3D" parent="."]
