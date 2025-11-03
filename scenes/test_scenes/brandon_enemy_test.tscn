@@ -263,9 +263,15 @@ environment = SubResource("Environment_r6rxp")
 
 [node name="HUD" parent="." instance=ExtResource("2_6q1ol")]
 
+[node name="AmmoLabel" parent="HUD/InGameHUD" index="3"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 90.0
+offset_bottom = 45.0
+
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_pyssr")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
-crosshair = NodePath("../HUD/Crosshair")
+crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="Enemies" type="Node" parent="."]
 

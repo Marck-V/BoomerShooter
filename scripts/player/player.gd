@@ -5,15 +5,13 @@ extends CharacterBody3D
 @export var base_slide_speed = 10
 @export var jump_strength = 8
 @export var max_slide_speed = 12
-
-@onready var weapon_holder = $Head/Camera/WeaponHolder
+@export var mouse_sensitivity = 700
 
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
 var weapon_index := 0
 
 var current_movement_speed = base_movement_speed
-var mouse_sensitivity = 700
 var gamepad_sensitivity := 0.075
 var mouse_captured := true
 
@@ -48,6 +46,7 @@ signal weapon_changed
 @onready var slide_check: RayCast3D = $SlideCheck
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @export var crosshair:TextureRect
+@onready var weapon_holder = $Head/Camera/WeaponHolder
 
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -117,9 +116,10 @@ func _physics_process(delta):
 
 func _input(event):
 	if event is InputEventMouseMotion and mouse_captured:
-		input_mouse = event.relative / mouse_sensitivity
-		rotation_target.y -= event.relative.x / mouse_sensitivity
-		rotation_target.x -= event.relative.y / mouse_sensitivity
+		var sens = GlobalVariables.mouse_sensitivity
+		input_mouse = event.relative / sens
+		rotation_target.y -= event.relative.x / sens
+		rotation_target.x -= event.relative.y / sens
 
 func handle_controls(_delta):
 	if Input.is_action_just_pressed("mouse_capture"):
