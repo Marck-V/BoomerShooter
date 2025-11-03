@@ -263,9 +263,15 @@ environment = SubResource("Environment_r6rxp")
 
 [node name="HUD" parent="." instance=ExtResource("2_6q1ol")]
 
+[node name="AmmoLabel" parent="HUD/InGameHUD" index="3"]
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 90.0
+offset_bottom = 45.0
+
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_pyssr")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.1508, 6.9, 18.091)
-crosshair = NodePath("../HUD/Crosshair")
+crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="Enemies" type="Node" parent="."]
 
@@ -303,6 +309,39 @@ charge_speed = 13.0
 charge_duration = 1.5
 charge_cooldown = 8.0
 charge_recovery_time = 1.5
+
+[node name="HeadAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="1"]
+transform = Transform3D(1, -2.18847e-12, 4.76838e-07, 3.3929e-07, 0.702646, -0.711539, -3.35047e-07, 0.711539, 0.702646, -4.03429e-12, 2.72661, 0.14597)
+
+[node name="ChestAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="2"]
+transform = Transform3D(1, -1.3074e-12, 2.38418e-07, 1.30527e-12, 1, 8.90773e-09, -2.38418e-07, -8.90788e-09, 1, -2.20623e-12, 1.53549, -0.123056)
+
+[node name="TorsoAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="3"]
+transform = Transform3D(1, -1.36424e-12, 2.38418e-07, 1.36424e-12, 1, -1.49686e-13, -2.38418e-07, 0, 1, -1.19383e-12, 0.791659, -0.123056)
+
+[node name="LeftThighAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="4"]
+transform = Transform3D(0.999841, 0.0172168, -0.00459483, 0.0162341, -0.986408, -0.16351, -0.00734735, 0.16341, -0.986531, 0.436948, 0.90013, -0.152154)
+
+[node name="LeftCalfAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="5"]
+transform = Transform3D(0.999794, -0.00329086, -0.0200245, 0.00099312, -0.977647, 0.210253, -0.0202686, -0.21023, -0.977442, 0.442806, 0.564552, -0.0965619)
+
+[node name="RightThighAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="6"]
+transform = Transform3D(0.999841, -0.0172166, 0.00459492, -0.0162337, -0.986408, -0.163511, 0.00734742, 0.16341, -0.986531, -0.436948, 0.90013, -0.152154)
+
+[node name="RightCalfAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="7"]
+transform = Transform3D(0.999794, 0.00329115, 0.0200244, -0.000992737, -0.977647, 0.210253, 0.0202686, -0.210229, -0.977442, -0.442805, 0.564552, -0.0965618)
+
+[node name="LeftBicepAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="8"]
+transform = Transform3D(-0.572051, 0.807932, 0.141433, -0.820218, -0.563498, -0.0985538, 7.24746e-05, -0.172384, 0.98503, 1.06053, 2.24742, -0.208512)
+
+[node name="RightBicepAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="9"]
+transform = Transform3D(-0.572051, -0.807932, -0.141433, 0.820218, -0.563498, -0.098554, -7.22082e-05, -0.172384, 0.985029, -1.06053, 2.24742, -0.208512)
+
+[node name="RightHandAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="10"]
+transform = Transform3D(-0.888878, -0.345014, 0.30143, 0.456849, -0.716914, 0.526614, 0.0344102, 0.605804, 0.794869, -1.85044, 1.35545, -0.0516927)
+
+[node name="LeftHandAttach" parent="Enemies/GodotBoss/godotman/godot_rig/Skeleton3D" index="11"]
+transform = Transform3D(-0.888878, 0.345014, -0.30143, -0.456849, -0.716914, 0.526614, -0.0344102, 0.605804, 0.794869, 1.85044, 1.35545, -0.0516924)
 
 [node name="ChargeTimer" parent="Enemies/GodotBoss" index="4"]
 one_shot = true
