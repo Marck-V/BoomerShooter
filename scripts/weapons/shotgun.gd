@@ -43,7 +43,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 	
 	# Reset rotation / recoil animation
 	rotation_degrees.x = 0
-	var tween = create_tween()
+	tween = create_tween()
 	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5) \
 			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(Callable(self, "_reset_rotation"))
