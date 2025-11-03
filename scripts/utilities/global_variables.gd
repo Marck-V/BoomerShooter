@@ -3,7 +3,7 @@ extends Node
 var save_data: PlayerData
 var current_weapon
 var player
-var mouse_sensitivity := 700
+var mouse_sensitivity: float = 700
 
 signal points_changed(new_value: int)
 signal ammo_changed(weapon_id, new_value: int)
