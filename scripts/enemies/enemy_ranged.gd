@@ -26,23 +26,8 @@ func _ready():
 	attack_animation = "Idle"
 	
 	# Optional — draw sphere only if debug mode is on
-	if OS.is_debug_build():
-		var sphere_mesh = SphereMesh.new()
-		sphere_mesh.radius = shoot_range
-		sphere_mesh.height = shoot_range * 2.0
-		sphere_mesh.radial_segments = 24
-		sphere_mesh.rings = 16
-		debug_sphere.mesh = sphere_mesh
-		
-		# Transparent material
-		var mat = StandardMaterial3D.new()
-		mat.albedo_color = Color(1, 0, 0, 0.1)
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-		debug_sphere.material_override = mat
-		
-		add_child(debug_sphere)
+	draw_debug_gizmos()
+
 
 func get_state_definitions() -> Dictionary:
 	return {
@@ -52,30 +37,45 @@ func get_state_definitions() -> Dictionary:
 		"Dead": ENEMY_STATES.DeadState.new(self),
 	}
 
+
 func _on_body_entered(body: Node3D):
 	if body == target:
 		change_state("Chase")
+
 
 func _on_body_exited(body: Node3D):
 	if body == target:
 		change_state("Idle")
 
+
 func can_attack() -> bool:
+	# Distance check
+	var dist = global_position.distance_to(target.global_position)
+	if dist > shoot_range:
+		return false
+
+	# LOS check
+	return has_line_of_sight_to_player()
+
+
+func has_line_of_sight_to_player() -> bool:
 	if not is_instance_valid(target):
 		return false
 
-	var dist = global_position.distance_to(target.global_position)
+	var space_state = get_world_3d().direct_space_state
+	var query = PhysicsRayQueryParameters3D.new()
+	query.from = global_position + Vector3(0, 1.5, 0)  # eye height
+	query.to = target.global_position + Vector3(0, 1.0, 0)  # approximate player center
+	query.exclude = [self]
+	query.collision_mask = 1  # adjust for walls/obstacles layer
 
-	# When already attacking, only stop if target is farther than range + hysteresis
-	if _in_attack_range:
-		if dist > shoot_range + attack_hysteresis:
-			_in_attack_range = false
-	else:
-		# When not attacking, only start if target is within range
-		if dist <= shoot_range:
-			_in_attack_range = true
+	var result = space_state.intersect_ray(query)
+	if not result:
+		return true  # nothing in the way
+	if result.collider == target:
+		return true  # directly hit player
+	return false
 
-	return _in_attack_range
 
 func perform_attack():
 	var next_pos = nav.get_next_path_position()
@@ -93,3 +93,23 @@ func perform_attack():
 	energy_ball_instance.transform.basis = spawn_marker.global_basis
 	get_parent().add_child(energy_ball_instance)
 	shoot_timer.start()
+
+
+func draw_debug_gizmos():
+	if OS.is_debug_build() and debug:
+			var sphere_mesh = SphereMesh.new()
+			sphere_mesh.radius = shoot_range
+			sphere_mesh.height = shoot_range * 2.0
+			sphere_mesh.radial_segments = 24
+			sphere_mesh.rings = 16
+			debug_sphere.mesh = sphere_mesh
+			
+			# Transparent material
+			var mat = StandardMaterial3D.new()
+			mat.albedo_color = Color(1, 0, 0, 0.1)
+			mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+			mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+			mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+			debug_sphere.material_override = mat
+			
+			add_child(debug_sphere)
