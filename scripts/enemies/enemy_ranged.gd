@@ -91,6 +91,11 @@ func perform_attack():
 	var energy_ball_instance = energy_ball_scene.instantiate() as Area3D
 	energy_ball_instance.position = spawn_marker.global_position
 	energy_ball_instance.transform.basis = spawn_marker.global_basis
+	
+	# Set the target for the projectile
+	if energy_ball_instance.has_method("set_target"):
+		energy_ball_instance.set_target(target)
+	
 	get_parent().add_child(energy_ball_instance)
 	shoot_timer.start()
 
