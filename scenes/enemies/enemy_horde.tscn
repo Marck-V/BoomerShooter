@@ -218,6 +218,7 @@ collision_mask = 3
 script = ExtResource("1_jjlyi")
 damage_to_player = 25.0
 attack_cooldown = 2.5
+vision_range = 40.0
 movement_speed = 7.0
 
 [node name="enemy-humanoid" parent="." instance=ExtResource("2_x2h17")]
