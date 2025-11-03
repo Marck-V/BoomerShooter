@@ -4,7 +4,7 @@
 [ext_resource type="Script" uid="uid://c8bxjswuvgyai" path="res://scripts/ui/main_menu.gd" id="1_x2yvf"]
 [ext_resource type="FontFile" uid="uid://dr47jm0mp2358" path="res://assets/fonts/ITC SerifGothicBold.ttf" id="2_m1kxf"]
 [ext_resource type="FontFile" uid="uid://c62pkskh2kaeb" path="res://assets/fonts/ITC SerifGothic.ttf" id="3_x2yvf"]
-[ext_resource type="Script" uid="uid://c381llw6pvlw" path="res://scripts/ui/settings.gd" id="5_uhagc"]
+[ext_resource type="PackedScene" uid="uid://r147iukh4x4i" path="res://scenes/ui/settings_menu.tscn" id="5_uhagc"]
 [ext_resource type="AudioStream" uid="uid://3gdwsa1bp541" path="res://assets/audio/BoomerShooterDemo1.wav" id="6_uhagc"]
 
 [node name="MainMenu" type="CanvasLayer"]
@@ -59,118 +59,8 @@ theme_override_fonts/font = ExtResource("3_x2yvf")
 theme_override_font_sizes/font_size = 32
 text = "Quit"
 
-[node name="SettingsPanel" type="Panel" parent="."]
+[node name="SettingsMenu" parent="." instance=ExtResource("5_uhagc")]
 visible = false
-self_modulate = Color(0, 0, 0, 1)
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-script = ExtResource("5_uhagc")
-
-[node name="HBoxContainer" type="HBoxContainer" parent="SettingsPanel"]
-custom_minimum_size = Vector2(850, 500)
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -101.0
-offset_top = -58.0
-offset_right = 101.0
-offset_bottom = 58.0
-grow_horizontal = 2
-grow_vertical = 2
-alignment = 1
-
-[node name="VboxLabels" type="VBoxContainer" parent="SettingsPanel/HBoxContainer"]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 2
-alignment = 1
-
-[node name="MusicLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_x2yvf")
-theme_override_font_sizes/font_size = 32
-text = "Music Volume"
-vertical_alignment = 1
-
-[node name="SFXLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_x2yvf")
-theme_override_font_sizes/font_size = 32
-text = "SFX Volume"
-vertical_alignment = 1
-
-[node name="SensitivityLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels"]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("3_x2yvf")
-theme_override_font_sizes/font_size = 32
-text = "Aim Sensitivity"
-vertical_alignment = 1
-
-[node name="VBoxSliders" type="VBoxContainer" parent="SettingsPanel/HBoxContainer"]
-custom_minimum_size = Vector2(550, 450)
-layout_mode = 2
-alignment = 1
-
-[node name="MusicSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders"]
-custom_minimum_size = Vector2(400, 50)
-layout_mode = 2
-theme = ExtResource("1_1g8jr")
-max_value = 1.0
-step = 0.05
-value = 0.2
-
-[node name="SFXSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders"]
-custom_minimum_size = Vector2(400, 50)
-layout_mode = 2
-theme = ExtResource("1_1g8jr")
-max_value = 1.0
-step = 0.05
-value = 0.2
-
-[node name="SensitivitySlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders"]
-custom_minimum_size = Vector2(400, 50)
-layout_mode = 2
-theme = ExtResource("1_1g8jr")
-value = 20.0
-
-[node name="FullscreenCheckButton" type="CheckButton" parent="SettingsPanel"]
-custom_minimum_size = Vector2(300, 0)
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -265.0
-offset_right = 150.0
-offset_bottom = -221.0
-grow_horizontal = 2
-grow_vertical = 0
-theme = ExtResource("1_1g8jr")
-button_pressed = true
-text = "Fullscreen"
-
-[node name="BackButton" type="Button" parent="SettingsPanel"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -62.0
-offset_top = -135.0
-offset_right = 58.0
-offset_bottom = -52.0
-grow_horizontal = 2
-grow_vertical = 0
-theme = ExtResource("1_1g8jr")
-text = "Back"
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("6_uhagc")
@@ -180,8 +70,5 @@ bus = &"Music"
 [connection signal="pressed" from="ButtonsContainer/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/QuitButton" to="." method="_on_quit_button_pressed"]
-[connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/MusicSlider" to="SettingsPanel" method="_on_music_slider_value_changed"]
-[connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/SFXSlider" to="SettingsPanel" method="_on_sfx_slider_value_changed"]
-[connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/SensitivitySlider" to="SettingsPanel" method="_on_sensitivity_slider_value_changed"]
-[connection signal="toggled" from="SettingsPanel/FullscreenCheckButton" to="SettingsPanel" method="_on_fullscreen_check_button_toggled"]
-[connection signal="pressed" from="SettingsPanel/BackButton" to="." method="_on_back_button_pressed"]
+
+[editable path="SettingsMenu"]
