@@ -61,10 +61,13 @@ class ChaseState:
 		enemy_pos.y = 0
 		var target_pos = to_target
 		target_pos.y = 0
-		var forward_dir = (target_pos - enemy_pos).normalized()
-		var target_basis = Basis().looking_at(forward_dir, Vector3.UP)
-		target_basis = target_basis.rotated(Vector3.UP, deg_to_rad(180))  # optional
-		enemy.global_transform.basis = enemy.global_transform.basis.slerp(target_basis, _delta * 5.0)
+
+		var forward_dir = (target_pos - enemy_pos)
+		if forward_dir.length() > 0.001:  # avoid zero-length vector
+			forward_dir = forward_dir.normalized()
+			var target_basis = Basis.looking_at(forward_dir, Vector3.UP)
+			target_basis = target_basis.rotated(Vector3.UP, deg_to_rad(180))  # optional
+			enemy.global_transform.basis = enemy.global_transform.basis.slerp(target_basis, _delta * 5.0)
 
 		# --- Move enemy ---
 		enemy.move_and_slide()
@@ -85,7 +88,7 @@ class AttackState:
 		enemy.velocity = Vector3.ZERO
 		enemy.anim.play(enemy.attack_animation)
 
-	func update(delta):
+	func update(_delta):
 		if not enemy.target:
 			enemy.change_state("Idle")
 			return

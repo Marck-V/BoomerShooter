@@ -37,7 +37,7 @@ func _ready():
 # ---------------------------
 # Alt Fire (Chain Lightning)
 # ---------------------------
-func alt_fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
+func alt_fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	if not GlobalVariables.has_upgrade(chain_shot):
 		print("Alt fire unavailable — upgrade not unlocked.")
 		return
@@ -119,12 +119,12 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 	else:
 		_continue_chain_from_position(end_pos, damage * 0.8, depth + 1, visited)
 
-func _continue_chain_from_position(position: Vector3, damage: float, depth: int, visited: Array):
+func _continue_chain_from_position(chain_position: Vector3, damage: float, depth: int, visited: Array):
 	if depth >= max_chains:
 		return
-	var next_target = _find_next_enemy_from_position(position, visited, chain_radius)
+	var next_target = _find_next_enemy_from_position(chain_position, visited, chain_radius)
 	if next_target:
-		_spawn_lightning_arc(position, next_target.global_position)
+		_spawn_lightning_arc(chain_position, next_target.global_position)
 		if next_target.has_method("damage"):
 			next_target.damage(damage, 1)
 		await get_tree().create_timer(0.1).timeout

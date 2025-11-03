@@ -9,8 +9,6 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var energy_ball_scene: PackedScene = preload("res://scenes/enemies/energy_ball.tscn")
 @export var firing_target_offset := -0.1
 
-var _in_attack_range: bool = false
-
 @onready var shoot_timer: Timer = $ShootTimer
 @onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
 @onready var vision_area: Area3D = $VisionArea
