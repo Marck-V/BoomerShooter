@@ -34,7 +34,9 @@ class ChaseState:
 		enemy.velocity = dir * enemy.movement_speed
 
 		if dir.length() > 0.01:
-			var target_look_at = Vector3(enemy.target.global_position.x, enemy.global_position.y, enemy.target.global_position.z) + dir
+			var target_look_at = Vector3(enemy.target.global_position.x, 
+							enemy.global_position.y, 
+							enemy.target.global_position.z) + dir
 			enemy.look_at(target_look_at, Vector3.UP, true)
 
 		enemy.move_and_slide()
@@ -46,23 +48,25 @@ class ChaseState:
 # --- Attack (Shared Across All Enemies) ---
 class AttackState:
 	var enemy
-	var attack_animation : String
-	func _init(e): enemy = e
+
+	func _init(e):
+		enemy = e
 
 	func enter():
 		enemy.velocity = Vector3.ZERO
-		attack_animation = enemy.attack_animation
-		enemy.anim.play(attack_animation)
+		enemy.anim.play(enemy.attack_animation)
 
-	func update(_delta):
+	func update(delta):
 		if not enemy.target:
 			enemy.change_state("Idle")
 			return
 
+		# If target leaves range, go back to Chase
 		if not enemy.can_attack():
 			enemy.change_state("Chase")
 			return
 
+		# Perform attack
 		enemy.perform_attack()
 
 # --- Dead ---
