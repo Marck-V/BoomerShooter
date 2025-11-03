@@ -288,18 +288,19 @@ transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 6.3707
 target = NodePath("../../Player")
 
 [node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_230vx")]
-process_mode = 4
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 67.8386)
 target = NodePath("../../Player")
+has_shield = true
 
 [node name="Shield" parent="Enemies/RangedEnemy" instance=ExtResource("5_r6rxp")]
 
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_230vx")]
-process_mode = 4
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.1609, 10.0018, 65.6403)
 target = NodePath("../../Player")
+has_shield = true
 
 [node name="GodotBoss" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_o2kcv")]
+process_mode = 4
 transform = Transform3D(-2, 0, 1.74846e-07, 0, 2, 0, -1.74846e-07, 0, -2, 14.571, 10.0353, 55.0967)
 movement_speed = 8.5
 health = 500.0
