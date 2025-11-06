@@ -87,7 +87,6 @@ fov = 90.0
 
 [node name="PSXShader" type="MeshInstance3D" parent="Head/Camera"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.68787)
-visible = false
 transparency = 0.2
 mesh = SubResource("QuadMesh_i8sra")
 
