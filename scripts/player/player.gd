@@ -111,7 +111,7 @@ func _physics_process(delta):
 	previously_floored = is_on_floor()
 	
 
-	if position.y < -10:
+	if position.y < -20:
 		get_tree().reload_current_scene()
 
 func _input(event):

@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_c0rnk")
 cooldown = 0.1
-max_distance = 10
+max_distance = 20
 damage = 25.0
 spread = 0.0
 shot_count = 1
