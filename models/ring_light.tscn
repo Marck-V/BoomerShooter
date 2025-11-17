@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://t5nngw1o2283"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_iniqq"]
+emission_enabled = true
+
+[sub_resource type="TorusMesh" id="TorusMesh_iniqq"]
+material = SubResource("StandardMaterial3D_iniqq")
+
+[node name="RingLight" type="MeshInstance3D"]
+mesh = SubResource("TorusMesh_iniqq")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1.35939, 0)
+light_energy = 16.0
+omni_range = 50.0
