@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://dqdkkwwc2tqjq"]
+[gd_scene load_steps=16 format=3 uid="uid://dqdkkwwc2tqjq"]
 
 [ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="1_1g8jr"]
 [ext_resource type="Script" uid="uid://c8bxjswuvgyai" path="res://scripts/ui/main_menu.gd" id="1_x2yvf"]
@@ -6,9 +6,51 @@
 [ext_resource type="FontFile" uid="uid://c62pkskh2kaeb" path="res://assets/fonts/ITC SerifGothic.ttf" id="3_x2yvf"]
 [ext_resource type="PackedScene" uid="uid://r147iukh4x4i" path="res://scenes/ui/settings_menu.tscn" id="5_uhagc"]
 [ext_resource type="AudioStream" uid="uid://3gdwsa1bp541" path="res://assets/audio/BoomerShooterDemo1.wav" id="6_uhagc"]
+[ext_resource type="Material" uid="uid://dh2n5yw5mgdch" path="res://trenchbroom/textures/world/texture_16.tres" id="7_btxxm"]
+[ext_resource type="Script" uid="uid://wbbahxt1eccf" path="res://scripts/ui/main_menu_animation.gd" id="8_wb0q5"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_uhagc"]
+sky_top_color = Color(0.578427, 0.261383, 0.808879, 1)
+sky_horizon_color = Color(0.919656, 0.411149, 0.958924, 1)
+sky_energy_multiplier = 2.0
+ground_bottom_color = Color(0.18308, 0.00029071, 0.481355, 1)
+
+[sub_resource type="Sky" id="Sky_ffe0c"]
+sky_material = SubResource("ProceduralSkyMaterial_uhagc")
+
+[sub_resource type="Environment" id="Environment_btxxm"]
+background_mode = 2
+sky = SubResource("Sky_ffe0c")
+glow_enabled = true
+fog_mode = 1
+fog_density = 1.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wb0q5"]
+albedo_color = Color(0, 0, 0, 1)
+
+[sub_resource type="PrismMesh" id="PrismMesh_uhagc"]
+material = SubResource("StandardMaterial3D_wb0q5")
+size = Vector3(1000, 500, 1000)
+
+[sub_resource type="PrismMesh" id="PrismMesh_wb0q5"]
+material = SubResource("StandardMaterial3D_wb0q5")
+size = Vector3(756, 400, 756)
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_btxxm"]
+material = ExtResource("7_btxxm")
+size = Vector2(10000, 10000)
 
 [node name="MainMenu" type="CanvasLayer"]
 script = ExtResource("1_x2yvf")
+
+[node name="FadeRect" type="ColorRect" parent="."]
+z_index = -6
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
 
 [node name="GameNameLabel" type="Label" parent="."]
 anchors_preset = 10
@@ -66,6 +108,116 @@ visible = false
 stream = ExtResource("6_uhagc")
 autoplay = true
 bus = &"Music"
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_btxxm")
+
+[node name="Left Mountains" type="Node" parent="WorldEnvironment"]
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(0.44907, 0, 0.893497, 0, 1, 0, -0.893497, 0, 0.44907, -2547.64, 9.112, -2489.03)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(0.990734, 0, 0.135819, 0, 1, 0, -0.135819, 0, 0.990734, -2686.92, 9.112, -2211.91)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D8" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(0.865353, 0, 0.501163, 0, 1, 0, -0.501163, 0, 0.865353, -2625.18, 9.112, -1650.22)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1814.63, 9.112, -2605.1)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(-0.034882, 0, -0.999391, 0, 1, 0, 0.999391, 0, -0.034882, -1241.09, 9.112, -2605.1)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(0.915185, 0, 0.403034, 0, 1, 0, -0.403034, 0, 0.915185, -788.873, 9.112, -2297.7)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(-0.249011, 0, 0.968501, 0, 1, 0, -0.968501, 0, -0.249011, -1738.22, 9.112, -210.743)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D9" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(0.976597, 0, 0.215076, 0, 1, 0, -0.215076, 0, 0.976597, -1881.04, 9.112, -766.218)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D10" type="MeshInstance3D" parent="WorldEnvironment/Left Mountains"]
+transform = Transform3D(-0.61823, 0, 0.785997, 0, 1, 0, -0.785997, 0, -0.61823, -1695.93, 9.112, -1280.74)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="Right Mountains" type="Node" parent="WorldEnvironment"]
+
+[node name="MeshInstance3D4" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(0.527015, 0, -0.849856, 0, 1, 0, 0.849856, 0, 0.527015, 2446.11, 9.112, -2505.15)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D9" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(-0.867722, 0, -0.49705, 0, 1, 0, 0.49705, 0, -0.867722, 2748.37, 9.112, -2017.73)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D10" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(0.824837, 0, -0.56537, 0, 1, 0, 0.56537, 0, 0.824837, 2725.45, 9.112, -1471.4)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D2" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1756.17, 9.112, -2605.1)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D3" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(0.566262, 0, -0.824225, 0, 1, 0, 0.824225, 0, 0.566262, 1446.02, 9.112, -2605.1)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D6" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(0.836391, 0, -0.548133, 0, 1, 0, 0.548133, 0, 0.836391, 971.881, 9.112, -2297.7)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D5" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(-0.466062, 0, -0.884752, 0, 1, 0, 0.884752, 0, -0.466062, 1694.76, 9.112, 71.1977)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D7" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(-0.993148, 0, -0.116861, 0, 1, 0, 0.116861, 0, -0.993148, 1839.31, 9.112, -203.213)
+mesh = SubResource("PrismMesh_uhagc")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="MeshInstance3D8" type="MeshInstance3D" parent="WorldEnvironment/Right Mountains"]
+transform = Transform3D(-0.874772, 0, -0.484535, 0, 1, 0, 0.484535, 0, -0.874772, 1788.31, 9.112, -765.975)
+mesh = SubResource("PrismMesh_wb0q5")
+skeleton = NodePath("../../../Camera3D")
+
+[node name="FloorMesh" type="MeshInstance3D" parent="WorldEnvironment"]
+mesh = SubResource("PlaneMesh_btxxm")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
+transform = Transform3D(-1, 4.27058e-09, -8.73184e-08, 0, 0.998806, 0.0488498, 8.74228e-08, 0.0488498, -0.998806, 0, 0, 0)
+light_energy = 25.75
+shadow_enabled = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
+script = ExtResource("8_wb0q5")
+cycle_length = 30.0
 
 [connection signal="pressed" from="ButtonsContainer/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
