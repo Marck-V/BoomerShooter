@@ -19,7 +19,7 @@
 [ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="17_5ubjb"]
 [ext_resource type="Material" uid="uid://cmlftix2s7yeq" path="res://trenchbroom/textures/world/texture_17.tres" id="17_wic1c"]
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_e1was"]
-[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
 [ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="18_oqbgo"]
 [ext_resource type="PackedScene" uid="uid://t5nngw1o2283" path="res://models/ring_light.tscn" id="20_h1y2p"]
 [ext_resource type="PackedScene" uid="uid://vbp1uai2kl1t" path="res://scenes/pickups/key.tscn" id="23_oqbgo"]
@@ -30,12 +30,12 @@ sky_horizon_color = Color(0.919656, 0.411149, 0.958924, 1)
 sky_energy_multiplier = 2.0
 ground_bottom_color = Color(0.18308, 0.00029071, 0.481355, 1)
 
-[sub_resource type="Sky" id="Sky_ffe0c"]
+[sub_resource type="Sky" id="Sky_oqbgo"]
 sky_material = SubResource("ProceduralSkyMaterial_v2erg")
 
 [sub_resource type="Environment" id="Environment_v2erg"]
 background_mode = 2
-sky = SubResource("Sky_ffe0c")
+sky = SubResource("Sky_oqbgo")
 glow_enabled = true
 fog_mode = 1
 fog_density = 1.0
