@@ -80,7 +80,7 @@ func perform_attack():
 	var dir = (next_pos - global_position).normalized()
 	var target_look_at = Vector3(target.global_position.x,
 							target.global_position.y,
-							target.global_position.z) + dir
+							global_position.y) + dir
 	look_at(target_look_at, Vector3.UP, true)
 	
 	if not shoot_timer.is_stopped():

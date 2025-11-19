@@ -1,4 +1,4 @@
-[gd_scene load_steps=239 format=4 uid="uid://dxnrf1ck88yxe"]
+[gd_scene load_steps=240 format=4 uid="uid://dxnrf1ck88yxe"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_7mx1b"]
@@ -23,6 +23,7 @@
 [ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="18_oqbgo"]
 [ext_resource type="PackedScene" uid="uid://t5nngw1o2283" path="res://models/ring_light.tscn" id="20_h1y2p"]
 [ext_resource type="PackedScene" uid="uid://vbp1uai2kl1t" path="res://scenes/pickups/key.tscn" id="23_oqbgo"]
+[ext_resource type="AudioStream" uid="uid://cut2c1sn1hq5g" path="res://assets/audio/BoomAndShoot.ogg" id="24_uokx7"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
 sky_top_color = Color(0.578427, 0.261383, 0.808879, 1)
@@ -1595,5 +1596,10 @@ transform = Transform3D(1, 0, 0, 0, -5.96046e-08, 1, 0, -1, -5.96046e-08, 54, 40
 
 [node name="KeyArea" parent="." instance=ExtResource("23_oqbgo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 154, 31.4916, 54)
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("24_uokx7")
+autoplay = true
+bus = &"Music"
 
 [editable path="HUD"]
