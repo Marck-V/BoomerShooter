@@ -823,6 +823,9 @@ script = ExtResource("1_gj28m")
 
 [node name="HUD" parent="." instance=ExtResource("2_7mx1b")]
 
+[node name="HealthBar" parent="HUD/InGameHUD" index="2"]
+layout_mode = 0
+
 [node name="Enemies" type="Node" parent="."]
 
 [node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
