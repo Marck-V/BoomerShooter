@@ -40,4 +40,5 @@ func _on_settings_button_pressed() -> void:
 
 
 func _on_quit_button_pressed() -> void:
-	pass # Replace with function body.
+	resume_game()
+	get_tree().change_scene_to_file("res://scenes/ui/main_menu.tscn")
