@@ -1,14 +1,26 @@
-[gd_scene load_steps=5 format=3 uid="uid://cvsj2ocn18c6h"]
+[gd_scene load_steps=9 format=3 uid="uid://cvsj2ocn18c6h"]
 
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="1_hqnrr"]
 [ext_resource type="FontFile" uid="uid://cfxfvqdxhxg26" path="res://assets/fonts/lilita_one_regular.ttf" id="2_bo48s"]
+[ext_resource type="Script" uid="uid://3i8fy1cpn0cc" path="res://scripts/ui/boss_health_bar.gd" id="3_136eg"]
 [ext_resource type="PackedScene" uid="uid://be11d55tkybrx" path="res://scenes/ui/pause_menu.tscn" id="3_bo48s"]
+[ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="4_oj5la"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
 font = ExtResource("2_bo48s")
 font_size = 36
 outline_size = 12
 outline_color = Color(0, 0, 0, 0.470588)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gss2c"]
+bg_color = Color(0.903505, 0.367886, 0.72805, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h022r"]
+bg_color = Color(0.806322, 0.14778, 0.191204, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
 
 [node name="HUD" type="CanvasLayer"]
 script = ExtResource("1_hqnrr")
@@ -109,6 +121,26 @@ offset_bottom = 23.0
 grow_horizontal = 0
 text = "Points: "
 metadata/_edit_use_anchors_ = true
+
+[node name="BossHealthBar" type="Control" parent="InGameHUD"]
+visible = false
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("3_136eg")
+
+[node name="HealthBar" type="ProgressBar" parent="InGameHUD/BossHealthBar"]
+layout_mode = 0
+offset_left = 29.0
+offset_top = 25.0
+offset_right = 623.0
+offset_bottom = 71.0
+theme = ExtResource("4_oj5la")
+theme_override_styles/background = SubResource("StyleBoxFlat_gss2c")
+theme_override_styles/fill = SubResource("StyleBoxFlat_h022r")
+value = 60.0
+show_percentage = false
 
 [node name="PauseMenu" parent="." instance=ExtResource("3_bo48s")]
 visible = false
