@@ -79,8 +79,8 @@ func perform_attack():
 	var next_pos = nav.get_next_path_position()
 	var dir = (next_pos - global_position).normalized()
 	var target_look_at = Vector3(target.global_position.x,
-							target.global_position.y,
-							global_position.y) + dir
+							global_position.y,
+							target.global_position.z) + dir
 	look_at(target_look_at, Vector3.UP, true)
 	
 	if not shoot_timer.is_stopped():
