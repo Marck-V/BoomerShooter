@@ -3,22 +3,22 @@ class_name EnemyHorde
 
 const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 
-@export var damage_to_player: float = 50
-@export var attack_cooldown: float = 1.2
-@export var vision_range: float = 10.0
-
 @onready var ray: RayCast3D = $HitRaycast
 @onready var bite_timer: Timer = $BiteTimer
 @onready var vision_area: Area3D = $VisionArea
 
 @onready var debug_sphere: MeshInstance3D = MeshInstance3D.new()
+@export var damage_to_player: float = 50
+@export var attack_cooldown: float = 1.2
+@export var vision_range: float = 10.0
+
 
 func _ready():
 	super()
 	vision_area.connect("body_entered", Callable(self, "_on_body_entered"))
 	vision_area.connect("body_exited", Callable(self, "_on_body_exited"))
 
-	attack_animation = "Bite"
+	attack_animation_action = "Sword_Attack"
 	
 	draw_debug_gizmos()
 
@@ -60,6 +60,10 @@ func perform_attack():
 		if col and col.has_method("damage"):
 			col.damage(damage_to_player)
 		bite_timer.start(attack_cooldown)
+
+
+func _on_attack_start_cooldown_timeout() -> void:
+	pass # Replace with function body.
 
 
 func draw_debug_gizmos():

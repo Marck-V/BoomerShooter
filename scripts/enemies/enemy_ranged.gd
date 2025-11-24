@@ -1,6 +1,12 @@
 extends EnemyBase
 class_name EnemyRanged
 
+@onready var shoot_timer: Timer = $ShootTimer
+@onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
+@onready var vision_area: Area3D = $VisionArea
+
+@onready var debug_sphere := MeshInstance3D.new()
+
 const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 
 @export var shoot_range: float = 10.0
@@ -9,19 +15,15 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var energy_ball_scene: PackedScene = preload("res://scenes/enemies/energy_ball.tscn")
 @export var firing_target_offset := -0.1
 
-@onready var shoot_timer: Timer = $ShootTimer
-@onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
-@onready var vision_area: Area3D = $VisionArea
-
-@onready var debug_sphere := MeshInstance3D.new()
-
 func _ready():
 	super()
 	shoot_timer.wait_time = firing_rate
 	vision_area.connect("body_entered", Callable(self, "_on_body_entered"))
 	vision_area.connect("body_exited", Callable(self, "_on_body_exited"))	
 
-	attack_animation = "Idle"
+	attack_animation_enter = "Spell_Simple_Enter"
+	attack_animation_action = "Spell_Simple_Enter"
+	attack_animation_exit = "Spell_Simple_Exit"
 	
 	# Optional — draw sphere only if debug mode is on
 	draw_debug_gizmos()
@@ -86,6 +88,9 @@ func perform_attack():
 	if not shoot_timer.is_stopped():
 		return
 
+	if not attack_start_cooldown.is_stopped():
+		return
+
 	var energy_ball_instance = energy_ball_scene.instantiate() as Area3D
 	energy_ball_instance.position = spawn_marker.global_position
 	energy_ball_instance.transform.basis = spawn_marker.global_basis
@@ -94,8 +99,13 @@ func perform_attack():
 	if energy_ball_instance.has_method("set_target"):
 		energy_ball_instance.set_target(target)
 	
+	#anim.play("Spell_Simple_Shoot")
 	get_parent().add_child(energy_ball_instance)
 	shoot_timer.start()
+
+
+func _on_attack_start_cooldown_timeout() -> void:
+	pass
 
 
 func draw_debug_gizmos():

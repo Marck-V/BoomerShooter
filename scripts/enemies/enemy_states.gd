@@ -23,7 +23,7 @@ class ChaseState:
 		enemy = e
 
 	func enter():
-		enemy.anim.play("Run")
+		enemy.anim.play("Sprint")
 
 	func update(_delta):
 		if not is_instance_valid(enemy.target):
@@ -86,7 +86,8 @@ class AttackState:
 
 	func enter():
 		enemy.velocity = Vector3.ZERO
-		enemy.anim.play(enemy.attack_animation)
+		enemy.anim.play(enemy.attack_animation_action)
+		enemy.attack_start_cooldown.start()
 
 	func update(_delta):
 		if not enemy.target:
@@ -100,6 +101,9 @@ class AttackState:
 
 		# Perform attack
 		enemy.perform_attack()
+		
+	func exit():
+		enemy.anim.play(enemy.attack_animation_exit)
 
 # --- Dead ---
 class DeadState:
