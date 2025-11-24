@@ -1,6 +1,12 @@
 extends CharacterBody3D
 class_name EnemyBase
 
+# --- References (set in subclasses) ---
+@onready var nav: NavigationAgent3D = $NavigationAgent3D
+@onready var anim: AnimationPlayer = $"Enemy_Model/AnimationPlayer"
+@onready var model: MeshInstance3D = $"Enemy_Model/Rig/Skeleton3D/Mannequin"
+@onready var attack_start_cooldown: Timer = $AttackStartCooldown
+
 # --- Common Enemy Properties ---
 @export var movement_speed: float = 6.0
 @export var health: float = 100.0
@@ -11,16 +17,14 @@ var shield: Node = null
 var original_materials: Array[Material] = []
 var shield_material: ShaderMaterial = preload("res://shaders/glass_shader.tres")
 var destroyed: bool = false
-var attack_animation: String = "Attack"
+
+var attack_animation_enter: String = "Sword_Attack"
+var attack_animation_action: String = "Sword_Attack"
+var attack_animation_exit: String = "Sword_Attack"
 
 # --- State Machine ---
 var state = null
 var states = {}
-
-# --- References (set in subclasses) ---
-@onready var nav: NavigationAgent3D = $NavigationAgent3D
-@onready var anim: AnimationPlayer = $"enemy-humanoid/AnimationPlayer"
-@onready var model: MeshInstance3D = $"enemy-humanoid/Armature/Skeleton3D/HumanoidBase_NotOverlapping"
 
 # --- Shield ---
 @export var has_shield: bool = false
@@ -98,15 +102,15 @@ func _on_shield_destroyed():
 # Material Handling
 # ---------------------------
 func apply_shield_material():
-	if has_node("ShieldShader"):
-		$ShieldShader.visible = true
+	#if has_node("ShieldShader"):
+		#$ShieldShader.visible = true
 	var mesh := model.mesh
 	for i in range(mesh.get_surface_count()):
 		model.set_surface_override_material(i, shield_material)
 
 func remove_shield_material():
-	if has_node("ShieldShader"):
-		$ShieldShader.visible = false
+	#if has_node("ShieldShader"):
+		#$ShieldShader.visible = false
 	var mesh := model.mesh
 	for i in range(min(mesh.get_surface_count(), original_materials.size())):
 		model.set_surface_override_material(i, original_materials[i])

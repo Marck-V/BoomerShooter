@@ -18,7 +18,7 @@
 [ext_resource type="Material" uid="uid://dh2n5yw5mgdch" path="res://trenchbroom/textures/world/texture_16.tres" id="16_jtnag"]
 [ext_resource type="Material" uid="uid://cmlftix2s7yeq" path="res://trenchbroom/textures/world/texture_17.tres" id="17_6xeo1"]
 [ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="18_curwg"]
-[ext_resource type="PackedScene" path="res://scenes/pickups/base_pickup.tscn" id="19_vigpc"]
+[ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="19_vigpc"]
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="20_4haos"]
 [ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="21_d0x4e"]
 [ext_resource type="PackedScene" uid="uid://t5nngw1o2283" path="res://models/ring_light.tscn" id="22_1d5q3"]
@@ -825,32 +825,34 @@ script = ExtResource("1_8nfvc")
 
 [node name="Enemies" type="Node" parent="."]
 
-[node name="MeleeEnemy" parent="Enemies" instance=ExtResource("3_y41hs")]
+[node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
 vision_range = 10.0
+target = NodePath("../../Player")
 has_shield = true
 
-[node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("3_y41hs")]
+[node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
 vision_range = 10.0
+target = NodePath("../../Player")
 
-[node name="RangedEnemy" parent="Enemies" instance=ExtResource("4_bfrey")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
+[node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("4_bfrey")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.0977, 10.0018, 53.273)
+target = NodePath("../../Player")
+has_shield = true
 
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("4_bfrey")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6797, 10.0018, 46.8296)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6797, 10.0018, 53.0141)
 target = NodePath("../../Player")
 
 [node name="RangedEnemy3" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("4_bfrey")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 11, 58)
 target = NodePath("../../Player")
-debug = true
 
 [node name="MeleeEnemy3" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 11, 60)
 vision_range = 10.0
 target = NodePath("../../Player")
-debug = true
 
 [node name="RangedEnemy4" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("4_bfrey")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 43, 19, 49)
@@ -1533,7 +1535,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
 type = "Health"
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("20_4haos")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 12.2761, 14.4693, 92.8543)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 13.6712, 14.4693, 11.7808)
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="BasePickup" parent="." instance=ExtResource("19_vigpc")]
