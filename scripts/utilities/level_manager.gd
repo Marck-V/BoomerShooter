@@ -4,8 +4,11 @@ extends Node
 @onready var player: CharacterBody3D = $"../Player"
 @onready var hud = $"../HUD"
 @onready var red_key_zone: Area3D = $"../KeyCheckAreas/RedKeyZone"
+@onready var blue_key_zone: Area3D = $"../KeyCheckAreas/BlueKeyZone"
 @onready var red_key: Node3D = $"../RedKeyArea"
+@onready var blue_key: Node3D = $"../BlueKeyArea"
 @onready var red_key_barrier = $"../RedKeyArea/Barrier"
+@onready var blue_key_barrier = $"../BlueKeyArea/Barrier"
 
 var upgrade_station_camera
 var player_camera
@@ -19,7 +22,7 @@ var upgrade_menu_instance : Node = null
 
 var player_in_red_key_zone: bool = false
 var enemies_in_red_zone: int = 0
-
+var enemies_in_blue_zone: int = 0
 
 func _ready() -> void:
 	upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
@@ -27,6 +30,8 @@ func _ready() -> void:
 
 	red_key.connect("body_entered", _on_red_key_body_entered)
 	red_key.connect("body_exited", _on_red_key_body_exited)
+	blue_key.connect("body_entered", _on_blue_key_body_entered)
+	blue_key.connect("body_exited", _on_blue_key_body_exited)
 
 	upgrade_station_camera = upgrade_station.get_node("Camera3D")
 	player_camera = player.get_node("Head/Camera")
@@ -35,7 +40,8 @@ func _ready() -> void:
 func _process(_delta):
 	# keep enemy count updated
 	enemies_in_red_zone = get_enemy_count(red_key_zone)
-
+	enemies_in_blue_zone = get_enemy_count(blue_key_zone)
+	
 	# --- Upgrade station ---
 	if Input.is_action_just_pressed("interact") and upgrade_area_occupied:
 		if upgrade_menu_instance == null:
@@ -62,11 +68,25 @@ func _process(_delta):
 			has__red_key = true
 			print("Red key picked up!")
 			if is_instance_valid(red_key):
-				red_key.queue_free() # remove key from world
+				red_key.queue_free()
+
+	# Blue key pickup (similar logic can be added here)
+	if Input.is_action_just_pressed("interact") and not has_blue_key:
+		if enemies_in_blue_zone > 0:
+			print("Can't pick up blue key yet! Enemies remaining:", enemies_in_blue_zone)
+		else:
+			has_blue_key = true
+			print("Blue key picked up!")
+			if is_instance_valid(blue_key):
+				blue_key.queue_free()
 
 	# Key Barrier Removal
 	if enemies_in_red_zone == 0 and is_instance_valid(red_key_barrier):
 		red_key_barrier.queue_free()
+	
+	if enemies_in_blue_zone == 0 and is_instance_valid(blue_key_barrier):
+		blue_key_barrier.queue_free()
+
 
 func _on_red_key_body_entered(body) -> void:
 	if body.is_in_group("Player"):
@@ -75,13 +95,23 @@ func _on_red_key_body_entered(body) -> void:
 		if enemies_in_red_zone > 0:
 			red_key.get_node("Label3D").visible = true
 		
-		
-
 
 func _on_red_key_body_exited(body) -> void:
 	if body.is_in_group("Player"):
 		player_in_red_key_zone = false
 		red_key.get_node("Label3D").visible = false
+		hud.get_node("InGameHUD/InteractLabel").visible = false
+
+
+func _on_blue_key_body_entered(body) -> void:
+	if body.is_in_group("Player"):
+		hud.get_node("InGameHUD/InteractLabel").visible = true
+		if enemies_in_blue_zone > 0:
+			blue_key.get_node("Label3D").visible = true
+
+func _on_blue_key_body_exited(body) -> void:
+	if body.is_in_group("Player"):
+		blue_key.get_node("Label3D").visible = false
 		hud.get_node("InGameHUD/InteractLabel").visible = false
 
 func unlock_door():
