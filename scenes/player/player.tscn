@@ -125,6 +125,7 @@ stream = ExtResource("5_ics1s")
 volume_db = -5.0
 autoplay = true
 bus = &"SFX"
+parameters/looping = true
 
 [node name="Cooldown" type="Timer" parent="."]
 one_shot = true
