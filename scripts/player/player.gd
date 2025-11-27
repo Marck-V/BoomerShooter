@@ -5,7 +5,7 @@ extends CharacterBody3D
 @export var base_slide_speed = 10
 @export var jump_strength = 8
 @export var max_slide_speed = 12
-@export var mouse_sensitivity = 40
+@export var mouse_sensitivity = 700
 
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
@@ -116,10 +116,10 @@ func _physics_process(delta):
 
 func _input(event):
 	if event is InputEventMouseMotion and mouse_captured:
-		var sens = GlobalVariables.mouse_sensitivity * 0.0001
-		rotation_target.y -= event.relative.x * sens
-		rotation_target.x -= event.relative.y * sens
-
+		var sens = GlobalVariables.mouse_sensitivity
+		input_mouse = event.relative / sens
+		rotation_target.y -= event.relative.x / sens
+		rotation_target.x -= event.relative.y / sens
 
 func handle_controls(_delta):
 	if Input.is_action_just_pressed("mouse_capture"):
