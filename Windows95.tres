@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=117 format=3 uid="uid://csix15cdk72y3"]
+[gd_resource type="Theme" load_steps=118 format=3 uid="uid://csix15cdk72y3"]
 
 [ext_resource type="FontFile" uid="uid://uoou3yxialwj" path="res://assets/images/Godot-Windows-95-Theme-main/font/PixelOperator.ttf" id="1_2cwjv"]
 [ext_resource type="Texture2D" uid="uid://tt74t6270vfp" path="res://assets/images/Godot-Windows-95-Theme-main/textures/button/normal.png" id="2_v386v"]
@@ -250,6 +250,17 @@ texture_margin_top = 3.0
 texture_margin_right = 3.0
 texture_margin_bottom = 3.0
 region_rect = Rect2(0, 0, 21, 21)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_1caig"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+texture = ExtResource("22_3kdyi")
+texture_margin_left = 6.0
+texture_margin_top = 30.0
+texture_margin_right = 7.0
+texture_margin_bottom = 3.0
 
 [sub_resource type="StyleBoxTexture" id="99"]
 content_margin_left = 8.0
@@ -585,7 +596,7 @@ OptionButton/icons/arrow = ExtResource("14_v3noj")
 OptionButton/styles/hover = SubResource("StyleBoxTexture_5e017")
 OptionButton/styles/normal = SubResource("25")
 OptionButton/styles/pressed = SubResource("25")
-Panel/styles/panel = SubResource("45")
+Panel/styles/panel = SubResource("StyleBoxTexture_1caig")
 PanelContainer/styles/panel = SubResource("99")
 PopupMenu/colors/font_color = Color(0, 0, 0, 1)
 PopupMenu/colors/font_color_accel = Color(0, 0, 0, 1)
