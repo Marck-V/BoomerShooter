@@ -50,7 +50,7 @@ func set_target(t: Node3D) -> void:
 
 func _on_body_entered(body):
     if body.is_in_group("Player") and body.has_method("damage"):
-        Audio.play("sounds/enemy_attack.ogg")
+        Audio.play("assets/sounds/enemy_attack.ogg")
         body.damage(damage)
     queue_free()
 

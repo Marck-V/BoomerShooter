@@ -1,0 +1,28 @@
+[gd_scene load_steps=5 format=3 uid="uid://c1qi0hggy4jff"]
+
+[ext_resource type="Script" uid="uid://dha2us8huelup" path="res://scripts/template_environment_components/launch_pad.gd" id="1_yulrt"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ivhvk"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_yulrt"]
+emission_enabled = true
+emission = Color(1, 0, 0, 1)
+emission_energy_multiplier = 16.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_yulrt"]
+material = SubResource("StandardMaterial3D_yulrt")
+size = Vector3(1, 0.25, 1)
+
+[node name="LaunchPad" type="Area3D" node_paths=PackedStringArray("launch_target")]
+collision_layer = 2
+script = ExtResource("1_yulrt")
+launch_target = NodePath("Marker3D")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_ivhvk")
+
+[node name="Marker3D" type="Marker3D" parent="."]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.370962, 0)
+mesh = SubResource("BoxMesh_yulrt")
