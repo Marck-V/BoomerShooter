@@ -6,7 +6,7 @@
 [ext_resource type="PackedScene" uid="uid://j4exufyutty0" path="res://scenes/weapons/rifle.tscn" id="5_fjrip"]
 [ext_resource type="AudioStream" uid="uid://c7a8a5uokopub" path="res://assets/sounds/walking.ogg" id="5_ics1s"]
 [ext_resource type="Shader" uid="uid://dcuhfc8jfneeb" path="res://shaders/psx.gdshader" id="6_3rfka"]
-[ext_resource type="Resource" uid="uid://bo8l1pj2jkl7q" path="res://resources/weapons/rifle.tres" id="6_smehm"]
+[ext_resource type="Resource" uid="uid://5tkh7ovy80oo" path="res://resources/weapons/rifle.tres" id="6_smehm"]
 [ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/weapons/shotgun.tscn" id="8_4vq5b"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gdq8c"]
