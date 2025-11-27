@@ -271,7 +271,7 @@ radius = 12.0
 
 [node name="MeleeEnemy" type="CharacterBody3D" groups=["Enemy"]]
 collision_layer = 4
-collision_mask = 7
+collision_mask = 3
 script = ExtResource("1_jjlyi")
 damage_to_player = 25.0
 attack_cooldown = 2.5
@@ -280,104 +280,53 @@ movement_speed = 7.0
 
 [node name="Enemy_Model" parent="." instance=ExtResource("2_4b4wi")]
 
-[node name="Head" parent="Enemy_Model/Rig/Skeleton3D" index="1"]
-transform = Transform3D(0.997831, -0.0567694, -0.0333283, 0.0476313, 0.972086, -0.229738, 0.0454401, 0.227652, 0.972682, -0.0145497, 1.52779, -0.0134588)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Head" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="Neck" parent="Enemy_Model/Rig/Skeleton3D" index="2"]
-transform = Transform3D(0.97318, -0.059786, -0.222138, 0.000521656, 0.966209, -0.257759, 0.230042, 0.25073, 0.940327, -0.00961221, 1.448, -0.0341658)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Neck" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="Chest" parent="Enemy_Model/Rig/Skeleton3D" index="3"]
-transform = Transform3D(0.973258, -0.0480684, -0.22463, 0.00110835, 0.978833, -0.204657, 0.229713, 0.198935, 0.95271, -0.00130162, 1.27877, -0.0685599)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Chest" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="Torso" parent="Enemy_Model/Rig/Skeleton3D" index="4"]
-transform = Transform3D(0.973134, 0.0101384, -0.230018, 0.000251716, 0.998982, 0.0450966, 0.230242, -0.0439429, 0.972141, -0.0027339, 1.13764, -0.062352)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Torso" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="Hips" parent="Enemy_Model/Rig/Skeleton3D" index="5"]
-transform = Transform3D(0.973081, -0.0356188, -0.227693, -8.19564e-08, 0.987984, -0.154554, 0.230462, 0.150394, 0.961389, 0.00292178, 0.877129, -0.0862321)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Hips" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="LeftBicep" parent="Enemy_Model/Rig/Skeleton3D" index="6"]
-transform = Transform3D(-0.905314, 0.367569, -0.212837, -0.305009, -0.91133, -0.276491, -0.295594, -0.185394, 0.937152, 0.200816, 1.40153, -0.0326388)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftBicep" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="LeftForearm" parent="Enemy_Model/Rig/Skeleton3D" index="7"]
-transform = Transform3D(-0.878464, 0.197173, -0.435229, -0.293736, -0.941284, 0.166443, -0.376856, 0.274057, 0.884801, 0.301691, 1.15143, -0.0835185)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftForearm" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="LeftHand" parent="Enemy_Model/Rig/Skeleton3D" index="8"]
-transform = Transform3D(-0.879146, 0.0548744, -0.473383, -0.249569, -0.899253, 0.359247, -0.405978, 0.433972, 0.80427, 0.355449, 0.894797, -0.00879943)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftHand" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="RightBicep" parent="Enemy_Model/Rig/Skeleton3D" index="9"]
-transform = Transform3D(-0.857282, -0.217462, -0.466667, 0.387003, -0.869987, -0.305533, -0.339552, -0.442529, 0.829983, -0.16292, 1.40947, -0.154554)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightBicep" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="RightForearm" parent="Enemy_Model/Rig/Skeleton3D" index="10"]
-transform = Transform3D(-0.963749, -0.264002, 0.0386068, 0.263187, -0.916896, 0.300059, -0.0438173, 0.299342, 0.953139, -0.2226, 1.17071, -0.276002)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightForearm" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="RightHand" parent="Enemy_Model/Rig/Skeleton3D" index="11"]
-transform = Transform3D(-0.983325, -0.161823, 0.0829735, 0.181432, -0.841879, 0.508254, -0.0123934, 0.514833, 0.857201, -0.294578, 0.920723, -0.194389)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightHand" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="LeftThigh" parent="Enemy_Model/Rig/Skeleton3D" index="12"]
-transform = Transform3D(0.959256, 0.142285, 0.244095, 0.218174, -0.921964, -0.319974, 0.179519, 0.360192, -0.915442, 0.0780576, 0.897453, -0.0172976)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftThigh" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="LeftShin" parent="Enemy_Model/Rig/Skeleton3D" index="13"]
-transform = Transform3D(0.989612, 0.140119, -0.0321714, 0.140036, -0.990135, -0.00483087, -0.0325309, 0.000275642, -0.99947, 0.135015, 0.528382, 0.126891)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftShin" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="LeftFoot" parent="Enemy_Model/Rig/Skeleton3D" index="14"]
-transform = Transform3D(0.995144, -0.0850759, 0.0495012, -0.000890365, -0.510673, -0.859775, 0.0984251, 0.855555, -0.508268, 0.195194, 0.103139, 0.127009)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftFoot" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="RightThigh" parent="Enemy_Model/Rig/Skeleton3D" index="15"]
-transform = Transform3D(0.949018, -0.187661, 0.253274, -0.226389, -0.964862, 0.133375, 0.219346, -0.183914, -0.958156, -0.0951509, 0.897453, -0.0583199)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightThigh" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
-[node name="RightShin" parent="Enemy_Model/Rig/Skeleton3D" index="16"]
-transform = Transform3D(0.530896, 0.0196947, 0.847208, -0.257151, -0.948847, 0.183199, 0.807479, -0.31512, -0.498674, -0.170273, 0.511209, -0.131942)
-
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightShin" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
-
-[node name="RightFoot" parent="Enemy_Model/Rig/Skeleton3D" index="17"]
-transform = Transform3D(0.723777, -0.593603, 0.351826, -0.000891726, -0.510672, -0.859775, 0.690033, 0.621972, -0.370142, -0.161815, 0.103698, -0.26728)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightFoot" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")

@@ -1,11 +1,11 @@
-[gd_scene load_steps=17 format=3 uid="uid://dqdkkwwc2tqjq"]
+[gd_scene load_steps=16 format=3 uid="uid://dqdkkwwc2tqjq"]
 
 [ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="1_1g8jr"]
 [ext_resource type="Script" uid="uid://c8bxjswuvgyai" path="res://scripts/ui/main_menu.gd" id="1_x2yvf"]
 [ext_resource type="FontFile" uid="uid://dr47jm0mp2358" path="res://assets/fonts/ITC SerifGothicBold.ttf" id="2_m1kxf"]
 [ext_resource type="FontFile" uid="uid://c62pkskh2kaeb" path="res://assets/fonts/ITC SerifGothic.ttf" id="3_x2yvf"]
 [ext_resource type="PackedScene" uid="uid://r147iukh4x4i" path="res://scenes/ui/settings_menu.tscn" id="5_uhagc"]
-[ext_resource type="AudioStream" uid="uid://n6q3pskn7n7u" path="res://assets/audio/music/main_theme_master_intro_loop.mp3" id="6_wb0q5"]
+[ext_resource type="AudioStream" uid="uid://3gdwsa1bp541" path="res://assets/audio/BoomerShooterDemo1.wav" id="6_uhagc"]
 [ext_resource type="Material" uid="uid://dh2n5yw5mgdch" path="res://trenchbroom/textures/world/texture_16.tres" id="7_btxxm"]
 [ext_resource type="Script" uid="uid://wbbahxt1eccf" path="res://scripts/ui/main_menu_animation.gd" id="8_wb0q5"]
 
@@ -36,13 +36,9 @@ size = Vector3(1000, 500, 1000)
 material = SubResource("StandardMaterial3D_wb0q5")
 size = Vector3(756, 400, 756)
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_wb0q5"]
+[sub_resource type="PlaneMesh" id="PlaneMesh_btxxm"]
 material = ExtResource("7_btxxm")
-size = Vector2(1000, 1000)
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_q85j6"]
-material = ExtResource("7_btxxm")
-size = Vector2(1000, 1000)
+size = Vector2(10000, 10000)
 
 [node name="MainMenu" type="CanvasLayer"]
 script = ExtResource("1_x2yvf")
@@ -109,7 +105,7 @@ text = "Quit"
 visible = false
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("6_wb0q5")
+stream = ExtResource("6_uhagc")
 autoplay = true
 bus = &"Music"
 
@@ -211,12 +207,7 @@ mesh = SubResource("PrismMesh_wb0q5")
 skeleton = NodePath("../../../Camera3D")
 
 [node name="FloorMesh" type="MeshInstance3D" parent="WorldEnvironment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -5)
-mesh = SubResource("PlaneMesh_wb0q5")
-
-[node name="FloorMesh2" type="MeshInstance3D" parent="WorldEnvironment"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -1000)
-mesh = SubResource("PlaneMesh_q85j6")
+mesh = SubResource("PlaneMesh_btxxm")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="WorldEnvironment"]
 transform = Transform3D(-1, 4.27058e-09, -8.73184e-08, 0, 0.998806, 0.0488498, 8.74228e-08, 0.0488498, -0.998806, 0, 0, 0)
