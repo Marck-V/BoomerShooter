@@ -823,6 +823,7 @@ points = PackedVector3Array(-99.0625, 3.5625, 65, -99.0625, 3, 65, -97.6875, 3, 
 size = Vector3(22.6255, 11.9804, 28.0334)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_7li7f"]
+size = Vector3(50.6594, 16.6537, 22.7906)
 
 [node name="Node3D" type="Node3D"]
 
@@ -837,17 +838,40 @@ script = ExtResource("1_gj28m")
 
 [node name="Enemies" type="Node" parent="." groups=["Enemy"]]
 
-[node name="MeleeEnemy" parent="Enemies" instance=ExtResource("6_5ubjb")]
+[node name="MeleeEnemy4" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -81.6357, 7.90806, 72.4928)
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy5" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -81.6357, 7.90806, 61.4071)
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy6" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -85.5168, 7.90806, 61.4071)
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy7" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -85.5168, 7.90806, 72.3361)
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy8" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -77.9778, 5.62399, 65.3435)
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
 vision_range = 10.0
+target = NodePath("../../Player")
 has_shield = true
 
-[node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("6_5ubjb")]
+[node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
 vision_range = 10.0
+target = NodePath("../../Player")
 
-[node name="RangedEnemy" parent="Enemies" instance=ExtResource("7_gj28m")]
+[node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
+target = NodePath("../../Player")
 
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6797, 10.0018, 46.8296)
@@ -886,6 +910,10 @@ target = NodePath("../../Player")
 
 [node name="RangedEnemy9" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 163.313, -5, 64.3922)
+target = NodePath("../../Player")
+
+[node name="RangedEnemy10" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -64.8136, 10.6581, 66.407)
 target = NodePath("../../Player")
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
@@ -1540,9 +1568,6 @@ shape = SubResource("ConvexPolygonShape3D_c2bhv")
 [node name="entity_0_brush_210_collision_shape" type="CollisionShape3D" parent="NavigationRegion3D/FuncGodotMap/entity_0_worldspawn"]
 shape = SubResource("ConvexPolygonShape3D_vhixc")
 
-[node name="KeyArea" parent="NavigationRegion3D" instance=ExtResource("23_oqbgo")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -98.447, 9.5625, 66.0171)
-
 [node name="UpgradeStation" parent="." instance=ExtResource("17_5ubjb")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 18.4313, 5.85269, 23.5661)
 
@@ -1554,7 +1579,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
 type = "Health"
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 151.718, 32.806, 57.4124)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -86.2267, 10.218, 62.1543)
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]
@@ -1630,6 +1655,9 @@ omni_range = 1090.0
 [node name="RedKeyArea" parent="." instance=ExtResource("23_oqbgo")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 173.651, -10.4152, 56.0183)
 
+[node name="BlueKeyArea" parent="." instance=ExtResource("23_oqbgo")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -98.447, 9.5625, 66.0171)
+
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("24_uokx7")
 autoplay = true
@@ -1647,8 +1675,11 @@ shape = SubResource("BoxShape3D_uokx7")
 
 [node name="BlueKeyZone" type="Area3D" parent="KeyCheckAreas"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -78.686, 10.3037, 66.0545)
+collision_layer = 2
+collision_mask = 4
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="KeyCheckAreas/BlueKeyZone"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.4906, 2.23993, 0.284004)
 shape = SubResource("BoxShape3D_7li7f")
 
 [node name="LaunchPad" parent="." instance=ExtResource("25_7li7f")]
