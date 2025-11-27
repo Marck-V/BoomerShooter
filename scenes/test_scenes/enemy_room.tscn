@@ -23,7 +23,8 @@
 [ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="18_oqbgo"]
 [ext_resource type="PackedScene" uid="uid://t5nngw1o2283" path="res://models/ring_light.tscn" id="20_h1y2p"]
 [ext_resource type="PackedScene" uid="uid://vbp1uai2kl1t" path="res://scenes/pickups/key.tscn" id="23_oqbgo"]
-[ext_resource type="AudioStream" uid="uid://dg76e6ktxc155" path="res://assets/audio/music/main_theme_master_body_loop.ogg" id="24_uokx7"]
+[ext_resource type="AudioStream" uid="uid://cut2c1sn1hq5g" path="res://assets/audio/BoomAndShoot.ogg" id="24_uokx7"]
+[ext_resource type="PackedScene" uid="uid://c1qi0hggy4jff" path="res://scenes/template_environment_components/launch_pad.tscn" id="25_7li7f"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
 sky_top_color = Color(0.578427, 0.261383, 0.808879, 1)
