@@ -1,0 +1,14 @@
+[gd_scene load_steps=3 format=3 uid="uid://c1qi0hggy4jff"]
+
+[ext_resource type="Script" uid="uid://dha2us8huelup" path="res://scripts/template_environment_components/launch_pad.gd" id="1_yulrt"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ivhvk"]
+
+[node name="LaunchPad" type="Area3D"]
+collision_layer = 2
+script = ExtResource("1_yulrt")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_ivhvk")
+
+[node name="CSGBox3D" type="CSGBox3D" parent="."]
