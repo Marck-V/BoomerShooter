@@ -138,9 +138,9 @@ value = 0.2
 custom_minimum_size = Vector2(400, 50)
 layout_mode = 2
 theme = ExtResource("3_yu862")
-min_value = 0.1
-step = 0.1
-value = 40.0
+min_value = 100.0
+max_value = 1000.0
+value = 700.0
 
 [node name="FullscreenCheckButton" type="CheckButton" parent="SettingsPanel"]
 custom_minimum_size = Vector2(300, 0)
