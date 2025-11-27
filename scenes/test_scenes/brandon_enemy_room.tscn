@@ -23,7 +23,7 @@
 [ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="21_d0x4e"]
 [ext_resource type="PackedScene" uid="uid://t5nngw1o2283" path="res://models/ring_light.tscn" id="22_1d5q3"]
 [ext_resource type="PackedScene" uid="uid://vbp1uai2kl1t" path="res://scenes/pickups/key.tscn" id="23_avtaw"]
-[ext_resource type="AudioStream" uid="uid://cut2c1sn1hq5g" path="res://assets/audio/BoomAndShoot.ogg" id="24_5xatj"]
+[ext_resource type="AudioStream" uid="uid://dg76e6ktxc155" path="res://assets/audio/music/main_theme_master_body_loop.ogg" id="24_8nfvc"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
 sky_top_color = Color(0.578427, 0.261383, 0.808879, 1)
@@ -1535,7 +1535,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
 type = "Health"
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("20_4haos")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 13.6712, 14.4693, 11.7808)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 13.6712, 14.4693, 100.826)
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="BasePickup" parent="." instance=ExtResource("19_vigpc")]
@@ -1602,7 +1602,8 @@ transform = Transform3D(1, 0, 0, 0, -5.96046e-08, 1, 0, -1, -5.96046e-08, 54, 40
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 154, 31.4916, 54)
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("24_5xatj")
+process_mode = 4
+stream = ExtResource("24_8nfvc")
 autoplay = true
 bus = &"Music"
 
