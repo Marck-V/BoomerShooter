@@ -53,6 +53,10 @@ func can_attack() -> bool:
 
 func perform_attack():
 	ray.force_raycast_update()
+	
+	audio_player.play("assets/audio/sfx/enemies/Enemy_Hit1.wav, 
+					   assets/audio/sfx/enemies/Enemy_Hit2.wav, 
+					   assets/audio/sfx/enemies/Enemy_Hit3.wav")
 
 	# Perform bite if cooldown expired
 	if bite_timer.is_stopped():

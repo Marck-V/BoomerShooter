@@ -4,7 +4,6 @@ class_name EnemyRanged
 @onready var shoot_timer: Timer = $ShootTimer
 @onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
 @onready var vision_area: Area3D = $VisionArea
-
 @onready var debug_sphere := MeshInstance3D.new()
 
 const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
@@ -24,6 +23,8 @@ func _ready():
 	attack_animation_enter = "Spell_Simple_Enter"
 	attack_animation_action = "Spell_Simple_Enter"
 	attack_animation_exit = "Spell_Simple_Exit"
+	
+	
 	
 	# Optional — draw sphere only if debug mode is on
 	draw_debug_gizmos()
@@ -78,12 +79,12 @@ func has_line_of_sight_to_player() -> bool:
 
 
 func perform_attack():
-	var next_pos = nav.get_next_path_position()
-	var dir = (next_pos - global_position).normalized()
-	var target_look_at = Vector3(target.global_position.x,
-							global_position.y,
-							target.global_position.z) + dir
-	look_at(target_look_at, Vector3.UP, true)
+	var target_pos = target.global_position
+
+	# Keep enemy’s current height (Y)
+	target_pos.y = global_position.y
+
+	look_at(target_pos, Vector3.UP, true)
 	
 	if not shoot_timer.is_stopped():
 		return
@@ -94,6 +95,10 @@ func perform_attack():
 	var energy_ball_instance = energy_ball_scene.instantiate() as Area3D
 	energy_ball_instance.position = spawn_marker.global_position
 	energy_ball_instance.transform.basis = spawn_marker.global_basis
+	
+	Audio.play_at(global_position, 
+				"assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav,
+				 assets/audio/sfx/enemies/Enemy_Shoot2_PitchedUp.wav")
 	
 	# Set the target for the projectile
 	if energy_ball_instance.has_method("set_target"):

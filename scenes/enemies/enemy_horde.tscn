@@ -1,10 +1,11 @@
-[gd_scene load_steps=24 format=4 uid="uid://xh7qo3fjn53j"]
+[gd_scene load_steps=25 format=4 uid="uid://xh7qo3fjn53j"]
 
 [ext_resource type="Script" uid="uid://4pijlebj0o3x" path="res://scripts/enemies/enemy_horde.gd" id="1_jjlyi"]
 [ext_resource type="PackedScene" uid="uid://crq4rlg5k72xf" path="res://scenes/enemies/enemy_model.tscn" id="2_4b4wi"]
 [ext_resource type="PackedScene" uid="uid://bua6k3b8bpnyc" path="res://models/enemy-humanoid.glb" id="2_x2h17"]
 [ext_resource type="Material" uid="uid://cnxhhb6kgdtfq" path="res://shaders/glass_shader.tres" id="3_5irbc"]
 [ext_resource type="Script" uid="uid://m5xnxt1s8y6f" path="res://scripts/enemies/body_hurtbox.gd" id="4_4b4wi"]
+[ext_resource type="Script" uid="uid://3rimacln7ilh" path="res://scripts/utilities/audio.gd" id="6_cpc4n"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_5irbc"]
 radius = 10.5
@@ -722,6 +723,10 @@ collision_layer = 4
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.992432, 0)
 shape = SubResource("SphereShape3D_pjxt5")
 debug_color = Color(0.994694, 0, 0.217901, 0.42)
+
+[node name="AudioPlayer" type="Node3D" parent="."]
+script = ExtResource("6_cpc4n")
+use_3d = true
 
 [connection signal="timeout" from="AttackStartCooldown" to="." method="_on_attack_start_cooldown_timeout"]
 [connection signal="body_entered" from="VisionArea" to="." method="_on_vision_area_body_entered"]

@@ -24,7 +24,7 @@
 [ext_resource type="PackedScene" uid="uid://t5nngw1o2283" path="res://models/ring_light.tscn" id="22_1d5q3"]
 [ext_resource type="PackedScene" uid="uid://vbp1uai2kl1t" path="res://scenes/pickups/key.tscn" id="23_avtaw"]
 [ext_resource type="AudioStream" uid="uid://cut2c1sn1hq5g" path="res://assets/audio/Boss_Hit3.ogg" id="24_eef42"]
-[ext_resource type="PackedScene" path="res://scenes/template_environment_components/launch_pad.tscn" id="25_y41hs"]
+[ext_resource type="PackedScene" uid="uid://c1qi0hggy4jff" path="res://scenes/template_environment_components/launch_pad.tscn" id="25_y41hs"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
 sky_top_color = Color(0.578427, 0.261383, 0.808879, 1)
@@ -837,17 +837,20 @@ script = ExtResource("1_8nfvc")
 
 [node name="Enemies" type="Node" parent="." groups=["Enemy"]]
 
-[node name="MeleeEnemy" parent="Enemies" instance=ExtResource("3_y41hs")]
+[node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
 vision_range = 10.0
+target = NodePath("../../Player")
 has_shield = true
 
-[node name="MeleeEnemy2" parent="Enemies" instance=ExtResource("3_y41hs")]
+[node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
 vision_range = 10.0
+target = NodePath("../../Player")
 
-[node name="RangedEnemy" parent="Enemies" instance=ExtResource("4_bfrey")]
+[node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("4_bfrey")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
+target = NodePath("../../Player")
 
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("4_bfrey")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6797, 10.0018, 46.8296)
@@ -1554,7 +1557,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
 type = "Health"
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("20_4haos")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 15.9798, 43.781, 96.6657)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.0719, 6.52708, 11.0683)
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="BasePickup" parent="." instance=ExtResource("19_vigpc")]

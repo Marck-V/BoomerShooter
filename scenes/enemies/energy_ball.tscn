@@ -1,6 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://ol7l062t4q7"]
+[gd_scene load_steps=6 format=3 uid="uid://ol7l062t4q7"]
 
 [ext_resource type="Script" uid="uid://bb0qevghx1yj8" path="res://scripts/enemies/energy_ball.gd" id="1_ej0ga"]
+[ext_resource type="Script" uid="uid://3rimacln7ilh" path="res://scripts/utilities/audio.gd" id="2_cwci5"]
 
 [sub_resource type="SphereMesh" id="SphereMesh_1pcqd"]
 
@@ -28,6 +29,11 @@ shape = SubResource("SphereShape3D_ej0ga")
 [node name="SelfQueueTimer" type="Timer" parent="."]
 wait_time = 3.0
 autostart = true
+
+[node name="AudioPlayer" type="Node3D" parent="."]
+visible = false
+script = ExtResource("2_cwci5")
+use_3d = true
 
 [connection signal="body_entered" from="." to="." method="_on_body_entered"]
 [connection signal="timeout" from="SelfQueueTimer" to="." method="_on_self_queue_timer_timeout"]

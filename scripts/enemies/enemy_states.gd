@@ -113,6 +113,9 @@ class DeadState:
 
 	func enter():
 		enemy.destroyed = true
+		Audio.play_at(enemy.global_position,
+						"assets/audio/sfx/enemies/Enemy_Death1.wav,
+						assets/audio/sfx/enemies/Enemy_Death2.wav")
 		enemy.queue_free()
 
 	func update(_delta):
