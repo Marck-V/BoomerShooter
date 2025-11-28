@@ -69,7 +69,6 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
  
 		if raycast.is_colliding():
 			var collider = raycast.get_collider()
-
 			if collider and collider.has_method("damage"):
 				collider.damage(data.damage)
 

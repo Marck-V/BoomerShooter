@@ -55,6 +55,7 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 		
 		"Health":
 			GlobalVariables.add_health(healing_amount)
+			Audio.play("assets/sounds/health_pickup.mp3")
 		"Points":
 			GlobalVariables.add_points(points_amount)
 			Audio.play("assets/sounds/money_pickup.mp3")
