@@ -6,6 +6,7 @@ class_name EnemyBase
 @onready var anim: AnimationPlayer = $"Enemy_Model/AnimationPlayer"
 @onready var model: MeshInstance3D = $"Enemy_Model/Rig/Skeleton3D/Mannequin"
 @onready var attack_start_cooldown: Timer = $AttackStartCooldown
+@onready var audio_player: Node3D = $"AudioPlayer"
 
 # --- Common Enemy Properties ---
 @export var movement_speed: float = 6.0
@@ -72,6 +73,7 @@ func damage(amount: float, multiplier: float = 1.0):
 		GlobalVariables.enemy_died.emit(self)
 		change_state("Dead")
 
+
 # ---------------------------
 # Unified Shield Initialization
 # ---------------------------
@@ -98,6 +100,7 @@ func _on_shield_destroyed():
 	remove_shield_material()
 	shield = null
 
+
 # ---------------------------
 # Material Handling
 # ---------------------------
@@ -114,6 +117,7 @@ func remove_shield_material():
 	var mesh := model.mesh
 	for i in range(min(mesh.get_surface_count(), original_materials.size())):
 		model.set_surface_override_material(i, original_materials[i])
+
 
 # ---------------------------
 # Safe Mesh Duplication
@@ -132,6 +136,7 @@ func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
 			new_mesh.surface_set_material(i, mat.duplicate())
 	mesh_instance.mesh = new_mesh
 
+
 # ---------------------------
 # Cache Original Materials
 # ---------------------------
@@ -144,6 +149,7 @@ func cache_original_materials():
 			original_materials.append(override)
 		else:
 			original_materials.append(mesh.surface_get_material(i))
+
 
 # ---------------------------
 # State Management

@@ -261,4 +261,4 @@ func damage(amount):
 	health -= amount
 	health_updated.emit(health)
 	if health <= 0:
-		get_tree().reload_current_scene()
+		get_tree().call_deferred("reload_current_scene")
