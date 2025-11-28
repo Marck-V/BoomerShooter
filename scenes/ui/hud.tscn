@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://cvsj2ocn18c6h"]
+[gd_scene load_steps=10 format=3 uid="uid://cvsj2ocn18c6h"]
 
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="1_hqnrr"]
 [ext_resource type="FontFile" uid="uid://cfxfvqdxhxg26" path="res://assets/fonts/lilita_one_regular.ttf" id="2_bo48s"]
 [ext_resource type="Script" uid="uid://3i8fy1cpn0cc" path="res://scripts/ui/boss_health_bar.gd" id="3_136eg"]
 [ext_resource type="PackedScene" uid="uid://be11d55tkybrx" path="res://scenes/ui/pause_menu.tscn" id="3_bo48s"]
+[ext_resource type="Texture2D" uid="uid://j2h3fi3q5fe5" path="res://assets/images/keyboard_e.png" id="3_oj5la"]
 [ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="4_oj5la"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
@@ -92,6 +93,30 @@ vertical_alignment = 2
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0
+
+[node name="InteractContainer" type="HBoxContainer" parent="InGameHUD"]
+visible = false
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -249.0
+offset_right = 20.0
+offset_bottom = -209.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="TextureRect" type="TextureRect" parent="InGameHUD/InteractContainer"]
+layout_mode = 2
+texture = ExtResource("3_oj5la")
+
+[node name="InteractLabel" type="Label" parent="InGameHUD/InteractContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Interact"
 
 [node name="InteractLabel" type="Label" parent="InGameHUD"]
 visible = false

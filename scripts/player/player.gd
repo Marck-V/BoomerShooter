@@ -5,7 +5,7 @@ extends CharacterBody3D
 @export var base_slide_speed = 10
 @export var jump_strength = 8
 @export var max_slide_speed = 12
-@export var mouse_sensitivity = 40
+@export var mouse_sensitivity = 20
 
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
