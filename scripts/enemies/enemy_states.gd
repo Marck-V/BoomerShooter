@@ -73,7 +73,7 @@ class ChaseState:
 		enemy.move_and_slide()
 
 		# --- Attack check ---
-		if enemy.can_attack():
+		if enemy.is_in_attack_range():
 			enemy.change_state("Attack")
 
 
@@ -90,27 +90,57 @@ class AttackState:
 		if enemy.attack_animation_enter != "":
 			enemy.anim.play(enemy.attack_animation_enter)
 
-		# Start attack immediately
-		enemy.perform_attack()
-
 	func update(_delta):
-		# If no target → leave state
 		if not enemy.target:
 			enemy.change_state("Idle")
 			return
 
-		# If attack finished and cooldown done → chase or continue attacking
-		if not enemy.is_attacking and not enemy.can_attack():
+		# If player moved away → chase
+		if not enemy.is_in_attack_range():
 			enemy.change_state("Chase")
 			return
 
-		# If attack finished and can attack again → start next attack
+		# If attack just ended but cooldown still running → go to AttackIdle
+		if not enemy.is_attacking and not enemy.can_attack():
+			enemy.change_state("AttackIdle")
+			return
+
+		# If attack finished AND cooldown finished → attack again
 		if not enemy.is_attacking and enemy.can_attack():
 			enemy.perform_attack()
-		
+			return
+	
 	func exit():
 		if enemy.attack_animation_exit != "":
 			enemy.anim.play(enemy.attack_animation_exit)
+
+class AttackIdleState:
+	var enemy
+
+	func _init(e):
+		enemy = e
+
+	func enter():
+		enemy.velocity = Vector3.ZERO
+		if enemy.attack_idle_animation != "":
+			enemy.anim.play(enemy.attack_idle_animation)
+
+	func update(_delta):
+		# Target lost → back to Idle
+		if not enemy.target:
+			enemy.change_state("Idle")
+			return
+
+		# If player moved out of melee range → Chase again
+		if not enemy.is_in_attack_range():
+			enemy.change_state("Chase")
+			return
+
+		# If cooldown finished → return to Attack state to actually attack again
+		if enemy.can_attack():
+			enemy.change_state("Attack")
+			return
+
 
 # --- Dead ---
 class DeadState:

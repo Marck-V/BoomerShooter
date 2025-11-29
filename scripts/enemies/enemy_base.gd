@@ -10,6 +10,7 @@ class_name EnemyBase
 
 # --- Common Enemy Properties ---
 @export var movement_speed: float = 6.0
+@export var rotation_speed: float = 5.0
 @export var health: float = 100.0
 @export var target: Node3D
 @export var debug: bool = false
@@ -22,6 +23,7 @@ var destroyed: bool = false
 var attack_animation_enter: String = ""
 var attack_animation_action: String = "Sword_Attack"
 var attack_animation_exit: String = ""
+var attack_idle_animation: String = "Idle"
 
 var is_attacking := false
 
@@ -61,6 +63,10 @@ func perform_attack():
 
 func can_attack() -> bool:
 	return true
+
+func is_in_attack_range() -> bool:
+	return false  # default, overridden by specific enemies
+
 
 # ---------------------------
 # Damage & Death
