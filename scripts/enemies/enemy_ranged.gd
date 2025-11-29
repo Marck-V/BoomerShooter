@@ -21,10 +21,8 @@ func _ready():
 	vision_area.connect("body_exited", Callable(self, "_on_body_exited"))	
 
 	attack_animation_enter = "Spell_Simple_Enter"
-	attack_animation_action = "Spell_Simple_Enter"
+	attack_animation_action = "Spell_Simple_Shoot"
 	attack_animation_exit = "Spell_Simple_Exit"
-	
-	
 	
 	# Optional — draw sphere only if debug mode is on
 	draw_debug_gizmos()
@@ -91,20 +89,21 @@ func perform_attack():
 
 	if not attack_start_cooldown.is_stopped():
 		return
+		
+	anim.play(attack_animation_action)
 
 	var energy_ball_instance = energy_ball_scene.instantiate() as Area3D
 	energy_ball_instance.position = spawn_marker.global_position
 	energy_ball_instance.transform.basis = spawn_marker.global_basis
 	
-	Audio.play_at(global_position, 
-				"assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav,
+	audio_player.play_at(global_position, 
+				"assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav, \
 				 assets/audio/sfx/enemies/Enemy_Shoot2_PitchedUp.wav")
 	
 	# Set the target for the projectile
 	if energy_ball_instance.has_method("set_target"):
 		energy_ball_instance.set_target(target)
 	
-	#anim.play("Spell_Simple_Shoot")
 	get_parent().add_child(energy_ball_instance)
 	shoot_timer.start()
 

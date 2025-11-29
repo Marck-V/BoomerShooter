@@ -61,3 +61,7 @@ func on_upgrade_station_body_entered(body):
 func on_upgrade_station_body_exit(body):
 	if body.is_in_group("Player"):
 		interact_label.visible = false
+
+
+func show_death_screen():
+	$DeathScreen.show_death_screen()
