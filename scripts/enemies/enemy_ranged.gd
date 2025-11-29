@@ -33,6 +33,7 @@ func get_state_definitions() -> Dictionary:
 		"Idle": ENEMY_STATES.IdleState.new(self),
 		"Chase": ENEMY_STATES.ChaseState.new(self),
 		"Attack": ENEMY_STATES.AttackState.new(self),
+		"AttackIdle": ENEMY_STATES.AttackIdleState.new(self),
 		"Dead": ENEMY_STATES.DeadState.new(self),
 	}
 
@@ -46,6 +47,15 @@ func _on_body_exited(body: Node3D):
 	if body == target:
 		change_state("Idle")
 
+
+func is_in_attack_range() -> bool:
+	# Distance check
+	if global_position.distance_to(target.global_position) > shoot_range:
+		return false
+
+	# LOS check
+	return has_line_of_sight_to_player()
+	
 
 func can_attack() -> bool:
 	# Distance check

@@ -3,14 +3,14 @@ class_name EnemyHorde
 
 const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 
-@onready var ray: RayCast3D = $HitRaycast
-@onready var attack_timer: Timer = $AttackCooldown
+@onready var attack_timer: Timer = $AttackTimer
 @onready var vision_area: Area3D = $VisionArea
 @onready var attack_hitbox: Area3D = $Enemy_Model/Rig/Skeleton3D/RightHand/RightAttackHitbox
 @onready var debug_sphere: MeshInstance3D = MeshInstance3D.new()
 
 @export var damage_to_player: float = 50
 @export var attack_cooldown: float = 1.533
+@export var melee_range: float = 1.0
 # Delay damaging player till animation is at the right part
 @export var damage_window_start: float = 0
 @export var damage_window_end: float = 0
@@ -25,6 +25,7 @@ func _ready():
 	attack_hitbox.connect("body_entered", Callable(self, "_on_attack_hitbox_body_entered"))
 
 	attack_animation_action = "Sword_Attack"
+	attack_idle_animation = "Sword_Idle"
 	
 	draw_debug_gizmos()
 
@@ -34,6 +35,7 @@ func get_state_definitions() -> Dictionary:
 		"Idle": ENEMY_STATES.IdleState.new(self),
 		"Chase": ENEMY_STATES.ChaseState.new(self),
 		"Attack": ENEMY_STATES.AttackState.new(self),
+		"AttackIdle": ENEMY_STATES.AttackIdleState.new(self),
 		"Dead": ENEMY_STATES.DeadState.new(self),
 	}
 
@@ -48,13 +50,15 @@ func _on_body_exited(body: Node3D):
 		change_state("Idle")
 
 
-func can_attack() -> bool:
-	# Ready to attack if cooldown finished and ray hits player
-	ray.force_raycast_update()
-	if not ray.is_colliding() or ray.get_collider() != target or not attack_timer.is_stopped():
+func is_in_attack_range() -> bool:
+	if not target:
 		return false
+	return global_position.distance_to(target.global_position) <= melee_range
 
-	return true
+
+func can_attack() -> bool:
+	# Ready to attack if cooldown finished
+	return attack_timer.is_stopped()
 
 
 func perform_attack() -> void:

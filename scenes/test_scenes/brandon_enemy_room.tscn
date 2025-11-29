@@ -870,12 +870,14 @@ crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 [node name="MeleeEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 45.4238)
 vision_range = 10.0
+movement_speed = 14.0
 target = NodePath("../../Player")
 has_shield = true
 
 [node name="MeleeEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 45.2967)
 vision_range = 10.0
+movement_speed = 14.0
 target = NodePath("../../Player")
 
 [node name="RangedEnemy" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("4_bfrey")]
@@ -891,7 +893,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29, 10.5327, 57.2494)
 target = NodePath("../../Player")
 
 [node name="MeleeEnemy3" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("3_y41hs")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.051, 10.4004, 60)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.051, 10.4, 60)
 vision_range = 10.0
 target = NodePath("../../Player")
 
