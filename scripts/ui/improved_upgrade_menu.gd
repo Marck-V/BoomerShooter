@@ -11,34 +11,31 @@ const SHOTGUN_PATH = "res://resources/weapons/shotgun.tres"
 const RIFLE_PATH = "res://resources/weapons/rifle.tres"
 
 @onready var weapon_nodes := {
-	"pistol": $Pistol,
-	"shotgun": $Shotgun,
-	"rifle": $Rifle
+	"pistol": $Panel/TabContainer/Pistol,
+	"shotgun": $Panel/TabContainer/Shotgun,
+	"rifle": $Panel/TabContainer/Rifle
 }
 
-@onready var points_label: Label = $HBoxContainer/PointsLabel
-@onready var pistol_menu_button: Button = $HBoxContainer/PistolMenuButton
-@onready var shotgun_menu_button: Button = $HBoxContainer/ShotgunMenuButton
-@onready var rifle_menu_button: Button = $HBoxContainer/RifleMenuButton
 
+@onready var points_label: Label = $Panel/PointsLabel
+@onready var close_button: TextureButton = $Panel/CloseButton
+@onready var purchase_button: Button = $Panel/PurchaseButton
+@onready var description_label: Label = $Panel/DescriptionPanel/DescriptionLabel
 
-func _ready() -> void:
-	# Show cursor and pause game
-	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+@onready var pistol_button1: Button = $Panel/TabContainer/Pistol/PistolButton1
+@onready var pistol_button2: Button = $Panel/TabContainer/Pistol/PistolButton1/PistolButton2
+@onready var pistol_button3: Button = $Panel/TabContainer/Pistol/PistolButton1/PistolButton2/PistolButton3
+
+func _ready():
 	points_label.text = "Points: " + str(GlobalVariables.get_points())
-	weapon_nodes["pistol"].show()
-	GlobalVariables.points_changed.connect(on_points_changed)
-
-	pistol_menu_button.connect("pressed", _on_pistol_menu_button_pressed)
-	shotgun_menu_button.connect("pressed", _on_shotgun_menu_button_pressed)
-	rifle_menu_button.connect("pressed", _on_rifle_menu_button_pressed)
-	# Automatically connect all UpgradeButtons under each weapon node
+	purchase_button.connect("pressed", _on_purchase_button_pressed)
+	# Automatically connect all RegUpgradeButtons under each weapon node
 	for weapon_name in weapon_nodes.keys():
 		var root = weapon_nodes[weapon_name]
 		var all_nodes = GlobalVariables.get_all_children(root)
 
 		for node in all_nodes:
-			if node is UpgradeButton:
+			if node is RegUpgradeButton:
 				node.pressed.connect(_on_upgrade_button_pressed.bind(node, weapon_name))
 				# Debug print to confirm everything is wired correctly
 				print("Connected:", node.name, " for ", weapon_name)
@@ -52,29 +49,10 @@ func _disable_purchased_upgrades() -> void:
 		var root = weapon_nodes[weapon_name]
 		var all_nodes = GlobalVariables.get_all_children(root)
 		for node in all_nodes:
-			if node is UpgradeButton and GlobalVariables.has_upgrade(node.upgrade_id):
+			if node is RegUpgradeButton and GlobalVariables.has_upgrade(node.upgrade_id):
 				node.disabled = true
 
-func _on_pistol_menu_button_pressed() -> void:
-	weapon_nodes["shotgun"].hide()
-	weapon_nodes["rifle"].hide()
-	weapon_nodes["pistol"].show()
-	
-func _on_shotgun_menu_button_pressed() -> void:
-	weapon_nodes["pistol"].hide()
-	weapon_nodes["rifle"].hide()
-	weapon_nodes["shotgun"].show()
-
-func _on_rifle_menu_button_pressed() -> void:
-	weapon_nodes["pistol"].hide()
-	weapon_nodes["shotgun"].hide()
-	weapon_nodes["rifle"].show()
-
-
-func on_points_changed(value: int) -> void:
-	points_label.text = "Points: " + str(value)
-
-func _on_upgrade_button_pressed(button: UpgradeButton, weapon_name: String) -> void:
+func _on_upgrade_button_pressed(button: RegUpgradeButton, weapon_name: String) -> void:
 	var resource: Resource
 	var resource_path: String
 
@@ -88,16 +66,32 @@ func _on_upgrade_button_pressed(button: UpgradeButton, weapon_name: String) -> v
 		"rifle":
 			resource = rifle
 			resource_path = RIFLE_PATH
+		_:
+			print("Unknown weapon:", weapon_name)
+			return
 
 	attempt_upgrade(button, resource, resource_path)
+func _on_pistol_button1_pressed() -> void:
+	purchase_button.disabled = false
+	description_label.text = "Every shot from the pistol has a chance to refund some ammo."
 
+func _on_pistol_button2_pressed() -> void:
+	purchase_button.disabled = false
+	description_label.text = "Piercing shots from the pistol can penetrate enemies."
 
-func attempt_upgrade(button: UpgradeButton, resource: Resource, resource_path: String) -> void:
+func _on_pistol_button3_pressed() -> void:
+	purchase_button.disabled = false
+	description_label.text = "Each successful hit with the pistol has a chance to heal you."
+
+func _on_purchase_button_pressed() -> void:
+	return
+
+func attempt_upgrade(button: RegUpgradeButton, resource: Resource, resource_path: String) -> void:
 	var id = button.upgrade_id
 	var cost = button.cost
 	var amount = button.amount
 	var property_name = button.property_name
-	var is_stat_upgrade = button.is_stat_upgrade  # ← new field in UpgradeButton
+	var is_stat_upgrade = button.is_stat_upgrade  # ← new field in RegUpgradeButton
 
 	# Prevent repurchasing
 	if GlobalVariables.has_upgrade(id):
@@ -127,30 +121,3 @@ func attempt_upgrade(button: UpgradeButton, resource: Resource, resource_path: S
 
 	# Apply visuals
 	button.apply_visual_upgrade()
-
-
-
-func _on_reset_button_pressed() -> void:
-	# Reset weapon stats
-	rifle.damage = 25
-	shotgun.shot_count = 5
-	shotgun.spread = 5
-
-	ResourceSaver.save(shotgun, SHOTGUN_PATH)
-	ResourceSaver.save(rifle, RIFLE_PATH)
-	ResourceSaver.save(pistol, PISTOL_PATH)
-
-	# Reset points and upgrades
-	GlobalVariables.reset_points()
-	GlobalVariables.save_data.upgrades.clear()
-	GlobalVariables.save_to_disk()
-
-	# Reset button visuals
-	for weapon_name in weapon_nodes.keys():
-		var root = weapon_nodes[weapon_name]
-		var all_nodes = GlobalVariables.get_all_children(root)
-		for node in all_nodes:
-			if node is UpgradeButton:
-				node.reset()
-
-	print("Upgrades, points, and button visuals reset.")

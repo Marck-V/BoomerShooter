@@ -1,0 +1,162 @@
+[gd_scene load_steps=9 format=3 uid="uid://ycncnuya220m"]
+
+[ext_resource type="Theme" uid="uid://csix15cdk72y3" path="res://Windows95.tres" id="1_1vi3u"]
+[ext_resource type="Script" uid="uid://bntrg5xrnu32h" path="res://scripts/ui/improved_upgrade_menu.gd" id="1_h5iq6"]
+[ext_resource type="PackedScene" uid="uid://csk37a742b7o3" path="res://scenes/ui/reg_upgrade_button.tscn" id="2_0fsr2"]
+[ext_resource type="Texture2D" uid="uid://b6e0nj6t55mnb" path="res://assets/images/Godot-Windows-95-Theme-main/textures/window/close.png" id="3_7hta1"]
+[ext_resource type="Texture2D" uid="uid://cvlj3aij6gfag" path="res://assets/images/Godot-Windows-95-Theme-main/textures/window/close_hover.png" id="4_v8h47"]
+[ext_resource type="Texture2D" uid="uid://bmoxyiuenksx2" path="res://assets/images/Godot-Windows-95-Theme-main/textures/panel_container/panel.png" id="5_v8h47"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0fsr2"]
+bg_color = Color(0.12549, 0.54902, 0.443137, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h5iq6"]
+texture = ExtResource("5_v8h47")
+texture_margin_left = 6.0
+texture_margin_top = 5.0
+texture_margin_right = 7.0
+texture_margin_bottom = 3.0
+
+[node name="ImprovedUpgradeMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_h5iq6")
+
+[node name="GreenBG" type="Panel" parent="."]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0fsr2")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 58.0
+offset_top = 23.0
+offset_right = -43.0
+offset_bottom = -41.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_1vi3u")
+
+[node name="TabContainer" type="TabContainer" parent="Panel"]
+layout_mode = 2
+offset_left = 8.0
+offset_top = 31.19
+offset_right = 1171.0
+offset_bottom = 597.735
+theme = ExtResource("1_1vi3u")
+theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
+current_tab = 0
+
+[node name="Pistol" type="Control" parent="Panel/TabContainer"]
+layout_mode = 2
+metadata/_tab_index = 0
+
+[node name="PistolButton1" parent="Panel/TabContainer/Pistol" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_left = 164.0
+offset_top = 52.0
+offset_right = 284.0
+offset_bottom = 80.0
+text = "Ammo Refund"
+upgrade_id = "pistol_ammo_refund"
+cost = 0
+description = "Every pistol shot has a chance to refund some ammo."
+
+[node name="PistolButton2" parent="Panel/TabContainer/Pistol/PistolButton1" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 168.66
+offset_right = 120.0
+offset_bottom = 196.66
+text = "Piercing Shot"
+upgrade_id = "pistol_piercing"
+cost = 0
+description = "Every pistol shot fires a piercing shot that goes through multiple enemies."
+
+[node name="PistolButton3" parent="Panel/TabContainer/Pistol/PistolButton1/PistolButton2" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_left = 0.0
+offset_top = 191.34
+offset_right = 120.0
+offset_bottom = 219.34
+text = "Malware"
+upgrade_id = "pistol_lifesteal"
+cost = 0
+description = "Each sucessful fit has a chance to restore some health."
+
+[node name="Rifle" type="Control" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 1
+
+[node name="Shotgun" type="Control" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="PurchaseButton" type="Button" parent="Panel"]
+layout_mode = 2
+offset_left = 292.0
+offset_top = 606.0
+offset_right = 380.0
+offset_bottom = 634.0
+disabled = true
+text = "Purchase"
+
+[node name="CloseButton" type="TextureButton" parent="Panel"]
+layout_mode = 2
+offset_left = 1147.0
+offset_top = 4.0
+offset_right = 1167.0
+offset_bottom = 24.0
+texture_normal = ExtResource("3_7hta1")
+texture_hover = ExtResource("4_v8h47")
+
+[node name="DescriptionPanel" type="Panel" parent="Panel"]
+layout_mode = 0
+offset_left = 714.0
+offset_top = 90.0
+offset_right = 1109.0
+offset_bottom = 552.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_h5iq6")
+
+[node name="TopLabel" type="Label" parent="Panel/DescriptionPanel"]
+layout_mode = 0
+offset_left = 143.0
+offset_right = 259.0
+offset_bottom = 33.0
+theme_override_font_sizes/font_size = 24
+text = "Description"
+
+[node name="DescriptionLabel" type="Label" parent="Panel/DescriptionPanel"]
+layout_mode = 0
+offset_top = 57.0
+offset_right = 208.0
+offset_bottom = 81.0
+text = "Select an Upgrade to view its description."
+
+[node name="PointsLabel" type="Label" parent="Panel"]
+layout_mode = 0
+offset_left = 19.0
+offset_top = 564.0
+offset_right = 66.0
+offset_bottom = 588.0
+text = "Points:"
+
+[node name="WindowLabel" type="Label" parent="."]
+layout_mode = 0
+offset_left = 63.0
+offset_top = 25.855
+offset_right = 154.0
+offset_bottom = 49.855
+theme = ExtResource("1_1vi3u")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Upgrade Menu"

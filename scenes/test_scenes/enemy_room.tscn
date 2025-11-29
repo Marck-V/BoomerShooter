@@ -1,4 +1,4 @@
-[gd_scene load_steps=251 format=4 uid="uid://dxnrf1ck88yxe"]
+[gd_scene load_steps=253 format=4 uid="uid://dxnrf1ck88yxe"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_7mx1b"]
@@ -846,6 +846,12 @@ uv1_scale = Vector3(4, 4, 4)
 [sub_resource type="BoxMesh" id="BoxMesh_7li7f"]
 material = SubResource("StandardMaterial3D_7li7f")
 size = Vector3(5, 6, 1)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_fuscs"]
+data = PackedVector3Array(-2.5, 3, 0.5, 2.5, 3, 0.5, -2.5, -3, 0.5, 2.5, 3, 0.5, 2.5, -3, 0.5, -2.5, -3, 0.5, 2.5, 3, -0.5, -2.5, 3, -0.5, 2.5, -3, -0.5, -2.5, 3, -0.5, -2.5, -3, -0.5, 2.5, -3, -0.5, 2.5, 3, 0.5, 2.5, 3, -0.5, 2.5, -3, 0.5, 2.5, 3, -0.5, 2.5, -3, -0.5, 2.5, -3, 0.5, -2.5, 3, -0.5, -2.5, 3, 0.5, -2.5, -3, -0.5, -2.5, 3, 0.5, -2.5, -3, 0.5, -2.5, -3, -0.5, 2.5, 3, 0.5, -2.5, 3, 0.5, 2.5, 3, -0.5, -2.5, 3, 0.5, -2.5, 3, -0.5, 2.5, 3, -0.5, -2.5, -3, 0.5, 2.5, -3, 0.5, -2.5, -3, -0.5, 2.5, -3, 0.5, 2.5, -3, -0.5, -2.5, -3, -0.5)
+
+[sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_q1ikm"]
+data = PackedVector3Array(-2.5, 3, 0.5, 2.5, 3, 0.5, -2.5, -3, 0.5, 2.5, 3, 0.5, 2.5, -3, 0.5, -2.5, -3, 0.5, 2.5, 3, -0.5, -2.5, 3, -0.5, 2.5, -3, -0.5, -2.5, 3, -0.5, -2.5, -3, -0.5, 2.5, -3, -0.5, 2.5, 3, 0.5, 2.5, 3, -0.5, 2.5, -3, 0.5, 2.5, 3, -0.5, 2.5, -3, -0.5, 2.5, -3, 0.5, -2.5, 3, -0.5, -2.5, 3, 0.5, -2.5, -3, -0.5, -2.5, 3, 0.5, -2.5, -3, 0.5, -2.5, -3, -0.5, 2.5, 3, 0.5, -2.5, 3, 0.5, 2.5, 3, -0.5, -2.5, 3, 0.5, -2.5, 3, -0.5, 2.5, 3, -0.5, -2.5, -3, 0.5, 2.5, -3, 0.5, -2.5, -3, -0.5, 2.5, -3, 0.5, 2.5, -3, -0.5, -2.5, -3, -0.5)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qjlkt"]
 size = Vector3(9.33154, 4.46912, 3.91418)
@@ -1697,10 +1703,20 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.541, 13.018, 72)
 mesh = SubResource("BoxMesh_7li7f")
 skeleton = NodePath("../..")
 
+[node name="StaticBody3D" type="StaticBody3D" parent="BossDoors/MainDoor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BossDoors/MainDoor/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_fuscs")
+
 [node name="MainDoor2" type="MeshInstance3D" parent="BossDoors"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.53, 13.018, 72)
 mesh = SubResource("BoxMesh_7li7f")
 skeleton = NodePath("../..")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="BossDoors/MainDoor2"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BossDoors/MainDoor2/StaticBody3D"]
+shape = SubResource("ConcavePolygonShape3D_q1ikm")
 
 [node name="BossDoorArea" type="Area3D" parent="BossDoors"]
 collision_layer = 2

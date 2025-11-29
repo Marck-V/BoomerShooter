@@ -79,6 +79,7 @@ func _process(_delta):
 		else:
 			has_red_key = true
 			Audio.play("assets/sounds/key_grab.mp3")
+			hud.get_node("InGameHUD/KeysContainer/RedKey").visible = true
 			if is_instance_valid(red_key):
 				red_key.queue_free() 
 	
@@ -89,6 +90,7 @@ func _process(_delta):
 		else:
 			has_blue_key = true
 			Audio.play("assets/sounds/key_grab.mp3")
+			hud.get_node("InGameHUD/KeysContainer/BlueKey").visible = true
 			if is_instance_valid(blue_key):
 				blue_key.queue_free()
 
@@ -151,6 +153,8 @@ func unlock_door():
 
 		interact_box.visible = false
 		print("Boss doors unlocked!")
+		hud.get_node("InGameHUD/KeysContainer/RedKey").visible = false
+		hud.get_node("InGameHUD/KeysContainer/BlueKey").visible = false
 	else:
 		print("You need both keys to unlock the boss doors!")
 
