@@ -4,7 +4,7 @@ extends CanvasLayer
 @onready var health_label: Label = $InGameHUD/HealthLabel
 @onready var player: CharacterBody3D = $"../Player"
 @onready var upgrade_station: Node3D = $"../UpgradeStation"
-@onready var interact_label: Label = $InGameHUD/InteractLabel
+@onready var interact_label: HBoxContainer = $InGameHUD/InteractContainer
 @onready var points_label: Label = $InGameHUD/PointsLabel
 @onready var ammo_label: Label = $InGameHUD/AmmoLabel
 

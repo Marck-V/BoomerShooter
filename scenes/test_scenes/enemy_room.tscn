@@ -1584,7 +1584,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
 type = "Health"
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -73.0491, 13.3299, 66.8662)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.4311, 8.64815, 17.0887)
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]

@@ -23,7 +23,7 @@ var upgrade_area_occupied: bool = false
 var has_red_key: bool = false
 var has_blue_key: bool = false
 
-var upgrade_scene: PackedScene = preload("res://scenes/ui/upgrade_menu.tscn")
+var upgrade_scene: PackedScene = preload("res://scenes/ui/improved_upgrade_menu.tscn")
 var upgrade_menu_instance : Node = null
 
 var player_in_red_key_zone: bool = false

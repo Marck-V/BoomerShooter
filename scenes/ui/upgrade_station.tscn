@@ -6,7 +6,7 @@
 size = Vector3(1.54688, 3.42847, 4.5061)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_4nc2p"]
-size = Vector3(0.616089, 1, 1)
+size = Vector3(1.01019, 1.36182, 1.76404)
 
 [sub_resource type="QuadMesh" id="QuadMesh_a7e7t"]
 size = Vector2(0.3, 0.265)
@@ -25,7 +25,7 @@ shape = SubResource("BoxShape3D_a7e7t")
 [node name="Area3D" type="Area3D" parent="."]
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Area3D"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.610467, -0.358133, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.807519, -0.177225, 0.0123901)
 shape = SubResource("BoxShape3D_4nc2p")
 
 [node name="ScreenMeshInstance3D" type="MeshInstance3D" parent="."]
