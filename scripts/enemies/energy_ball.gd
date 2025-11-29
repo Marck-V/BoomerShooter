@@ -2,6 +2,7 @@ extends Area3D
 
 @onready var mesh_instance_3d = $MeshInstance3D
 @onready var collision_shape_3d = $CollisionShape3D
+@onready var audio_player: Node3D = $AudioPlayer
 
 @export var SPEED : float = 10.0
 @export var damage : float = 10
@@ -50,7 +51,7 @@ func set_target(t: Node3D) -> void:
 
 func _on_body_entered(body):
 	if body.is_in_group("Player") and body.has_method("damage"):
-		Audio.play("assets/audio/sfx/enemies/Enemy_ProjectileHit1.wav,
+		audio_player.play("assets/audio/sfx/enemies/Enemy_ProjectileHit1.wav,
 						   assets/audio/sfx/enemies/Enemy_ProjectileHit2.wav")
 		body.damage(damage)
 	queue_free()

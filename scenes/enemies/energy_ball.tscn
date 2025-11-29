@@ -31,7 +31,6 @@ wait_time = 3.0
 autostart = true
 
 [node name="AudioPlayer" type="Node3D" parent="."]
-visible = false
 script = ExtResource("2_cwci5")
 use_3d = true
 

@@ -4,19 +4,25 @@ class_name EnemyHorde
 const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 
 @onready var ray: RayCast3D = $HitRaycast
-@onready var bite_timer: Timer = $BiteTimer
+@onready var attack_timer: Timer = $AttackCooldown
 @onready var vision_area: Area3D = $VisionArea
-
+@onready var attack_hitbox: Area3D = $Enemy_Model/Rig/Skeleton3D/RightHand/RightAttackHitbox
 @onready var debug_sphere: MeshInstance3D = MeshInstance3D.new()
+
 @export var damage_to_player: float = 50
-@export var attack_cooldown: float = 1.2
+@export var attack_cooldown: float = 1.533
+# Delay damaging player till animation is at the right part
+@export var damage_window_start: float = 0
+@export var damage_window_end: float = 0
 @export var vision_range: float = 10.0
 
+var hit_done := false
 
 func _ready():
 	super()
 	vision_area.connect("body_entered", Callable(self, "_on_body_entered"))
 	vision_area.connect("body_exited", Callable(self, "_on_body_exited"))
+	attack_hitbox.connect("body_entered", Callable(self, "_on_attack_hitbox_body_entered"))
 
 	attack_animation_action = "Sword_Attack"
 	
@@ -45,29 +51,48 @@ func _on_body_exited(body: Node3D):
 func can_attack() -> bool:
 	# Ready to attack if cooldown finished and ray hits player
 	ray.force_raycast_update()
-	if not ray.is_colliding() or ray.get_collider() != target:
+	if not ray.is_colliding() or ray.get_collider() != target or not attack_timer.is_stopped():
 		return false
 
 	return true
 
 
-func perform_attack():
-	ray.force_raycast_update()
+func perform_attack() -> void:
+	is_attacking = true
+
+	# Play the attack animation
+	anim.play(attack_animation_action)
 	
-	audio_player.play("assets/audio/sfx/enemies/Enemy_Hit1.wav, 
-					   assets/audio/sfx/enemies/Enemy_Hit2.wav, 
+	# Play hit sounds
+	audio_player.play("assets/audio/sfx/enemies/Enemy_Hit1.wav, \
+					   assets/audio/sfx/enemies/Enemy_Hit2.wav, \
 					   assets/audio/sfx/enemies/Enemy_Hit3.wav")
 
-	# Perform bite if cooldown expired
-	if bite_timer.is_stopped():
-		var col = ray.get_collider()
-		if col and col.has_method("damage"):
-			col.damage(damage_to_player)
-		bite_timer.start(attack_cooldown)
+	# Wait until attack animation reaches "hit interval"
+	await get_tree().create_timer(damage_window_start).timeout
+	attack_hitbox.monitoring = true
+	
+	# Disable enemy hitbox after "hit interval"
+	await get_tree().create_timer(damage_window_start - damage_window_end).timeout
+	#
+
+	# Wait until the animation finishes fully
+	await anim.animation_finished
+	attack_hitbox.monitoring = false
+	
+	# Start cooldown
+	attack_timer.start(attack_cooldown)
+
+	# Allow future attacks
+	is_attacking = false
 
 
-func _on_attack_start_cooldown_timeout() -> void:
-	pass # Replace with function body.
+func _on_attack_hitbox_body_entered(body: Node3D) -> void:
+	if body == target and not hit_done:
+		if body.has_method("damage"):
+			body.damage(damage_to_player)
+			
+		hit_done = true
 
 
 func draw_debug_gizmos():
@@ -89,3 +114,7 @@ func draw_debug_gizmos():
 		# Attach sphere to vision_area so it moves with the enemy
 		vision_area.add_child(debug_sphere)
 		debug_sphere.position = Vector3.ZERO
+
+
+func _on_attack_cooldown_timeout() -> void:
+	hit_done = false

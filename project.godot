@@ -19,6 +19,7 @@ config/icon="res://icon.png"
 
 Audio="*res://scripts/utilities/audio.gd"
 GlobalVariables="*res://scripts/utilities/global_variables.gd"
+GameManager="*res://scripts/utilities/game_manager.gd"
 
 [display]
 
@@ -164,6 +165,7 @@ pause={
 3d_physics/layer_3="Enemy Body"
 3d_physics/layer_4="Enemy Hurtbox"
 3d_physics/layer_5="Bullets"
+3d_physics/layer_6="Enemy Hitbox"
 
 [physics]
 

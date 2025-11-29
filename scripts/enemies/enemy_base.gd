@@ -19,9 +19,11 @@ var original_materials: Array[Material] = []
 var shield_material: ShaderMaterial = preload("res://shaders/glass_shader.tres")
 var destroyed: bool = false
 
-var attack_animation_enter: String = "Sword_Attack"
+var attack_animation_enter: String = ""
 var attack_animation_action: String = "Sword_Attack"
-var attack_animation_exit: String = "Sword_Attack"
+var attack_animation_exit: String = ""
+
+var is_attacking := false
 
 # --- State Machine ---
 var state = null

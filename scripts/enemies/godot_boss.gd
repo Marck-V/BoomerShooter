@@ -322,8 +322,8 @@ class AttackState:
 		enemy.attack_timer.start(enemy.attack_cooldown)
 		
 		enemy.anim.play("attack")
-		Audio.play("assets/audio/sfx/boss/Boss_Hit1.wav, 
-						assets/audio/sfx/boss/Boss_Hit2.wav,
+		Audio.play("assets/audio/sfx/boss/Boss_Hit1.wav, \
+						assets/audio/sfx/boss/Boss_Hit2.wav, \
 						assets/audio/sfx/boss/Boss_Hit3.wav")
 
 	func update(_delta):
@@ -378,7 +378,7 @@ class ChargeState:
 
 		# Turn on charge glow
 		enemy.set_charge_glow(true)
-		Audio.play("assets/audio/sfx/boss/Boss_Roar1.wav,
+		Audio.play("assets/audio/sfx/boss/Boss_Roar1.wav, \
 						assets/audio/sfx/boss/Boss_Roar2.wav")
 
 		# Wind-up animation (temp)

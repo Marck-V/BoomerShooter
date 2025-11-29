@@ -86,24 +86,31 @@ class AttackState:
 
 	func enter():
 		enemy.velocity = Vector3.ZERO
-		enemy.anim.play(enemy.attack_animation_action)
-		enemy.attack_start_cooldown.start()
+
+		if enemy.attack_animation_enter != "":
+			enemy.anim.play(enemy.attack_animation_enter)
+
+		# Start attack immediately
+		enemy.perform_attack()
 
 	func update(_delta):
+		# If no target → leave state
 		if not enemy.target:
 			enemy.change_state("Idle")
 			return
 
-		# If target leaves range, go back to Chase
-		if not enemy.can_attack():
+		# If attack finished and cooldown done → chase or continue attacking
+		if not enemy.is_attacking and not enemy.can_attack():
 			enemy.change_state("Chase")
 			return
 
-		# Perform attack
-		enemy.perform_attack()
+		# If attack finished and can attack again → start next attack
+		if not enemy.is_attacking and enemy.can_attack():
+			enemy.perform_attack()
 		
 	func exit():
-		enemy.anim.play(enemy.attack_animation_exit)
+		if enemy.attack_animation_exit != "":
+			enemy.anim.play(enemy.attack_animation_exit)
 
 # --- Dead ---
 class DeadState:
