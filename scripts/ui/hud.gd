@@ -8,6 +8,7 @@ extends CanvasLayer
 @onready var points_label: Label = $InGameHUD/PointsLabel
 @onready var ammo_label: Label = $InGameHUD/AmmoLabel
 
+@export var speed_effect : ColorRect
 
 var current_weapon: Node3D
 
@@ -22,6 +23,8 @@ func _ready() -> void:
 	GlobalVariables.points_changed.connect(on_points_changed)
 	GlobalVariables.health_changed.connect(_on_health_updated)
 	points_label.text = "Points: " + str(GlobalVariables.get_points())
+	GlobalVariables.quickness_active.connect(_on_quickness_active)
+	GlobalVariables.quickness_ended.connect(_on_quickness_ended)
 
 func on_points_changed(value : int):
 	points_label.text = "Points: " + str(value)
@@ -61,3 +64,9 @@ func on_upgrade_station_body_entered(body):
 func on_upgrade_station_body_exit(body):
 	if body.is_in_group("Player"):
 		interact_label.visible = false
+
+func _on_quickness_active():
+	speed_effect.visible = true
+
+func _on_quickness_ended():
+	speed_effect.visible = false

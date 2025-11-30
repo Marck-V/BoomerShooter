@@ -39,6 +39,7 @@ background_mode = 2
 sky = SubResource("Sky_oqbgo")
 glow_enabled = true
 fog_mode = 1
+fog_density = 1.0
 fog_sky_affect = 0.5
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_5ubjb"]
@@ -1612,6 +1613,7 @@ omni_range = 4096.0
 
 [node name="RingLight" parent="Lights" instance=ExtResource("20_h1y2p")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14, 17, 58)
+visible = false
 skeleton = NodePath("../..")
 
 [node name="RingLight2" parent="Lights" instance=ExtResource("20_h1y2p")]

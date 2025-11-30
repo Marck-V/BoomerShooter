@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://cvsj2ocn18c6h"]
+[gd_scene load_steps=15 format=3 uid="uid://cvsj2ocn18c6h"]
 
 [ext_resource type="Script" uid="uid://33e1q6e2hxxy" path="res://scripts/ui/hud.gd" id="1_hqnrr"]
 [ext_resource type="FontFile" uid="uid://cfxfvqdxhxg26" path="res://assets/fonts/lilita_one_regular.ttf" id="2_bo48s"]
@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://j2h3fi3q5fe5" path="res://assets/images/keyboard_e.png" id="3_oj5la"]
 [ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="4_oj5la"]
 [ext_resource type="Texture2D" uid="uid://cadd7w68s7j2s" path="res://assets/images/00.png" id="6_gss2c"]
+[ext_resource type="Shader" uid="uid://dqa3rbb27pwid" path="res://shaders/speed_trails.gdshader" id="8_h022r"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]
 font = ExtResource("2_bo48s")
@@ -24,8 +25,25 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 
-[node name="HUD" type="CanvasLayer"]
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_h022r"]
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_4jqwt"]
+noise = SubResource("FastNoiseLite_h022r")
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_4jqwt"]
+shader = ExtResource("8_h022r")
+shader_parameter/noise = SubResource("NoiseTexture2D_4jqwt")
+shader_parameter/line_color = Color(1, 1, 1, 0.188235)
+shader_parameter/line_count = 2.0
+shader_parameter/line_density = 0.5
+shader_parameter/line_faloff = 0.25
+shader_parameter/mask_size = 0.1
+shader_parameter/mask_edge = 0.86
+shader_parameter/animation_speed = 10.0
+
+[node name="HUD" type="CanvasLayer" node_paths=PackedStringArray("speed_effect")]
 script = ExtResource("1_hqnrr")
+speed_effect = NodePath("SpeedRect")
 
 [node name="InGameHUD" type="Control" parent="."]
 layout_mode = 3
@@ -199,3 +217,12 @@ texture = ExtResource("6_gss2c")
 
 [node name="PauseMenu" parent="." instance=ExtResource("3_bo48s")]
 visible = false
+
+[node name="SpeedRect" type="ColorRect" parent="."]
+visible = false
+material = SubResource("ShaderMaterial_4jqwt")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
