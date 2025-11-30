@@ -1,13 +1,6 @@
 extends CharacterBody3D
 class_name EnemyBase
 
-# --- References (set in subclasses) ---
-@onready var nav: NavigationAgent3D = $NavigationAgent3D
-@onready var anim: AnimationPlayer = $"Enemy_Model/AnimationPlayer"
-@onready var model: MeshInstance3D = $"Enemy_Model/Rig/Skeleton3D/Mannequin"
-@onready var attack_start_cooldown: Timer = $AttackStartCooldown
-@onready var audio_player: Node3D = $"AudioPlayer"
-
 # --- Common Enemy Properties ---
 @export var movement_speed: float = 6.0
 @export var rotation_speed: float = 5.0
@@ -30,6 +23,13 @@ var is_attacking := false
 # --- State Machine ---
 var state = null
 var states = {}
+
+# --- References (set in subclasses) ---
+@onready var nav: NavigationAgent3D = $NavigationAgent3D
+@onready var anim: AnimationPlayer = $"Enemy_Model/AnimationPlayer"
+@onready var model: MeshInstance3D = $"Enemy_Model/Rig/Skeleton3D/Mannequin"
+@onready var attack_start_cooldown: Timer = $AttackStartCooldown
+@onready var audio_player: Node3D = $"AudioPlayer"
 
 # --- Shield ---
 @export var has_shield: bool = false
@@ -75,6 +75,7 @@ func damage(amount: float, multiplier: float = 1.0):
 	var dmg := amount * multiplier
 	if shield:
 		dmg = shield.absorb_damage(dmg)
+	
 	health -= clamp(dmg, 0.0, health)
 	#print("Enemy took damage: ", dmg, " Remaining health: ", health)
 	if health <= 0.0 and not destroyed:
