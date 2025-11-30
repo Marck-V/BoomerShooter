@@ -20,11 +20,13 @@ const RIFLE_PATH   = "res://resources/weapons/rifle.tres"
 @onready var purchase_button: Button  = $Panel/PurchaseButton
 @onready var description_label: Label = $Panel/DescriptionPanel/DescriptionLabel
 
+@onready var audio : AudioStreamPlayer = $AudioStreamPlayer
 # currently selected upgrade
 var selected_button: RegUpgradeButton = null
 var selected_weapon_name: String = ""
 
 func _ready():
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	points_label.text = "Points: " + str(GlobalVariables.get_points())
 	GlobalVariables.points_changed.connect(on_points_changed)
 	
@@ -56,7 +58,7 @@ func on_points_changed(new_points: int) -> void:
 	points_label.text = "Points: " + str(new_points)
 	
 func _on_upgrade_button_clicked(button: RegUpgradeButton, weapon_name: String) -> void:
-	Audio.play("assets/sounds/mouse_click_b.wav")
+	audio.play()
 	# store selection
 	selected_button = button
 	selected_weapon_name = weapon_name
@@ -69,7 +71,7 @@ func _on_upgrade_button_clicked(button: RegUpgradeButton, weapon_name: String) -
 
 
 func _on_purchase_button_pressed() -> void:
-	Audio.play("assets/sounds/mouse_click_b.wav")
+	audio.play()
 	if selected_button == null:
 		return
 

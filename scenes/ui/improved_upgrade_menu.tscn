@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://ycncnuya220m"]
+[gd_scene load_steps=10 format=3 uid="uid://ycncnuya220m"]
 
 [ext_resource type="Theme" uid="uid://csix15cdk72y3" path="res://Windows95.tres" id="1_1vi3u"]
 [ext_resource type="Script" uid="uid://bntrg5xrnu32h" path="res://scripts/ui/improved_upgrade_menu.gd" id="1_h5iq6"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://b6e0nj6t55mnb" path="res://assets/images/Godot-Windows-95-Theme-main/textures/window/close.png" id="3_7hta1"]
 [ext_resource type="Texture2D" uid="uid://cvlj3aij6gfag" path="res://assets/images/Godot-Windows-95-Theme-main/textures/window/close_hover.png" id="4_v8h47"]
 [ext_resource type="Texture2D" uid="uid://bmoxyiuenksx2" path="res://assets/images/Godot-Windows-95-Theme-main/textures/panel_container/panel.png" id="5_v8h47"]
+[ext_resource type="AudioStream" uid="uid://o5xg0q2gwl5p" path="res://assets/sounds/mouse_click_b.wav" id="7_ej5ck"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0fsr2"]
 bg_color = Color(0.12549, 0.54902, 0.443137, 1)
@@ -18,6 +19,7 @@ texture_margin_right = 7.0
 texture_margin_bottom = 3.0
 
 [node name="ImprovedUpgradeMenu" type="Control"]
+process_mode = 2
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -140,7 +142,7 @@ upgrade_id = "rifle_firerate"
 description = "Increases the base rate of fire of the rifle."
 is_stat_upgrade = true
 property_name = "cooldown"
-amount = -0.1
+amount = -0.05
 
 [node name="RifleButton2" parent="Panel/TabContainer/Rifle/RifleButton1" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
@@ -219,3 +221,6 @@ offset_bottom = 49.855
 theme = ExtResource("1_1vi3u")
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 text = "Upgrade Menu"
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_ej5ck")

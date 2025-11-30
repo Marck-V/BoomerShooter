@@ -133,6 +133,7 @@ func attempt_upgrade(button: UpgradeButton, resource: Resource, resource_path: S
 func _on_reset_button_pressed() -> void:
 	# Reset weapon stats
 	rifle.damage = 25
+	rifle.cooldown = 0.2
 	shotgun.shot_count = 5
 	shotgun.spread = 5
 
