@@ -155,10 +155,28 @@ func unlock_door():
 		print("Boss doors unlocked!")
 		hud.get_node("InGameHUD/KeysContainer/RedKey").visible = false
 		hud.get_node("InGameHUD/KeysContainer/BlueKey").visible = false
+		raise_platforms()
 	else:
 		print("You need both keys to unlock the boss doors!")
 
 
+func raise_platforms():
+	var platform1 = $"../BossDoors/Platform"
+	var platform2 = $"../BossDoors/Platform2"
+	var platform3 = $"../BossDoors/Platform3"
+	var platform4 = $"../BossDoors/Platform4"
+
+	var tween1 = get_tree().create_tween()
+	tween1.tween_property(platform1, "position", Vector3(14.3213, 9.50667, 74.921), 1)
+
+	var tween2 = get_tree().create_tween()
+	tween2.tween_property(platform2, "position", Vector3(14.3213, 9.50667, 78.249), 2)
+
+	var tween3 = get_tree().create_tween()
+	tween3.tween_property(platform3, "position", Vector3(14.3213, 9.50667, 81.683), 3)
+
+	var tween4 = get_tree().create_tween()
+	tween4.tween_property(platform4, "position", Vector3(14.3213, 9.50667, 85.1283), 4)
 
 func get_enemy_count(zone: Area3D) -> int:
 	var count := 0
