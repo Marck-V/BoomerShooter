@@ -3,20 +3,21 @@ class_name EnemyHorde
 
 const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 
+@export var damage_to_player: float = 50
+@export var attack_cooldown: float = 1.533
+@export var melee_range: float = 1.0
+# Delay damaging player till animation is at the right part
+@export var damage_window_start: float = 0.2
+@export var damage_window_end: float = 1.1
+@export var vision_range: float = 10.0
+
+var hit_done := false
+
 @onready var attack_timer: Timer = $AttackTimer
 @onready var vision_area: Area3D = $VisionArea
 @onready var attack_hitbox: Area3D = $Enemy_Model/Rig/Skeleton3D/RightHand/RightAttackHitbox
 @onready var debug_sphere: MeshInstance3D = MeshInstance3D.new()
 
-@export var damage_to_player: float = 50
-@export var attack_cooldown: float = 1.533
-@export var melee_range: float = 1.0
-# Delay damaging player till animation is at the right part
-@export var damage_window_start: float = 0
-@export var damage_window_end: float = 0
-@export var vision_range: float = 10.0
-
-var hit_done := false
 
 func _ready():
 	super()
@@ -63,7 +64,7 @@ func can_attack() -> bool:
 
 func perform_attack() -> void:
 	is_attacking = true
-
+	
 	# Play the attack animation
 	anim.play(attack_animation_action)
 	
@@ -71,22 +72,25 @@ func perform_attack() -> void:
 	audio_player.play("assets/audio/sfx/enemies/Enemy_Hit1.wav, \
 					   assets/audio/sfx/enemies/Enemy_Hit2.wav, \
 					   assets/audio/sfx/enemies/Enemy_Hit3.wav")
-
-	# Wait until attack animation reaches "hit interval"
+	
+	# Wait until attack animation reaches "damage window start"
 	await get_tree().create_timer(damage_window_start).timeout
+	
+	# Reset hit flag RIGHT before enabling hitbox (not at start of function)
+	hit_done = false
 	attack_hitbox.monitoring = true
 	
-	# Disable enemy hitbox after "hit interval"
-	await get_tree().create_timer(damage_window_start - damage_window_end).timeout
-	#
-
+	# Calculate damage window duration
+	var damage_duration = max(0.0, damage_window_end - damage_window_start)
+	await get_tree().create_timer(damage_duration).timeout
+	attack_hitbox.monitoring = false
+	
 	# Wait until the animation finishes fully
 	await anim.animation_finished
-	attack_hitbox.monitoring = false
 	
 	# Start cooldown
 	attack_timer.start(attack_cooldown)
-
+	
 	# Allow future attacks
 	is_attacking = false
 
