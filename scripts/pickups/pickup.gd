@@ -12,6 +12,7 @@ var model_scale = Vector3.ONE
 var gold_bar_scale_factor = 0.1
 var health_scale_factor = 0.5
 var healing_amount = 25
+var ammo_ammount = 300
 
 var ammo_paths = {
 	"pistol": "res://models/weapons/pistol_ammo_mesh.tscn",
@@ -50,7 +51,7 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 		
 	match type:
 		"Ammo":
-			GlobalVariables.add_ammo(weapon_id, 30)
+			GlobalVariables.add_ammo(weapon_id, ammo_ammount)
 			Audio.play("assets/sounds/reload.mp3")
 		
 		"Health":

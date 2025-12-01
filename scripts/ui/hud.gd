@@ -25,6 +25,7 @@ func _ready() -> void:
 	points_label.text = "Points: " + str(GlobalVariables.get_points())
 	GlobalVariables.quickness_active.connect(_on_quickness_active)
 	GlobalVariables.quickness_ended.connect(_on_quickness_ended)
+	GlobalVariables.exit_upgrade_menu.connect(_on_exit_upgrade_menu)
 
 func on_points_changed(value : int):
 	points_label.text = "Points: " + str(value)
@@ -73,3 +74,6 @@ func _on_quickness_active():
 
 func _on_quickness_ended():
 	speed_effect.visible = false
+
+func _on_exit_upgrade_menu():
+	visible = true

@@ -11,6 +11,7 @@ signal health_changed(new_value: int)
 signal upgrade_purchased(upgrade_id: String)
 signal quickness_active
 signal quickness_ended
+signal exit_upgrade_menu
 
 signal enemy_died(enemy: Node3D)
 
