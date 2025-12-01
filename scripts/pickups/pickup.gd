@@ -7,7 +7,7 @@ class_name BasePickup
 @export_category("Variables")
 @export var points_amount = 500
 @export var healing_amount = 25
-@export var ammo_amount = 10
+@export var ammo_amount = 100
 @onready var mesh_instance_3d: MeshInstance3D = $MeshInstance3D
 
 var model_scale = Vector3.ONE

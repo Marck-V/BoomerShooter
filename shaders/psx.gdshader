@@ -50,34 +50,52 @@ void vertex() {
 }
 
 void fragment(){
-	vec3 screen_color = texture(screen_texture, SCREEN_UV).rgb;
-	vec2 screen_coords = SCREEN_UV * 2.0 - 1.0;
-	float depth = texture(depth_texture, SCREEN_UV).x;
-	vec3 ndc = vec3(screen_coords, depth);
+    vec3 screen_color = texture(screen_texture, SCREEN_UV).rgb;
+    vec2 screen_coords = SCREEN_UV * 2.0 - 1.0;
+    float depth = texture(depth_texture, SCREEN_UV).x;
+    vec3 ndc = vec3(screen_coords, depth);
 
-	vec4 view = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
-	view.xyz /= view.w;
+    vec4 view = INV_PROJECTION_MATRIX * vec4(ndc, 1.0);
+    view.xyz /= view.w;
 
-	float linear_depth = -view.z;
+    float linear_depth = -view.z;
 
-	float depth_mask_inv = clamp((linear_depth - (fog_distance - fog_fade_range)) / fog_fade_range, 0.0, 1.0);
+    float depth_mask_inv = clamp(
+        (linear_depth - (fog_distance - fog_fade_range)) / fog_fade_range,
+        0.0,
+        1.0
+    );
 
-	vec3 final_color = screen_color;
+    vec3 final_color = screen_color;
 
-	if (enable_noise){
-		vec3 twocolornoise = color_mix(fog_color, noise_color, hashOld12(screen_coords));
-		final_color = color_mix(twocolornoise, final_color, depth_mask_inv);
-	}
-	if (enable_fog){
-		final_color = color_mix(fog_color, final_color, depth_mask_inv);
-	}
-	if (enable_color_limitation){
-		final_color = quantize_color(final_color, color_levels);
-	}
-	if (enable_dithering){
-		float brightness = dot(final_color, vec3(0.3, 0.59, 0.11));
-		brightness += dither_strength * (dither(FRAGCOORD.xy, brightness) - 0.5);
-		final_color *= (1.0 + dither_strength * (dither(FRAGCOORD.xy, brightness) - 0.5));
-	}
-	ALBEDO = final_color;
+    float base_lum = dot(screen_color, vec3(0.299, 0.587, 0.114));
+    bool is_bright = base_lum > 0.7;   // lightning / very bright VFX
+
+    if (enable_noise && !is_bright){
+        vec3 twocolornoise = color_mix(fog_color, noise_color, hashOld12(screen_coords));
+        final_color = color_mix(twocolornoise, final_color, depth_mask_inv);
+    }
+
+    if (enable_fog){
+        // bright pixels get less fog so they stand out more
+        float fog_mix = is_bright ? depth_mask_inv * 0.3 : depth_mask_inv;
+        final_color = color_mix(fog_color, final_color, fog_mix);
+    }
+
+    if (enable_color_limitation && !is_bright){
+        final_color = quantize_color(final_color, color_levels);
+    }
+
+    if (enable_dithering && !is_bright){
+        float brightness = dot(final_color, vec3(0.3, 0.59, 0.11));
+        brightness += dither_strength * (dither(FRAGCOORD.xy, brightness) - 0.5);
+        final_color *= (1.0 + dither_strength * (dither(FRAGCOORD.xy, brightness) - 0.5));
+    }
+
+    // give bright stuff a small boost after everything else
+    if (is_bright){
+        final_color *= 1.5;
+    }
+
+    ALBEDO = final_color;
 }

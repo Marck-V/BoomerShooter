@@ -1,4 +1,4 @@
-[gd_scene load_steps=258 format=4 uid="uid://dxnrf1ck88yxe"]
+[gd_scene load_steps=260 format=4 uid="uid://dxnrf1ck88yxe"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_gj28m"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_7mx1b"]
@@ -18,9 +18,10 @@
 [ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="18_e1was"]
 [ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="18_gj28m"]
 [ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="18_oqbgo"]
+[ext_resource type="AudioStream" uid="uid://dg76e6ktxc155" path="res://assets/audio/music/main_theme_master_body_loop.ogg" id="21_oqbgo"]
 [ext_resource type="PackedScene" uid="uid://vbp1uai2kl1t" path="res://scenes/pickups/key.tscn" id="23_oqbgo"]
 [ext_resource type="Shader" uid="uid://d72ev44thf13" path="res://shaders/bubble.gdshader" id="24_fuscs"]
-[ext_resource type="AudioStream" uid="uid://cut2c1sn1hq5g" path="res://assets/audio/Boss_Hit3.ogg" id="24_uokx7"]
+[ext_resource type="AudioStream" uid="uid://d6n3crfr0so7" path="res://assets/audio/music/final_boss_mastered.ogg" id="24_uokx7"]
 [ext_resource type="PackedScene" uid="uid://c1qi0hggy4jff" path="res://scenes/template_environment_components/launch_pad.tscn" id="25_7li7f"]
 [ext_resource type="Texture2D" uid="uid://jk6tfimci3sk" path="res://trenchbroom/textures/world/texture_14.png" id="26_qjlkt"]
 
@@ -846,6 +847,9 @@ data = PackedVector3Array(-2, 0.5, 1.1775, 2, 0.5, 1.1775, -2, -0.5, 1.1775, 2, 
 [sub_resource type="ConcavePolygonShape3D" id="ConcavePolygonShape3D_qjlkt"]
 data = PackedVector3Array(-2, 0.5, 1.1775, 2, 0.5, 1.1775, -2, -0.5, 1.1775, 2, 0.5, 1.1775, 2, -0.5, 1.1775, -2, -0.5, 1.1775, 2, 0.5, -1.1775, -2, 0.5, -1.1775, 2, -0.5, -1.1775, -2, 0.5, -1.1775, -2, -0.5, -1.1775, 2, -0.5, -1.1775, 2, 0.5, 1.1775, 2, 0.5, -1.1775, 2, -0.5, 1.1775, 2, 0.5, -1.1775, 2, -0.5, -1.1775, 2, -0.5, 1.1775, -2, 0.5, -1.1775, -2, 0.5, 1.1775, -2, -0.5, -1.1775, -2, 0.5, 1.1775, -2, -0.5, 1.1775, -2, -0.5, -1.1775, 2, 0.5, 1.1775, -2, 0.5, 1.1775, 2, 0.5, -1.1775, -2, 0.5, 1.1775, -2, 0.5, -1.1775, 2, 0.5, -1.1775, -2, -0.5, 1.1775, 2, -0.5, 1.1775, -2, -0.5, -1.1775, 2, -0.5, 1.1775, 2, -0.5, -1.1775, -2, -0.5, -1.1775)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_oqbgo"]
+size = Vector3(56.9503, 5.57129, 4.94629)
+
 [node name="Node3D" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -861,6 +865,7 @@ script = ExtResource("1_gj28m")
 
 [node name="GodotBoss" parent="Enemies" node_paths=PackedStringArray("target", "health_bar") instance=ExtResource("18_oqbgo")]
 transform = Transform3D(-4, 0, -6.03983e-07, 0, 4, 0, 6.03983e-07, 0, -4, 13, 10, 129)
+health = 5000.0
 target = NodePath("../../Player")
 health_bar = NodePath("../../HUD/InGameHUD/BossHealthBar")
 
@@ -892,17 +897,37 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.3453, 10.5145, 58)
 target = NodePath("../../Player")
 
 [node name="MeleeEnemy3" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -34, 10.4196, 60)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -29.0251, 5.59964, 51.8951)
+vision_range = 10.0
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy23" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.6817, 5.59964, 50.8051)
+vision_range = 10.0
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy24" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -23.4314, 5.59964, 57.3463)
+vision_range = 10.0
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy25" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -24.1452, 5.59964, 53.9643)
 vision_range = 10.0
 target = NodePath("../../Player")
 
 [node name="MeleeEnemy9" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.023, 5.56797, 60)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -27.023, 5.56797, 63.1045)
 vision_range = 10.0
 target = NodePath("../../Player")
 
 [node name="MeleeEnemy8" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40.8218, 6.07321, 66.3123)
+vision_range = 10.0
+target = NodePath("../../Player")
+
+[node name="MeleeEnemy26" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.2534, 6.07321, 66.3123)
 vision_range = 10.0
 target = NodePath("../../Player")
 
@@ -968,6 +993,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -72.9915, 5.5, 64.8883)
 target = NodePath("../../Player")
 has_shield = true
 
+[node name="MeleeEnemy27" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70.4518, 5.5, 67.0017)
+target = NodePath("../../Player")
+has_shield = true
+
+[node name="MeleeEnemy28" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70.4518, 5.5, 64.8883)
+target = NodePath("../../Player")
+has_shield = true
+
 [node name="MeleeEnemy10" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 51.5544, 15.5, 53.9899)
 target = NodePath("../../Player")
@@ -1009,6 +1044,26 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55.0786, 15.5, 56.6402)
 target = NodePath("../../Player")
 has_shield = true
 
+[node name="MeleeEnemy29" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.1465, 19.5612, 58.4951)
+target = NodePath("../../Player")
+has_shield = true
+
+[node name="MeleeEnemy30" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.1465, 19.5612, 60.9167)
+target = NodePath("../../Player")
+has_shield = true
+
+[node name="MeleeEnemy31" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.1465, 19.5612, 54.2186)
+target = NodePath("../../Player")
+has_shield = true
+
+[node name="MeleeEnemy32" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 96.1465, 19.5612, 56.6402)
+target = NodePath("../../Player")
+has_shield = true
+
 [node name="MeleeEnemy19" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 167.855, -12.0102, 48.9855)
 target = NodePath("../../Player")
@@ -1036,6 +1091,7 @@ map_settings = ExtResource("11_51fhi")
 metadata/_custom_type_script = "uid://bc6mfq3ssor4q"
 
 [node name="entity_0_worldspawn" type="StaticBody3D" parent="NavigationRegion3D/FuncGodotMap"]
+collision_layer = 2
 collision_mask = 0
 
 [node name="entity_0_mesh_instance" type="MeshInstance3D" parent="NavigationRegion3D/FuncGodotMap/entity_0_worldspawn"]
@@ -1691,6 +1747,13 @@ transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 18.431
 
 [node name="Pickups" type="Node" parent="."]
 
+[node name="BasePickup19" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.3482, 10.875, 57.1196)
+
+[node name="BasePickup20" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -33.2781, 10.875, 59.9956)
+type = "Health"
+
 [node name="BasePickup4" parent="Pickups" instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -59.3737, 12.5, 66.2427)
 
@@ -1776,8 +1839,89 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.1708, 5.5, 9.65415)
 type = "Ammo"
 weapon_id = "shotgun"
 
+[node name="BasePickup21" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70.2909, 8.40625, 57.3869)
+type = "Ammo"
+weapon_id = "shotgun"
+
+[node name="BasePickup22" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -74.5875, 8.40625, 57.2789)
+type = "Ammo"
+weapon_id = "pistol"
+
+[node name="MeleeEnemy" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 18.9499)
+has_shield = true
+
+[node name="MeleeEnemy2" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 16.6484)
+
+[node name="MeleeEnemy3" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 18.9499)
+
+[node name="MeleeEnemy4" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 16.6484)
+
+[node name="MeleeEnemy5" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 14.3528)
+
+[node name="MeleeEnemy6" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 12.0513)
+
+[node name="MeleeEnemy7" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 14.3528)
+
+[node name="MeleeEnemy8" parent="Pickups" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 12.0513)
+
+[node name="BasePickup23" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5233, 11.125, 109.539)
+type = "Health"
+
+[node name="BasePickup24" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5233, 11.125, 117.313)
+type = "Health"
+
+[node name="BasePickup25" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5233, 11.125, 126.134)
+type = "Ammo"
+weapon_id = "pistol"
+
+[node name="BasePickup26" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5233, 11.125, 134.609)
+type = "Ammo"
+weapon_id = "shotgun"
+
+[node name="BasePickup27" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5233, 11.125, 145.014)
+type = "Ammo"
+weapon_id = "rifle"
+
+[node name="BasePickup28" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9571, 11.125, 109.539)
+type = "Health"
+
+[node name="BasePickup29" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9571, 11.125, 117.313)
+type = "Health"
+
+[node name="BasePickup30" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9571, 11.125, 126.134)
+type = "Ammo"
+weapon_id = "pistol"
+
+[node name="BasePickup31" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9571, 11.125, 134.609)
+type = "Ammo"
+weapon_id = "shotgun"
+
+[node name="BasePickup32" parent="Pickups" instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -22.9571, 11.125, 145.014)
+type = "Ammo"
+weapon_id = "rifle"
+
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 12.9273, 14.7116, 56.5189)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.384, 20.3083, 1.4479)
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="Lights" type="Node" parent="."]
@@ -1843,7 +1987,9 @@ surface_material_override/0 = SubResource("ShaderMaterial_q1ikm")
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, -98.447, 9.5625, 66.0171)
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
-stream = ExtResource("24_uokx7")
+process_mode = 3
+stream = ExtResource("21_oqbgo")
+volume_db = -1.0
 autoplay = true
 bus = &"Music"
 
@@ -1947,15 +2093,16 @@ visible = false
 [node name="Marker3D" parent="LaunchPad2" index="1"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 244.726, 25.1953, -15.876)
 
-[node name="BasePickup7" parent="." instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70.2909, 8.40625, 57.3869)
-type = "Ammo"
-weapon_id = "shotgun"
+[node name="EnterBossArea" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.6979, 10.2838, 89.4581)
 
-[node name="BasePickup8" parent="." instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -74.5875, 8.40625, 57.2789)
-type = "Ammo"
-weapon_id = "pistol"
+[node name="CollisionShape3D" type="CollisionShape3D" parent="EnterBossArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -2.48187, 2.28564, 1.97314)
+shape = SubResource("BoxShape3D_oqbgo")
+
+[node name="BossMusicPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("24_uokx7")
+bus = &"Music"
 
 [editable path="HUD"]
 [editable path="RedKeyArea"]

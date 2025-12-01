@@ -10,6 +10,9 @@ extends Node
 @onready var blue_key: Node3D = $"../BlueKeyArea"
 @onready var red_key_barrier = $"../RedKeyArea/Barrier"
 @onready var blue_key_barrier = $"../BlueKeyArea/Barrier"
+@onready var enter_boss_area: Area3D = $"../EnterBossArea"
+@onready var audio_player: AudioStreamPlayer = $"../AudioStreamPlayer"
+@onready var boss_music_player: AudioStreamPlayer = $"../BossMusicPlayer"
 
 # Door Variables
 @onready var door1: = $"../BossDoors/MainDoor"
@@ -45,6 +48,7 @@ func _ready() -> void:
 	boss_door_area.connect("body_entered", _on_boss_door_area_body_entered)
 	boss_door_area.connect("body_exited", _on_boss_door_area_body_exited)
 
+	enter_boss_area.connect("body_entered", _on_enter_boss_area_body_entered)
 	upgrade_station_camera = upgrade_station.get_node("Camera3D")
 	player_camera = player.get_node("Head/Camera")
 
@@ -155,6 +159,9 @@ func unlock_door():
 		print("Boss doors unlocked!")
 		hud.get_node("InGameHUD/KeysContainer/RedKey").visible = false
 		hud.get_node("InGameHUD/KeysContainer/BlueKey").visible = false
+		Audio.play("assets/sounds/garage_door_open.wav")
+		audio_player.volume_db = -15.0
+		
 		raise_platforms()
 	else:
 		print("You need both keys to unlock the boss doors!")
@@ -195,3 +202,9 @@ func on_upgrade_station_body_entered(body):
 func on_upgrade_station_body_exited(body):
 	if body.is_in_group("Player"):
 		upgrade_area_occupied = false
+
+func _on_enter_boss_area_body_entered(body) -> void:
+	if body.is_in_group("Player"):
+		print("Player has entered the boss area!")
+		audio_player.stop()
+		boss_music_player.play()
