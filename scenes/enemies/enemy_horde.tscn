@@ -238,26 +238,22 @@ bones/3/rotation = Quaternion(-0.0458859, 0.000835444, 0.00463883, 0.998936)
 bones/4/rotation = Quaternion(0.0939521, 0.00141762, 0.0140499, 0.995477)
 bones/5/rotation = Quaternion(-0.0892464, 0.00731144, 0.0214569, 0.995752)
 bones/6/rotation = Quaternion(-0.0657554, -0.00438449, -0.02652, 0.997474)
-bones/7/rotation = Quaternion(-0.599503, -0.37346, -0.394205, 0.587985)
 bones/8/rotation = Quaternion(-0.286494, 0.673525, -0.495825, 0.467379)
 bones/9/rotation = Quaternion(0.280708, 0.0428814, -0.00490849, 0.958822)
 bones/10/rotation = Quaternion(0.106009, 0.00637572, -0.0256743, 0.994013)
 bones/11/rotation = Quaternion(0.445191, 0.549369, -0.445194, 0.549364)
 bones/12/rotation = Quaternion(0.623341, -1.74475e-07, -7.51724e-08, 0.78195)
 bones/13/rotation = Quaternion(0.623341, -1.16721e-07, 2.40587e-07, 0.78195)
-bones/14/rotation = Quaternion(0.43209, 0.5387, -0.458046, 0.559727)
 bones/15/rotation = Quaternion(0.623341, 0.000943606, 0.00118341, 0.781949)
 bones/16/rotation = Quaternion(0.623341, -0.000704231, -0.000883069, 0.781949)
 bones/17/rotation = Quaternion(0.504057, 0.511541, -0.435151, 0.543042)
 bones/18/rotation = Quaternion(0.623163, -0.0200617, 0.0149256, 0.781692)
 bones/19/rotation = Quaternion(0.623342, 0.000379837, 0.000476341, 0.78195)
-bones/20/rotation = Quaternion(0.43534, 0.541356, -0.454904, 0.557203)
 bones/21/rotation = Quaternion(0.623341, 7.37963e-06, 9.45658e-06, 0.78195)
 bones/22/rotation = Quaternion(0.623341, -0.000665102, -0.000834447, 0.781949)
 bones/23/rotation = Quaternion(0.290838, 0.949649, 0.114584, 0.021217)
 bones/24/rotation = Quaternion(0.21939, 0.0238026, -0.00530497, 0.975332)
 bones/25/rotation = Quaternion(0.687388, -0.000309058, -0.000444471, 0.726291)
-bones/26/rotation = Quaternion(-0.635615, 0.31049, 0.329592, 0.625267)
 bones/27/rotation = Quaternion(-0.294479, -0.680824, 0.468616, 0.47975)
 bones/28/rotation = Quaternion(0.367227, -0.154219, 0.0618827, 0.915168)
 bones/29/rotation = Quaternion(0.116709, 0.00291671, 0.0447786, 0.992152)
@@ -267,10 +263,8 @@ bones/32/rotation = Quaternion(0.623342, 7.86076e-08, -9.76642e-08, 0.78195)
 bones/33/rotation = Quaternion(0.43209, -0.5387, 0.458047, 0.559727)
 bones/34/rotation = Quaternion(0.623341, -0.000943519, -0.00118344, 0.781949)
 bones/35/rotation = Quaternion(0.623342, 0.000704083, 0.000883254, 0.781949)
-bones/36/rotation = Quaternion(0.504057, -0.511541, 0.435152, 0.543042)
 bones/37/rotation = Quaternion(0.623163, 0.020061, -0.0149254, 0.781692)
 bones/38/rotation = Quaternion(0.623342, -0.00037993, -0.000476904, 0.781949)
-bones/39/rotation = Quaternion(0.43534, -0.541356, 0.454904, 0.557203)
 bones/40/rotation = Quaternion(0.623342, -7.09984e-06, -9.70689e-06, 0.78195)
 bones/41/rotation = Quaternion(0.623341, 0.000665268, 0.00083472, 0.781949)
 bones/42/rotation = Quaternion(-0.290839, 0.949649, 0.114584, -0.021217)
@@ -286,67 +280,67 @@ bones/51/rotation = Quaternion(-0.577753, -0.0496724, -0.163954, 0.798031)
 bones/52/rotation = Quaternion(-0.000137181, 0.964307, -0.264787, -0.00049941)
 
 [node name="Head" parent="Enemy_Model/Rig/Skeleton3D" index="1"]
-transform = Transform3D(0.973081, 0.0139214, -0.230041, 0.0292104, 0.982673, 0.183029, 0.228604, -0.184822, 0.955814, -0.0166087, 1.53217, -0.056356)
+transform = Transform3D(0.973081, 0.0139214, -0.230041, 0.0292104, 0.982673, 0.183029, 0.228604, -0.184822, 0.955814, -0.0166087, 1.53217, -0.0563561)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Head" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="Neck" parent="Enemy_Model/Rig/Skeleton3D" index="2"]
-transform = Transform3D(0.97363, -0.0673694, -0.217961, 0.0807616, 0.995317, 0.0531196, 0.213362, -0.0693217, 0.974511, -0.0110449, 1.44997, -0.0506309)
+transform = Transform3D(0.97363, -0.0673693, -0.217961, 0.0807615, 0.995317, 0.0531198, 0.213362, -0.0693219, 0.974511, -0.0110449, 1.44997, -0.050631)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Neck" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="Chest" parent="Enemy_Model/Rig/Skeleton3D" index="3"]
-transform = Transform3D(0.973257, -0.0647078, -0.220419, 0.0374184, 0.991349, -0.125807, 0.226652, 0.114195, 0.967258, 0.000142446, 1.27857, -0.0703742)
+transform = Transform3D(0.973257, -0.0647076, -0.220419, 0.0374183, 0.991349, -0.125807, 0.226652, 0.114195, 0.967258, 0.000142493, 1.27857, -0.0703743)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Chest" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="Torso" parent="Enemy_Model/Rig/Skeleton3D" index="4"]
-transform = Transform3D(0.973457, 0.00516545, -0.22881, 0.0092496, 0.99804, 0.0618828, 0.228682, -0.0623567, 0.971502, -0.000587285, 1.13758, -0.0615649)
+transform = Transform3D(0.973457, 0.00516556, -0.22881, 0.00924953, 0.99804, 0.061883, 0.228682, -0.0623568, 0.971502, -0.000587254, 1.13758, -0.061565)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Torso" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="Hips" parent="Enemy_Model/Rig/Skeleton3D" index="5"]
-transform = Transform3D(0.973081, -0.0365767, -0.227541, -7.45058e-09, 0.987325, -0.15871, 0.230462, 0.154438, 0.960748, 0.00532099, 0.877175, -0.0865115)
+transform = Transform3D(0.973081, -0.0365766, -0.227541, -7.45058e-08, 0.987325, -0.15871, 0.230462, 0.154438, 0.960748, 0.00532099, 0.877175, -0.0865115)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/Hips" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="LeftBicep" parent="Enemy_Model/Rig/Skeleton3D" index="6"]
-transform = Transform3D(-0.900158, 0.383014, -0.207404, -0.344657, -0.917501, -0.1985, -0.266322, -0.107198, 0.957905, 0.20015, 1.4074, -0.0455746)
+transform = Transform3D(-0.900158, 0.383014, -0.207405, -0.344657, -0.917501, -0.1985, -0.266322, -0.107198, 0.957905, 0.20015, 1.4074, -0.0455745)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftBicep" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="LeftForearm" parent="Enemy_Model/Rig/Skeleton3D" index="7"]
-transform = Transform3D(-0.873562, 0.180933, -0.451833, -0.339955, -0.891175, 0.300395, -0.348311, 0.416017, 0.840006, 0.305264, 1.1556, -0.0749942)
+transform = Transform3D(-0.873561, 0.180933, -0.451834, -0.339955, -0.891174, 0.300396, -0.348311, 0.416018, 0.840005, 0.305264, 1.1556, -0.0749939)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftForearm" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="LeftHand" parent="Enemy_Model/Rig/Skeleton3D" index="8"]
-transform = Transform3D(-0.873143, 0.0357847, -0.486149, -0.30064, -0.824572, 0.479266, -0.383714, 0.564624, 0.730728, 0.354594, 0.912628, 0.0384289)
+transform = Transform3D(-0.873143, 0.035784, -0.48615, -0.30064, -0.824571, 0.479267, -0.383715, 0.564625, 0.730727, 0.354594, 0.912628, 0.0384295)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftHand" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="RightBicep" parent="Enemy_Model/Rig/Skeleton3D" index="9"]
-transform = Transform3D(-0.866576, -0.202815, -0.455975, 0.337964, -0.910782, -0.237186, -0.367189, -0.359642, 0.857805, -0.163754, 1.39863, -0.16693)
+transform = Transform3D(-0.866575, -0.202816, -0.455975, 0.337964, -0.910781, -0.237185, -0.367189, -0.359642, 0.857805, -0.163754, 1.39863, -0.16693)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightBicep" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="RightForearm" parent="Enemy_Model/Rig/Skeleton3D" index="10"]
-transform = Transform3D(-0.968151, -0.248032, 0.0341127, 0.241568, -0.889615, 0.387595, -0.0657887, 0.383491, 0.921199, -0.219414, 1.14867, -0.26563)
+transform = Transform3D(-0.968151, -0.248033, 0.0341137, 0.24157, -0.889614, 0.387595, -0.0657883, 0.383492, 0.921198, -0.219414, 1.14867, -0.26563)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightForearm" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="RightHand" parent="Enemy_Model/Rig/Skeleton3D" index="11"]
-transform = Transform3D(-0.986301, -0.147006, 0.0748362, 0.162752, -0.79325, 0.586742, -0.026891, 0.590884, 0.806308, -0.287038, 0.906128, -0.161075)
+transform = Transform3D(-0.9863, -0.147007, 0.0748374, 0.162753, -0.793249, 0.586743, -0.0268905, 0.590885, 0.806308, -0.287038, 0.906128, -0.161075)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightHand" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
@@ -362,37 +356,37 @@ shape = SubResource("CapsuleShape3D_42r77")
 debug_color = Color(1, 0, 0, 0.419608)
 
 [node name="LeftThigh" parent="Enemy_Model/Rig/Skeleton3D" index="12"]
-transform = Transform3D(0.959592, 0.139397, 0.244443, 0.216254, -0.921134, -0.323644, 0.18005, 0.363427, -0.914058, 0.0804372, 0.89729, -0.0174942)
+transform = Transform3D(0.959592, 0.139397, 0.244443, 0.216254, -0.921134, -0.323644, 0.18005, 0.363428, -0.914058, 0.0804372, 0.897289, -0.0174942)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftThigh" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="LeftShin" parent="Enemy_Model/Rig/Skeleton3D" index="13"]
-transform = Transform3D(0.990021, 0.137271, -0.0318674, 0.137273, -0.990531, -0.00211599, -0.031856, -0.00227958, -0.99949, 0.136239, 0.52855, 0.127989)
+transform = Transform3D(0.990021, 0.137271, -0.0318684, 0.137274, -0.990531, -0.00211716, -0.0318571, -0.0022786, -0.99949, 0.136239, 0.52855, 0.127989)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftShin" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="LeftFoot" parent="Enemy_Model/Rig/Skeleton3D" index="14"]
-transform = Transform3D(0.995144, -0.0850755, 0.0495006, -0.000890548, -0.510672, -0.859775, 0.0984245, 0.855556, -0.508268, 0.195194, 0.103137, 0.12701)
+transform = Transform3D(0.995144, -0.0850748, 0.0495004, -0.000890233, -0.51067, -0.859776, 0.0984237, 0.855557, -0.508266, 0.195194, 0.103137, 0.127011)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/LeftFoot" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="RightThigh" parent="Enemy_Model/Rig/Skeleton3D" index="15"]
-transform = Transform3D(0.948496, -0.190607, 0.253032, -0.229113, -0.964354, 0.132394, 0.218777, -0.183548, -0.958356, -0.0927713, 0.89729, -0.0585165)
+transform = Transform3D(0.948496, -0.190607, 0.253032, -0.229113, -0.964354, 0.132394, 0.218777, -0.183548, -0.958356, -0.0927713, 0.897289, -0.0585165)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightThigh" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="RightShin" parent="Enemy_Model/Rig/Skeleton3D" index="16"]
-transform = Transform3D(0.53065, 0.0169028, 0.847423, -0.258503, -0.94894, 0.1808, 0.807209, -0.315003, -0.499185, -0.169073, 0.511249, -0.131993)
+transform = Transform3D(0.530649, 0.0169028, 0.847423, -0.258503, -0.94894, 0.1808, 0.80721, -0.315002, -0.499185, -0.169073, 0.511249, -0.131993)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightShin" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")
 
 [node name="RightFoot" parent="Enemy_Model/Rig/Skeleton3D" index="17"]
-transform = Transform3D(0.723777, -0.593603, 0.351827, -0.000890449, -0.510672, -0.859775, 0.690033, 0.621972, -0.370141, -0.161814, 0.103699, -0.26728)
+transform = Transform3D(0.723777, -0.593603, 0.351827, -0.000889804, -0.510672, -0.859775, 0.690033, 0.621972, -0.370141, -0.161814, 0.103698, -0.26728)
 
 [node name="Area3D" parent="Enemy_Model/Rig/Skeleton3D/RightFoot" index="0" node_paths=PackedStringArray("owner_enemy")]
 owner_enemy = NodePath("../../../../..")

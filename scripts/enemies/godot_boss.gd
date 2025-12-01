@@ -230,7 +230,7 @@ func get_state_name(current_state):
 # ---------------------------
 #  Combat + Damage
 # ---------------------------
-func damage(amount: float, multiplier : float):
+func damage(amount: float, multiplier : float = 1.0):
 	print("Received damage: ", amount)
 	if shield:
 		amount = shield.absorb_damage(amount)
