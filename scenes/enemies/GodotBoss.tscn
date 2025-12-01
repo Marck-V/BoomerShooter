@@ -41,7 +41,9 @@ height = 1.6
 [sub_resource type="SphereShape3D" id="SphereShape3D_j1mxd"]
 radius = 8.0
 
-[node name="GodotBoss" type="CharacterBody3D"]
+[node name="GodotBoss" type="CharacterBody3D" groups=["Enemy"]]
+collision_layer = 4
+collision_mask = 7
 script = ExtResource("1_tivg1")
 health = 10000.0
 
