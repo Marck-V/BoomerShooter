@@ -13,6 +13,7 @@ stretch_mode = 0
 script = ExtResource("2_3io4o")
 
 [node name="Panel" type="Panel" parent="."]
+visible = false
 layout_mode = 0
 offset_right = 128.0
 offset_bottom = 128.0

@@ -41,6 +41,7 @@ animations = [{
 
 [node name="AnimatedSprite3D" type="AnimatedSprite3D"]
 cast_shadow = 0
+modulate = Color(0.921098, 0, 0.181499, 1)
 pixel_size = 0.0025
 double_sided = false
 no_depth_test = true
