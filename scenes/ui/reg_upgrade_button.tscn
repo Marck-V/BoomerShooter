@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://csk37a742b7o3"]
+
+[ext_resource type="Script" uid="uid://dgm0brmnmfdmv" path="res://scripts/ui/regular_upgrade_button.gd" id="1_bsg84"]
+
+[node name="UpgradeButton1" type="Button"]
+offset_right = 125.0
+offset_bottom = 31.0
+text = "Upgrade Name"
+script = ExtResource("1_bsg84")
+
+[node name="Line2D" type="Line2D" parent="."]
+top_level = true
+z_index = -1
+default_color = Color(0.180005, 0.180005, 0.180005, 1)

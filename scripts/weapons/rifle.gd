@@ -248,6 +248,8 @@ func activate_quickness_boost():
 		return
 
 	print("Quickness boost activated!")
+	Audio.play("assets/sounds/zoom.mp3")
+	GlobalVariables.quickness_active.emit()
 	quickness_active = true
 
 	# Directly modify the player's base movement speed
@@ -260,5 +262,6 @@ func activate_quickness_boost():
 		if GlobalVariables.player:
 			GlobalVariables.player.current_movement_speed /= quickness_boost_mult
 		quickness_active = false
+		GlobalVariables.quickness_ended.emit()
 		print("Quickness boost ended.")
 	)

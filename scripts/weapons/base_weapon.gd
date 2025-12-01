@@ -50,6 +50,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 	if !data or !raycast:
 		return
 	if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, 1):
+		Audio.play("assets/sounds/empty_gun.mp3")
 		return
 		
 	Audio.play(data.sound)

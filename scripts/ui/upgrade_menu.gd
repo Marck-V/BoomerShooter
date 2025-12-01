@@ -20,7 +20,6 @@ const RIFLE_PATH = "res://resources/weapons/rifle.tres"
 @onready var pistol_menu_button: Button = $HBoxContainer/PistolMenuButton
 @onready var shotgun_menu_button: Button = $HBoxContainer/ShotgunMenuButton
 @onready var rifle_menu_button: Button = $HBoxContainer/RifleMenuButton
-@onready var new_button : UpgradeButton = $PanelContainer/TabContainer/Pistol/UpgradeButton
 
 
 func _ready() -> void:
@@ -33,7 +32,6 @@ func _ready() -> void:
 	pistol_menu_button.connect("pressed", _on_pistol_menu_button_pressed)
 	shotgun_menu_button.connect("pressed", _on_shotgun_menu_button_pressed)
 	rifle_menu_button.connect("pressed", _on_rifle_menu_button_pressed)
-	new_button.connect("pressed", _on_new_button_pressed)
 	# Automatically connect all UpgradeButtons under each weapon node
 	for weapon_name in weapon_nodes.keys():
 		var root = weapon_nodes[weapon_name]
@@ -72,8 +70,6 @@ func _on_rifle_menu_button_pressed() -> void:
 	weapon_nodes["shotgun"].hide()
 	weapon_nodes["rifle"].show()
 
-func _on_new_button_pressed() -> void:
-	print("New button pressed!")
 
 func on_points_changed(value: int) -> void:
 	points_label.text = "Points: " + str(value)
@@ -137,6 +133,7 @@ func attempt_upgrade(button: UpgradeButton, resource: Resource, resource_path: S
 func _on_reset_button_pressed() -> void:
 	# Reset weapon stats
 	rifle.damage = 25
+	rifle.cooldown = 0.2
 	shotgun.shot_count = 5
 	shotgun.spread = 5
 

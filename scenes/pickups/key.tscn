@@ -91,5 +91,6 @@ surface_material_override/0 = SubResource("ShaderMaterial_vncin")
 
 [node name="Label3D" type="Label3D" parent="."]
 transform = Transform3D(-4.37114e-08, 0, -1, 0, 1, 0, 1, 0, -4.37114e-08, -0.336764, 1.37389, 0.233362)
+visible = false
 text = "Defeat all the enemies to grab the key!"
 font_size = 64
