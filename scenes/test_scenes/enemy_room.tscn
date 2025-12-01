@@ -1575,31 +1575,33 @@ shape = SubResource("ConvexPolygonShape3D_7hakb")
 [node name="UpgradeStation" parent="." instance=ExtResource("17_5ubjb")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 18.4313, 5.85269, 23.5661)
 
-[node name="GoldBar" parent="." instance=ExtResource("18_gj28m")]
+[node name="Pickups" type="Node" parent="."]
+
+[node name="GoldBar" parent="Pickups" instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.0766, 5.68511, 16.4978)
 
-[node name="GoldBar2" parent="." instance=ExtResource("18_gj28m")]
+[node name="GoldBar2" parent="Pickups" instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 18.3174, 5.61518, 18.7511)
 type = "Health"
 
-[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 12.9273, 10.4203, 18.1055)
-crosshair = NodePath("../HUD/InGameHUD/Crosshair")
-
-[node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]
+[node name="BasePickup" parent="Pickups" instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 19.0485, 5.5, 12.7723)
 type = "Ammo"
 weapon_id = "rifle"
 
-[node name="BasePickup2" parent="." instance=ExtResource("18_gj28m")]
+[node name="BasePickup2" parent="Pickups" instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.6176, 5.5, 12.8587)
 type = "Ammo"
 weapon_id = "pistol"
 
-[node name="BasePickup3" parent="." instance=ExtResource("18_gj28m")]
+[node name="BasePickup3" parent="Pickups" instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.1708, 5.5, 9.65415)
 type = "Ammo"
 weapon_id = "shotgun"
+
+[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 12.9273, 10.4203, 18.1055)
+crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="GodotBoss" parent="." node_paths=PackedStringArray("target") instance=ExtResource("18_oqbgo")]
 transform = Transform3D(-4, 0, -6.03983e-07, 0, 4, 0, 6.03983e-07, 0, -4, 13, 10, 129)

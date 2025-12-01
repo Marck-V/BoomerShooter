@@ -33,6 +33,7 @@ func _ready():
 	purchase_button.disabled = true
 	purchase_button.pressed.connect(_on_purchase_button_pressed)
 
+	close_button.connect("pressed", on_close_button_pressed)
 	# Automatically connect all RegUpgradeButtons under each weapon node
 	for weapon_name in weapon_nodes.keys():
 		var root = weapon_nodes[weapon_name]
@@ -131,3 +132,10 @@ func attempt_upgrade(button: RegUpgradeButton, resource: Resource, resource_path
 	GlobalVariables.purchase_upgrade(id)
 	button.apply_visual_upgrade()
 	points_label.text = "Points: " + str(GlobalVariables.get_points())
+
+func on_close_button_pressed() -> void:
+	get_tree().paused = false
+	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+	GlobalVariables.exit_upgrade_menu.emit()
+	if is_instance_valid(self):
+		self.queue_free()
