@@ -3,7 +3,7 @@ render_mode unshaded, cull_disabled, blend_add;
 
 uniform vec4 lightning_color : source_color = vec4(0.5, 0.9, 1.5, 1.0);
 uniform float glow_strength = 25.0;
-uniform float intensity_boost = 5.0;
+uniform float intensity_boost = 50.0;
 uniform float flicker_speed = 30.0;
 uniform float noise_scale = 10.0;
 

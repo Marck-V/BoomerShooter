@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://c7hrmjvm0g4df"]
+[gd_resource type="Resource" script_class="Weapon" load_steps=3 format=3 uid="uid://dpj4ixy137lj3"]
 
 [ext_resource type="Script" uid="uid://c6gxnumnbxeyb" path="res://resources/weapon.gd" id="1_c0rnk"]
 [ext_resource type="Texture2D" uid="uid://dsb17kpst4ir4" path="res://assets/images/white_crosshairs/crosshair002.png" id="1_fwyd3"]
@@ -6,7 +6,7 @@
 [resource]
 script = ExtResource("1_c0rnk")
 cooldown = 0.15
-max_distance = 20
+max_distance = 40
 damage = 25.0
 spread = 0.0
 shot_count = 1

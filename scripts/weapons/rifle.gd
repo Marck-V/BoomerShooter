@@ -46,7 +46,7 @@ func alt_fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: R
 	if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, 10):
 		return
 
-	Audio.play(data.sound)
+	Audio.play("assets/sounds/lightning_magic.mp3")
 	muzzle.play("default")
 	trigger_recoil()
 
@@ -97,6 +97,8 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 		enemy = first_target.owner_enemy
 	if not is_instance_valid(enemy):
 		return
+	if enemy.is_in_group("Player"):
+		return
 
 	var start_pos = enemy.global_position
 	if enemy not in visited:
@@ -119,16 +121,28 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 	else:
 		_continue_chain_from_position(end_pos, damage * 0.8, depth + 1, visited)
 
-func _continue_chain_from_position(chain_position: Vector3, damage: float, depth: int, visited: Array):
+func _continue_chain_from_position(chain_position: Vector3, damage: float, depth: int, visited: Array) -> void:
 	if depth >= max_chains:
 		return
+
 	var next_target = _find_next_enemy_from_position(chain_position, visited, chain_radius)
-	if next_target:
-		_spawn_lightning_arc(chain_position, next_target.global_position)
-		if next_target.has_method("damage"):
-			next_target.damage(damage, 1)
-		await get_tree().create_timer(0.1).timeout
-		_start_chain_lightning(next_target, damage * 0.8, depth + 1, visited)
+	if not is_instance_valid(next_target):
+		return
+
+	_spawn_lightning_arc(chain_position, next_target.global_position)
+
+	if next_target.has_method("damage"):
+		next_target.damage(damage, 1)
+
+	var next_pos = next_target.global_position
+
+	await get_tree().create_timer(0.1).timeout
+
+	if is_instance_valid(next_target):
+		_start_chain_lightning(next_target, damage * 0.8, depth, visited)
+	else:
+		_continue_chain_from_position(next_pos, damage * 0.8, depth, visited)
+
 
 func _find_next_enemy_sphere(last_target: Node3D, visited: Array, radius: float) -> Node3D:
 	var space = get_world_3d().direct_space_state
@@ -179,7 +193,7 @@ func _find_next_enemy_from_position(pos: Vector3, visited: Array, radius: float)
 		var target = c
 		if "owner_enemy" in c and c.owner_enemy:
 			target = c.owner_enemy
-		if target in visited or not target.has_method("damage"):
+		if target in visited or not target.has_method("damage") or target.is_in_group("Player"):
 			continue
 		var d2 = pos.distance_squared_to(target.global_position)
 		if d2 < best_d2:

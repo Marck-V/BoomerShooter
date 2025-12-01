@@ -19,6 +19,7 @@ const RIFLE_PATH   = "res://resources/weapons/rifle.tres"
 @onready var close_button: TextureButton = $Panel/CloseButton
 @onready var purchase_button: Button  = $Panel/PurchaseButton
 @onready var description_label: Label = $Panel/DescriptionPanel/DescriptionLabel
+@onready var reset_button: Button = $Panel/ResetButton
 
 @onready var audio : AudioStreamPlayer = $AudioStreamPlayer
 # currently selected upgrade
@@ -32,6 +33,8 @@ func _ready():
 	
 	purchase_button.disabled = true
 	purchase_button.pressed.connect(_on_purchase_button_pressed)
+
+	reset_button.pressed.connect(_on_reset_button_pressed)
 
 	close_button.connect("pressed", on_close_button_pressed)
 	# Automatically connect all RegUpgradeButtons under each weapon node
@@ -139,3 +142,33 @@ func on_close_button_pressed() -> void:
 	GlobalVariables.exit_upgrade_menu.emit()
 	if is_instance_valid(self):
 		self.queue_free()
+
+func _on_reset_button_pressed() -> void:
+	# Reset weapon stats
+	rifle.damage = 25
+	rifle.cooldown = 0.2
+	rifle.max_distance = 40
+	shotgun.shot_count = 5
+	shotgun.spread = 5
+	pistol.damage = 15
+	pistol.cooldown = 0.3
+	pistol.max_distance = 20
+
+	ResourceSaver.save(shotgun, SHOTGUN_PATH)
+	ResourceSaver.save(rifle, RIFLE_PATH)
+	ResourceSaver.save(pistol, PISTOL_PATH)
+
+	# Reset points and upgrades
+	GlobalVariables.reset_points()
+	GlobalVariables.save_data.upgrades.clear()
+	GlobalVariables.save_to_disk()
+
+	# Reset button visuals
+	for weapon_name in weapon_nodes.keys():
+		var root = weapon_nodes[weapon_name]
+		var all_nodes = GlobalVariables.get_all_children(root)
+		for node in all_nodes:
+			if node is UpgradeButton:
+				node.reset()
+
+	print("Upgrades, points, and button visuals reset.")

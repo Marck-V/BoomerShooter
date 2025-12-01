@@ -171,6 +171,14 @@ offset_bottom = 642.0
 disabled = true
 text = "Purchase"
 
+[node name="ResetButton" type="Button" parent="Panel"]
+layout_mode = 2
+offset_left = 643.41
+offset_top = 614.0
+offset_right = 731.41
+offset_bottom = 642.0
+text = "Reset"
+
 [node name="CloseButton" type="TextureButton" parent="Panel"]
 layout_mode = 2
 offset_left = 1147.0
