@@ -884,6 +884,21 @@ target = NodePath("../../Player")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 45.3168)
 target = NodePath("../../Player")
 
+[node name="MeleeEnemy49" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.0182, 10.0018, 49.4175)
+vision_range = 10.0
+target = NodePath("../../Player")
+has_shield = true
+
+[node name="MeleeEnemy50" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.82275, 10.0018, 49.2904)
+vision_range = 10.0
+target = NodePath("../../Player")
+
+[node name="RangedEnemy16" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.402, 10.0018, 49.3105)
+target = NodePath("../../Player")
+
 [node name="RangedEnemy2" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("7_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16.6797, 10.0018, 46.8296)
 target = NodePath("../../Player")
@@ -922,12 +937,12 @@ vision_range = 10.0
 target = NodePath("../../Player")
 
 [node name="MeleeEnemy8" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40.8218, 6.07321, 66.3123)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -40.8218, 5.55218, 66.3123)
 vision_range = 10.0
 target = NodePath("../../Player")
 
 [node name="MeleeEnemy26" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -43.2534, 6.07321, 66.3123)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -47.7404, 6.07321, 66.3123)
 vision_range = 10.0
 target = NodePath("../../Player")
 
@@ -1025,7 +1040,17 @@ target = NodePath("../../Player")
 has_shield = true
 
 [node name="MeleeEnemy18" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 119.587, 19.0078, 56.0974)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 119.587, 18.3256, 56.0974)
+target = NodePath("../../Player")
+has_shield = true
+
+[node name="MeleeEnemy51" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 123.679, 18.3256, 56.0974)
+target = NodePath("../../Player")
+has_shield = true
+
+[node name="MeleeEnemy52" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 127.882, 18.3256, 56.0974)
 target = NodePath("../../Player")
 has_shield = true
 
@@ -1079,6 +1104,56 @@ target = NodePath("../../Player")
 [node name="MeleeEnemy22" parent="Enemies" node_paths=PackedStringArray("target") instance=ExtResource("6_5ubjb")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 160.802, -12.0102, 61.3397)
 target = NodePath("../../Player")
+
+[node name="MeleeEnemy33" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 18.9499)
+has_shield = true
+
+[node name="MeleeEnemy34" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 16.6484)
+
+[node name="MeleeEnemy35" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 18.9499)
+has_shield = true
+
+[node name="MeleeEnemy36" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 16.6484)
+
+[node name="MeleeEnemy37" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 14.3528)
+
+[node name="MeleeEnemy38" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 12.0513)
+
+[node name="MeleeEnemy39" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 14.3528)
+
+[node name="MeleeEnemy40" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 12.0513)
+
+[node name="MeleeEnemy41" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 9.89789)
+
+[node name="MeleeEnemy42" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 7.59639)
+
+[node name="MeleeEnemy43" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 9.89789)
+
+[node name="MeleeEnemy44" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 7.59639)
+
+[node name="MeleeEnemy45" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.107, 5, 3.25004)
+
+[node name="MeleeEnemy46" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.8093, 5, 3.25004)
+
+[node name="MeleeEnemy47" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.9416, 5, 3.25004)
+
+[node name="MeleeEnemy48" parent="Enemies" instance=ExtResource("6_5ubjb")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 12.6439, 5, 3.25004)
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
@@ -1849,31 +1924,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -74.5875, 8.40625, 57.2789)
 type = "Ammo"
 weapon_id = "pistol"
 
-[node name="MeleeEnemy" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 18.9499)
-has_shield = true
-
-[node name="MeleeEnemy2" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 16.6484)
-
-[node name="MeleeEnemy3" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 18.9499)
-
-[node name="MeleeEnemy4" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 16.6484)
-
-[node name="MeleeEnemy5" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 14.3528)
-
-[node name="MeleeEnemy6" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 12.0513)
-
-[node name="MeleeEnemy7" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 14.3528)
-
-[node name="MeleeEnemy8" parent="Pickups" instance=ExtResource("6_5ubjb")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 12.0513)
-
 [node name="BasePickup23" parent="Pickups" instance=ExtResource("18_gj28m")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 48.5233, 11.125, 109.539)
 type = "Health"
@@ -1921,7 +1971,7 @@ type = "Ammo"
 weapon_id = "rifle"
 
 [node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("18_e1was")]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.384, 20.3083, 1.4479)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 14.384, 35.6609, 12.916)
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="Lights" type="Node" parent="."]
@@ -2103,6 +2153,37 @@ shape = SubResource("BoxShape3D_oqbgo")
 [node name="BossMusicPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("24_uokx7")
 bus = &"Music"
+
+[node name="BasePickup" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 163.017, -11, 47.573)
+type = "Health"
+
+[node name="BasePickup2" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 163.017, -11, 65.2161)
+type = "Health"
+
+[node name="BasePickup3" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 168.513, -11, 65.2161)
+type = "Health"
+
+[node name="BasePickup4" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 168.513, -11, 46.9331)
+type = "Health"
+
+[node name="BasePickup5" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 172.931, -11, 52.102)
+type = "Ammo"
+weapon_id = "rifle"
+
+[node name="BasePickup6" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 172.931, -11, 59.3771)
+type = "Ammo"
+weapon_id = "rifle"
+
+[node name="BasePickup7" parent="." instance=ExtResource("18_gj28m")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 172.931, -11, 59.3771)
+type = "Ammo"
+weapon_id = "rifle"
 
 [editable path="HUD"]
 [editable path="RedKeyArea"]

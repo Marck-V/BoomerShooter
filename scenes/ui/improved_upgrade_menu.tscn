@@ -89,7 +89,7 @@ offset_right = 120.0
 offset_bottom = 219.34
 text = "Malware"
 upgrade_id = "pistol_lifesteal"
-description = "Each sucessful fit has a chance to restore some health."
+description = "Each sucessful hit has a chance to restore some health."
 
 [node name="Shotgun" type="Control" parent="Panel/TabContainer"]
 visible = false
@@ -232,3 +232,4 @@ text = "Upgrade Menu"
 
 [node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
 stream = ExtResource("7_ej5ck")
+bus = &"SFX"
