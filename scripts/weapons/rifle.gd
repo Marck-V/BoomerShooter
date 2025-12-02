@@ -65,14 +65,14 @@ func alt_fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: R
 			var collider = raycast.get_collider()
 
 			if collider and collider.has_method("damage"):
-				collider.damage(data.damage)
+				collider.damage(chain_damage)
 
 				var chain_target = collider
 				if collider.owner_enemy:
 					chain_target = collider.owner_enemy
 
 				if chain_target:
-					_start_chain_lightning(chain_target, data.damage * 0.8, 1, [])
+					_start_chain_lightning(chain_target, chain_damage * 0.8, 1, [])
 
 			else:
 				print("Hit non-enemy:", collider)
@@ -112,14 +112,14 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 	_spawn_lightning_arc(start_pos, end_pos)
 
 	if is_instance_valid(next_target) and next_target.has_method("damage"):
-		next_target.damage(damage, 1)
+		next_target.damage(chain_damage, 1)
 
 	await get_tree().create_timer(0.1).timeout
 	if is_instance_valid(next_target):
 		print("Chaining to:", next_target.name, " | Depth:", depth, " | Damage:", damage * 0.8)
-		_start_chain_lightning(next_target, damage * 0.8, depth + 1, visited)
+		_start_chain_lightning(next_target, chain_damage * 0.8, depth + 1, visited)
 	else:
-		_continue_chain_from_position(end_pos, damage * 0.8, depth + 1, visited)
+		_continue_chain_from_position(end_pos, chain_damage * 0.8, depth + 1, visited)
 
 func _continue_chain_from_position(chain_position: Vector3, damage: float, depth: int, visited: Array) -> void:
 	if depth >= max_chains:
@@ -132,16 +132,16 @@ func _continue_chain_from_position(chain_position: Vector3, damage: float, depth
 	_spawn_lightning_arc(chain_position, next_target.global_position)
 
 	if next_target.has_method("damage"):
-		next_target.damage(damage, 1)
+		next_target.damage(chain_damage, 1)
 
 	var next_pos = next_target.global_position
 
 	await get_tree().create_timer(0.1).timeout
 
 	if is_instance_valid(next_target):
-		_start_chain_lightning(next_target, damage * 0.8, depth, visited)
+		_start_chain_lightning(next_target, chain_damage * 0.8, depth, visited)
 	else:
-		_continue_chain_from_position(next_pos, damage * 0.8, depth, visited)
+		_continue_chain_from_position(next_pos, chain_damage * 0.8, depth, visited)
 
 
 func _find_next_enemy_sphere(last_target: Node3D, visited: Array, radius: float) -> Node3D:

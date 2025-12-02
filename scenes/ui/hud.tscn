@@ -55,6 +55,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Panel" type="Panel" parent="InGameHUD"]
+visible = false
 layout_mode = 0
 offset_right = 144.0
 offset_bottom = 164.0
@@ -110,6 +111,7 @@ label_settings = SubResource("LabelSettings_nu0x4")
 vertical_alignment = 2
 
 [node name="WeaponInfoLabel" type="Label" parent="InGameHUD"]
+visible = false
 layout_mode = 0
 offset_right = 40.0
 offset_bottom = 23.0

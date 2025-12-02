@@ -124,7 +124,7 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 
 		if target and target.has_method("damage") and not damaged.has(target):
 			target.damage(data.damage)
-			print("Pierced enemy: ", target.name)
+			#print("Pierced enemy: ", target.name)
 			damaged.append(target)
 
 		exclude.append(collider)

@@ -144,13 +144,18 @@ func on_close_button_pressed() -> void:
 		self.queue_free()
 
 func _on_reset_button_pressed() -> void:
+	audio.play()
 	# Reset weapon stats
 	rifle.damage = 25
 	rifle.cooldown = 0.2
 	rifle.max_distance = 40
+
 	shotgun.shot_count = 5
 	shotgun.spread = 5
-	pistol.damage = 15
+	shotgun.damage = 25
+	shotgun.max_distance = 10
+
+	pistol.damage = 25
 	pistol.cooldown = 0.3
 	pistol.max_distance = 20
 
