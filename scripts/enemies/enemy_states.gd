@@ -22,7 +22,9 @@ class ChaseState:
 	var enemy
 	var last_direction := Vector3.ZERO
 	var path_update_timer := 0.0
+	var stuck_timer := 0.0  # Track how long we've been chasing without attacking
 	const PATH_UPDATE_INTERVAL := 0.2  # Update path every 0.2s instead of every frame
+	const STUCK_TIMEOUT := 5.0  # Give up after 5 seconds of chasing
 	
 	func _init(e):
 		enemy = e
@@ -31,10 +33,19 @@ class ChaseState:
 		enemy.anim.play("Sprint")
 		last_direction = Vector3.ZERO
 		path_update_timer = 0.0
+		stuck_timer = 0.0
 	
 	func update(_delta):
 		if not is_instance_valid(enemy.target):
 			return
+		
+		# For ranged enemies: detect if stuck chasing without being able to shoot
+		if enemy is EnemyRanged:
+			stuck_timer += _delta
+			if stuck_timer >= STUCK_TIMEOUT:
+				# Been chasing too long, return to idle and wait for player to come closer
+				enemy.change_state("Idle")
+				return
 		
 		# --- Throttled Pathfinding (reduce recalculations) ---
 		path_update_timer += _delta
@@ -57,10 +68,7 @@ class ChaseState:
 		var distance_to_waypoint = enemy.global_position.distance_to(next_pos)
 		var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
 		
-		# Velocity for enemy avoidance, commented line is without avoidance
-		#enemy.velocity = dir * enemy.movement_speed * speed_multiplier
-		enemy.nav.velocity = dir * enemy.movement_speed
-		enemy.velocity = enemy.nav.velocity
+		enemy.velocity = dir * enemy.movement_speed * speed_multiplier
 		
 		# --- Line-of-sight ---
 		var space_state = enemy.get_world_3d().direct_space_state
