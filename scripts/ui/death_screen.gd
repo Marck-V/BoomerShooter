@@ -8,7 +8,7 @@ func show_death_screen():
 	visible = true
 	get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
-	
+
 
 func _on_retry_button_pressed() -> void:
 	get_tree().paused = false
