@@ -55,7 +55,7 @@ class ChaseState:
         
         # --- Distance-based speed reduction (stop jitter near waypoints) ---
         var distance_to_waypoint = enemy.global_position.distance_to(next_pos)
-        var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
+        var _speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
         
         # Velocity for enemy avoidance, commented line is without avoidance
         #enemy.velocity = dir * enemy.movement_speed * speed_multiplier
