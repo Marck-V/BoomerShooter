@@ -1878,7 +1878,7 @@ type = "Ammo"
 weapon_id = "rifle"
 
 [node name="BasePickup7" parent="Pickups" instance=ExtResource("18_gj28m")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70.2909, 8.40625, 74.1589)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -70.1128, 8.40625, 74.3566)
 type = "Ammo"
 weapon_id = "shotgun"
 

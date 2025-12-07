@@ -1,4 +1,4 @@
-[gd_scene load_steps=260 format=4 uid="uid://bb3xbqy2wtjrc"]
+[gd_scene load_steps=260 format=4 uid="uid://bcx6kl0okfktd"]
 
 [ext_resource type="Script" uid="uid://cm3dl28r70erp" path="res://scripts/utilities/level_manager.gd" id="1_8nfvc"]
 [ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="2_eef42"]
