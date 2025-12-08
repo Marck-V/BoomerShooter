@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://dbgnnsy4gp4aw"]
+[gd_scene load_steps=16 format=3 uid="uid://dbgnnsy4gp4aw"]
 
 [ext_resource type="PackedScene" uid="uid://qrdvngdymejs" path="res://models/enemies/godotman.glb" id="1_j4gqk"]
 [ext_resource type="Script" uid="uid://bywio4k2j1xe2" path="res://scripts/enemies/godot_boss.gd" id="1_tivg1"]
@@ -34,6 +34,8 @@ radius = 0.322754
 height = 0.573303
 radius = 0.405273
 
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qrfe6"]
+
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_tivg1"]
 radius = 0.35879
 height = 1.6
@@ -53,19 +55,19 @@ health = 3000.0
 [node name="Skeleton3D" parent="godotman/godot_rig" index="0"]
 bones/0/position = Vector3(-1.19773e-16, 0.0132455, -0.0674813)
 bones/0/rotation = Quaternion(0.707107, -2.21972e-07, -2.21972e-07, 0.707107)
-bones/1/position = Vector3(-4.88714e-07, -0.0555748, -0.778414)
-bones/1/rotation = Quaternion(-0.707107, 3.06266e-07, 1.37679e-07, 0.707107)
-bones/2/rotation = Quaternion(-4.45394e-09, 7.10543e-15, -2.94836e-14, 1)
-bones/3/rotation = Quaternion(0.58185, 9.69523e-08, 2.08086e-07, 0.813296)
-bones/4/position = Vector3(2.86736e-14, 0.284253, 3.07441e-08)
-bones/4/rotation = Quaternion(-0.223261, 1.67366e-13, -1.06459e-07, 0.974759)
+bones/1/position = Vector3(-0.0782933, 0.270021, -0.642062)
+bones/1/rotation = Quaternion(-0.654937, 0.0292195, 0.0330209, 0.754396)
+bones/2/rotation = Quaternion(0.0608688, -0.0261378, -0.0450901, 0.996784)
+bones/3/rotation = Quaternion(0.577299, 0.0127812, 0.00814131, 0.816392)
+bones/4/position = Vector3(-3.95168e-09, 0.284253, -3.47058e-08)
+bones/4/rotation = Quaternion(-0.326145, -0.0704102, 0.0911608, 0.938276)
 bones/5/position = Vector3(-1.17192e-07, 1.09933, 1.52471e-08)
-bones/5/rotation = Quaternion(-0.0175877, 0.0267737, -0.835035, 0.549264)
-bones/6/rotation = Quaternion(-0.0542823, 0.0118727, -0.100051, 0.99343)
-bones/7/rotation = Quaternion(0.280117, -0.0186667, -0.230574, 0.931677)
+bones/5/rotation = Quaternion(-0.0426043, 0.0428458, -0.842536, 0.535241)
+bones/6/rotation = Quaternion(-0.17789, 0.0902463, -0.0550651, 0.978355)
+bones/7/rotation = Quaternion(0.389943, -0.017289, -0.320975, 0.862914)
 bones/8/rotation = Quaternion(0.375952, 0.609391, -0.571527, -0.400824)
-bones/9/position = Vector3(0.442012, 2.1967, 0.212482)
-bones/9/rotation = Quaternion(0.334915, -0.0822132, -0.327859, 0.879535)
+bones/9/position = Vector3(0.449094, 2.11689, 0.0109315)
+bones/9/rotation = Quaternion(0.115794, -0.087955, -0.417277, 0.897071)
 bones/10/rotation = Quaternion(-0.283582, 0.522521, -0.480813, 0.644494)
 bones/11/rotation = Quaternion(-0.396616, -1.63821e-07, 0.137945, 0.907561)
 bones/12/rotation = Quaternion(0.0541201, 0.928569, -0.0356896, 0.365454)
@@ -74,36 +76,37 @@ bones/14/rotation = Quaternion(-0.137925, 0.919046, 0.0282495, 0.368148)
 bones/15/rotation = Quaternion(0.161832, 0.0661891, -0.133629, 0.975486)
 bones/16/rotation = Quaternion(-0.401891, 0.816331, -0.0298922, 0.413757)
 bones/17/rotation = Quaternion(0.123366, 0.170426, -0.137422, 0.967911)
-bones/18/position = Vector3(1.02758e-08, 1.09933, 2.37875e-10)
-bones/18/rotation = Quaternion(-0.0175879, -0.0267739, 0.835035, 0.549264)
-bones/19/rotation = Quaternion(-0.0542822, -0.0118728, 0.100051, 0.99343)
-bones/20/rotation = Quaternion(0.280117, 0.0186667, 0.230573, 0.931677)
-bones/22/position = Vector3(-0.442012, 2.1967, 0.212482)
-bones/22/rotation = Quaternion(0.334915, 0.0822132, 0.327859, 0.879535)
-bones/24/rotation = Quaternion(-0.396616, 5.66144e-08, -0.137945, 0.907561)
-bones/25/rotation = Quaternion(-0.0541201, 0.928569, -0.0356897, -0.365454)
-bones/26/rotation = Quaternion(0.105692, -0.00477817, 0.108112, 0.988493)
-bones/27/rotation = Quaternion(0.137925, 0.919046, 0.0282494, -0.368148)
-bones/28/rotation = Quaternion(0.161832, -0.0661891, 0.133629, 0.975486)
-bones/29/rotation = Quaternion(0.401891, 0.816331, -0.0298923, -0.413757)
-bones/30/rotation = Quaternion(0.123366, -0.170426, 0.137422, 0.967911)
+bones/18/position = Vector3(-0.0666566, 1.13848, 0.0792785)
+bones/18/rotation = Quaternion(0.0301027, 0.100828, 0.703396, 0.702966)
+bones/19/rotation = Quaternion(0.130879, 0.321985, -0.189215, 0.918365)
+bones/20/rotation = Quaternion(0.507969, 0.0150856, 0.418126, 0.752935)
+bones/22/position = Vector3(0.350452, 1.67998, 0.723574)
+bones/22/rotation = Quaternion(0.588456, 0.695981, 0.233119, 0.339095)
+bones/23/rotation = Quaternion(-0.49157, -0.58062, 0.445739, 0.471758)
+bones/24/rotation = Quaternion(-0.571636, -0.0946815, -0.0281932, 0.814538)
+bones/25/rotation = Quaternion(0.187447, 0.846244, -0.386269, -0.315486)
+bones/26/rotation = Quaternion(0.324141, -0.0365309, 0.41849, 0.847623)
+bones/27/rotation = Quaternion(0.291558, 0.816833, -0.287949, -0.406033)
+bones/28/rotation = Quaternion(0.279654, -0.068648, 0.512635, 0.80888)
+bones/29/rotation = Quaternion(0.431768, 0.765931, -0.198678, -0.432958)
+bones/30/rotation = Quaternion(0.222715, -0.147826, 0.423553, 0.865533)
 bones/31/position = Vector3(0.0659379, 0.0756134, -0.169812)
-bones/32/rotation = Quaternion(0.637253, 0.603968, -0.474563, -0.0626178)
-bones/33/rotation = Quaternion(0.186991, -0.00627747, 0.00777209, 0.982311)
+bones/32/rotation = Quaternion(0.496054, 0.80473, -0.0444059, 0.323059)
+bones/33/rotation = Quaternion(0.63228, -0.00494803, 0.0262801, 0.774278)
 bones/34/position = Vector3(-0.0659379, 0.0756134, -0.169812)
-bones/35/rotation = Quaternion(0.637253, -0.603968, 0.474563, -0.0626175)
-bones/36/rotation = Quaternion(0.186991, 0.00627744, -0.0077721, 0.982311)
-bones/37/position = Vector3(0.441344, -0.122428, -0.117204)
-bones/37/rotation = Quaternion(-9.65513e-08, 0.00741848, -7.16283e-10, 0.999973)
-bones/39/position = Vector3(-0.441344, -0.122428, -0.117203)
-bones/39/rotation = Quaternion(-8.04594e-08, -0.00741785, 5.96852e-10, 0.999972)
-bones/41/position = Vector3(0.441344, 0.130449, -0.18991)
-bones/41/rotation = Quaternion(0.707087, 0.00524543, 0.00524543, 0.707087)
-bones/42/position = Vector3(-0.441344, 0.130449, -0.18991)
-bones/42/rotation = Quaternion(0.707087, -0.00524543, -0.00524543, 0.707087)
+bones/35/rotation = Quaternion(0.672756, -0.597984, 0.435639, -0.00568504)
+bones/36/rotation = Quaternion(0.72205, 0.00441694, -0.0300113, 0.691175)
+bones/37/position = Vector3(0.441344, 0.55434, -0.266632)
+bones/37/rotation = Quaternion(0.0546263, 0.0074074, 0.000405221, 0.998479)
+bones/39/position = Vector3(-0.441344, -0.135604, -0.351067)
+bones/39/rotation = Quaternion(0.384226, -0.00684842, -0.00285045, 0.923209)
+bones/41/position = Vector3(0.441344, 0.279877, 0.486859)
+bones/41/rotation = Quaternion(0.744658, 0.00495105, 0.00552415, 0.667405)
+bones/42/position = Vector3(-0.441344, 0.364313, -0.203085)
+bones/42/rotation = Quaternion(0.924496, -0.00282728, -0.00685825, 0.381119)
 
 [node name="HeadAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="1"]
-transform = Transform3D(1, -2.18847e-12, 4.76838e-07, 3.3929e-07, 0.702646, -0.711539, -3.35047e-07, 0.711539, 0.702646, -4.03429e-12, 2.72661, 0.14597)
+transform = Transform3D(0.964454, -0.167177, -0.204645, -0.0380446, 0.678524, -0.733592, 0.261496, 0.715302, 0.648045, -0.156478, 2.47123, 0.877635)
 bone_name = "head"
 bone_idx = 4
 
@@ -120,7 +123,7 @@ shape = SubResource("BoxShape3D_tivg1")
 debug_color = Color(0.997749, 0, 0.158895, 0.42)
 
 [node name="ChestAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="2"]
-transform = Transform3D(1, -1.3074e-12, 2.38418e-07, 1.30527e-12, 1, 8.90773e-09, -2.38418e-07, -8.90788e-09, 1, -2.20623e-12, 1.53549, -0.123056)
+transform = Transform3D(0.998938, -0.000609778, -0.046065, -0.0114722, 0.96512, -0.261556, 0.0446177, 0.261807, 0.964088, -0.143821, 1.3889, 0.306627)
 bone_name = "body.002"
 bone_idx = 2
 
@@ -136,7 +139,7 @@ shape = SubResource("BoxShape3D_btt32")
 debug_color = Color(0.797064, 0.423296, 5.77569e-07, 0.42)
 
 [node name="TorsoAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="3"]
-transform = Transform3D(1, -1.36424e-12, 2.38418e-07, 1.36424e-12, 1, -1.49686e-13, -2.38418e-07, 0, 1, -1.19383e-12, 0.791659, -0.123056)
+transform = Transform3D(0.996112, -0.0880949, 0.00083279, 0.0873388, 0.986234, -0.140407, 0.0115478, 0.139934, 0.990093, -0.0782929, 0.655308, 0.20254)
 bone_name = "body.001"
 bone_idx = 1
 
@@ -152,7 +155,7 @@ shape = SubResource("BoxShape3D_j1mxd")
 debug_color = Color(0.786286, 0.432205, 9.62615e-07, 0.42)
 
 [node name="LeftThighAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="4"]
-transform = Transform3D(0.999841, 0.0172168, -0.00459483, 0.0162341, -0.986408, -0.16351, -0.00734735, 0.16341, -0.986531, 0.436948, 0.90013, -0.152154)
+transform = Transform3D(0.981438, 0.158402, 0.108115, 0.146397, -0.254628, -0.955893, -0.123886, 0.953978, -0.273091, 0.347377, 0.804533, 0.193955)
 bone_name = "foot.L.001"
 bone_idx = 32
 
@@ -168,7 +171,7 @@ shape = SubResource("CapsuleShape3D_btt32")
 debug_color = Color(0.801515, 0.419505, 7.70092e-07, 0.42)
 
 [node name="LeftCalfAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="5"]
-transform = Transform3D(0.999794, -0.00329086, -0.0200245, 0.00099312, -0.977647, 0.210253, -0.0202686, -0.21023, -0.977442, 0.442806, 0.564552, -0.0965619)
+transform = Transform3D(0.989911, 0.0912794, -0.108375, 0.0983273, -0.993248, 0.0615663, -0.102023, -0.0716012, -0.992202, 0.401265, 0.717908, 0.5185)
 bone_name = "foot.L.002"
 bone_idx = 33
 
@@ -184,7 +187,7 @@ shape = SubResource("CapsuleShape3D_4ckck")
 debug_color = Color(0.805803, 0.415788, 5.77569e-07, 0.42)
 
 [node name="RightThighAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="6"]
-transform = Transform3D(0.999841, -0.0172166, 0.00459492, -0.0162337, -0.986408, -0.163511, 0.00734742, 0.16341, -0.986531, -0.436948, 0.90013, -0.152154)
+transform = Transform3D(0.985821, 0.166934, 0.0170135, 0.167653, -0.975672, -0.141266, -0.00698242, 0.142115, -0.989825, -0.523122, 0.728208, 0.183863)
 bone_name = "foot.R.001"
 bone_idx = 35
 
@@ -200,7 +203,7 @@ shape = SubResource("CapsuleShape3D_j1mxd")
 debug_color = Color(0.827497, 0.395928, 0, 0.42)
 
 [node name="RightCalfAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="7"]
-transform = Transform3D(0.999794, 0.00329115, 0.0200244, -0.000992737, -0.977647, 0.210253, 0.0202686, -0.210229, -0.977442, -0.442805, 0.564552, -0.0965618)
+transform = Transform3D(0.977305, 0.056732, -0.204098, 0.208583, -0.0895068, 0.9739, 0.0369831, -0.994369, -0.0993089, -0.466331, 0.396282, 0.232211)
 bone_name = "foot.R.002"
 bone_idx = 36
 
@@ -216,7 +219,7 @@ shape = SubResource("CapsuleShape3D_4ckck")
 debug_color = Color(0.805803, 0.415788, 5.77569e-07, 0.42)
 
 [node name="LeftBicepAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="8"]
-transform = Transform3D(-0.572051, 0.807932, 0.141433, -0.820218, -0.563498, -0.0985538, 7.24746e-05, -0.172384, 0.98503, 1.06053, 2.24742, -0.208512)
+transform = Transform3D(-0.551692, 0.782619, 0.288344, -0.757048, -0.324796, -0.566909, -0.350021, -0.531049, 0.771668, 0.902534, 2.07121, 0.388388)
 bone_name = "hand.L.001"
 bone_idx = 6
 
@@ -232,7 +235,7 @@ shape = SubResource("CylinderShape3D_btt32")
 debug_color = Color(0.822928, 0.400265, 0, 0.42)
 
 [node name="RightBicepAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="9"]
-transform = Transform3D(-0.572051, -0.807932, -0.141433, 0.820218, -0.563498, -0.098554, -7.22082e-05, -0.172384, 0.985029, -1.06053, 2.24742, -0.208512)
+transform = Transform3D(0.167496, -0.871552, 0.460806, 0.822477, 0.381246, 0.422117, -0.543577, 0.308299, 0.780688, -1.33639, 2.50093, 0.829594)
 bone_name = "hand.R.001"
 bone_idx = 19
 
@@ -248,7 +251,7 @@ shape = SubResource("CylinderShape3D_btt32")
 debug_color = Color(0.822928, 0.400265, 0, 0.42)
 
 [node name="RightHandAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="10"]
-transform = Transform3D(-0.888878, -0.345014, 0.30143, 0.456849, -0.716914, 0.526614, 0.0344102, 0.605804, 0.794869, -1.85044, 1.35545, -0.0516927)
+transform = Transform3D(-0.994709, -0.100274, -0.0223187, -0.0723211, 0.529258, 0.845372, -0.0729565, 0.842514, -0.53371, -1.78007, 2.64835, 1.67105)
 bone_name = "handIK.R"
 bone_idx = 22
 
@@ -263,8 +266,18 @@ transform = Transform3D(0.999872, -0.00501316, -0.0152877, 0.0120229, 0.864278, 
 shape = SubResource("CylinderShape3D_j1mxd")
 debug_color = Color(0.791319, 0.428091, 0, 0.42)
 
+[node name="RightAttackHitbox" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightHandAttach"]
+collision_layer = 32
+monitoring = false
+monitorable = false
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightHandAttach/RightAttackHitbox"]
+transform = Transform3D(0.998497, 0.0256838, -0.0484128, 0.00272522, 0.859021, 0.511932, 0.054736, -0.511295, 0.85766, 0.0124812, -0.171221, 0.108264)
+shape = SubResource("CapsuleShape3D_qrfe6")
+debug_color = Color(0.858826, 0, 0.260491, 0.42)
+
 [node name="LeftHandAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="11"]
-transform = Transform3D(-0.888878, 0.345014, -0.30143, -0.456849, -0.716914, 0.526614, -0.0344102, 0.605804, 0.794869, 1.85044, 1.35545, -0.0516924)
+transform = Transform3D(-0.959564, 0.276017, 0.0552466, -0.276414, -0.961038, 0.000467628, 0.0532232, -0.0148222, 0.998472, 1.57761, 1.23184, 0.110931)
 bone_name = "handIK.L"
 bone_idx = 9
 
