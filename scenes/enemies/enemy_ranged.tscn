@@ -220,8 +220,7 @@ radius = 20.0
 collision_layer = 4
 collision_mask = 7
 script = ExtResource("1_xbodr")
-shoot_range = 15.0
-firing_rate = 3.0
+firing_rate = 2.0
 
 [node name="Enemy_Model" parent="." instance=ExtResource("2_mt7bm")]
 
@@ -409,6 +408,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 0.939)
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 path_height_offset = 1.0
 avoidance_enabled = true
+neighbor_distance = 3.0
 
 [node name="VisionArea" type="Area3D" parent="."]
 
