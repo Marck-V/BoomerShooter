@@ -21,6 +21,10 @@ Audio="*res://scripts/utilities/audio.gd"
 GlobalVariables="*res://scripts/utilities/global_variables.gd"
 GameManager="*res://scripts/utilities/game_manager.gd"
 
+[debug]
+
+gdscript/warnings/unused_signal=0
+
 [display]
 
 window/size/viewport_width=1280

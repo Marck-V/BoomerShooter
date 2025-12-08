@@ -1,6 +1,6 @@
 extends BaseWeapon
 
-@onready var tween := create_tween()
+var tween: Tween
 
 var precision = "shotgun_precision"
 var shield_break = "shotgun_shield_break"
@@ -20,15 +20,15 @@ func _ready():
 	base_dmg = data.damage
 	_refresh_upgrades()
 
+
 func get_shield_multiplier() -> float:
 	if has_shield_break:
 		return 1.5
 	return 1.0
 
-# TODO: Glitch shot damage multipler does NOT deal increased damage to shields.
 
 func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
-	# Apply glitch shot before firing
+	# Glitch shot logic
 	if has_glitch_shot:
 		shot_tracker += 1
 		if shot_tracker >= 3:
@@ -38,29 +38,32 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 	else:
 		data.damage = base_dmg
 
-	# Now run the base firing logic
+	# Base firing
 	super.fire(origin, direction, camera, raycast)
-	
-	# Reset rotation / recoil animation
+
+	# Recoil animation
+	if tween:
+		tween.kill()
+
 	rotation_degrees.x = 0
 	tween = create_tween()
 	tween.tween_property(self, "rotation_degrees:x", -360.0, 0.5) \
-			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_callback(Callable(self, "_reset_rotation"))
 
-	# Reset damage after firing so next shot isn't permanently boosted
+	# Reset damage for next shot
 	data.damage = base_dmg
 
-			
-			
 
 func _reset_rotation():
-	rotation_degrees.x = 0  # Reset to avoid accumulation
+	rotation_degrees.x = 0
+
 
 func _refresh_upgrades() -> void:
 	has_precision = GlobalVariables.has_upgrade(precision)
 	has_shield_break = GlobalVariables.has_upgrade(shield_break)
 	has_glitch_shot = GlobalVariables.has_upgrade(glitch_shot)
+
 
 func on_upgrade_purchased(upgrade_id: String) -> void:
 	if upgrade_id == precision:

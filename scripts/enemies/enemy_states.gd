@@ -4,17 +4,17 @@ const DEATH_PARTICLES = preload("res://scenes/enemies/death_particles.tscn")
 
 # --- Idle ---
 class IdleState:
-	var enemy
+    var enemy
 
-	func _init(e):
-		enemy = e
+    func _init(e):
+        enemy = e
 
-	func enter():
-		enemy.anim.play("Idle")
-		enemy.velocity = Vector3.ZERO
+    func enter():
+        enemy.anim.play("Idle")
+        enemy.velocity = Vector3.ZERO
 
-	func update(_delta):
-		pass
+    func update(_delta):
+        pass
 
 
 # --- Chase ---
@@ -119,105 +119,108 @@ class ChaseState:
 
 # --- Attack (Shared Across All Enemies) ---
 class AttackState:
-	var enemy
-	var enter_animation_playing := false
-	
-	func _init(e):
-		enemy = e
-	
-	func enter():
-		enemy.velocity = Vector3.ZERO
-		enter_animation_playing = false
-		
-		# Play enter animation if it exists
-		if enemy.attack_animation_enter != "":
-			enemy.anim.play(enemy.attack_animation_enter)
-			enter_animation_playing = true
-	
-	func update(_delta):
-		if not enemy.target:
-			enemy.change_state("Idle")
-			return
-		
-		# Wait for enter animation to finish before doing anything
-		if enter_animation_playing:
-			if not enemy.anim.is_playing():
-				enter_animation_playing = false
-			return
-		
-		# CRITICAL: Don't allow state changes while attack is in progress (melee only)
-		if "is_attacking" in enemy and enemy.is_attacking:
-			return  # Stay in attack state until perform_attack() finishes
-		
-		# Check if player moved out of range (must check BEFORE can_attack)
-		if not enemy.is_in_attack_range():
-			enemy.change_state("Chase")
-			return
-		
-		# If cooldown still running → go to AttackIdle
-		if not enemy.can_attack():
-			enemy.change_state("AttackIdle")
-			return
-		
-		# Cooldown finished AND still in range → attack again
-		enemy.perform_attack()
-	
-	func exit():
-		enter_animation_playing = false
-		if enemy.attack_animation_exit != "":
-			enemy.anim.play(enemy.attack_animation_exit)
+    var enemy
+    var enter_animation_playing := false
+    
+    func _init(e):
+        enemy = e
+    
+    func enter():
+        enemy.velocity = Vector3.ZERO
+        enter_animation_playing = false
+        
+        # Play enter animation if it exists
+        if enemy.attack_animation_enter != "":
+            enemy.anim.play(enemy.attack_animation_enter)
+            enter_animation_playing = true
+    
+    func update(_delta):
+        if not enemy.target:
+            enemy.change_state("Idle")
+            return
+        
+        # Wait for enter animation to finish before doing anything
+        if enter_animation_playing:
+            if not enemy.anim.is_playing():
+                enter_animation_playing = false
+            return
+        
+        # CRITICAL: Don't allow state changes while attack is in progress (melee only)
+        if "is_attacking" in enemy and enemy.is_attacking:
+            return  # Stay in attack state until perform_attack() finishes
+        
+        # Check if player moved out of range (must check BEFORE can_attack)
+        if not enemy.is_in_attack_range():
+            enemy.change_state("Chase")
+            return
+        
+        # If cooldown still running → go to AttackIdle
+        if not enemy.can_attack():
+            enemy.change_state("AttackIdle")
+            return
+        
+        # Cooldown finished AND still in range → attack again
+        enemy.perform_attack()
+    
+    func exit():
+        enter_animation_playing = false
+        if enemy.attack_animation_exit != "":
+            enemy.anim.play(enemy.attack_animation_exit)
 
 
 class AttackIdleState:
-	var enemy
+    var enemy
 
-	func _init(e):
-		enemy = e
+    func _init(e):
+        enemy = e
 
-	func enter():
-		enemy.velocity = Vector3.ZERO
-		if enemy.attack_idle_animation != "":
-			enemy.anim.play(enemy.attack_idle_animation)
+    func enter():
+        enemy.velocity = Vector3.ZERO
+        if enemy.attack_idle_animation != "":
+            enemy.anim.play(enemy.attack_idle_animation)
 
-	func update(_delta):
-		# Target lost → back to Idle
-		if not enemy.target:
-			enemy.change_state("Idle")
-			return
+    func update(_delta):
+        # Target lost → back to Idle
+        if not enemy.target:
+            enemy.change_state("Idle")
+            return
 
-		# If player moved out of melee range → Chase again
-		if not enemy.is_in_attack_range():
-			enemy.change_state("Chase")
-			return
+        # If player moved out of melee range → Chase again
+        if not enemy.is_in_attack_range():
+            enemy.change_state("Chase")
+            return
 
-		# If cooldown finished → return to Attack state to actually attack again
-		if enemy.can_attack():
-			enemy.change_state("Attack")
-			return
+        # If cooldown finished → return to Attack state to actually attack again
+        if enemy.can_attack():
+            enemy.change_state("Attack")
+            return
 
 
 # --- Dead ---
 class DeadState:
-	var enemy
+    var enemy
 
-	func _init(e): enemy = e
+    func _init(e): enemy = e
 
-	func enter():
-		enemy.destroyed = true
-		
-		# Spawn glitchy particle explosion
-		spawn_glitch_particles()
-		
-		Audio.play_at(enemy.global_position,
-						"assets/audio/sfx/enemies/Enemy_Death1.wav,
-						assets/audio/sfx/enemies/Enemy_Death2.wav")
-		enemy.queue_free()
+    func enter():
+        enemy.destroyed = true
+        
+        # Spawn glitchy particle explosion
+        spawn_glitch_particles()
+        
+        Audio.play_at(enemy.global_position,
+                        "assets/audio/sfx/enemies/Enemy_Death1.wav,
+                        assets/audio/sfx/enemies/Enemy_Death2.wav")
+        enemy.queue_free()
 
-	func update(_delta):
-		pass
-	
-	func spawn_glitch_particles():
-		var particles = DEATH_PARTICLES.instantiate()
-		particles.global_position = enemy.global_position + Vector3(0, 1.0, 0)
-		particles.emitting = true
-		enemy.get_parent().add_child(particles)
+    func update(_delta):
+        pass
+    
+    func spawn_glitch_particles():
+        if !enemy.is_inside_tree():
+            return
+        
+        var particles = DEATH_PARTICLES.instantiate()
+        enemy.get_parent().add_child(particles)
+        particles.global_position = enemy.global_position + Vector3(0, 1.0, 0)
+        particles.emitting = true
