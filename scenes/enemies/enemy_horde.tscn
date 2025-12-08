@@ -218,7 +218,7 @@ bind/52/bone = -1
 bind/52/pose = Transform3D(-1, -4.08618e-08, 1.21778e-15, 4.87804e-15, -1.19209e-07, 1, -4.092e-08, 1, -2.98023e-08, -0.089, -0.1132, -0.0152)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_pjxt5"]
-radius = 12.0
+radius = 18.0
 
 [node name="MeleeEnemy" type="CharacterBody3D" groups=["Enemy"]]
 collision_layer = 4
@@ -227,7 +227,7 @@ script = ExtResource("1_jjlyi")
 damage_to_player = 25.0
 attack_cooldown = 2.5
 vision_range = 40.0
-movement_speed = 7.0
+movement_speed = 12.0
 
 [node name="Enemy_Model" parent="." instance=ExtResource("2_4b4wi")]
 
@@ -403,8 +403,7 @@ skin = SubResource("Skin_cpc4n")
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 path_height_offset = 1.0
 avoidance_enabled = true
-radius = 10.0
-neighbor_distance = 25.0
+neighbor_distance = 3.0
 max_speed = 14.0
 debug_enabled = true
 
