@@ -1,18 +1,5 @@
 extends CharacterBody3D
 
-# --- Scene references ---
-@onready var nav: NavigationAgent3D = $NavigationAgent3D
-@onready var anim: AnimationPlayer = $"godotman/AnimationPlayer"
-@onready var ray: RayCast3D = $HitRaycast
-@onready var model = $godotman/godot_rig/Skeleton3D/godot_mesh
-@onready var shield = $Shield if has_node("Shield") else null
-@onready var attack_timer = $AttackTimer
-@onready var charge_timer = $ChargeTimer
-@onready var debug_label: Label3D = $DebugLabel
-@onready var vision_area = $VisionArea
-@onready var footsteps: AudioStreamPlayer3D = $Footsteps
-
-
 # --- State machine ---
 var state = null
 var states = {}
@@ -23,6 +10,8 @@ var original_material : Material
 var shield_material : ShaderMaterial = preload("res://shaders/glass_shader.tres")
 var animation_done := false
 var just_charged := false
+var hit_done := false
+var is_attacking := false
 
 # --- Enemy properties ---
 @export_category("Basic Attributes")
@@ -34,6 +23,10 @@ var just_charged := false
 @export var attack_cooldown: float = 1.2
 @export var health_bar : Control
 
+@export_category("Hitbox")
+@export var damage_window_start: float = 0.2
+@export var damage_window_end: float = 1.2
+
 @export_category("Charge Attack Attributes")
 @export var charge_speed: float = 10.0
 @export var charge_damage: float = 100.0
@@ -42,6 +35,19 @@ var just_charged := false
 @export var charge_windup_time: float = 1.3
 @export var charge_recovery_time: float = 2.1
 @export var charge_material: StandardMaterial3D = preload("res://shaders/boss_charge_shader.tres")
+
+# --- Scene references ---
+@onready var nav: NavigationAgent3D = $NavigationAgent3D
+@onready var anim: AnimationPlayer = $"godotman/AnimationPlayer"
+@onready var ray: RayCast3D = $HitRaycast
+@onready var model = $godotman/godot_rig/Skeleton3D/godot_mesh
+@onready var shield = $Shield if has_node("Shield") else null
+@onready var attack_timer = $AttackTimer
+@onready var charge_timer = $ChargeTimer
+@onready var debug_label: Label3D = $DebugLabel
+@onready var vision_area = $VisionArea
+@onready var footsteps: AudioStreamPlayer3D = $Footsteps
+@onready var attack_hitbox: Area3D = $godotman/godot_rig/Skeleton3D/RightHandAttach/RightAttackHitbox
 
 
 # ---------------------------
@@ -76,6 +82,16 @@ func _ready():
 	# Init charge animation logic
 	anim.connect("animation_finished", Callable(self, "_on_animation_finished"))
 	charge_timer.connect("timeout", Callable(self, "_on_charge_timer_timeout"))
+	
+	# --- Hitbox setup (NEW) ---
+	if attack_hitbox:
+		# ensure monitoring is off by default
+		attack_hitbox.monitoring = false
+		# connect to the body_entered signal so the boss can apply damage
+		attack_hitbox.connect("body_entered", Callable(self, "_on_attack_hitbox_body_entered"))
+	else:
+		if debug:
+			print("[Boss] No attack_hitbox found. Using raycast fallback for melee damage.")
 
 	# Init health bar
 	if health_bar:
@@ -123,9 +139,60 @@ func _on_vision_area_body_entered(body: Node3D) -> void:
 			health_bar.show_bar()
 		change_state("Chase")
 
-# func _on_vision_area_body_exited(body: Node3D) -> void:
-# 	if body == target and state != states["Dead"]:
-# 		change_state("Idle")
+func _on_attack_hitbox_body_entered(body: Node3D) -> void:
+	# only damage the target and only once per attack
+	if body == target and not hit_done:
+		if body.has_method("damage"):
+			body.damage(damage_to_player)
+			if debug:
+				print("[Boss] Hitbox: dealt ", damage_to_player, " damage to target")
+		hit_done = true
+
+# ---------------------------
+#  Attack window / hitbox handling (NEW)
+# ---------------------------
+func perform_attack() -> void:
+	"""
+	Performs the attack animation and enables the attack_hitbox only during
+	the configured damage window. If no attack_hitbox exists, this function
+	does not disable the raycast fallback — AttackState still has a fallback.
+	"""
+	is_attacking = true  # optional: for your logic if you track this
+
+	# Play the attack animation
+	anim.play("attack")
+	animation_done = false
+
+	# Optional: play audio similar to your other code
+	Audio.play("assets/audio/sfx/boss/Boss_Hit1.wav, \
+				assets/audio/sfx/boss/Boss_Hit2.wav, \
+				assets/audio/sfx/boss/Boss_Hit3.wav")
+
+	# Wait until window start
+	await get_tree().create_timer(damage_window_start).timeout
+
+	# Reset hit flag right before enabling hitbox
+	hit_done = false
+	if attack_hitbox:
+		attack_hitbox.monitoring = true
+
+	# Damage window duration
+	var damage_duration = max(0.0, damage_window_end - damage_window_start)
+	await get_tree().create_timer(damage_duration).timeout
+
+	if attack_hitbox:
+		attack_hitbox.monitoring = false
+
+	# Wait until the animation finishes fully
+	await anim.animation_finished
+
+	# Start cooldown
+	if attack_timer:
+		attack_timer.start(attack_cooldown)
+
+	# allow next attacks
+	is_attacking = false
+
 
 func apply_shield_material():
 	$ShieldShader.visible = true
@@ -308,43 +375,44 @@ class ChaseState:
 
 class AttackState:
 	var enemy
-	var damage_done = false
+	var used_ray_fallback := false
 
 	func _init(e): enemy = e
 
 	func enter():
 		enemy.animation_done = false
-		damage_done = false
-		
+		used_ray_fallback = false
+
 		if enemy.debug:
 			print("[Boss] Performing attack!")
-	
-		enemy.attack_timer.start(enemy.attack_cooldown)
-		
-		enemy.anim.play("attack")
-		Audio.play("assets/audio/sfx/boss/Boss_Hit1.wav, \
-						assets/audio/sfx/boss/Boss_Hit2.wav, \
-						assets/audio/sfx/boss/Boss_Hit3.wav")
+
+		# start attack cooldown right away (prevents spam); perform_attack will restart timer once done as well
+		if enemy.attack_timer:
+			enemy.attack_timer.start(enemy.attack_cooldown)
+
+		# Start the attack sequence (handles damage window if attack_hitbox exists)
+		# We don't await here because we want the state update() to keep running while the sequence uses await internally.
+		enemy.perform_attack()
 
 	func update(_delta):
-		if not enemy.target:
-			return
-
-		if not damage_done:
+		# Fallback: if there's no attack_hitbox, do the raycast-based hit once per attack
+		if not enemy.attack_hitbox and not used_ray_fallback:
+			if not enemy.target:
+				return
 			enemy.ray.force_raycast_update()
 			if enemy.ray.is_colliding() and enemy.ray.get_collider() == enemy.target:
 				var col = enemy.ray.get_collider()
 				if col and col.has_method("damage"):
 					col.damage(enemy.damage_to_player)
-					damage_done = true
-					
+					used_ray_fallback = true
 					if enemy.debug:
-						print("[Boss] Dealt", enemy.damage_to_player, "damage to player")
+						print("[Boss] Ray fallback: dealt", enemy.damage_to_player, "damage to player")
 
+		# Transition out once animation completed (animation_done is set in _on_animation_finished)
 		if enemy.animation_done:
 			if enemy.debug:
 				print("[Boss] Attack animation complete")
-			
+
 			if enemy.just_charged:
 				enemy.just_charged = false
 				# Remove the charge material when leaving the charge state
@@ -354,7 +422,7 @@ class AttackState:
 				enemy.change_state("Recovery")
 			else:
 				enemy.change_state("Chase")
-				
+
 
 class ChargeState:
 	var enemy
