@@ -187,28 +187,52 @@ func handle_gravity(delta):
 		gravity = 0
 
 func slide():
+	# Get current floor angle and normal
+	var floor_angle = get_floor_angle()
+	var floor_normal = get_floor_normal()
+	
 	if not sliding:
-		if slide_check.is_colliding() or get_floor_angle() < 0.2:
-			slide_speed = base_slide_speed
-			slide_speed += fall_distance / 10
+		# Initialize slide speed
+		print("Starting slide - Floor angle (degrees): ", rad_to_deg(floor_angle))
+		
+		# Can only start sliding if there's room or on a slope
+		if slide_check.is_colliding():
+			print("Blocked - can't slide!")
+			can_slide = false
+			return
+		
+		# Start with base speed + momentum from falling
+		slide_speed = base_slide_speed + (fall_distance / 10.0)
+		sliding = true
+	
+	# Calculate if we're going downhill by checking movement direction vs slope
+	var movement_dir = -transform.basis.z  # Forward direction
+	var slope_direction = Vector3(floor_normal.x, 0, floor_normal.z).normalized()
+	var going_downhill = movement_dir.dot(slope_direction) > 0
+	
+	# Apply slope physics
+	if floor_angle > 0.1:  # On a slope (> ~5.7 degrees)
+		if going_downhill:
+			# Going downhill = gain speed
+			slide_speed += floor_angle * 15.0 * get_physics_process_delta_time()
 		else:
-			slide_speed = 1
-
-	sliding = true
-
-	if slide_check.is_colliding():
-		slide_speed += get_floor_angle() / 10
+			# Going uphill = lose speed faster
+			slide_speed -= floor_angle * 20.0 * get_physics_process_delta_time()
 	else:
-		slide_speed -= (get_floor_angle() / 5) + 0.1
-
-	if slide_speed > max_slide_speed:
-		slide_speed = max_slide_speed
-
-	if slide_speed < 0:
+		# Flat ground = lose speed due to friction
+		slide_speed -= 3.0 * get_physics_process_delta_time()
+	
+	# Clamp speed
+	slide_speed = clamp(slide_speed, 0, max_slide_speed)
+	
+	# Stop sliding if too slow
+	if slide_speed < 1.0:
 		can_slide = false
 		sliding = false
-
+		slide_speed = 0
+	
 	current_movement_speed = slide_speed
+
 
 func action_jump():
 	gravity = -jump_strength

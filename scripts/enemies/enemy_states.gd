@@ -12,6 +12,7 @@ class IdleState:
 	func enter():
 		enemy.anim.play("Idle")
 		enemy.velocity = Vector3.ZERO
+		enemy.should_move = false
 
 	func update(_delta):
 		pass
@@ -68,6 +69,7 @@ class ChaseState:
 		var distance_to_waypoint = enemy.global_position.distance_to(next_pos)
 		var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
 		
+		enemy.should_move = true
 		enemy.velocity = dir * enemy.movement_speed * speed_multiplier
 		
 		# --- Line-of-sight ---
@@ -109,8 +111,10 @@ class ChaseState:
 				_delta * enemy.rotation_speed * 2.0  # Multiply by 2-3x for faster rotation
 			)
 		
-		# --- Move enemy ---
-		enemy.move_and_slide()
+		if enemy.nav.avoidance_enabled:
+			enemy.nav.set_velocity(enemy.velocity)
+		else:
+			enemy._on_velocity_computed(enemy.velocity)
 		
 		# --- Attack check ---
 		if enemy.is_in_attack_range():
@@ -128,6 +132,7 @@ class AttackState:
 	
 	func enter():
 		enemy.velocity = Vector3.ZERO
+		enemy.should_move = false
 		enter_animation_playing = false
 		
 		if enemy.attack_animation_enter != "":
@@ -177,6 +182,7 @@ class RangedAttackState:
 	
 	func enter():
 		enemy.velocity = Vector3.ZERO
+		enemy.should_move = false
 		# Play enter animation and pause on last frame
 		if enemy.attack_animation_enter != "":
 			enemy.anim.play(enemy.attack_animation_enter)
@@ -225,6 +231,7 @@ class AttackIdleState:
 
 	func enter():
 		enemy.velocity = Vector3.ZERO
+		enemy.should_move = false
 		if enemy.attack_idle_animation != "":
 			enemy.anim.play(enemy.attack_idle_animation)
 
