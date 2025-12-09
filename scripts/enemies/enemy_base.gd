@@ -12,6 +12,7 @@ var shield: Node = null
 var original_materials: Array[Material] = []
 var shield_material: ShaderMaterial = preload("res://shaders/glass_shader.tres")
 var destroyed: bool = false
+var should_move := false
 
 var attack_animation_enter: String = ""
 var attack_animation_action: String = "Sword_Attack"
@@ -48,23 +49,34 @@ func _ready():
 	cache_original_materials()
 	initialize_shield()
 	
+	add_to_group("Enemy")
+	
 	# Avoidance settings
 	nav.avoidance_enabled = true
-	nav.radius = 0.6  # Personal space
-	nav.neighbor_distance = 5.0  # Look for enemies within 5m
+	nav.radius = 0.35  # Personal space
+	nav.neighbor_distance = 10  # Look for enemies within 5m
 	nav.max_neighbors = 10  # Max enemies to consider
 	nav.time_horizon_agents = 1.0  # Prediction time
 	nav.max_speed = movement_speed
 	nav.avoidance_layers = 1
 	nav.avoidance_mask = 1
-	
-	add_to_group("Enemy")
+
+	nav.velocity_computed.connect(Callable(_on_velocity_computed))
 
 
 func _on_velocity_computed(safe_velocity: Vector3):
 	# Use the avoidance-adjusted velocity
-	velocity = safe_velocity
-	move_and_slide()
+	if should_move:
+		velocity = safe_velocity
+		move_and_slide()
+
+
+func _set_velocity(new_velocity: Vector3):
+	if nav.avoidance_enabled:
+		set_velocity(new_velocity)
+	else:
+		_on_velocity_computed(new_velocity)
+
 
 func _physics_process(delta):
 	if state and state.has_method("update"):
