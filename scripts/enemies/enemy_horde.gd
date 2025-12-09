@@ -28,7 +28,7 @@ func _ready():
 	attack_animation_action = "Sword_Attack"
 	attack_idle_animation = "Sword_Idle"
 	
-	draw_debug_gizmos()
+	#draw_debug_gizmos()
 
 
 func get_state_definitions() -> Dictionary:

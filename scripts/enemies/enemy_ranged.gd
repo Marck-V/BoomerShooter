@@ -21,7 +21,7 @@ func _ready():
 	attack_animation_action = "Spell_Simple_Shoot"
 	attack_animation_exit = "Spell_Simple_Exit"
 	
-	draw_debug_gizmos()
+	#draw_debug_gizmos()
 
 func get_state_definitions() -> Dictionary:
 	return {

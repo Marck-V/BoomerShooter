@@ -1149,6 +1149,7 @@ map_settings = ExtResource("7_53w7c")
 metadata/_custom_type_script = "uid://bc6mfq3ssor4q"
 
 [node name="entity_0_worldspawn" type="StaticBody3D" parent="NavigationRegion3D/FuncGodotMap"]
+collision_layer = 2
 collision_mask = 0
 
 [node name="entity_0_mesh_instance" type="MeshInstance3D" parent="NavigationRegion3D/FuncGodotMap/entity_0_worldspawn"]
