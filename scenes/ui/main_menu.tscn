@@ -65,7 +65,7 @@ grow_horizontal = 2
 theme = ExtResource("1_1g8jr")
 theme_override_fonts/font = ExtResource("2_m1kxf")
 theme_override_font_sizes/font_size = 96
-text = "Untitled Boomer Shooter"
+text = "Vaporize"
 horizontal_alignment = 1
 vertical_alignment = 1
 
