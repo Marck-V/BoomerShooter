@@ -1,4 +1,4 @@
-[gd_scene load_steps=15 format=3 uid="uid://bdi5vfh3p5wd4"]
+[gd_scene format=3 uid="uid://bdi5vfh3p5wd4"]
 
 [ext_resource type="Script" uid="uid://kwdn6ccjucs4" path="res://scripts/player/player.gd" id="1_fjrip"]
 [ext_resource type="Texture2D" uid="uid://l5u2f3ub1u3t" path="res://assets/images/blob_shadow.png" id="2_b0fo8"]
@@ -26,7 +26,7 @@ shader_parameter/noise_time_fac = 4.0
 shader_parameter/enable_color_limitation = true
 shader_parameter/color_levels = 32
 shader_parameter/enable_dithering = true
-shader_parameter/dither_strength = 1.0
+shader_parameter/dither_strength = 0.3
 
 [sub_resource type="QuadMesh" id="QuadMesh_i8sra"]
 material = SubResource("ShaderMaterial_3rfka")
@@ -69,68 +69,66 @@ _data = {
 &"slide": SubResource("Animation_i825w")
 }
 
-[node name="Player" type="CharacterBody3D" groups=["Player"]]
+[node name="Player" type="CharacterBody3D" unique_id=900223938 groups=["Player"]]
 collision_mask = 39
 script = ExtResource("1_fjrip")
 
-[node name="Collider" type="CollisionShape3D" parent="."]
+[node name="Collider" type="CollisionShape3D" parent="." unique_id=225067018]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.55, 0)
 shape = SubResource("CapsuleShape3D_gdq8c")
 
-[node name="Head" type="Node3D" parent="."]
+[node name="Head" type="Node3D" parent="." unique_id=1572736282]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.13798, 0)
 
-[node name="Camera" type="Camera3D" parent="Head"]
+[node name="Camera" type="Camera3D" parent="Head" unique_id=954673462]
 cull_mask = 1048573
 current = true
 fov = 90.0
 
-[node name="PSXShader" type="MeshInstance3D" parent="Head/Camera"]
+[node name="PSXShader" type="MeshInstance3D" parent="Head/Camera" unique_id=1519298846]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.68787)
 transparency = 0.2
 mesh = SubResource("QuadMesh_i8sra")
 
-[node name="RayCast" type="RayCast3D" parent="Head/Camera"]
+[node name="RayCast" type="RayCast3D" parent="Head/Camera" unique_id=1405734905]
 target_position = Vector3(0, -5, -200)
 collision_mask = 10
 collide_with_areas = true
 
-[node name="WeaponHolder" type="Node3D" parent="Head/Camera"]
+[node name="WeaponHolder" type="Node3D" parent="Head/Camera" unique_id=1612909172]
 
-[node name="Pistol" parent="Head/Camera/WeaponHolder" instance=ExtResource("3_smehm")]
+[node name="Pistol" parent="Head/Camera/WeaponHolder" unique_id=63107281 instance=ExtResource("3_smehm")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.095, -0.065, -0.06)
 
-[node name="Shotgun" parent="Head/Camera/WeaponHolder" instance=ExtResource("8_4vq5b")]
+[node name="Shotgun" parent="Head/Camera/WeaponHolder" unique_id=1944769732 instance=ExtResource("8_4vq5b")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.14, -0.099, -0.092)
 visible = false
 
-[node name="Rifle" parent="Head/Camera/WeaponHolder" instance=ExtResource("5_fjrip")]
+[node name="Rifle" parent="Head/Camera/WeaponHolder" unique_id=1595012286 instance=ExtResource("5_fjrip")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.075, -0.099, -0.092)
 visible = false
 data = ExtResource("6_smehm")
 
-[node name="SlideCheck" type="RayCast3D" parent="."]
+[node name="SlideCheck" type="RayCast3D" parent="." unique_id=701430582]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.075, 0.18)
 target_position = Vector3(0, 0, 0.5)
 
-[node name="Shadow" type="Decal" parent="."]
+[node name="Shadow" type="Decal" parent="." unique_id=2130008215]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.9, 0)
 size = Vector3(1, 2, 1)
 texture_albedo = ExtResource("2_b0fo8")
 modulate = Color(1, 1, 1, 0.705882)
 normal_fade = 0.5
 
-[node name="SoundFootsteps" type="AudioStreamPlayer" parent="."]
+[node name="SoundFootsteps" type="AudioStreamPlayer" parent="." unique_id=1595732283]
 stream = ExtResource("5_ics1s")
 volume_db = -5.0
 autoplay = true
 bus = &"SFX"
 parameters/looping = true
 
-[node name="Cooldown" type="Timer" parent="."]
+[node name="Cooldown" type="Timer" parent="." unique_id=96922600]
 one_shot = true
 
-[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
-libraries = {
-&"": SubResource("AnimationLibrary_i8sra")
-}
+[node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=897492293]
+libraries/ = SubResource("AnimationLibrary_i8sra")
