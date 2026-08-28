@@ -66,35 +66,36 @@ void fragment(){
         1.0
     );
 
+    float base_lum = dot(screen_color, vec3(0.299, 0.587, 0.114));
+
+    if (base_lum > 0.25) {
+        // Bright VFX (lightning, etc.) must be left completely untouched so
+        // Glow's blur pass (which runs AFTER this quad, on the same HDR
+        // buffer) sees the true, unclamped value. discard exits the
+        // fragment shader before any write/blend happens for this pixel
+        // — stronger than ALPHA=0, which still goes through a blend op.
+        discard;
+    }
+
     vec3 final_color = screen_color;
 
-    float base_lum = dot(screen_color, vec3(0.299, 0.587, 0.114));
-    bool is_bright = base_lum > 0.7;   // lightning / very bright VFX
-
-    if (enable_noise && !is_bright){
+    if (enable_noise){
         vec3 twocolornoise = color_mix(fog_color, noise_color, hashOld12(screen_coords));
         final_color = color_mix(twocolornoise, final_color, depth_mask_inv);
     }
 
     if (enable_fog){
-        // bright pixels get less fog so they stand out more
-        float fog_mix = is_bright ? depth_mask_inv * 0.3 : depth_mask_inv;
-        final_color = color_mix(fog_color, final_color, fog_mix);
+        final_color = color_mix(fog_color, final_color, depth_mask_inv);
     }
 
-    if (enable_color_limitation && !is_bright){
+    if (enable_color_limitation){
         final_color = quantize_color(final_color, color_levels);
     }
 
-    if (enable_dithering && !is_bright){
+    if (enable_dithering){
         float brightness = dot(final_color, vec3(0.3, 0.59, 0.11));
         brightness += dither_strength * (dither(FRAGCOORD.xy, brightness) - 0.5);
         final_color *= (1.0 + dither_strength * (dither(FRAGCOORD.xy, brightness) - 0.5));
-    }
-
-    // give bright stuff a small boost after everything else
-    if (is_bright){
-        final_color *= 1.5;
     }
 
     ALBEDO = final_color;

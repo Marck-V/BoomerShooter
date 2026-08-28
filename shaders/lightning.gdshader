@@ -2,8 +2,7 @@ shader_type spatial;
 render_mode unshaded, cull_disabled, blend_add;
 
 uniform vec4 lightning_color : source_color = vec4(0.5, 0.9, 1.5, 1.0);
-uniform float glow_strength = 25.0;
-uniform float intensity_boost = 50.0;
+uniform float glow_strength = 10.0;
 uniform float flicker_speed = 30.0;
 uniform float noise_scale = 10.0;
 
@@ -15,5 +14,5 @@ void fragment() {
 
     vec3 color = lightning_color.rgb * vec3(1.2, 1.1, 1.0);
     ALBEDO = color;
-    EMISSION = color * glow_strength * intensity_boost * flicker;
+    EMISSION = color * glow_strength * flicker;
 }

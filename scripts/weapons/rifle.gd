@@ -205,9 +205,10 @@ func _spawn_lightning_arc(start: Vector3, end: Vector3):
 	var mesh_instance := MeshInstance3D.new()
 	var mesh := ImmediateMesh.new()
 	mesh_instance.mesh = mesh
+	mesh_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var mat := ShaderMaterial.new()
 	mat.shader = preload("res://shaders/lightning.gdshader")
-	mat.set_shader_parameter("glow_strength", 60.0)
+	mat.set_shader_parameter("glow_strength", 18.0)
 	mesh_instance.material_override = mat
 	get_tree().current_scene.add_child(mesh_instance)
 
@@ -215,8 +216,15 @@ func _spawn_lightning_arc(start: Vector3, end: Vector3):
 	start += height_offset
 	end += height_offset
 
+	
+	var camera := get_viewport().get_camera_3d()
+	var view_dir := Vector3.FORWARD
+	if camera:
+		view_dir = camera.global_transform.basis.z.normalized()
+
+	var width := 0.08
 	var segment_count := 10
-	mesh.surface_begin(Mesh.PRIMITIVE_LINE_STRIP)
+	var points: Array[Vector3] = []
 	for i in range(segment_count + 1):
 		var t := float(i) / float(segment_count)
 		var pos := start.lerp(end, t)
@@ -225,7 +233,23 @@ func _spawn_lightning_arc(start: Vector3, end: Vector3):
 			randf_range(-0.2, 0.2),
 			randf_range(-0.2, 0.2)
 		)
-		mesh.surface_add_vertex(pos + offset)
+		points.append(pos + offset)
+
+	mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+	for i in range(points.size()):
+		var dir: Vector3
+		if i == 0:
+			dir = (points[1] - points[0]).normalized()
+		elif i == points.size() - 1:
+			dir = (points[i] - points[i - 1]).normalized()
+		else:
+			dir = (points[i + 1] - points[i - 1]).normalized()
+		var side := dir.cross(view_dir)
+		if side.length_squared() < 0.0001:
+			side = dir.cross(Vector3.UP)
+		side = side.normalized() * width
+		mesh.surface_add_vertex(points[i] - side)
+		mesh.surface_add_vertex(points[i] + side)
 	mesh.surface_end()
 
 	var tween := create_tween()
