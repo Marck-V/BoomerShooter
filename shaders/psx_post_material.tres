@@ -1,0 +1,18 @@
+[gd_resource type="ShaderMaterial" format=3 uid="uid://0mxnekxrkyw0"]
+
+[ext_resource type="Shader" uid="uid://tas3fbtcdd1n" path="res://shaders/psx_post.gdshader" id="1_8nx35"]
+
+[resource]
+shader = ExtResource("1_8nx35")
+shader_parameter/effect_strength = 1.0
+shader_parameter/enable_fog = false
+shader_parameter/fog_color = Color(0.972549, 0.972549, 0.972549, 1)
+shader_parameter/noise_color = Color(0, 0, 0, 1)
+shader_parameter/fog_distance = 100.0
+shader_parameter/fog_fade_range = 50.0
+shader_parameter/enable_noise = false
+shader_parameter/noise_time_fac = 4.0
+shader_parameter/enable_color_limitation = true
+shader_parameter/color_levels = 32
+shader_parameter/enable_dithering = true
+shader_parameter/dither_strength = 0.3

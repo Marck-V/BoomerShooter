@@ -4,6 +4,9 @@ var save_data: PlayerData
 var current_weapon
 var player
 var mouse_sensitivity: float = 20
+var psx_strength: float = 1.0
+var music_volume: float = 0.2
+var sfx_volume: float = 0.2
 
 signal points_changed(new_value: int)
 signal ammo_changed(weapon_id, new_value: int)

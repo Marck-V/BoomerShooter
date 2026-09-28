@@ -6,6 +6,9 @@ extends CharacterBody3D
 @export var jump_strength = 8
 @export var max_slide_speed = 12
 @export var mouse_sensitivity = 20
+@export var dash_speed = 25
+@export var dash_duration = 0.2
+@export var dash_cooldown = 0.75
 
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
@@ -33,6 +36,11 @@ var sliding = false
 var falling = false
 var play_slide_animation = false
 
+var dashing = false
+var dash_direction = Vector3.ZERO
+var dash_time_left = 0.0
+var dash_cooldown_left = 0.0
+
 
 var tween:Tween
 
@@ -47,6 +55,7 @@ signal weapon_changed
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @export var crosshair:TextureRect
 @onready var weapon_holder = $Head/Camera/WeaponHolder
+@onready var psx_material: ShaderMaterial = $PSXOverlay/PSXRect.material
 
 func _ready():
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -68,6 +77,7 @@ func _ready():
 	current_weapon.set_process(true)
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	GlobalVariables.player = self
+	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
 	crosshair.texture = current_weapon.data.crosshair
 	weapon_changed.emit(current_weapon)
 
@@ -88,8 +98,20 @@ func _physics_process(delta):
 		slide_speed += fall_distance / 10.0
 	fall_distance = -gravity
 
+	if dash_cooldown_left > 0.0:
+		dash_cooldown_left -= delta
+
+	if dashing:
+		dash_time_left -= delta
+		if dash_time_left <= 0.0:
+			dashing = false
+
 	movement_velocity = transform.basis * movement_velocity
-	var applied_velocity = velocity.lerp(movement_velocity, delta * 10)
+	var applied_velocity: Vector3
+	if dashing:
+		applied_velocity = dash_direction * dash_speed
+	else:
+		applied_velocity = velocity.lerp(movement_velocity, delta * 10)
 	applied_velocity.y = -gravity
 	velocity = applied_velocity
 	move_and_slide()
@@ -176,6 +198,7 @@ func handle_controls(_delta):
 			action_jump()
 
 	action_weapon_toggle()
+	action_dash()
 
 func handle_gravity(delta):
 	gravity += 20 * delta
@@ -251,6 +274,20 @@ func action_alt_fire():
 	if current_weapon.has_method("alt_fire"):
 		if Input.is_action_just_pressed("alt_fire"):
 			current_weapon.alt_fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
+
+func action_dash():
+	if Input.is_action_just_pressed("dash") and dash_cooldown_left <= 0.0:
+		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
+		var local_direction: Vector3
+		if input.length() > 0.1:
+			local_direction = Vector3(input.x, 0, input.y).normalized()
+		else:
+			local_direction = Vector3(0, 0, -1)
+
+		dash_direction = (transform.basis * local_direction).normalized()
+		dashing = true
+		dash_time_left = dash_duration
+		dash_cooldown_left = dash_cooldown
 
 func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_toggle"):

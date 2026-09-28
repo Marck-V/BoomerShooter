@@ -1,10 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://r147iukh4x4i"]
+[gd_scene format=3 uid="uid://r147iukh4x4i"]
 
 [ext_resource type="Script" uid="uid://c381llw6pvlw" path="res://scripts/ui/settings.gd" id="1_x3vyp"]
 [ext_resource type="FontFile" uid="uid://c62pkskh2kaeb" path="res://assets/fonts/ITC SerifGothic.ttf" id="2_0b1cv"]
 [ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="3_yu862"]
 
-[node name="SettingsMenu" type="Control"]
+[node name="SettingsMenu" type="Control" unique_id=1331625488]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,7 +13,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_x3vyp")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1012324597]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -22,7 +22,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.717647)
 
-[node name="SettingsPanel" type="Panel" parent="."]
+[node name="SettingsPanel" type="Panel" parent="." unique_id=1228791591]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -30,7 +30,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Label" type="Label" parent="SettingsPanel"]
+[node name="Label" type="Label" parent="SettingsPanel" unique_id=203154773]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
@@ -45,7 +45,7 @@ text = "Settings"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="HBoxContainer" type="HBoxContainer" parent="SettingsPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="SettingsPanel" unique_id=975222111]
 custom_minimum_size = Vector2(850, 500)
 layout_mode = 1
 anchors_preset = 8
@@ -61,64 +61,78 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 
-[node name="VboxLabels" type="VBoxContainer" parent="SettingsPanel/HBoxContainer"]
+[node name="VboxLabels" type="VBoxContainer" parent="SettingsPanel/HBoxContainer" unique_id=223089272]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 alignment = 1
 
-[node name="MusicLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels"]
+[node name="MusicLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=112799075]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "Music Volume"
 vertical_alignment = 1
 
-[node name="SFXLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels"]
+[node name="SFXLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=654234476]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "SFX Volume"
 vertical_alignment = 1
 
-[node name="SensitivityLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels"]
+[node name="SensitivityLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=1725819565]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "Aim Sensitivity"
 vertical_alignment = 1
 
-[node name="VboxValues" type="VBoxContainer" parent="SettingsPanel/HBoxContainer"]
+[node name="PSXLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=871826815]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_0b1cv")
+theme_override_font_sizes/font_size = 32
+text = "Retro Filter"
+vertical_alignment = 1
+
+[node name="VboxValues" type="VBoxContainer" parent="SettingsPanel/HBoxContainer" unique_id=12099552]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 alignment = 1
 
-[node name="MusicVolumeLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues"]
+[node name="MusicVolumeLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=1253365697]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "0.2"
 alignment = 2
 
-[node name="SFXVolumeLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues"]
+[node name="SFXVolumeLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=930644583]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "0.2"
 alignment = 2
 
-[node name="SensitivityValueLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues"]
+[node name="SensitivityValueLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=766168692]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "7.0"
 alignment = 2
 
-[node name="VBoxSliders" type="VBoxContainer" parent="SettingsPanel/HBoxContainer"]
+[node name="PSXValueLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=243647688]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_0b1cv")
+theme_override_font_sizes/font_size = 32
+text = "100%"
+alignment = 2
+
+[node name="VBoxSliders" type="VBoxContainer" parent="SettingsPanel/HBoxContainer" unique_id=1562464940]
 custom_minimum_size = Vector2(550, 450)
 layout_mode = 2
 alignment = 1
 
-[node name="MusicSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders"]
+[node name="MusicSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders" unique_id=478022655]
 custom_minimum_size = Vector2(400, 50)
 layout_mode = 2
 theme = ExtResource("3_yu862")
@@ -126,7 +140,7 @@ max_value = 1.0
 step = 0.05
 value = 0.2
 
-[node name="SFXSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders"]
+[node name="SFXSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders" unique_id=1395854548]
 custom_minimum_size = Vector2(400, 50)
 layout_mode = 2
 theme = ExtResource("3_yu862")
@@ -134,7 +148,7 @@ max_value = 1.0
 step = 0.05
 value = 0.2
 
-[node name="SensitivitySlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders"]
+[node name="SensitivitySlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders" unique_id=1914062428]
 custom_minimum_size = Vector2(400, 50)
 layout_mode = 2
 theme = ExtResource("3_yu862")
@@ -142,7 +156,15 @@ min_value = 0.1
 step = 0.1
 value = 40.0
 
-[node name="FullscreenCheckButton" type="CheckButton" parent="SettingsPanel"]
+[node name="PSXSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders" unique_id=1470929675]
+custom_minimum_size = Vector2(400, 50)
+layout_mode = 2
+theme = ExtResource("3_yu862")
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="FullscreenCheckButton" type="CheckButton" parent="SettingsPanel" unique_id=285966257]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 1
 anchors_preset = 7
@@ -159,7 +181,7 @@ grow_vertical = 0
 theme = ExtResource("3_yu862")
 text = "Fullscreen"
 
-[node name="BackButton" type="Button" parent="SettingsPanel"]
+[node name="BackButton" type="Button" parent="SettingsPanel" unique_id=1758505411]
 layout_mode = 1
 anchors_preset = 7
 anchor_left = 0.5
@@ -178,5 +200,6 @@ text = "Back"
 [connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/MusicSlider" to="." method="_on_music_slider_value_changed"]
 [connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/SFXSlider" to="." method="_on_sfx_slider_value_changed"]
 [connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/SensitivitySlider" to="." method="_on_sensitivity_slider_value_changed"]
+[connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/PSXSlider" to="." method="_on_psx_slider_value_changed"]
 [connection signal="toggled" from="SettingsPanel/FullscreenCheckButton" to="." method="_on_fullscreen_check_button_toggled"]
 [connection signal="pressed" from="SettingsPanel/BackButton" to="." method="_on_back_button_pressed"]
