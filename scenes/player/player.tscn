@@ -5,33 +5,13 @@
 [ext_resource type="PackedScene" uid="uid://cvdmduky3pnmi" path="res://scenes/weapons/pistol.tscn" id="3_smehm"]
 [ext_resource type="PackedScene" uid="uid://j4exufyutty0" path="res://scenes/weapons/rifle.tscn" id="5_fjrip"]
 [ext_resource type="AudioStream" uid="uid://c7a8a5uokopub" path="res://assets/sounds/walking.ogg" id="5_ics1s"]
-[ext_resource type="Shader" uid="uid://dcuhfc8jfneeb" path="res://shaders/psx.gdshader" id="6_3rfka"]
 [ext_resource type="Resource" uid="uid://dljpxqiaqq0el" path="res://resources/weapons/rifle.tres" id="6_smehm"]
 [ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/weapons/shotgun.tscn" id="8_4vq5b"]
+[ext_resource type="Material" uid="uid://0mxnekxrkyw0" path="res://shaders/psx_post_material.tres" id="8_qek5x"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gdq8c"]
 radius = 0.3
 height = 1.5
-
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_3rfka"]
-render_priority = 0
-shader = ExtResource("6_3rfka")
-shader_parameter/enable_fog = false
-shader_parameter/fog_color = Color(0.973535, 0.973535, 0.973535, 1)
-shader_parameter/noise_color = Color(0, 0, 0, 1)
-shader_parameter/fog_distance = 100.0
-shader_parameter/fog_fade_range = 50.0
-shader_parameter/enable_noise = false
-shader_parameter/noise_time_fac = 4.0
-shader_parameter/enable_color_limitation = true
-shader_parameter/color_levels = 32
-shader_parameter/enable_dithering = true
-shader_parameter/dither_strength = 0.3
-
-[sub_resource type="QuadMesh" id="QuadMesh_i8sra"]
-material = SubResource("ShaderMaterial_3rfka")
-flip_faces = true
-size = Vector2(2, 2)
 
 [sub_resource type="Animation" id="Animation_3rfka"]
 length = 0.001
@@ -85,11 +65,6 @@ cull_mask = 1048573
 current = true
 fov = 90.0
 
-[node name="PSXShader" type="MeshInstance3D" parent="Head/Camera" unique_id=1519298846]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.68787)
-transparency = 0.2
-mesh = SubResource("QuadMesh_i8sra")
-
 [node name="RayCast" type="RayCast3D" parent="Head/Camera" unique_id=1405734905]
 target_position = Vector3(0, -5, -200)
 collision_mask = 10
@@ -132,3 +107,13 @@ one_shot = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="." unique_id=897492293]
 libraries/ = SubResource("AnimationLibrary_i8sra")
+
+[node name="PSXOverlay" type="CanvasLayer" parent="." unique_id=1451987386]
+layer = 0
+
+[node name="PSXRect" type="ColorRect" parent="PSXOverlay" unique_id=2110549828]
+material = ExtResource("8_qek5x")
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
