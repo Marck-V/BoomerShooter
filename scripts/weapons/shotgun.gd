@@ -21,6 +21,9 @@ var base_dmg
 
 func _ready():
 	super._ready()
+	muzzle_flash_size = 0.1
+	muzzle_flash_time = 0.12
+	muzzle_light_energy = 14.0
 	glow_material = StandardMaterial3D.new()
 	glow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	glow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
