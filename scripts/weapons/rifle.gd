@@ -23,6 +23,9 @@ var quickness_duration: float = 3.0
 # ---------------------------
 func _ready():
 	super._ready()
+	muzzle_flash_size = 0.05
+	muzzle_flash_time = 0.06
+	muzzle_light_energy = 6.0
 
 	# Create and configure kill-streak timer
 	expiration_timer = Timer.new()
