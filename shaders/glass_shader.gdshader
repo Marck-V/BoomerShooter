@@ -29,6 +29,15 @@ group_uniforms uv;
 uniform vec3 uv1_scale = vec3(1.0);
 uniform vec3 uv1_offset = vec3(0.0);
 
+group_uniforms hit_flash;
+uniform vec3 hit_points[8];
+uniform int hit_count = 0;
+uniform float radius = 0.4;
+uniform float intensity = 0.0;
+uniform vec4 flash_color : source_color = vec4(1.0, 0.85, 0.55, 1.0);
+
+varying vec3 local_pos;
+
 float SchlickFresnel(float u) {
 	float m = 1.0 - u;
 	float m2 = m * m;
@@ -37,6 +46,7 @@ float SchlickFresnel(float u) {
 
 void vertex() {
 	UV=UV*uv1_scale.xy+uv1_offset.xy;
+	local_pos = VERTEX;
 }
 
 void fragment() {
@@ -66,4 +76,13 @@ void fragment() {
 	float ref_amount = 1.0 - albedo_mix.a;
 	EMISSION += (textureLod(screen_texture,ref_ofs,ROUGHNESS * 8.0).rgb * ref_amount * EXPOSURE * mix(vec3(mix(0.02, 0.1, a)), albedo_mix.rgb*refraction_contribution, a))/a_factor_2;
 	ALBEDO *= 1.0 - ref_amount;
+
+	float hit_falloff = 0.0;
+	for (int i = 0; i < 8; i++) {
+		if (i >= hit_count) {
+			break;
+		}
+		hit_falloff = max(hit_falloff, smoothstep(radius, 0.0, distance(local_pos, hit_points[i])));
+	}
+	EMISSION += flash_color.rgb * 3.0 * hit_falloff * intensity;
 }

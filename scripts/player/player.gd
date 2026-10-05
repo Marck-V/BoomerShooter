@@ -9,6 +9,7 @@ extends CharacterBody3D
 @export var dash_speed = 25
 @export var dash_duration = 0.2
 @export var dash_cooldown = 0.75
+@export var kick_recovery = 14.0
 
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
@@ -41,6 +42,8 @@ var dash_direction = Vector3.ZERO
 var dash_time_left = 0.0
 var dash_cooldown_left = 0.0
 
+var camera_kick := Vector2.ZERO
+
 
 var tween:Tween
 
@@ -55,6 +58,7 @@ signal weapon_changed
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @export var crosshair:TextureRect
 @onready var weapon_holder = $Head/Camera/WeaponHolder
+@onready var head: Node3D = $Head
 @onready var psx_material: ShaderMaterial = $PSXOverlay/PSXRect.material
 
 func _ready():
@@ -115,6 +119,10 @@ func _physics_process(delta):
 	applied_velocity.y = -gravity
 	velocity = applied_velocity
 	move_and_slide()
+
+	camera_kick = camera_kick.lerp(Vector2.ZERO, clampf(delta * kick_recovery, 0.0, 1.0))
+	head.rotation.x = camera_kick.x
+	head.rotation.y = camera_kick.y
 
 	camera.rotation.z = lerp_angle(camera.rotation.z, -input_mouse.x * 25 * delta, delta * 5)
 	camera.rotation.x = lerp_angle(camera.rotation.x, rotation_target.x, delta * 25)
@@ -288,6 +296,9 @@ func action_dash():
 		dashing = true
 		dash_time_left = dash_duration
 		dash_cooldown_left = dash_cooldown
+
+func apply_camera_kick(pitch: float, yaw: float) -> void:
+	camera_kick += Vector2(pitch, yaw)
 
 func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_toggle"):
