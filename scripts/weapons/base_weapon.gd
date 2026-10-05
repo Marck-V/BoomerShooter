@@ -72,6 +72,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 			var collider = raycast.get_collider()
 			if collider and collider.has_method("damage"):
 				collider.damage(data.damage)
+				flash_hit_enemy(collider, raycast.get_collision_point())
 
 			if collider.is_in_group("Shield"):
 				var mult = get_shield_multiplier()
@@ -83,5 +84,12 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 			impact.global_position = raycast.get_collision_point() + (raycast.get_collision_normal() / 10)
 			impact.look_at(camera.global_transform.origin, Vector3.UP, true)
 			
+func flash_hit_enemy(collider: Object, point: Vector3) -> void:
+	if not collider is Node:
+		return
+	var enemy = collider if collider.is_in_group("Enemy") else collider.get("owner_enemy")
+	if enemy and enemy.has_method("hit_flash"):
+		enemy.hit_flash(point)
+
 func set_movement_state(moving: bool):
 	is_moving = moving
