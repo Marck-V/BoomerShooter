@@ -1,5 +1,10 @@
 extends BaseWeapon
 
+@onready var glitch_glow: OmniLight3D = $GlitchGlow
+@onready var weapon_mesh: MeshInstance3D = $WeaponMesh
+@onready var detach_mesh: MeshInstance3D = $"WeaponMesh/Shotgun-Detach"
+var glow_material: StandardMaterial3D
+
 var tween: Tween
 
 var precision = "shotgun_precision"
@@ -16,6 +21,12 @@ var base_dmg
 
 func _ready():
 	super._ready()
+	glow_material = StandardMaterial3D.new()
+	glow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	glow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glow_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	glow_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	glow_material.albedo_color = Color(1.0, 0.1, 0.1, 0.6)
 	GlobalVariables.upgrade_purchased.connect(on_upgrade_purchased)
 	base_dmg = data.damage
 	_refresh_upgrades()
@@ -37,6 +48,8 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 			shot_tracker = 0
 	else:
 		data.damage = base_dmg
+
+	_update_glitch_glow()
 
 	# Base firing
 	super.fire(origin, direction, camera, raycast)
@@ -63,6 +76,7 @@ func _refresh_upgrades() -> void:
 	has_precision = GlobalVariables.has_upgrade(precision)
 	has_shield_break = GlobalVariables.has_upgrade(shield_break)
 	has_glitch_shot = GlobalVariables.has_upgrade(glitch_shot)
+	_update_glitch_glow()
 
 
 func on_upgrade_purchased(upgrade_id: String) -> void:
@@ -72,3 +86,14 @@ func on_upgrade_purchased(upgrade_id: String) -> void:
 		has_shield_break = true
 	if upgrade_id == glitch_shot:
 		has_glitch_shot = true
+	_update_glitch_glow()
+
+
+func _update_glitch_glow() -> void:
+	# Boosted shot is armed once two shots have landed; it fires (and the
+	# glow clears) on the next shot, when shot_tracker rolls back to 0.
+	var armed = has_glitch_shot and shot_tracker == 2
+	glitch_glow.visible = armed
+	var overlay = glow_material if armed else null
+	weapon_mesh.material_overlay = overlay
+	detach_mesh.material_overlay = overlay
