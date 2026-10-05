@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=4 uid="uid://dj4fos65tkh47"]
+[gd_scene format=4 uid="uid://dj4fos65tkh47"]
 
 [ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/weapons/base_weapon.tscn" id="1_voyse"]
 [ext_resource type="Script" uid="uid://dlyy5kmcigar6" path="res://scripts/weapons/shotgun.gd" id="2_gnj2g"]
@@ -79,7 +79,7 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_uukpr")
 
-[node name="Shotgun" instance=ExtResource("1_voyse")]
+[node name="Shotgun" unique_id=1671446614 instance=ExtResource("1_voyse")]
 script = ExtResource("2_gnj2g")
 data = ExtResource("3_1ya1i")
 
@@ -90,10 +90,16 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0100878, 0.0184962, 0.17828
 transform = Transform3D(-0.2, 0, -1.74846e-08, 0, 0.2, 0, 1.74846e-08, 0, -0.2, 0, 0, 0)
 mesh = SubResource("ArrayMesh_ma6dp")
 
-[node name="Shotgun-Detach" type="MeshInstance3D" parent="WeaponMesh" index="0"]
+[node name="Shotgun-Detach" type="MeshInstance3D" parent="WeaponMesh" index="0" unique_id=383082345]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -4.51314e-09, 0.0292825, -0.536827)
 mesh = SubResource("ArrayMesh_lmvec")
-skeleton = NodePath("")
 
 [node name="Muzzle" parent="." index="2"]
 transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, 0, 0.0167849, 0.174328)
+
+[node name="GlitchGlow" type="OmniLight3D" parent="." index="3" unique_id=1618242602]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.02, -0.05)
+visible = false
+light_color = Color(1, 0, 0, 1)
+light_energy = 6.0
+omni_range = 0.6

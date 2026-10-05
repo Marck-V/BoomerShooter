@@ -11,6 +11,15 @@ class_name EnemyBase
 var shield: Node = null
 var original_materials: Array[Material] = []
 var shield_material: ShaderMaterial = preload("res://shaders/glass_shader.tres")
+const HIT_FLASH_SHADER: Shader = preload("res://shaders/hit_flash.gdshader")
+const HIT_FLASH_RADIUS := 0.35
+const HIT_FLASH_TIME := 0.12
+var hit_flash_material: ShaderMaterial
+var hit_flash_tween: Tween
+var hit_flash_points: Array[Vector3] = []
+var hit_flash_target: ShaderMaterial
+var hit_flash_active := false
+const HIT_FLASH_MAX_POINTS := 8
 var destroyed: bool = false
 var should_move := false
 
@@ -114,11 +123,64 @@ func damage(amount: float, multiplier: float = 1.0):
 
 
 # ---------------------------
+# Localized Hit Flash
+# ---------------------------
+func hit_flash(world_point: Vector3) -> void:
+	if hit_flash_material == null:
+		hit_flash_material = ShaderMaterial.new()
+		hit_flash_material.shader = HIT_FLASH_SHADER
+
+	# While shielded, the glass shield shader draws the flash instead of the overlay.
+	var shielded := shield != null and is_instance_valid(shield)
+	hit_flash_target = shield_material if shielded else hit_flash_material
+
+	# Hits landing while a flash is still showing (shotgun pellets, rapid fire)
+	# stack up as extra glow spots; a fresh flash starts from a clean slate.
+	if not hit_flash_active:
+		hit_flash_points.clear()
+	hit_flash_active = true
+	hit_flash_points.append(model.to_local(world_point))
+	if hit_flash_points.size() > HIT_FLASH_MAX_POINTS:
+		hit_flash_points.pop_front()
+
+	var padded := PackedVector3Array()
+	padded.resize(HIT_FLASH_MAX_POINTS)
+	for i in hit_flash_points.size():
+		padded[i] = hit_flash_points[i]
+
+	var local_scale := model.global_basis.get_scale().x
+	hit_flash_target.set_shader_parameter("hit_points", padded)
+	hit_flash_target.set_shader_parameter("hit_count", hit_flash_points.size())
+	hit_flash_target.set_shader_parameter("radius", HIT_FLASH_RADIUS / maxf(local_scale, 0.001))
+	hit_flash_target.set_shader_parameter("intensity", 1.0)
+	if not shielded:
+		model.material_overlay = hit_flash_material
+
+	if hit_flash_tween:
+		hit_flash_tween.kill()
+	hit_flash_tween = create_tween()
+	hit_flash_tween.tween_method(_set_hit_flash_intensity, 1.0, 0.0, HIT_FLASH_TIME)
+	hit_flash_tween.tween_callback(_clear_hit_flash)
+
+
+func _clear_hit_flash() -> void:
+	hit_flash_active = false
+	model.material_overlay = null
+
+
+func _set_hit_flash_intensity(value: float) -> void:
+	hit_flash_target.set_shader_parameter("intensity", value)
+
+
+# ---------------------------
 # Unified Shield Initialization
 # ---------------------------
 func initialize_shield():
 	if not has_shield:
 		return
+
+	# Each shielded enemy needs its own copy so hit flashes don't light up every shield.
+	shield_material = shield_material.duplicate()
 
 	# Check for pre-placed Shield or spawn one
 	if has_node("Shield"):

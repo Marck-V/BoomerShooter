@@ -11,9 +11,14 @@ var has_lifesteal = false
 
 var refund_chance = 0.10
 var health_amount = 5
+var lifesteal_orb_scene = preload("res://scenes/weapons/lifesteal_orb.tscn")
 
 var max_pierces = 3
 var max_distance = 300.0
+
+# --- Shot Feel ---
+var kick_pitch := 0.02          # Camera kick upward (radians, ~1.1 degrees)
+var kick_yaw := 0.006           # Max random sideways kick (radians)
 
 # --- Recoil Animation Parameters ---
 var recoil_angle := -45.0     # How far up the pistol tilts
@@ -26,9 +31,14 @@ func _ready() -> void:
 	_refresh_upgrades()
 
 func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
+	var ammo_before = GlobalVariables.get_ammo("pistol")
 	super.fire(origin, _direction, camera, raycast)
+	var shot_fired = GlobalVariables.get_ammo("pistol") < ammo_before
 
 	_play_recoil()
+
+	if shot_fired:
+		_apply_camera_kick()
 
 	# Handle Upgrades
 	if has_piercing:
@@ -40,8 +50,28 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 		print("Pistol Ammo Refunded")
 	
 	if has_lifesteal and randf() < 0.20:
-		GlobalVariables.add_health(health_amount)
-		print("Pistol Lifesteal Activated: Healed 5 HP")
+		_spawn_lifesteal_orb(raycast)
+
+func _apply_camera_kick() -> void:
+	var player = GlobalVariables.player
+	if player and is_instance_valid(player):
+		player.apply_camera_kick(kick_pitch, randf_range(-kick_yaw, kick_yaw))
+
+
+func _spawn_lifesteal_orb(raycast: RayCast3D) -> void:
+	if not raycast.is_colliding():
+		return
+
+	var collider = raycast.get_collider()
+	var hit_enemy = collider is Node and (collider.is_in_group("Enemy") or ("owner_enemy" in collider and collider.owner_enemy))
+	if not hit_enemy:
+		return
+
+	var orb = lifesteal_orb_scene.instantiate()
+	orb.heal_amount = health_amount
+	get_tree().current_scene.add_child(orb)
+	orb.global_position = raycast.get_collision_point() + Vector3.UP * 0.5
+
 
 func _refresh_upgrades() -> void:
 	has_ammo_refund = GlobalVariables.has_upgrade(refund)
@@ -124,6 +154,7 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 
 		if target and target.has_method("damage") and not damaged.has(target):
 			target.damage(data.damage)
+			flash_hit_enemy(target, result["position"])
 			#print("Pierced enemy: ", target.name)
 			damaged.append(target)
 

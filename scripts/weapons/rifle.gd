@@ -23,6 +23,9 @@ var quickness_duration: float = 3.0
 # ---------------------------
 func _ready():
 	super._ready()
+	muzzle_flash_size = 0.05
+	muzzle_flash_time = 0.06
+	muzzle_light_energy = 6.0
 
 	# Create and configure kill-streak timer
 	expiration_timer = Timer.new()
@@ -66,6 +69,7 @@ func alt_fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: R
 
 			if collider and collider.has_method("damage"):
 				collider.damage(chain_damage)
+				flash_hit_enemy(collider, raycast.get_collision_point())
 
 				var chain_target = collider
 				if collider.owner_enemy:
@@ -113,6 +117,7 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 
 	if is_instance_valid(next_target) and next_target.has_method("damage"):
 		next_target.damage(chain_damage, 1)
+		flash_hit_enemy(next_target, next_target.global_position + Vector3.UP * 1.2)
 
 	await get_tree().create_timer(0.1).timeout
 	if is_instance_valid(next_target):
@@ -133,6 +138,7 @@ func _continue_chain_from_position(chain_position: Vector3, damage: float, depth
 
 	if next_target.has_method("damage"):
 		next_target.damage(chain_damage, 1)
+		flash_hit_enemy(next_target, next_target.global_position + Vector3.UP * 1.2)
 
 	var next_pos = next_target.global_position
 
