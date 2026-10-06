@@ -1,6 +1,6 @@
 class_name EnemyStates
 
-const DEATH_PARTICLES = preload("res://scenes/enemies/death_particles.tscn")
+const BLOOD_PARTICLES = preload("res://scripts/weapons/blood_particles.gd")
 
 # --- Idle ---
 class IdleState:
@@ -276,7 +276,4 @@ class DeadState:
 		if !enemy.is_inside_tree():
 			return
 		
-		var particles = DEATH_PARTICLES.instantiate()
-		enemy.get_parent().add_child(particles)
-		particles.global_position = enemy.global_position + Vector3(0, 1.0, 0)
-		particles.emitting = true
+		BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), enemy.global_position + Vector3(0, 1.0, 0))
