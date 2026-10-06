@@ -1,6 +1,9 @@
 extends Node3D
 class_name BaseWeapon
 
+const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
+const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
+
 @onready var muzzle_location: Marker3D = $MuzzleLocation
 @onready var muzzle: AnimatedSprite3D = $Muzzle
 
@@ -23,6 +26,8 @@ var muzzle_base_scale := Vector3.ONE
 var muzzle_light: OmniLight3D
 var muzzle_flash_mesh: MeshInstance3D
 var muzzle_flash_material: StandardMaterial3D
+var muzzle_glow_warm: GradientTexture2D
+var muzzle_glow_blue: GradientTexture2D
 var muzzle_flash_tween: Tween
 
 
@@ -87,29 +92,51 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 				collider.damage(data.damage)
 
 			# Flash before the shield absorbs the hit, since it may be destroyed by it.
-			flash_hit_enemy(collider, raycast.get_collision_point())
+			# Pellets of multi-shot weapons jolt less each
+			flash_hit_enemy(collider, raycast.get_collision_point(), 1.0 if data.shot_count <= 1 else 0.4)
 
 			if collider.is_in_group("Shield"):
 				var mult = get_shield_multiplier()
 				collider.get_parent().absorb_damage(data.damage * mult)
 
-			var impact = preload("res://scenes/weapons/impact.tscn").instantiate()
-			impact.play("shot")
-			get_tree().root.add_child(impact)
-			impact.global_position = raycast.get_collision_point() + (raycast.get_collision_normal() / 10)
-			impact.look_at(camera.global_transform.origin, Vector3.UP, true)
+			# Multi-pellet weapons get lighter bursts per pellet
+			spawn_impact_particles(raycast, camera, 1.0 if data.shot_count <= 1 else 0.5)
 			
-func flash_hit_enemy(collider: Object, point: Vector3) -> void:
-	if not collider is Node:
+func spawn_impact_particles(raycast: RayCast3D, camera: Camera3D, amount_scale := 1.0) -> void:
+	var hit_point := raycast.get_collision_point()
+
+	# Flesh hits spray blood along the shot; walls, floors and shields throw sparks and smoke
+	var collider = raycast.get_collider()
+	if collider is Node and not collider.is_in_group("Shield") and get_hit_enemy(collider) != null:
+		var shot_direction := (hit_point - camera.global_transform.origin).normalized()
+		BloodParticles.spawn(get_tree(), hit_point, shot_direction, amount_scale)
 		return
-	var enemy = collider
+
+	var hit_normal := raycast.get_collision_normal()
+	# Enemy hurtboxes can report no surface normal; fall back to facing the camera
+	if hit_normal.length() < 0.1:
+		hit_normal = (camera.global_transform.origin - hit_point).normalized()
+	ImpactParticles.spawn(get_tree(), hit_point, hit_normal, amount_scale)
+
+
+func get_hit_enemy(collider: Object):
+	if not collider is Node:
+		return null
 	if collider.is_in_group("Shield"):
 		# ShieldHitbox -> Shield -> enemy
-		enemy = collider.get_parent().get_parent()
-	elif not collider.is_in_group("Enemy"):
-		enemy = collider.get("owner_enemy")
+		return collider.get_parent().get_parent()
+	if collider.is_in_group("Enemy"):
+		return collider
+	return collider.get("owner_enemy")
+
+
+func flash_hit_enemy(collider: Object, point: Vector3, strength := 1.0) -> void:
+	var enemy = get_hit_enemy(collider)
 	if enemy and enemy.has_method("hit_flash"):
-		enemy.hit_flash(point)
+		# Headshots (hurtbox multiplier above 1) jolt the enemy harder
+		if "multiplier" in collider and collider.multiplier > 1.0:
+			strength *= 1.5
+		enemy.hit_flash(point, strength)
 
 
 func _setup_muzzle_flash() -> void:
@@ -120,20 +147,8 @@ func _setup_muzzle_flash() -> void:
 	muzzle_light.visible = false
 	muzzle_location.add_child(muzzle_light)
 
-	var gradient := Gradient.new()
-	gradient.offsets = PackedFloat32Array([0.0, 0.3, 1.0])
-	gradient.colors = PackedColorArray([
-		Color(1.0, 1.0, 1.0, 1.0),
-		Color(1.0, 0.75, 0.3, 0.75),
-		Color(1.0, 0.4, 0.1, 0.0),
-	])
-	var glow := GradientTexture2D.new()
-	glow.gradient = gradient
-	glow.fill = GradientTexture2D.FILL_RADIAL
-	glow.fill_from = Vector2(0.5, 0.5)
-	glow.fill_to = Vector2(1.0, 0.5)
-	glow.width = 128
-	glow.height = 128
+	muzzle_glow_warm = _make_glow_texture(Color(1.0, 1.0, 1.0, 1.0), Color(1.0, 0.75, 0.3, 0.75), Color(1.0, 0.4, 0.1, 0.0))
+	muzzle_glow_blue = _make_glow_texture(Color(0.85, 0.95, 1.0, 1.0), Color(0.25, 0.55, 1.0, 0.75), Color(0.1, 0.3, 1.0, 0.0))
 
 	muzzle_flash_material = StandardMaterial3D.new()
 	muzzle_flash_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -142,7 +157,7 @@ func _setup_muzzle_flash() -> void:
 	muzzle_flash_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	muzzle_flash_material.billboard_keep_scale = true
 	muzzle_flash_material.no_depth_test = true
-	muzzle_flash_material.albedo_texture = glow
+	muzzle_flash_material.albedo_texture = muzzle_glow_warm
 
 	muzzle_flash_mesh = MeshInstance3D.new()
 	muzzle_flash_mesh.mesh = QuadMesh.new()
@@ -152,7 +167,22 @@ func _setup_muzzle_flash() -> void:
 	muzzle_location.add_child(muzzle_flash_mesh)
 
 
-func play_muzzle_flash() -> void:
+func _make_glow_texture(core: Color, mid: Color, edge: Color) -> GradientTexture2D:
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.3, 1.0])
+	gradient.colors = PackedColorArray([core, mid, edge])
+	var glow := GradientTexture2D.new()
+	glow.gradient = gradient
+	glow.fill = GradientTexture2D.FILL_RADIAL
+	glow.fill_from = Vector2(0.5, 0.5)
+	glow.fill_to = Vector2(1.0, 0.5)
+	glow.width = 128
+	glow.height = 128
+	return glow
+
+
+# blue = true gives the electric (lightning) flash instead of the normal warm one
+func play_muzzle_flash(blue := false) -> void:
 	# The flash rides on the weapon holder (camera-relative) rather than the gun,
 	# so recoil animations like the shotgun's flip don't carry it away.
 	var holder := get_parent() as Node3D
@@ -164,15 +194,17 @@ func play_muzzle_flash() -> void:
 		muzzle_flash_mesh.position = flash_position
 		muzzle_light.position = flash_position
 
-	muzzle.modulate = Color(3.0, 2.4, 1.4)
+	muzzle.modulate = Color(0.2, 1.0, 6.0) if blue else Color(3.0, 2.4, 1.4)
 	muzzle.scale = muzzle_base_scale * 1.3
+	muzzle_light.light_color = Color(0.3, 0.6, 1.0) if blue else Color(1.0, 0.75, 0.35)
 	muzzle_light.light_energy = muzzle_light_energy
 	muzzle_light.visible = true
 	muzzle_flash_mesh.visible = true
 
 	var start_size := muzzle_flash_size * randf_range(0.85, 1.15)
 	muzzle_flash_mesh.scale = Vector3.ONE * start_size
-	muzzle_flash_material.albedo_color = Color(2.0, 1.6, 1.0)
+	muzzle_flash_material.albedo_texture = muzzle_glow_blue if blue else muzzle_glow_warm
+	muzzle_flash_material.albedo_color = Color(1.5, 2.0, 3.0) if blue else Color(2.0, 1.6, 1.0)
 
 	if muzzle_flash_tween:
 		muzzle_flash_tween.kill()
