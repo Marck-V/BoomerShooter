@@ -7,14 +7,25 @@ extends Control
 @onready var hud: Control = $"../InGameHUD"
 
 
-func _process(_delta: float) -> void:
-	if Input.is_action_just_pressed("pause") and !get_tree().paused:
+# Event-based (not polled) so another menu, like the upgrade menu, can consume Escape first
+func _unhandled_input(event: InputEvent) -> void:
+	if not event.is_action_pressed("pause") or event.is_echo():
+		return
+
+	# Death and win screens also pause the game; Escape does nothing there
+	for screen_name in ["DeathScreen", "WinScreen"]:
+		var screen := get_node_or_null("../" + screen_name) as Control
+		if screen and screen.visible:
+			get_viewport().set_input_as_handled()
+			return
+
+	if !get_tree().paused:
 		pause_game()
-	elif Input.is_action_just_pressed("pause") and get_tree().paused:
-		if settings_menu.visible:
-			settings_menu.visible = false
-		else:
-			resume_game()
+	elif settings_menu.visible:
+		settings_menu.visible = false
+	else:
+		resume_game()
+	get_viewport().set_input_as_handled()
 
 
 func pause_game():

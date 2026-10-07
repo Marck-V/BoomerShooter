@@ -11,6 +11,8 @@ const BURST_STREAK_COUNT := 36
 const BURST_MIST_COUNT := 8
 const CLEANUP_TIME := 1.4
 
+const BloodDecals = preload("res://scripts/weapons/blood_decals.gd")
+
 static var _streak_mesh: TubeTrailMesh
 static var _mist_mesh: QuadMesh
 
@@ -32,6 +34,7 @@ func _start_burst(point: Vector3, amount_scale: float) -> void:
 	global_position = point
 	_add_streaks(maxi(int(BURST_STREAK_COUNT * amount_scale), 8), 180.0, 3.0, 8.5, 0.7)
 	_add_mist(maxi(int(BURST_MIST_COUNT * amount_scale), 3), 180.0)
+	BloodDecals.burst(get_tree(), point, amount_scale)
 	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
 
 
@@ -50,6 +53,7 @@ func _start(point: Vector3, direction: Vector3, amount_scale: float) -> void:
 	back.global_basis = _basis_facing((-dir + Vector3.UP * 0.3).normalized())
 
 	_add_mist(maxi(int(MIST_COUNT * amount_scale), 2))
+	BloodDecals.splatter(get_tree(), point, dir, amount_scale)
 	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
 
 
