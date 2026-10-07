@@ -54,6 +54,7 @@ var wall_push_time_left := 0.0
 var camera_kick := Vector2.ZERO
 
 const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/damage_flash.gdshader")
+const OFFHAND_SHIELD = preload("res://scripts/player/offhand_shield.gd")
 var damage_flash_material: ShaderMaterial
 var damage_flash_tween: Tween
 
@@ -96,6 +97,7 @@ func _ready():
 	GlobalVariables.player = self
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
 	_setup_damage_flash()
+	camera.add_child(OFFHAND_SHIELD.new())
 	crosshair.texture = current_weapon.data.crosshair
 	weapon_changed.emit(current_weapon)
 
