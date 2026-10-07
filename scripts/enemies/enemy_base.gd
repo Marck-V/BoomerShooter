@@ -175,7 +175,7 @@ func _end_flinch() -> void:
 	model_root.transform = model_rest
 
 
-func hit_flash(world_point: Vector3, strength := 1.0) -> void:
+func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0) -> void:
 	if hit_flash_material == null:
 		hit_flash_material = ShaderMaterial.new()
 		hit_flash_material.shader = HIT_FLASH_SHADER
@@ -202,7 +202,7 @@ func hit_flash(world_point: Vector3, strength := 1.0) -> void:
 	var local_scale := model.global_basis.get_scale().x
 	hit_flash_target.set_shader_parameter("hit_points", padded)
 	hit_flash_target.set_shader_parameter("hit_count", hit_flash_points.size())
-	hit_flash_target.set_shader_parameter("radius", HIT_FLASH_RADIUS / maxf(local_scale, 0.001))
+	hit_flash_target.set_shader_parameter("radius", HIT_FLASH_RADIUS * radius_scale / maxf(local_scale, 0.001))
 	hit_flash_target.set_shader_parameter("intensity", 1.0)
 	if not shielded:
 		model.material_overlay = hit_flash_material
