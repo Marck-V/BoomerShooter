@@ -1,5 +1,7 @@
 extends BaseWeapon
 
+const ElectricAura = preload("res://scripts/weapons/electric_aura.gd")
+
 # --- Weapon Upgrades ---
 var firerate = "rifle_firerate"
 var quickness = "rifle_quickness"
@@ -51,6 +53,7 @@ func alt_fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: R
 
 	Audio.play("assets/sounds/lightning_magic.mp3")
 	muzzle.play("default")
+	play_muzzle_flash(true)
 	trigger_recoil()
 
 	for i in range(data.shot_count):
@@ -76,20 +79,29 @@ func alt_fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: R
 					chain_target = collider.owner_enemy
 
 				if chain_target:
+					ElectricAura.apply(chain_target)
 					_start_chain_lightning(chain_target, chain_damage * 0.8, 1, [])
 
 			else:
 				print("Hit non-enemy:", collider)
 
-			var impact = preload("res://scenes/weapons/impact.tscn").instantiate()
-			impact.play("shot")
-			get_tree().root.add_child(impact)
-			impact.global_position = raycast.get_collision_point() + (raycast.get_collision_normal() / 10)
-			impact.look_at(camera.global_transform.origin, Vector3.UP, true)
+			spawn_impact_particles(raycast, camera)
 
 # ---------------------------
 # Chain Lightning
 # ---------------------------
+# Everything a chained enemy shows when the lightning reaches it (all purely visual)
+func _chain_hit_effects(target: Node3D, from_position: Vector3) -> void:
+	var chest := target.global_position + Vector3.UP * 1.2
+	var direction := target.global_position - from_position
+	direction.y = 0.0
+	direction = direction.normalized() if direction.length() > 0.01 else Vector3.FORWARD
+
+	flash_hit_enemy(target, chest)
+	BloodParticles.spawn(get_tree(), chest, direction)
+	ElectricAura.apply(target)
+
+
 func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, visited: Array):
 	if depth >= max_chains:
 		return
@@ -117,7 +129,7 @@ func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, vis
 
 	if is_instance_valid(next_target) and next_target.has_method("damage"):
 		next_target.damage(chain_damage, 1)
-		flash_hit_enemy(next_target, next_target.global_position + Vector3.UP * 1.2)
+		_chain_hit_effects(next_target, start_pos)
 
 	await get_tree().create_timer(0.1).timeout
 	if is_instance_valid(next_target):
@@ -138,7 +150,7 @@ func _continue_chain_from_position(chain_position: Vector3, damage: float, depth
 
 	if next_target.has_method("damage"):
 		next_target.damage(chain_damage, 1)
-		flash_hit_enemy(next_target, next_target.global_position + Vector3.UP * 1.2)
+		_chain_hit_effects(next_target, chain_position)
 
 	var next_pos = next_target.global_position
 

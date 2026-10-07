@@ -7,6 +7,10 @@ var mouse_sensitivity: float = 20
 var psx_strength: float = 1.0
 var music_volume: float = 0.2
 var sfx_volume: float = 0.2
+var fullscreen: bool = false
+
+const SETTINGS_PATH := "user://settings.cfg"
+var _settings_save_timer: Timer
 
 signal points_changed(new_value: int)
 signal ammo_changed(weapon_id, new_value: int)
@@ -37,6 +41,56 @@ func _init():
 func _ready():
 	# Emit current value to HUD, etc.
 	points_changed.emit(save_data.points)
+	load_settings()
+
+
+# ---- Settings persistence ----
+func load_settings() -> void:
+	var cfg := ConfigFile.new()
+	if cfg.load(SETTINGS_PATH) == OK:
+		music_volume = clampf(cfg.get_value("audio", "music_volume", music_volume), 0.0, 1.0)
+		sfx_volume = clampf(cfg.get_value("audio", "sfx_volume", sfx_volume), 0.0, 1.0)
+		mouse_sensitivity = cfg.get_value("controls", "mouse_sensitivity", mouse_sensitivity)
+		psx_strength = clampf(cfg.get_value("video", "psx_strength", psx_strength), 0.0, 1.0)
+		fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
+
+	_apply_bus_volume("Music", music_volume)
+	_apply_bus_volume("SFX", sfx_volume)
+	if fullscreen:
+		DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN)
+
+
+func save_settings() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("audio", "music_volume", music_volume)
+	cfg.set_value("audio", "sfx_volume", sfx_volume)
+	cfg.set_value("controls", "mouse_sensitivity", mouse_sensitivity)
+	cfg.set_value("video", "psx_strength", psx_strength)
+	cfg.set_value("video", "fullscreen", fullscreen)
+	cfg.save(SETTINGS_PATH)
+
+
+# Coalesces rapid changes (dragging a slider) into one write shortly after the last one.
+func request_settings_save() -> void:
+	if _settings_save_timer == null:
+		_settings_save_timer = Timer.new()
+		_settings_save_timer.one_shot = true
+		_settings_save_timer.wait_time = 0.4
+		_settings_save_timer.process_mode = Node.PROCESS_MODE_ALWAYS
+		_settings_save_timer.timeout.connect(save_settings)
+		add_child(_settings_save_timer)
+	_settings_save_timer.start()
+
+
+func _apply_bus_volume(bus_name: String, linear: float) -> void:
+	var bus := AudioServer.get_bus_index(bus_name)
+	if bus != -1:
+		AudioServer.set_bus_volume_db(bus, linear_to_db(linear))
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		save_settings()
 
 # Points
 func add_points(amount: int):

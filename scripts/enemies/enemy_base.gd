@@ -18,6 +18,18 @@ var hit_flash_material: ShaderMaterial
 var hit_flash_tween: Tween
 var hit_flash_points: Array[Vector3] = []
 var hit_flash_target: ShaderMaterial
+
+# Visual-only flinch: jolts the model node, never the enemy body, so movement is unaffected.
+@onready var model_root: Node3D = $"Enemy_Model"
+const FLINCH_SHOVE := 0.16      # meters the model is knocked back
+const FLINCH_TILT := 0.16       # radians the model tips back
+const FLINCH_TIME := 0.16       # seconds to ease back to rest
+const FLINCH_MAX_STACK := 2.0
+var model_rest := Transform3D.IDENTITY
+var flinch_tween: Tween
+var flinch_axis := Vector3.RIGHT
+var flinch_offset := Vector3.ZERO
+var flinch_amount := 0.0
 var hit_flash_active := false
 const HIT_FLASH_MAX_POINTS := 8
 var destroyed: bool = false
@@ -52,6 +64,7 @@ const SHIELD_SCENE: PackedScene = preload("res://scenes/enemies/shield.tscn")
 # Lifecycle
 # ---------------------------
 func _ready():
+	model_rest = model_root.transform
 	states = get_state_definitions()
 	change_state("Idle")
 	make_mesh_materials_unique(model)
@@ -125,13 +138,51 @@ func damage(amount: float, multiplier: float = 1.0):
 # ---------------------------
 # Localized Hit Flash
 # ---------------------------
-func hit_flash(world_point: Vector3) -> void:
+func flinch(world_point: Vector3, strength := 1.0) -> void:
+	if destroyed or is_attacking or strength <= 0.0:
+		return
+
+	# Direction the shot travelled: from the player through the hit point, flattened
+	var from_position := global_position + global_basis.z
+	if GlobalVariables.player and is_instance_valid(GlobalVariables.player):
+		from_position = GlobalVariables.player.global_position
+	var away := world_point - from_position
+	away.y = 0.0
+	if away.length() < 0.01:
+		return
+	var local_away := (global_basis.inverse() * away).normalized()
+
+	flinch_axis = Vector3.UP.cross(local_away).normalized()
+	flinch_offset = local_away * FLINCH_SHOVE
+	flinch_amount = minf(flinch_amount + strength, FLINCH_MAX_STACK)
+
+	if flinch_tween:
+		flinch_tween.kill()
+	_apply_flinch(1.0)
+	flinch_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	flinch_tween.tween_method(_apply_flinch, 1.0, 0.0, FLINCH_TIME)
+	flinch_tween.tween_callback(_end_flinch)
+
+
+func _apply_flinch(t: float) -> void:
+	var amount := flinch_amount * t
+	var tipped := Basis(flinch_axis, FLINCH_TILT * amount) * model_rest.basis
+	model_root.transform = Transform3D(tipped, model_rest.origin + flinch_offset * amount)
+
+
+func _end_flinch() -> void:
+	flinch_amount = 0.0
+	model_root.transform = model_rest
+
+
+func hit_flash(world_point: Vector3, strength := 1.0) -> void:
 	if hit_flash_material == null:
 		hit_flash_material = ShaderMaterial.new()
 		hit_flash_material.shader = HIT_FLASH_SHADER
 
 	# While shielded, the glass shield shader draws the flash instead of the overlay.
 	var shielded := shield != null and is_instance_valid(shield)
+	flinch(world_point, strength * (0.3 if shielded else 1.0))
 	hit_flash_target = shield_material if shielded else hit_flash_material
 
 	# Hits landing while a flash is still showing (shotgun pellets, rapid fire)

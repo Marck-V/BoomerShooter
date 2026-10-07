@@ -136,6 +136,12 @@ func attempt_upgrade(button: RegUpgradeButton, resource: Resource, resource_path
 	button.apply_visual_upgrade()
 	points_label.text = "Points: " + str(GlobalVariables.get_points())
 
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed("pause") and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		on_close_button_pressed()
+
+
 func on_close_button_pressed() -> void:
 	get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)

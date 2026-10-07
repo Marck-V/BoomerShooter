@@ -37,7 +37,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 
 	_play_recoil()
 
-	if shot_fired:
+	if shot_fired and raycast.is_colliding() and get_hit_enemy(raycast.get_collider()):
 		_apply_camera_kick()
 
 	# Handle Upgrades
