@@ -1,5 +1,7 @@
 extends Node3D
 
+const ShieldBreakEffect = preload("res://scripts/enemies/shield_break_effect.gd")
+
 signal shield_destroyed
 
 @export var max_hp := 150.0
@@ -13,6 +15,7 @@ func absorb_damage(amount: float) -> float:
 	var reduced_damage = amount * damage_reduction
 	hp -= reduced_damage
 	if hp <= 0:
+		ShieldBreakEffect.spawn(get_tree(), global_position + Vector3(0, 1.0, 0))
 		shield_destroyed.emit()
 		queue_free()
 		return 0 # Leave uncommented if we want the shield to absorb all extra damage

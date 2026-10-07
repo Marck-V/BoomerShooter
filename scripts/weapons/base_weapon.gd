@@ -4,6 +4,10 @@ class_name BaseWeapon
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 
+const SHIELD_HIT_SOUND := "assets/sounds/bullet_hit_metal.mp3"
+const SOUND_3D_MIN_GAP_MSEC := 40
+var last_sound_3d_msec := 0
+
 @onready var muzzle_location: Marker3D = $MuzzleLocation
 @onready var muzzle: AnimatedSprite3D = $Muzzle
 
@@ -96,6 +100,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 			flash_hit_enemy(collider, raycast.get_collision_point(), 1.0 if data.shot_count <= 1 else 0.4)
 
 			if collider.is_in_group("Shield"):
+				play_sound_3d(SHIELD_HIT_SOUND, raycast.get_collision_point())
 				var mult = get_shield_multiplier()
 				collider.get_parent().absorb_damage(data.damage * mult)
 
@@ -117,6 +122,27 @@ func spawn_impact_particles(raycast: RayCast3D, camera: Camera3D, amount_scale :
 	if hit_normal.length() < 0.1:
 		hit_normal = (camera.global_transform.origin - hit_point).normalized()
 	ImpactParticles.spawn(get_tree(), hit_point, hit_normal, amount_scale)
+
+
+# One-shot positional sound, so it pans and fades with the direction and distance of the impact
+func play_sound_3d(sound_path: String, position: Vector3, volume_db := -4.0) -> void:
+	# A shotgun blast lands several pellets at once; don't stack identical hits on top of each other
+	var now := Time.get_ticks_msec()
+	if now - last_sound_3d_msec < SOUND_3D_MIN_GAP_MSEC:
+		return
+	last_sound_3d_msec = now
+
+	var player := AudioStreamPlayer3D.new()
+	player.stream = load("res://" + sound_path)
+	player.bus = "SFX"
+	player.volume_db = volume_db
+	player.pitch_scale = randf_range(0.92, 1.08)
+	player.max_distance = 40.0
+	player.unit_size = 6.0
+	player.finished.connect(player.queue_free)
+	get_tree().root.add_child(player)
+	player.global_position = position
+	player.play()
 
 
 func get_hit_enemy(collider: Object):
