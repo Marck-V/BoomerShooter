@@ -9,7 +9,11 @@ extends CharacterBody3D
 @export var dash_speed = 25
 @export var dash_duration = 0.2
 @export var dash_cooldown = 0.75
+@export var wall_jump_strength = 8
+@export var wall_jump_push = 10.0
+@export var wall_jump_push_time = 0.2
 @export var kick_recovery = 14.0
+@export var damage_flash_time = 0.4
 
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
@@ -42,7 +46,16 @@ var dash_direction = Vector3.ZERO
 var dash_time_left = 0.0
 var dash_cooldown_left = 0.0
 
+var wall_jump_used := false
+var last_wall_jump_normal := Vector3.ZERO
+var wall_push_velocity := Vector3.ZERO
+var wall_push_time_left := 0.0
+
 var camera_kick := Vector2.ZERO
+
+const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/damage_flash.gdshader")
+var damage_flash_material: ShaderMaterial
+var damage_flash_tween: Tween
 
 
 var tween:Tween
@@ -82,6 +95,7 @@ func _ready():
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	GlobalVariables.player = self
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
+	_setup_damage_flash()
 	crosshair.texture = current_weapon.data.crosshair
 	weapon_changed.emit(current_weapon)
 
@@ -110,10 +124,15 @@ func _physics_process(delta):
 		if dash_time_left <= 0.0:
 			dashing = false
 
+	if wall_push_time_left > 0.0:
+		wall_push_time_left -= delta
+
 	movement_velocity = transform.basis * movement_velocity
 	var applied_velocity: Vector3
 	if dashing:
 		applied_velocity = dash_direction * dash_speed
+	elif wall_push_time_left > 0.0:
+		applied_velocity = wall_push_velocity
 	else:
 		applied_velocity = velocity.lerp(movement_velocity, delta * 10)
 	applied_velocity.y = -gravity
@@ -190,7 +209,9 @@ func handle_controls(_delta):
 	action_shoot()
 	action_alt_fire()
 
-	if Input.is_action_just_pressed("jump"):
+	if Input.is_action_just_pressed("jump") and can_wall_jump():
+		do_wall_jump()
+	elif Input.is_action_just_pressed("jump"):
 		if sliding:
 			slide_speed -= 1
 
@@ -214,6 +235,7 @@ func handle_gravity(delta):
 
 	if gravity > 0 and is_on_floor():
 		jump_single = true
+		wall_jump_used = false
 		falling = false
 		gravity = 0
 
@@ -265,6 +287,27 @@ func slide():
 	current_movement_speed = slide_speed
 
 
+# Wall jump is its own jump: it never consumes or restores the double jump.
+# One per airtime, but touching a different wall (zig-zagging) makes it available again.
+func can_wall_jump() -> bool:
+	if is_on_floor() or not is_on_wall_only():
+		return false
+	if not wall_jump_used:
+		return true
+	return get_wall_normal().dot(last_wall_jump_normal) < 0.5
+
+func do_wall_jump() -> void:
+	var normal := get_wall_normal()
+	normal.y = 0.0
+	normal = normal.normalized()
+
+	gravity = -wall_jump_strength
+	wall_push_velocity = normal * wall_jump_push
+	wall_push_time_left = wall_jump_push_time
+	wall_jump_used = true
+	last_wall_jump_normal = normal
+	Audio.play("assets/sounds/jump_a.ogg, assets/sounds/jump_b.ogg, assets/sounds/jump_c.ogg")
+
 func action_jump():
 	gravity = -jump_strength
 	jump_single = false
@@ -296,6 +339,7 @@ func action_dash():
 		dashing = true
 		dash_time_left = dash_duration
 		dash_cooldown_left = dash_cooldown
+		Audio.play("assets/sounds/simple_whoosh.mp3")
 
 func apply_camera_kick(pitch: float, yaw: float) -> void:
 	camera_kick += Vector2(pitch, yaw)
@@ -329,8 +373,42 @@ func change_weapon(index):
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	weapon_changed.emit(current_weapon)
 
+func _setup_damage_flash() -> void:
+	# Screen-edge red vignette; layer 0 keeps it under the HUD so health stays readable.
+	var layer := CanvasLayer.new()
+	layer.layer = 0
+	add_child(layer)
+
+	damage_flash_material = ShaderMaterial.new()
+	damage_flash_material.shader = DAMAGE_FLASH_SHADER
+	# Wider, brighter edge than the shader's defaults so hits are easy to notice
+	damage_flash_material.set_shader_parameter("edge_power", 1.6)
+	damage_flash_material.set_shader_parameter("inner_ratio", 0.6)
+	damage_flash_material.set_shader_parameter("feather", 0.5)
+
+	var rect := ColorRect.new()
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.material = damage_flash_material
+	layer.add_child(rect)
+
+func _play_damage_flash(amount) -> void:
+	if damage_flash_material == null or amount <= 0:
+		return
+	# Bigger hits flash harder
+	var peak := clampf(0.8 + float(amount) * 0.01, 0.8, 1.0)
+	damage_flash_material.set_shader_parameter("intensity", peak)
+	if damage_flash_tween:
+		damage_flash_tween.kill()
+	damage_flash_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	damage_flash_tween.tween_method(_set_damage_flash_intensity, peak, 0.0, damage_flash_time)
+
+func _set_damage_flash_intensity(value: float) -> void:
+	damage_flash_material.set_shader_parameter("intensity", value)
+
 func damage(amount):
 	health -= amount
+	_play_damage_flash(amount)
 	health_updated.emit(health)
 	if health <= 0:
 		GameManager.player_died()

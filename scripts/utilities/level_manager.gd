@@ -60,7 +60,8 @@ func _process(_delta):
 
 	# Upgrade Station Interaction
 	if Input.is_action_just_pressed("interact") and upgrade_area_occupied:
-		if upgrade_menu_instance == null:
+		# The menu frees itself when closed (Escape / Close button), so check validity, not just null
+		if not is_instance_valid(upgrade_menu_instance):
 			upgrade_menu_instance = upgrade_scene.instantiate()
 			hud.visible = false
 			get_tree().paused = true
