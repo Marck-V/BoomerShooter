@@ -1,0 +1,20 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDPointClass" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_point_class.gd" id="1_point"]
+
+[resource]
+script = ExtResource("1_point")
+classname = "info_player_start"
+description = "Where the player spawns. Use angle to set which way they face."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"angle": 0.0
+}
+class_property_descriptions = {
+"angle": "Facing (degrees, 0 = north)"
+}
+meta_properties = {
+"color": Color(0, 1, 0, 1),
+"size": AABB(-16, -16, 0, 16, 16, 56)
+}
+node_class = "Marker3D"
