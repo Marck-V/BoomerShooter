@@ -23,19 +23,22 @@
 [ext_resource type="Texture2D" uid="uid://jk6tfimci3sk" path="res://trenchbroom/textures/world/texture_14.png" id="21_ykkgl"]
 [ext_resource type="PackedScene" uid="uid://c1qi0hggy4jff" path="res://scenes/template_environment_components/launch_pad.tscn" id="22_3v478"]
 [ext_resource type="AudioStream" uid="uid://d6n3crfr0so7" path="res://assets/audio/music/final_boss_mastered.ogg" id="23_7jxnr"]
+[ext_resource type="Shader" uid="uid://k8ygljicxbrw" path="res://shaders/synthwave_sky.gdshader" id="24_sky"]
+[ext_resource type="Script" uid="uid://bfohvl74wfjje" path="res://scripts/environment/synthwave_backdrop.gd" id="25_backdrop"]
 
-[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_v2erg"]
-sky_top_color = Color(0.578427, 0.261383, 0.808879, 1)
-sky_horizon_color = Color(0.919656, 0.411149, 0.958924, 1)
-sky_energy_multiplier = 2.0
-ground_bottom_color = Color(0.18308, 0.00029071, 0.481355, 1)
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sunset"]
+shader = ExtResource("24_sky")
+shader_parameter/sun_direction = Vector3(-0.3, 0.12, -1)
 
 [sub_resource type="Sky" id="Sky_oqbgo"]
-sky_material = SubResource("ProceduralSkyMaterial_v2erg")
+sky_material = SubResource("ShaderMaterial_sunset")
 
 [sub_resource type="Environment" id="Environment_v2erg"]
 background_mode = 2
 sky = SubResource("Sky_oqbgo")
+ambient_light_source = 2
+ambient_light_color = Color(0.75, 0.5, 0.85, 1)
+ambient_light_energy = 1.0
 glow_enabled = true
 glow_hdr_luminance_cap = 24.0
 fog_mode = 1
@@ -833,6 +836,9 @@ size = Vector3(56.9503, 5.57129, 4.94629)
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1237827331]
 environment = SubResource("Environment_v2erg")
 
+[node name="SynthwaveBackdrop" type="Node3D" parent="."]
+script = ExtResource("25_backdrop")
+
 [node name="LevelManager" type="Node" parent="." unique_id=1088388882]
 process_mode = 3
 script = ExtResource("1_oqbgo")
@@ -1151,7 +1157,6 @@ navigation_mesh = SubResource("NavigationMesh_5ubjb")
 [node name="FuncGodotMap" type="Node3D" parent="NavigationRegion3D" unique_id=1118038687]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 script = ExtResource("6_q1ikm")
-local_map_file = "res://trenchbroom/maps/test_level.map"
 map_settings = ExtResource("7_ol7nt")
 metadata/_custom_type_script = "uid://bc6mfq3ssor4q"
 
