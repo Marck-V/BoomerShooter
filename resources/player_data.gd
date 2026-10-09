@@ -21,7 +21,8 @@ class_name PlayerData
 @export var ammo: Dictionary = {
 	"pistol": 50,
 	"shotgun": 50,
-	"rifle": 50
+	"rifle": 50,
+	"flamethrower": 50
 }
 
 

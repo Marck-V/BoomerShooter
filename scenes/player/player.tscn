@@ -5,9 +5,10 @@
 [ext_resource type="PackedScene" uid="uid://cvdmduky3pnmi" path="res://scenes/weapons/pistol.tscn" id="3_smehm"]
 [ext_resource type="PackedScene" uid="uid://j4exufyutty0" path="res://scenes/weapons/rifle.tscn" id="5_fjrip"]
 [ext_resource type="AudioStream" uid="uid://c7a8a5uokopub" path="res://assets/sounds/walking.ogg" id="5_ics1s"]
-[ext_resource type="Resource" uid="uid://dljpxqiaqq0el" path="res://resources/weapons/rifle.tres" id="6_smehm"]
+[ext_resource type="Resource" uid="uid://d4bayap03glce" path="res://resources/weapons/rifle.tres" id="6_smehm"]
 [ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/weapons/shotgun.tscn" id="8_4vq5b"]
 [ext_resource type="Material" uid="uid://0mxnekxrkyw0" path="res://shaders/psx_post_material.tres" id="8_qek5x"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/flamethrower.tscn" id="9_flame"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gdq8c"]
 radius = 0.3
@@ -74,6 +75,7 @@ collide_with_areas = true
 
 [node name="Pistol" parent="Head/Camera/WeaponHolder" unique_id=63107281 instance=ExtResource("3_smehm")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.095, -0.065, -0.06)
+visible = false
 
 [node name="Shotgun" parent="Head/Camera/WeaponHolder" unique_id=1944769732 instance=ExtResource("8_4vq5b")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.14, -0.099, -0.092)
@@ -83,6 +85,9 @@ visible = false
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.075, -0.099, -0.092)
 visible = false
 data = ExtResource("6_smehm")
+
+[node name="Flamethrower" parent="Head/Camera/WeaponHolder" unique_id=816993645 instance=ExtResource("9_flame")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.17, -0.15, -0.35)
 
 [node name="SlideCheck" type="RayCast3D" parent="." unique_id=701430582]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.075, 0.18)
