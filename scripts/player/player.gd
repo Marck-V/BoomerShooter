@@ -356,6 +356,8 @@ func action_weapon_toggle():
 		change_weapon(1)
 	if Input.is_action_just_pressed("weapon_3") and weapon_nodes.size() >= 3:
 		change_weapon(2)
+	if Input.is_action_just_pressed("weapon_4") and weapon_nodes.size() >= 4:
+		change_weapon(3)
 
 func change_weapon(index):
 	if index == weapon_index:

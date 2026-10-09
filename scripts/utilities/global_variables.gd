@@ -34,7 +34,7 @@ func _init():
 		save_to_disk()
 		
 	
-	for weapon_id in ["pistol", "shotgun", "rifle"]:
+	for weapon_id in ["pistol", "shotgun", "rifle", "flamethrower"]:
 		if not save_data.ammo.has(weapon_id):
 			save_data.ammo[weapon_id] = 50
 
