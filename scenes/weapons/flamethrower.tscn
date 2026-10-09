@@ -1,0 +1,23 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/weapons/base_weapon.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scripts/weapons/flamethrower.gd" id="2_script"]
+[ext_resource type="Resource" path="res://resources/weapons/flamethrower.tres" id="3_data"]
+[ext_resource type="PackedScene" uid="uid://6k5w2yiaqnp0" path="res://models/weapons/Flamethrower.glb" id="4_model"]
+
+[node name="Flamethrower" instance=ExtResource("1_base")]
+script = ExtResource("2_script")
+data = ExtResource("3_data")
+
+[node name="MuzzleLocation" parent="." index="0"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.046, 0.045, 0.1)
+
+[node name="WeaponMesh" parent="." index="1"]
+transform = Transform3D(0, 0, -0.32, 0, 0.32, 0, 0.32, 0, 0, 0, 0, 0)
+mesh = null
+
+[node name="Model" parent="WeaponMesh" index="0" instance=ExtResource("4_model")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.409, -0.088, 0)
+
+[node name="Muzzle" parent="." index="2"]
+transform = Transform3D(0.025, 0, 0, 0, 0.025, 0, 0, 0, 0.025, -0.046, 0.045, 0.1)
