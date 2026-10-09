@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDPointClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_point_class.gd" id="1_point"]
+[ext_resource type="PackedScene" path="res://scenes/pickups/base_pickup.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_point")
+scene_file = ExtResource("2_scene")
+classname = "pickup"
+description = "Pickup. Pick the type; weapon_id only matters for Ammo."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"type": "Health",
+"weapon_id": "shotgun",
+"healing_amount": 25,
+"ammo_amount": 100,
+"points_amount": 500
+}
+class_property_descriptions = {
+"type": "Health, Ammo or Points",
+"weapon_id": "pistol, shotgun or rifle (Ammo only)",
+"healing_amount": "Health restored (Health only)",
+"ammo_amount": "Ammo given (Ammo only)",
+"points_amount": "Points given (Points only)"
+}
+meta_properties = {
+"color": Color(1, 0.85, 0.2, 1),
+"size": AABB(-8, -8, 0, 8, 8, 16)
+}
+node_class = ""

@@ -1,0 +1,21 @@
+// --- BoomerShooter entities (generated; source: trenchbroom/entities/*.tres) ---
+
+@PointClass color(0 255 0) size(-16 -16 0, 16 16 56) = info_player_start : "Where the player spawns. Use angle to set which way they face."
+[
+	angle(float) : "Facing (degrees, 0 = north)" : "0.0"
+]
+
+@PointClass color(255 64 64) size(-16 -16 0, 16 16 56) = enemy_horde : "Melee enemy that runs at the player."
+[]
+
+@PointClass color(255 128 51) size(-16 -16 0, 16 16 56) = enemy_ranged : "Ranged enemy that fires energy balls."
+[]
+
+@PointClass color(255 217 51) size(-8 -8 0, 8 8 16) = pickup : "Pickup. Pick the type; weapon_id only matters for Ammo."
+[
+	type(string) : "Health, Ammo or Points" : "Health"
+	weapon_id(string) : "pistol, shotgun or rifle (Ammo only)" : "shotgun"
+	healing_amount(integer) : "Health restored (Health only)" : 25
+	ammo_amount(integer) : "Ammo given (Ammo only)" : 100
+	points_amount(integer) : "Points given (Points only)" : 500
+]
