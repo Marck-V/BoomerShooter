@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDPointClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_point_class.gd" id="1_point"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_ranged.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_point")
+scene_file = ExtResource("2_scene")
+classname = "enemy_ranged"
+description = "Ranged enemy that fires energy balls."
+auto_apply_to_matching_node_properties = true
+class_properties = {}
+class_property_descriptions = {}
+meta_properties = {
+"color": Color(1, 0.5, 0.2, 1),
+"size": AABB(-16, -16, 0, 16, 16, 56)
+}
+node_class = ""
