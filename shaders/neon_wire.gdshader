@@ -13,6 +13,8 @@ uniform float height_base = 0.0;
 uniform float height_scale = 200.0;
 uniform float line_pixels = 1.6;
 uniform float haze_distance = 2500.0;
+uniform float pulse_spacing = 700.0;
+uniform float pulse_speed = 0.12;
 
 varying vec3 bary;
 varying float world_height;
@@ -33,6 +35,12 @@ void fragment() {
 	vec3 fill = mix(fill_low, fill_high, h);
 	vec3 ink = mix(line_low, line_high, h);
 	vec3 color = mix(fill, ink, line);
+
+	// Glow pulses rolling outward from the player, advancing in stepped time
+	float stepped_time = floor(TIME * 12.0) / 12.0;
+	float wave = fract(view_distance / pulse_spacing - stepped_time * pulse_speed);
+	float band = smoothstep(0.0, 0.02, wave) * (1.0 - smoothstep(0.02, 0.09, wave));
+	color += vec3(0.9, 0.5, 1.0) * line * band * 1.2;
 
 	float haze = clamp(view_distance / haze_distance, 0.0, 1.0);
 	color = mix(color, haze_color * 0.6, haze * haze * 0.7);
