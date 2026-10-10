@@ -7,6 +7,7 @@ class_name EnemyBase
 @export var health: float = 100.0
 @export var target: Node3D
 @export var debug: bool = false
+@export var wave: String = ""   # set by map entities: held out of the level until the matching wave_trigger fires
 
 var shield: Node = null
 var original_materials: Array[Material] = []
@@ -72,6 +73,8 @@ func _ready():
 	initialize_shield()
 	
 	add_to_group("Enemy")
+	# Enemies spawned by map entities have no target wired in the scene, so find the player
+	_resolve_target.call_deferred()
 	
 	# Avoidance settings
 	nav.avoidance_enabled = true
@@ -84,6 +87,20 @@ func _ready():
 	nav.avoidance_mask = 1
 
 	nav.velocity_computed.connect(Callable(_on_velocity_computed))
+
+
+# Uses the player when no target was assigned in the editor. Deferred so the player has entered the tree.
+func _resolve_target() -> void:
+	# Deferred, so the enemy may have been removed (held back by a wave trigger, or freed) before this runs
+	if not is_inside_tree() or is_instance_valid(target) or destroyed:
+		return
+	var player := get_tree().get_first_node_in_group("Player") as Node3D
+	if player == null:
+		return
+	target = player
+	# The vision area may already overlap the player, which fired body_entered before a target existed
+	if has_node("VisionArea") and $VisionArea.overlaps_body(player) and has_method("_on_body_entered"):
+		call("_on_body_entered", player)
 
 
 func _on_velocity_computed(safe_velocity: Vector3):
