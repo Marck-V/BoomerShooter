@@ -3,7 +3,7 @@ class_name BasePickup
 
 @export_enum("Health", "Ammo", "Points") var type: String
 @export_category("Weapon Type") 
-@export_enum("pistol","shotgun","rifle") var weapon_id: String ## Only assign this if this is an Ammo pickup
+@export_enum("pistol","shotgun","rifle","flamethrower","lightning") var weapon_id: String ## Only assign this if this is an Ammo pickup
 @export_category("Variables")
 @export var points_amount = 500
 @export var healing_amount = 25
@@ -21,7 +21,15 @@ var t = 0.0
 var ammo_paths = {
 	"pistol": "res://models/weapons/pistol_ammo_mesh.tscn",
 	"shotgun": "res://models/weapons/shotgun_ammo_mesh.tscn",
-	"rifle": "res://models/weapons/rifle_ammo_mesh.tscn"
+	"rifle": "res://models/weapons/rifle_ammo_mesh.tscn",
+	"flamethrower": "res://models/weapons/rifle_ammo_mesh.tscn",   # placeholder model, tinted below
+	"lightning": "res://models/weapons/rifle_ammo_mesh.tscn"
+}
+
+# Weapons without their own ammo model borrow the rifle one with a glow in their color
+var ammo_tints = {
+	"flamethrower": Color(1.0, 0.45, 0.1, 0.55),
+	"lightning": Color(0.2, 0.5, 1.0, 0.55)
 }
 
 var model_paths = {
@@ -62,7 +70,19 @@ func _build_model() -> void:
 		model_scene = load(model_paths[type]) if model_paths.has(type) else load(model_paths["Points"])
 	model_instance = model_scene.instantiate()
 	model_instance.scale = scale_map.get(type, scale_map["Points"])
+	if type == "Ammo" and ammo_tints.has(weapon_id):
+		_tint(model_instance, ammo_tints[weapon_id])
 	add_child(model_instance)
+
+
+func _tint(root: Node, color: Color) -> void:
+	var overlay := StandardMaterial3D.new()
+	overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	overlay.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	overlay.albedo_color = color
+	for node in root.find_children("*", "MeshInstance3D", true, false):
+		(node as MeshInstance3D).material_overlay = overlay
 
 
 func _process(delta):

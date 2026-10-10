@@ -901,7 +901,7 @@ mesh = SubResource("ArrayMesh_wuppl")
 shape = SubResource("ConvexPolygonShape3D_h8l1x")
 
 [node name="UpgradeStation" parent="." unique_id=1323158998 instance=ExtResource("8_station")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 3, 0.05, 3)
+transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 11.584, 0.842, 3)
 
 [node name="Player" parent="." unique_id=1833046039 node_paths=PackedStringArray("crosshair") instance=ExtResource("7_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 2, 6)
