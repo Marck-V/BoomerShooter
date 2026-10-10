@@ -11,6 +11,8 @@ uniform vec3 line_near : source_color = vec3(0.1, 0.35, 1.0);
 uniform vec3 line_far : source_color = vec3(1.0, 0.2, 0.9);
 uniform vec3 horizon_color : source_color = vec3(1.0, 0.45, 0.2);
 uniform float fade_distance = 3400.0;
+uniform float pulse_spacing = 600.0;
+uniform float pulse_speed = 0.16;
 
 varying vec3 world_position;
 
@@ -29,6 +31,12 @@ void fragment() {
 	vec3 fill = mix(fill_near, fill_far, t * t);
 	vec3 ink = mix(line_near, line_far, sqrt(t));
 	vec3 color = mix(fill, ink, line);
+	// Light pulses rolling outward across the grid, advancing in stepped time
+	float stepped_time = floor(TIME * 12.0) / 12.0;
+	float wave = fract(view_distance / pulse_spacing - stepped_time * pulse_speed);
+	float band = smoothstep(0.0, 0.02, wave) * (1.0 - smoothstep(0.02, 0.1, wave)) * (1.0 - t);
+	color += vec3(0.5, 0.9, 1.0) * line * band * 1.4 + vec3(0.35, 0.05, 0.4) * band * 0.5;
+
 	color = mix(color, horizon_color, pow(t, 5.0));
 	ALBEDO = color;
 }

@@ -4,7 +4,7 @@ var hud: CanvasLayer
 
 
 func player_died():
-	hud = get_tree().get_root().get_node("Node3D/HUD")
+	hud = get_tree().current_scene.get_node_or_null("HUD")
 	if hud:
 		hud.show_death_screen()
 	else:
@@ -12,7 +12,7 @@ func player_died():
 
 
 func win():
-	hud = get_tree().get_root().get_node("Node3D/HUD")
+	hud = get_tree().current_scene.get_node_or_null("HUD")
 	if hud:
 		hud.show_win_screen()
 	else:

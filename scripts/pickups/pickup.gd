@@ -35,20 +35,35 @@ var scale_map = {
 	"Points": Vector3(gold_bar_scale_factor, gold_bar_scale_factor, gold_bar_scale_factor)
 }
 
+var model_instance: Node3D
+
+
 func _ready() -> void:
 	mesh_instance_3d.visible = false
-	
+	base_y = position.y
+	_build_model()
+
+
+# Pickups placed from a map entity get their properties (type, weapon_id...) after _ready has already run,
+# so the model is rebuilt then; otherwise every map pickup would show the scene's default type.
+func _func_godot_apply_properties(_properties: Dictionary) -> void:
+	if is_node_ready():
+		_build_model()
+
+
+func _build_model() -> void:
+	if model_instance:
+		model_instance.queue_free()
+		model_instance = null
 	var model_scene
 	if type == "Ammo":
-		model_scene = load(ammo_paths[weapon_id])
+		model_scene = load(ammo_paths[weapon_id]) if ammo_paths.has(weapon_id) else load(ammo_paths["shotgun"])
 	else:
-		model_scene = load(model_paths[type])
-	
-	var model_instance = model_scene.instantiate()
-	model_instance.scale = scale_map[type]
+		model_scene = load(model_paths[type]) if model_paths.has(type) else load(model_paths["Points"])
+	model_instance = model_scene.instantiate()
+	model_instance.scale = scale_map.get(type, scale_map["Points"])
 	add_child(model_instance)
 
-	base_y = position.y
 
 func _process(delta):
 	t += delta
