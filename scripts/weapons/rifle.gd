@@ -8,10 +8,11 @@ var quickness = "rifle_quickness"
 var chain_shot = "rifle_chain_shot"
 
 # --- Chain Lightning Parameters ---
-var chain_radius = 8.0
-var max_chains = 4
+var chain_radius = 8.0        # how far (meters) the lightning can jump to the next enemy
+var max_targets = 8           # most enemies one shot can hit, including the one that was shot
 var chain_damage = 50
 var chain_cooldown = 2.0
+const CHAIN_HOP_DELAY := 0.1  # seconds between jumps
 
 # --- Quickness Buff Parameters ---
 var enemies_killed: int = 0
@@ -74,13 +75,11 @@ func alt_fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: R
 				collider.damage(chain_damage)
 				flash_hit_enemy(collider, raycast.get_collision_point())
 
-				var chain_target = collider
-				if collider.owner_enemy:
-					chain_target = collider.owner_enemy
-
+				# The hit can be a hurtbox or a shield; the chain starts from the enemy it belongs to
+				var chain_target = get_hit_enemy(collider)
 				if chain_target:
 					ElectricAura.apply(chain_target)
-					_start_chain_lightning(chain_target, chain_damage * 0.8, 1, [])
+					_run_chain(chain_target)
 
 			else:
 				print("Hit non-enemy:", collider)
@@ -102,122 +101,41 @@ func _chain_hit_effects(target: Node3D, from_position: Vector3) -> void:
 	ElectricAura.apply(target)
 
 
-func _start_chain_lightning(first_target: Node3D, damage: float, depth: int, visited: Array):
-	if depth >= max_chains:
-		return
-	if not first_target:
-		return
-
-	var enemy = first_target
-	if "owner_enemy" in first_target and first_target.owner_enemy:
-		enemy = first_target.owner_enemy
-	if not is_instance_valid(enemy):
-		return
-	if enemy.is_in_group("Player"):
-		return
-
-	var start_pos = enemy.global_position
-	if enemy not in visited:
-		visited.append(enemy)
-
-	var next_target = _find_next_enemy_sphere(enemy, visited, chain_radius)
-	if not next_target:
-		return
-
-	var end_pos = next_target.global_position
-	_spawn_lightning_arc(start_pos, end_pos)
-
-	if is_instance_valid(next_target) and next_target.has_method("damage"):
-		next_target.damage(chain_damage, 1)
-		_chain_hit_effects(next_target, start_pos)
-
-	await get_tree().create_timer(0.1).timeout
-	if is_instance_valid(next_target):
-		print("Chaining to:", next_target.name, " | Depth:", depth, " | Damage:", damage * 0.8)
-		_start_chain_lightning(next_target, chain_damage * 0.8, depth + 1, visited)
-	else:
-		_continue_chain_from_position(end_pos, chain_damage * 0.8, depth + 1, visited)
-
-func _continue_chain_from_position(chain_position: Vector3, damage: float, depth: int, visited: Array) -> void:
-	if depth >= max_chains:
-		return
-
-	var next_target = _find_next_enemy_from_position(chain_position, visited, chain_radius)
-	if not is_instance_valid(next_target):
-		return
-
-	_spawn_lightning_arc(chain_position, next_target.global_position)
-
-	if next_target.has_method("damage"):
-		next_target.damage(chain_damage, 1)
-		_chain_hit_effects(next_target, chain_position)
-
-	var next_pos = next_target.global_position
-
-	await get_tree().create_timer(0.1).timeout
-
-	if is_instance_valid(next_target):
-		_start_chain_lightning(next_target, chain_damage * 0.8, depth, visited)
-	else:
-		_continue_chain_from_position(next_pos, chain_damage * 0.8, depth, visited)
+# Jumps from enemy to enemy, always to the nearest one not hit yet, until max_targets are hit or nobody is in range.
+func _run_chain(first_enemy: Node3D) -> void:
+	var visited: Array = [first_enemy]
+	var from_position := first_enemy.global_position
+	while visited.size() < max_targets:
+		var next_enemy := _find_next_enemy(from_position, visited)
+		if next_enemy == null:
+			return
+		visited.append(next_enemy)
+		_spawn_lightning_arc(from_position, next_enemy.global_position)
+		next_enemy.damage(chain_damage, 1)
+		_chain_hit_effects(next_enemy, from_position)
+		# Remembered now: the enemy may die and be freed before the next jump
+		from_position = next_enemy.global_position
+		await get_tree().create_timer(CHAIN_HOP_DELAY).timeout
 
 
-func _find_next_enemy_sphere(last_target: Node3D, visited: Array, radius: float) -> Node3D:
-	var space = get_world_3d().direct_space_state
-	var params = PhysicsShapeQueryParameters3D.new()
-	var sphere = SphereShape3D.new()
-	sphere.radius = radius
-	params.shape = sphere
-	params.transform.origin = last_target.global_position
-	params.collide_with_areas = true
-	params.collide_with_bodies = true
-
-	var results = space.intersect_shape(params)
+# The nearest living enemy within chain_radius of a point that has not been hit by this chain yet.
+# Looks through the Enemy group instead of running a physics query: an overlap query only returns a limited
+# number of shapes, and every enemy has a dozen hurtbox and vision areas, so in a crowd it missed most enemies.
+func _find_next_enemy(from_position: Vector3, visited: Array) -> Node3D:
 	var best: Node3D = null
-	var best_d2 := INF
-
-	for r in results:
-		var c = r["collider"]
-		if not c or c == last_target or c in visited:
+	var best_d2: float = chain_radius * chain_radius
+	for candidate in get_tree().get_nodes_in_group("Enemy"):
+		var enemy := candidate as Node3D
+		if enemy == null or enemy in visited or not enemy.has_method("damage"):
 			continue
-		var target = c
-		if "owner_enemy" in c and c.owner_enemy:
-			target = c.owner_enemy
-		if target in visited or not target.has_method("damage") or target.is_in_group("Player"):
+		if enemy.get("destroyed") == true:
 			continue
-		var d2 = last_target.global_position.distance_squared_to(target.global_position)
-		if d2 < best_d2:
+		var d2 := from_position.distance_squared_to(enemy.global_position)
+		if d2 <= best_d2:
 			best_d2 = d2
-			best = target
+			best = enemy
 	return best
 
-func _find_next_enemy_from_position(pos: Vector3, visited: Array, radius: float) -> Node3D:
-	var space = get_world_3d().direct_space_state
-	var params = PhysicsShapeQueryParameters3D.new()
-	var sphere = SphereShape3D.new()
-	sphere.radius = radius
-	params.shape = sphere
-	params.transform.origin = pos
-	params.collide_with_bodies = true
-
-	var results = space.intersect_shape(params)
-	var best: Node3D = null
-	var best_d2 := INF
-
-	for r in results:
-		var c = r["collider"]
-		if not c or c in visited:
-			continue
-		var target = c
-		if "owner_enemy" in c and c.owner_enemy:
-			target = c.owner_enemy
-		if target in visited or not target.has_method("damage") or target.is_in_group("Player"):
-			continue
-		var d2 = pos.distance_squared_to(target.global_position)
-		if d2 < best_d2:
-			best_d2 = d2
-			best = target
-	return best
 
 func _spawn_lightning_arc(start: Vector3, end: Vector3):
 	var mesh_instance := MeshInstance3D.new()

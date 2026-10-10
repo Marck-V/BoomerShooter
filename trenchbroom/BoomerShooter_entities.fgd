@@ -6,10 +6,14 @@
 ]
 
 @PointClass color(255 64 64) size(-16 -16 0, 16 16 56) = enemy_horde : "Melee enemy that runs at the player."
-[]
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
 
 @PointClass color(255 128 51) size(-16 -16 0, 16 16 56) = enemy_ranged : "Ranged enemy that fires energy balls."
-[]
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
 
 @PointClass color(255 217 51) size(-8 -8 0, 8 8 16) = pickup : "Pickup. Pick the type; weapon_id only matters for Ammo."
 [
@@ -19,3 +23,17 @@
 	ammo_amount(integer) : "Ammo given (Ammo only)" : 100
 	points_amount(integer) : "Points given (Points only)" : 500
 ]
+
+@SolidClass color(51 153 255) = wave_trigger : "Invisible volume. When the player enters, every enemy with the same wave spawns in."
+[
+	wave(string) : "Wave name (match the enemies and door)" : "arena"
+]
+
+@SolidClass color(255 77 77) = locked_door : "Door that slides down into the floor to open and back up to close, driven by its wave."
+[
+	wave(string) : "Wave name (match the trigger and enemies)" : "arena"
+	starts_open(integer) : "0 = shut at the start, opens when the wave is dead. 1 = open at the start, shuts when the wave begins and reopens when it is dead" : 0
+]
+
+@PointClass color(51 255 102) size(-8 -8 -8, 8 8 8) = grapple_point : "Small green sphere. Hit it with the thrown shield (G) to be pulled to it; refreshes jumps and dash."
+[]

@@ -6,7 +6,6 @@ extends RefCounted
 # Use: BloodDecals.splatter(tree, point, shot_direction, amount_scale)
 #      BloodDecals.burst(tree, point, amount_scale)
 
-const ENVIRONMENT_MASK := 2          # physics layer 2 ("Environment")
 const TEXTURE_SIZE := 64
 const TEXTURE_VARIANTS := 4
 const MAX_DECALS := 36
@@ -45,14 +44,7 @@ static func burst(tree: SceneTree, point: Vector3, amount_scale := 1.0) -> void:
 
 
 static func _cast_splat(tree: SceneTree, from: Vector3, dir: Vector3, length: float, splat_size: float) -> void:
-	var world := tree.root.world_3d
-	if world == null:
-		return
-
-	var query := PhysicsRayQueryParameters3D.create(from, from + dir * length)
-	query.collision_mask = ENVIRONMENT_MASK
-	query.collide_with_areas = false
-	var hit := world.direct_space_state.intersect_ray(query)
+	var hit := PhysicsLayers.surface_ray(tree, from, from + dir * length)
 	if hit.is_empty():
 		return
 

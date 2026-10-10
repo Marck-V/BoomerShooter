@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDSolidClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_solid_class.gd" id="1_solid"]
+[ext_resource type="Script" path="res://scripts/levels/wave_trigger.gd" id="2_script"]
+
+[resource]
+script = ExtResource("1_solid")
+spawn_type = 2
+origin_type = 4
+build_visuals = false
+build_occlusion = false
+collision_shape_type = 1
+collision_layer = 0
+collision_mask = 1
+script_class = ExtResource("2_script")
+classname = "wave_trigger"
+description = "Invisible volume. When the player enters, every enemy with the same wave spawns in."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"wave": "arena"
+}
+class_property_descriptions = {
+"wave": "Wave name (match the enemies and door)"
+}
+meta_properties = {
+"color": Color(0.2, 0.6, 1, 0.5)
+}
+node_class = "Area3D"
