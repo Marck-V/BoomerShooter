@@ -9,6 +9,7 @@
 [ext_resource type="PackedScene" uid="uid://dj4fos65tkh47" path="res://scenes/weapons/shotgun.tscn" id="8_4vq5b"]
 [ext_resource type="Material" uid="uid://0mxnekxrkyw0" path="res://shaders/psx_post_material.tres" id="8_qek5x"]
 [ext_resource type="PackedScene" path="res://scenes/weapons/flamethrower.tscn" id="9_flame"]
+[ext_resource type="PackedScene" path="res://scenes/weapons/lightning_gun.tscn" id="10_lightning"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gdq8c"]
 radius = 0.3
@@ -88,6 +89,10 @@ data = ExtResource("6_smehm")
 
 [node name="Flamethrower" parent="Head/Camera/WeaponHolder" unique_id=816993645 instance=ExtResource("9_flame")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.17, -0.15, -0.35)
+
+[node name="LightningGun" parent="Head/Camera/WeaponHolder" instance=ExtResource("10_lightning")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.11, -0.1, -0.1)
+visible = false
 
 [node name="SlideCheck" type="RayCast3D" parent="." unique_id=701430582]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.075, 0.18)

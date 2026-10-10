@@ -1,10 +1,12 @@
 extends Node3D
 
-# Offhand shield. Parry (F) reflects enemy projectiles back at enemies; throw (G) sends the shield
+# Offhand shield. Parry (right click) reflects enemy projectiles back at enemies; throw (F) sends the shield
 # out to bounce between enemies and return. Attached to the player's camera, built entirely in code.
 
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
+const ShieldModel = preload("res://scripts/player/shield_model.gd")
+const ShieldTrail = preload("res://scripts/player/shield_trail.gd")
 const CLANG_SOUND := "res://assets/sounds/bullet_hit_metal.mp3"
 const THROW_SOUND := "assets/sounds/simple_whoosh.mp3"
 
@@ -51,6 +53,18 @@ const GRAPPLE_COLOR := Color(0.4, 2.4, 0.9)
 const GRAPPLE_MASK := 64    # PhysicsLayers.GRAPPLE
 const ROPE_THICKNESS := 0.05
 
+# Glow colors for the shield states (rim and gem are HDR so they bloom)
+const RIM_BASE := Color(2.6, 1.9, 0.3)
+const GEM_BASE := Color(0.4, 2.0, 2.6)
+const RIM_PARRY := Color(4.2, 3.8, 1.8)         # hot white-yellow, brighter than the resting yellow rim
+const GEM_PARRY := Color(3.6, 3.4, 2.0)
+const RIM_GRAPPLE := Color(0.5, 3.0, 1.1)       # green, like the grapple points
+const GEM_GRAPPLE := Color(0.6, 3.0, 1.2)
+const FLASH_COLOR := Color(2.6, 3.4, 3.8)       # cold white flash when the shield is caught or ready again
+const RECOVER_DIM := 0.3                        # rim and gem brightness while the shield recovers
+const BODY_DIM := 0.55
+const FLASH_DECAY := 4.0
+
 static var _glow_texture: GradientTexture2D
 static var _clang_stream: AudioStream
 
@@ -93,6 +107,8 @@ var visited_ids: Array[int] = []
 var bounce_target: Node3D
 var grapple_point: Node3D
 var rope: MeshInstance3D
+var flash := 0.0
+var previous_state := State.READY
 
 
 func _ready() -> void:
@@ -124,11 +140,58 @@ func _process(delta: float) -> void:
 			_update_thrown(delta)
 
 	_animate_hand(delta)
+	_update_glow(delta)
 
 
 func _set_state(new_state: State, timer := 0.0) -> void:
 	state = new_state
 	state_timer = timer
+
+
+# ---------------------------
+# Glow states
+# ---------------------------
+# Rim and gem show what the shield can do: bright yellow while the parry window is open (dimming as it runs
+# out), dim while recovering with a flash when it is ready again, a flash when caught, and green while grappling.
+func _update_glow(delta: float) -> void:
+	flash = maxf(flash - delta * FLASH_DECAY, 0.0)
+	if state == State.READY and previous_state == State.RECOVER:
+		flash = maxf(flash, 0.8)
+	previous_state = state
+
+	var rim := RIM_BASE
+	var gem := GEM_BASE
+	var body := 1.0
+	match state:
+		State.PARRY:
+			var window_left := clampf(state_timer / maxf(parry_window, 0.01), 0.0, 1.0)
+			var strength := 0.3 + 0.7 * window_left
+			rim = RIM_BASE.lerp(RIM_PARRY, strength)
+			gem = GEM_BASE.lerp(GEM_PARRY, strength)
+		State.RECOVER:
+			rim = _scaled(RIM_BASE, RECOVER_DIM)
+			gem = _scaled(GEM_BASE, RECOVER_DIM)
+			body = BODY_DIM
+	_apply_glow(hand, rim.lerp(FLASH_COLOR, flash), gem.lerp(FLASH_COLOR, flash), body)
+
+	if is_instance_valid(thrown_spinner):
+		if phase == Phase.GRAPPLE:
+			_apply_glow(thrown_spinner, RIM_GRAPPLE, GEM_GRAPPLE, 1.0)
+		else:
+			_apply_glow(thrown_spinner, RIM_BASE, GEM_BASE, 1.0)
+
+
+func _scaled(color: Color, factor: float) -> Color:
+	return Color(color.r * factor, color.g * factor, color.b * factor, 1.0)
+
+
+func _apply_glow(model: Node, rim: Color, gem: Color, body: float) -> void:
+	if model == null or not model.has_meta("mats"):
+		return
+	var mats: Dictionary = model.get_meta("mats")
+	(mats["rim"] as StandardMaterial3D).albedo_color = rim
+	(mats["gem"] as StandardMaterial3D).albedo_color = gem
+	(mats["body"] as StandardMaterial3D).albedo_color = Color(body, body, body, 1.0)
 
 
 # ---------------------------
@@ -275,7 +338,7 @@ func _set_edge_intensity(value: float) -> void:
 	edge_material.set_shader_parameter("intensity", value)
 
 
-func _shockwave_ring(point: Vector3) -> void:
+func _shockwave_ring(point: Vector3, size := RING_SIZE, tint := Color(4.0, 3.4, 1.0)) -> void:
 	if _ring_texture == null:
 		var gradient := Gradient.new()
 		gradient.offsets = PackedFloat32Array([0.0, 0.6, 0.82, 0.92, 1.0])
@@ -302,7 +365,7 @@ func _shockwave_ring(point: Vector3) -> void:
 	material.billboard_keep_scale = true
 	material.no_depth_test = true
 	material.albedo_texture = _ring_texture
-	material.albedo_color = Color(4.0, 3.4, 1.0)
+	material.albedo_color = tint
 
 	var ring := MeshInstance3D.new()
 	ring.mesh = QuadMesh.new()
@@ -313,7 +376,7 @@ func _shockwave_ring(point: Vector3) -> void:
 	ring.global_position = point
 
 	var tween := ring.create_tween().set_parallel(true).set_ignore_time_scale(true)
-	tween.tween_property(ring, "scale", Vector3.ONE * RING_SIZE, RING_TIME).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	tween.tween_property(ring, "scale", Vector3.ONE * size, RING_TIME).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
 	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0), RING_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.chain().tween_callback(ring.queue_free)
 
@@ -340,6 +403,10 @@ func _start_throw() -> void:
 	thrown.add_child(light)
 	get_tree().current_scene.add_child(thrown)
 	thrown.global_position = start
+
+	var trail := ShieldTrail.new()
+	trail.target = thrown
+	thrown.add_child(trail)
 
 	phase = Phase.OUT
 	traveled = 0.0
@@ -434,13 +501,23 @@ func _update_return(delta: float) -> void:
 
 func _catch() -> void:
 	_remove_rope()
-	_pop(thrown.global_position, PARRY_COLOR, 0.8)
+	var point := hand.global_position     # the burst happens at the hand, where the shield lands
+	_pop(point, FLASH_COLOR, 0.55)
+	_shockwave_ring(point, 0.65, Color(0.9, 3.0, 3.4))
+	ImpactParticles.spawn(get_tree(), point, (camera.global_position - point).normalized(), 0.9)
 	_clang(thrown.global_position, 1.2)
 	thrown.queue_free()
 	thrown = null
 	bounce_target = null
 	visited_ids.clear()
-	hand_scale_kick = 0.3
+
+	# The shield slaps back into the hand: the rim flashes, it bumps and the camera gives a little
+	flash = 1.0
+	hand_scale_kick = 0.5
+	hand_velocity += Vector3(0.0, 0.0, 2.5)
+	var owner_player = GlobalVariables.player
+	if owner_player and is_instance_valid(owner_player):
+		owner_player.apply_camera_kick(0.02, 0.0)
 	_set_state(State.RECOVER, throw_cooldown)
 
 
@@ -612,41 +689,13 @@ func _nearest_enemy(from_position: Vector3, max_distance: float, need_line_of_si
 
 
 func _make_disc(face_forward: bool) -> Node3D:
-	var root := Node3D.new()
-
-	var body_material := StandardMaterial3D.new()
-	body_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	body_material.albedo_color = Color(0.3, 1.4, 2.0)
-	var cylinder := CylinderMesh.new()
-	cylinder.top_radius = 0.26
-	cylinder.bottom_radius = 0.26
-	cylinder.height = 0.035
-	cylinder.radial_segments = 32
-	cylinder.rings = 1
-	cylinder.material = body_material
-	var body := MeshInstance3D.new()
-	body.mesh = cylinder
-	body.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(body)
-
-	var rim_material := StandardMaterial3D.new()
-	rim_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	rim_material.albedo_color = Color(2.4, 0.4, 1.9)
-	var torus := TorusMesh.new()
-	torus.inner_radius = 0.235
-	torus.outer_radius = 0.285
-	torus.rings = 32
-	torus.ring_segments = 6
-	torus.material = rim_material
-	var rim := MeshInstance3D.new()
-	rim.mesh = torus
-	rim.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	root.add_child(rim)
+	var root := ShieldModel.build()
 
 	if face_forward:
 		root.rotation_degrees.x = 90.0
 		var holder := Node3D.new()
 		holder.add_child(root)
+		holder.set_meta("mats", root.get_meta("mats"))
 		return holder
 	return root
 

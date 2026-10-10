@@ -18,7 +18,7 @@ class_properties = {
 }
 class_property_descriptions = {
 "type": "Health, Ammo or Points",
-"weapon_id": "pistol, shotgun or rifle (Ammo only)",
+"weapon_id": "pistol, shotgun, rifle, flamethrower or lightning (Ammo only)",
 "healing_amount": "Health restored (Health only)",
 "ammo_amount": "Ammo given (Ammo only)",
 "points_amount": "Points given (Points only)"

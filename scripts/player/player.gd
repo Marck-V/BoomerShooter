@@ -227,7 +227,6 @@ func handle_controls(_delta):
 	rotation_target.x = clamp(rotation_target.x, deg_to_rad(-90), deg_to_rad(90))
 
 	action_shoot()
-	action_alt_fire()
 
 	if grappling and Input.is_action_just_pressed("jump"):
 		end_grapple(false)   # letting go with a jump; the jumps were refreshed when the shield latched on
@@ -344,11 +343,6 @@ func action_shoot():
 		current_weapon.fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
 		current_weapon.trigger_recoil()
 
-func action_alt_fire():
-	if current_weapon.has_method("alt_fire"):
-		if Input.is_action_just_pressed("alt_fire"):
-			current_weapon.alt_fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
-
 func action_dash():
 	if grappling and Input.is_action_just_pressed("dash"):
 		end_grapple(false)
@@ -440,6 +434,8 @@ func action_weapon_toggle():
 		change_weapon(2)
 	if Input.is_action_just_pressed("weapon_4") and weapon_nodes.size() >= 4:
 		change_weapon(3)
+	if Input.is_action_just_pressed("weapon_5") and weapon_nodes.size() >= 5:
+		change_weapon(4)
 
 func change_weapon(index):
 	if index == weapon_index:

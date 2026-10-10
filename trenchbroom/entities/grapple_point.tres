@@ -7,7 +7,7 @@
 script = ExtResource("1_point")
 script_class = ExtResource("2_script")
 classname = "grapple_point"
-description = "Small green sphere. Hit it with the thrown shield (G) to be pulled to it; refreshes jumps and dash."
+description = "Small green sphere. Hit it with the thrown shield (F) to be pulled to it; refreshes jumps and dash."
 auto_apply_to_matching_node_properties = false
 class_properties = {}
 class_property_descriptions = {}

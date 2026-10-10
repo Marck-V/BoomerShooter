@@ -14,15 +14,15 @@ class_name PlayerData
 	"shotgun_glitch_shot": false,
 
 	"rifle_firerate": false,
-	"rifle_quickness": false,
-	"rifle_chain_shot": false
+	"rifle_quickness": false
 }
 
 @export var ammo: Dictionary = {
 	"pistol": 50,
 	"shotgun": 50,
 	"rifle": 50,
-	"flamethrower": 50
+	"flamethrower": 50,
+	"lightning": 50
 }
 
 
