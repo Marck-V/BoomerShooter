@@ -153,15 +153,6 @@ text = "Quickness"
 upgrade_id = "rifle_quickness"
 description = "Killing 3 enemies in a short period of time grants a speed boost."
 
-[node name="RifleButton3" parent="Panel/TabContainer/Rifle/RifleButton1/RifleButton2" instance=ExtResource("2_0fsr2")]
-layout_mode = 0
-offset_top = 191.34
-offset_right = 120.0
-offset_bottom = 219.34
-text = "Chain shot"
-upgrade_id = "rifle_chain_shot"
-description = "Shoots out a beam of lightning that chains between enemies."
-
 [node name="PurchaseButton" type="Button" parent="Panel"]
 layout_mode = 2
 offset_left = 508.0
