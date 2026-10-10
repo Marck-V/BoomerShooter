@@ -18,7 +18,7 @@
 @PointClass color(255 217 51) size(-8 -8 0, 8 8 16) = pickup : "Pickup. Pick the type; weapon_id only matters for Ammo."
 [
 	type(string) : "Health, Ammo or Points" : "Health"
-	weapon_id(string) : "pistol, shotgun or rifle (Ammo only)" : "shotgun"
+	weapon_id(string) : "pistol, shotgun, rifle, flamethrower or lightning (Ammo only)" : "shotgun"
 	healing_amount(integer) : "Health restored (Health only)" : 25
 	ammo_amount(integer) : "Ammo given (Ammo only)" : 100
 	points_amount(integer) : "Points given (Points only)" : 500
@@ -35,5 +35,5 @@
 	starts_open(integer) : "0 = shut at the start, opens when the wave is dead. 1 = open at the start, shuts when the wave begins and reopens when it is dead" : 0
 ]
 
-@PointClass color(51 255 102) size(-8 -8 -8, 8 8 8) = grapple_point : "Small green sphere. Hit it with the thrown shield (G) to be pulled to it; refreshes jumps and dash."
+@PointClass color(51 255 102) size(-8 -8 -8, 8 8 8) = grapple_point : "Small green sphere. Hit it with the thrown shield (F) to be pulled to it; refreshes jumps and dash."
 []
