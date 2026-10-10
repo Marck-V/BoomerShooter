@@ -14,6 +14,10 @@ extends CharacterBody3D
 @export var wall_jump_push_time = 0.2
 @export var kick_recovery = 14.0
 @export var damage_flash_time = 0.4
+@export var grapple_speed := 34.0              # how fast the shield grapple pulls the player
+@export var grapple_arrive_distance := 1.8      # stops this close (camera to point) to the grapple point
+@export var grapple_max_time := 1.6
+@export var grapple_release_carry := 0.55       # share of the pull speed kept when it ends
 
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
@@ -52,6 +56,15 @@ var wall_push_velocity := Vector3.ZERO
 var wall_push_time_left := 0.0
 
 var camera_kick := Vector2.ZERO
+
+# Shield grapple: while true the player is pulled toward grapple_target and gravity is ignored
+var grappling := false
+var grapple_target := Vector3.ZERO
+var grapple_direction := Vector3.ZERO
+var grapple_velocity := Vector3.ZERO
+var grapple_time := 0.0
+var grapple_best_distance := INF
+var grapple_stuck_time := 0.0
 
 const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/damage_flash.gdshader")
 const OFFHAND_SHIELD = preload("res://scripts/player/offhand_shield.gd")
@@ -129,9 +142,14 @@ func _physics_process(delta):
 	if wall_push_time_left > 0.0:
 		wall_push_time_left -= delta
 
+	if grappling:
+		_process_grapple(delta)
+
 	movement_velocity = transform.basis * movement_velocity
 	var applied_velocity: Vector3
-	if dashing:
+	if grappling:
+		applied_velocity = grapple_velocity
+	elif dashing:
 		applied_velocity = dash_direction * dash_speed
 	elif wall_push_time_left > 0.0:
 		applied_velocity = wall_push_velocity
@@ -210,6 +228,9 @@ func handle_controls(_delta):
 
 	action_shoot()
 	action_alt_fire()
+
+	if grappling and Input.is_action_just_pressed("jump"):
+		end_grapple(false)   # letting go with a jump; the jumps were refreshed when the shield latched on
 
 	if Input.is_action_just_pressed("jump") and can_wall_jump():
 		do_wall_jump()
@@ -329,6 +350,9 @@ func action_alt_fire():
 			current_weapon.alt_fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
 
 func action_dash():
+	if grappling and Input.is_action_just_pressed("dash"):
+		end_grapple(false)
+
 	if Input.is_action_just_pressed("dash") and dash_cooldown_left <= 0.0:
 		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 		var local_direction: Vector3
@@ -342,6 +366,64 @@ func action_dash():
 		dash_time_left = dash_duration
 		dash_cooldown_left = dash_cooldown
 		Audio.play("assets/sounds/simple_whoosh.mp3")
+
+# ---------------------------
+# Shield grapple
+# ---------------------------
+# Gives back everything the player spends in the air: both jumps, the wall jump and the dash
+func refresh_air_moves() -> void:
+	jump_single = true
+	jump_double = true
+	wall_jump_used = false
+	dash_cooldown_left = 0.0
+
+
+func start_grapple(point: Vector3) -> void:
+	grappling = true
+	grapple_target = point
+	grapple_time = 0.0
+	grapple_best_distance = INF
+	grapple_stuck_time = 0.0
+	dashing = false
+	wall_push_time_left = 0.0
+	refresh_air_moves()
+
+
+func _process_grapple(delta: float) -> void:
+	var to_point: Vector3 = grapple_target - camera.global_position
+	var distance := to_point.length()
+	grapple_time += delta
+
+	if distance <= grapple_arrive_distance:
+		end_grapple(true)
+		return
+
+	grapple_direction = to_point / distance
+	# Give up when something blocks the way (no progress toward the point) or it takes too long
+	if distance < grapple_best_distance - 0.02:
+		grapple_best_distance = distance
+		grapple_stuck_time = 0.0
+	else:
+		grapple_stuck_time += delta
+	if grapple_stuck_time > 0.2 or grapple_time > grapple_max_time:
+		end_grapple(false)
+		return
+
+	grapple_velocity = grapple_direction * grapple_speed
+	gravity = -grapple_velocity.y     # the vertical part of the pull goes through the gravity variable
+
+
+# Ends the pull, keeping some of the speed so the player flies on a little. arrived = reached the point.
+func end_grapple(arrived: bool) -> void:
+	if not grappling:
+		return
+	grappling = false
+	var carry := grapple_direction * grapple_speed * grapple_release_carry
+	velocity = Vector3(carry.x, 0.0, carry.z)
+	gravity = -carry.y
+	if arrived:
+		refresh_air_moves()
+
 
 func apply_camera_kick(pitch: float, yaw: float) -> void:
 	camera_kick += Vector2(pitch, yaw)
