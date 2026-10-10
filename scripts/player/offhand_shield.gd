@@ -9,7 +9,7 @@ const CLANG_SOUND := "res://assets/sounds/bullet_hit_metal.mp3"
 const THROW_SOUND := "assets/sounds/simple_whoosh.mp3"
 
 enum State { READY, PARRY, RECOVER, THROWN }
-enum Phase { OUT, BOUNCE, RETURN }
+enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 
 # --- Parry ---
 @export var parry_window := 0.3
@@ -27,6 +27,7 @@ enum Phase { OUT, BOUNCE, RETURN }
 @export var catch_distance := 1.3
 @export var throw_cooldown := 0.4
 @export var max_flight_time := 6.0
+@export var grapple_aim_assist_degrees := 3.0   # a grapple point this close to the crosshair is aimed at for you
 
 const HELD_SCALE := 0.45
 const PARRY_SCALE := 0.85
@@ -46,6 +47,9 @@ const WORLD_MASK := 2       # Environment
 const HURTBOX_MASK := 8     # Enemy hurtboxes (shield hitboxes are on this layer too)
 const PARRY_COLOR := Color(0.4, 1.4, 2.4)
 const PARRY_YELLOW := Color(2.6, 1.9, 0.35)
+const GRAPPLE_COLOR := Color(0.4, 2.4, 0.9)
+const GRAPPLE_MASK := 64    # PhysicsLayers.GRAPPLE
+const ROPE_THICKNESS := 0.05
 
 static var _glow_texture: GradientTexture2D
 static var _clang_stream: AudioStream
@@ -87,6 +91,8 @@ var flight_time := 0.0
 var bounces := 0
 var visited_ids: Array[int] = []
 var bounce_target: Node3D
+var grapple_point: Node3D
+var rope: MeshInstance3D
 
 
 func _ready() -> void:
@@ -206,6 +212,7 @@ func _reflect(projectile: Node3D) -> void:
 # Throw
 # ---------------------------
 func _exit_tree() -> void:
+	_remove_rope()
 	# Never leave the game in slow motion if the player is freed mid hit-stop (death, scene reload)
 	Engine.time_scale = 1.0
 
@@ -317,9 +324,10 @@ func _start_throw() -> void:
 	# Aim at whatever is under the crosshair, so the shield flies where you are looking
 	var forward := -camera.global_basis.z
 	var aim_point := camera.global_position + forward * throw_range
-	var aim_hit := _raycast(camera.global_position, aim_point, WORLD_MASK | HURTBOX_MASK)
+	var aim_hit := _raycast(camera.global_position, aim_point, WORLD_MASK | HURTBOX_MASK | GRAPPLE_MASK)
 	if not aim_hit.is_empty():
 		aim_point = aim_hit["position"]
+	aim_point = _grapple_aim_assist(aim_point)
 	fly_dir = (aim_point - start).normalized()
 
 	thrown = Node3D.new()
@@ -350,7 +358,7 @@ func _update_thrown(delta: float) -> void:
 
 	flight_time += delta
 	thrown_spinner.rotate_y(delta * 22.0)
-	if flight_time > max_flight_time and phase != Phase.RETURN:
+	if flight_time > max_flight_time and phase != Phase.RETURN and phase != Phase.GRAPPLE:
 		phase = Phase.RETURN
 
 	match phase:
@@ -360,12 +368,14 @@ func _update_thrown(delta: float) -> void:
 			_update_bounce(delta)
 		Phase.RETURN:
 			_update_return(delta)
+		Phase.GRAPPLE:
+			_update_grapple()
 
 
 func _update_out(delta: float) -> void:
 	var from := thrown.global_position
 	var step := fly_dir * throw_speed * delta
-	var hit := _raycast(from, from + step, WORLD_MASK | HURTBOX_MASK)
+	var hit := _raycast(from, from + step, WORLD_MASK | HURTBOX_MASK | GRAPPLE_MASK)
 
 	if hit.is_empty():
 		thrown.global_position = from + step
@@ -376,6 +386,9 @@ func _update_out(delta: float) -> void:
 
 	var point: Vector3 = hit["position"]
 	thrown.global_position = point
+	if hit["collider"] is Node and (hit["collider"] as Node).is_in_group("GrapplePoint"):
+		_attach_to_grapple(hit["collider"] as Node3D)
+		return
 	var enemy := _enemy_from_collider(hit["collider"])
 	if enemy:
 		_hit_enemy(enemy, point)
@@ -420,6 +433,7 @@ func _update_return(delta: float) -> void:
 
 
 func _catch() -> void:
+	_remove_rope()
 	_pop(thrown.global_position, PARRY_COLOR, 0.8)
 	_clang(thrown.global_position, 1.2)
 	thrown.queue_free()
@@ -428,6 +442,105 @@ func _catch() -> void:
 	visited_ids.clear()
 	hand_scale_kick = 0.3
 	_set_state(State.RECOVER, throw_cooldown)
+
+
+# ---------------------------
+# Grapple
+# ---------------------------
+# Among the grapple points near the crosshair, picks the closest one to the aim line (if nothing blocks it
+# and it is not behind whatever the throw would hit) and returns it; otherwise returns the original aim point.
+func _grapple_aim_assist(aim_point: Vector3) -> Vector3:
+	if grapple_aim_assist_degrees <= 0.0:
+		return aim_point
+	var forward := -camera.global_basis.z
+	var max_distance := camera.global_position.distance_to(aim_point) + 0.5
+	var best_angle := deg_to_rad(grapple_aim_assist_degrees)
+	var best_point := aim_point
+	for candidate in get_tree().get_nodes_in_group("GrapplePoint"):
+		var point_node := candidate as Node3D
+		if point_node == null:
+			continue
+		var to_point := point_node.global_position - camera.global_position
+		var distance := to_point.length()
+		if distance > throw_range or distance > max_distance:
+			continue
+		var angle := forward.angle_to(to_point)
+		if angle >= best_angle:
+			continue
+		if not _raycast(camera.global_position, point_node.global_position, WORLD_MASK).is_empty():
+			continue
+		best_angle = angle
+		best_point = point_node.global_position
+	return best_point
+
+
+# The shield hit a grapple point: it sticks there and the player is pulled over to it
+func _attach_to_grapple(point_node: Node3D) -> void:
+	var player := get_tree().get_first_node_in_group("Player")
+	if player == null or not player.has_method("start_grapple"):
+		phase = Phase.RETURN
+		return
+	grapple_point = point_node
+	thrown.global_position = point_node.global_position
+	if point_node.has_method("on_grappled"):
+		point_node.on_grappled()
+	_pop(point_node.global_position, GRAPPLE_COLOR, 1.3)
+	_clang(point_node.global_position, 1.4)
+	Audio.play(THROW_SOUND)
+	_make_rope()
+	player.start_grapple(point_node.global_position)
+	phase = Phase.GRAPPLE
+
+
+func _update_grapple() -> void:
+	var player := get_tree().get_first_node_in_group("Player")
+	var pulling: bool = player != null and player.get("grappling") == true
+	if pulling and Input.is_action_just_pressed("throw_shield"):
+		player.end_grapple(false)      # throwing again lets go
+		pulling = false
+	if not pulling or not is_instance_valid(grapple_point):
+		_remove_rope()
+		grapple_point = null
+		phase = Phase.RETURN
+		return
+	thrown.global_position = grapple_point.global_position
+	_update_rope()
+
+
+# A glowing green line from the player's hand to the shield while they are being pulled
+func _make_rope() -> void:
+	_remove_rope()
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = Color(0.4, 2.2, 0.9)
+	material.disable_fog = true
+	var box := BoxMesh.new()
+	box.size = Vector3(ROPE_THICKNESS, ROPE_THICKNESS, 1.0)
+	box.material = material
+	rope = MeshInstance3D.new()
+	rope.mesh = box
+	rope.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	get_tree().current_scene.add_child(rope)
+	_update_rope()
+
+
+func _update_rope() -> void:
+	if not is_instance_valid(rope) or not is_instance_valid(thrown):
+		return
+	var from := camera.global_position + camera.global_basis * HAND_OFFSET
+	var to := thrown.global_position
+	var length := from.distance_to(to)
+	if length < 0.05:
+		return
+	rope.global_position = (from + to) * 0.5
+	rope.look_at(to, Vector3.UP if absf((to - from).normalized().y) < 0.99 else Vector3.RIGHT)
+	rope.scale = Vector3(1.0, 1.0, length)
+
+
+func _remove_rope() -> void:
+	if is_instance_valid(rope):
+		rope.queue_free()
+	rope = null
 
 
 func _hit_enemy(enemy: Node3D, point: Vector3) -> void:
