@@ -10,13 +10,14 @@ const ShieldTrail = preload("res://scripts/player/shield_trail.gd")
 const CLANG_SOUND := "res://assets/sounds/bullet_hit_metal.mp3"
 const THROW_SOUND := "assets/sounds/simple_whoosh.mp3"
 
-enum State { READY, PARRY, RECOVER, THROWN }
+enum State { READY, PARRY, RECOVER, THROWN, BLOCK }
 enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 
 # --- Parry ---
 @export var parry_window := 0.3
 @export var parry_cooldown := 0.7          # after a missed parry
 @export var parry_success_cooldown := 0.15 # after reflecting something
+@export var block_release_cooldown := 0.15 # after letting go of a block
 @export var parry_range := 4.0
 
 # --- Throw ---
@@ -31,14 +32,15 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 @export var max_flight_time := 6.0
 @export var grapple_aim_assist_degrees := 3.0   # a grapple point this close to the crosshair is aimed at for you
 
-const HELD_SCALE := 0.45
-const PARRY_SCALE := 0.85
-const HELD_POS := Vector3(-0.38, -0.3, -0.6)
-const HELD_ROT := Vector3(0.0, 22.0, 0.0)
-const PARRY_POS := Vector3(-0.02, -0.08, -0.75)
-const PARRY_ROT := Vector3(0.0, 0.0, 0.0)
-const RECOVER_POS := Vector3(-0.38, -0.38, -0.55)
-const HAND_OFFSET := Vector3(-0.3, -0.25, -0.6)
+const HELD_SCALE := 1.15
+const BLOCK_SCALE := 1.0
+const PARRY_SCALE := 1.0
+const HELD_POS := Vector3(-0.7, -0.42, -0.62)
+const HELD_ROT := Vector3(10.0, 52.0, -8.0)
+const PARRY_POS := Vector3(-0.06, -0.3, -0.72)    # parry and block: in front of you, low and near the center
+const PARRY_ROT := Vector3(-8.0, 0.0, 0.0)
+const RECOVER_POS := Vector3(-0.7, -0.52, -0.58)
+const HAND_OFFSET := Vector3(-0.55, -0.35, -0.6)
 const HAND_STIFFNESS := 700.0
 const HAND_DAMPING := 26.0
 const PARRY_PULLBACK := Vector3(0.0, -0.05, 0.3)   # where the shield starts before slamming forward
@@ -131,7 +133,14 @@ func _process(delta: float) -> void:
 			_check_parry()
 			state_timer -= delta
 			if state == State.PARRY and state_timer <= 0.0:
-				_set_state(State.RECOVER, parry_cooldown)
+				# Still holding right click once the parry window closes: keep the shield up as a block
+				if Input.is_action_pressed("parry"):
+					_set_state(State.BLOCK)
+				else:
+					_set_state(State.RECOVER, parry_cooldown)
+		State.BLOCK:
+			if not Input.is_action_pressed("parry"):
+				_set_state(State.RECOVER, block_release_cooldown)
 		State.RECOVER:
 			state_timer -= delta
 			if state_timer <= 0.0:
@@ -146,6 +155,10 @@ func _process(delta: float) -> void:
 func _set_state(new_state: State, timer := 0.0) -> void:
 	state = new_state
 	state_timer = timer
+	# While the shield is up (parry window or block) enemy projectiles that reach the player are absorbed
+	var player = GlobalVariables.player
+	if player and is_instance_valid(player):
+		player.shield_blocking = new_state == State.PARRY or new_state == State.BLOCK
 
 
 # ---------------------------
@@ -168,6 +181,9 @@ func _update_glow(delta: float) -> void:
 			var strength := 0.3 + 0.7 * window_left
 			rim = RIM_BASE.lerp(RIM_PARRY, strength)
 			gem = GEM_BASE.lerp(GEM_PARRY, strength)
+		State.BLOCK:
+			rim = RIM_BASE.lerp(RIM_PARRY, 0.45)
+			gem = GEM_BASE.lerp(GEM_PARRY, 0.45)
 		State.RECOVER:
 			rim = _scaled(RIM_BASE, RECOVER_DIM)
 			gem = _scaled(GEM_BASE, RECOVER_DIM)
@@ -210,6 +226,10 @@ func _animate_hand(delta: float) -> void:
 			target_pos = PARRY_POS
 			target_rot = PARRY_ROT
 			target_scale = PARRY_SCALE
+		State.BLOCK:
+			target_pos = PARRY_POS + Vector3(0.0, sin(Time.get_ticks_msec() * 0.012) * 0.004, 0.0)
+			target_rot = PARRY_ROT
+			target_scale = BLOCK_SCALE
 		State.RECOVER:
 			target_pos = RECOVER_POS
 
@@ -245,6 +265,19 @@ func _check_parry() -> void:
 		if to_projectile.length() > parry_range or to_projectile.normalized().dot(forward) < 0.0:
 			continue
 		_reflect(projectile)
+
+
+# A projectile reached the player while the shield was up: it is absorbed instead of hurting
+func on_block_hit(point: Vector3) -> void:
+	_clang(point, 1.0)
+	_pop(point, PARRY_YELLOW, 0.9)
+	ImpactParticles.spawn(get_tree(), point, (camera.global_position - point).normalized(), 1.0)
+	hand_velocity += Vector3(0.0, 0.0, 1.6)
+	hand_scale_kick = 0.2
+	flash = maxf(flash, 0.7)
+	var owner_player = GlobalVariables.player
+	if owner_player and is_instance_valid(owner_player):
+		owner_player.apply_camera_kick(0.03, randf_range(-0.01, 0.01))
 
 
 func _reflect(projectile: Node3D) -> void:
