@@ -14,6 +14,7 @@ extends CharacterBody3D
 @export var wall_jump_push_time = 0.2
 @export var kick_recovery = 14.0
 @export var damage_flash_time = 0.4
+@export var kill_height := -70.0      # falling below this restarts the level (the sky course drops far below the floor)
 @export var grapple_speed := 34.0              # how fast the shield grapple pulls the player
 @export var grapple_arrive_distance := 1.8      # stops this close (camera to point) to the grapple point
 @export var grapple_max_time := 1.6
@@ -56,6 +57,10 @@ var wall_push_velocity := Vector3.ZERO
 var wall_push_time_left := 0.0
 
 var camera_kick := Vector2.ZERO
+
+# Set by the offhand shield: true while it is up (parry window or block), so projectiles can be absorbed
+var shield_blocking := false
+var offhand_shield: Node
 
 # Shield grapple: while true the player is pulled toward grapple_target and gravity is ignored
 var grappling := false
@@ -110,7 +115,8 @@ func _ready():
 	GlobalVariables.player = self
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
 	_setup_damage_flash()
-	camera.add_child(OFFHAND_SHIELD.new())
+	offhand_shield = OFFHAND_SHIELD.new()
+	camera.add_child(offhand_shield)
 	crosshair.texture = current_weapon.data.crosshair
 	weapon_changed.emit(current_weapon)
 
@@ -180,7 +186,7 @@ func _physics_process(delta):
 	previously_floored = is_on_floor()
 	
 
-	if position.y < -20:
+	if position.y < kill_height:
 		get_tree().reload_current_scene()
 
 func _input(event):

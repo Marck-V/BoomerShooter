@@ -25,6 +25,15 @@ class Entity:
         return tuple(float(v) for v in self.props["origin"].split())
 
 
+WORLD_BRUSH = re.compile(r"// brush \d+[^\n]*\n\{\n((?:\(.*\n)+)\}\n?")
+
+
+def brush_bounds(brush_text):
+    """((x0, x1), (y0, y1), (z0, z1)) of a brush, from its plane points."""
+    points = [tuple(int(v) for v in p) for p in re.findall(r"\( (-?\d+) (-?\d+) (-?\d+) \)", brush_text)]
+    return tuple((min(p[i] for p in points), max(p[i] for p in points)) for i in range(3))
+
+
 class MapFile:
     def __init__(self, path):
         self.path = path
@@ -42,6 +51,32 @@ class MapFile:
         removed = len(self.entities) - len(kept)
         self.entities = kept
         return removed
+
+    def world_brushes(self):
+        """[(match, bounds)] for every brush of worldspawn."""
+        return [(m, brush_bounds(m.group(1))) for m in WORLD_BRUSH.finditer(self.head)]
+
+    def remove_world_brushes(self, predicate):
+        """Remove worldspawn brushes whose bounds satisfy predicate(bounds). Returns how many."""
+        kept = []
+        position = 0
+        removed = 0
+        for match, bounds in self.world_brushes():
+            kept.append(self.head[position:match.start()])
+            position = match.end()
+            if predicate(bounds):
+                removed += 1
+            else:
+                kept.append(match.group(0))
+        kept.append(self.head[position:])
+        self.head = "".join(kept)
+        return removed
+
+    def add_world_brush(self, text):
+        """Add a brush to worldspawn (the head ends with worldspawn's closing brace)."""
+        body = self.head.rstrip(NL)
+        assert body.endswith("}"), "unexpected map header"
+        self.head = body[:-1].rstrip(NL) + NL + text.rstrip(NL) + NL + "}" + NL
 
     def add(self, text):
         self.entities.append(Entity(text.rstrip(NL)))
