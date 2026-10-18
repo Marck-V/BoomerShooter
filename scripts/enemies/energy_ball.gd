@@ -159,11 +159,24 @@ func _on_body_entered(body):
 		queue_free()
 		return
 
+	if body.is_in_group("Player") and body.get("shield_blocking") == true and _is_in_front_of(body):
+		body.offhand_shield.on_block_hit(global_position)
+		queue_free()
+		return
+
 	if body.is_in_group("Player") and body.has_method("damage"):
 		audio_player.play("assets/audio/sfx/enemies/Enemy_ProjectileHit1.wav,
 						   assets/audio/sfx/enemies/Enemy_ProjectileHit2.wav")
 		body.damage(damage)
 	queue_free()
+
+
+# Only shots coming from the front hit the shield; one from behind still hurts
+func _is_in_front_of(player: Node3D) -> bool:
+	var camera := player.get_viewport().get_camera_3d()
+	if camera == null:
+		return false
+	return (global_position - camera.global_position).dot(-camera.global_basis.z) > 0.0
 
 
 func _on_self_queue_timer_timeout():
