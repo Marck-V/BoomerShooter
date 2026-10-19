@@ -87,6 +87,8 @@ func perform_attack():
 		"assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav, \
 		 assets/audio/sfx/enemies/Enemy_Shoot2_PitchedUp.wav")
 	
+	energy_ball_instance.shooter = self
+
 	if energy_ball_instance.has_method("set_target"):
 		energy_ball_instance.set_target(target)
 	
