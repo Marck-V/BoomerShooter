@@ -16,6 +16,7 @@ const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 
 var scale_progress: float = 0.0
 var target: Node3D
+var shooter: Node3D  # enemy that fired this ball, so a parry can send it back to them
 var velocity: Vector3
 
 

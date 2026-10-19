@@ -34,6 +34,7 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 
 const HELD_SCALE := 1.15
 const BLOCK_SCALE := 1.0
+const REFLECT_SHOOTER_RANGE := 40.0                 # beyond this the original shooter is "too far" and the nearest enemy is used
 const PARRY_SCALE := 1.0
 const HELD_POS := Vector3(-0.7, -0.42, -0.62)
 const HELD_ROT := Vector3(10.0, 52.0, -8.0)
@@ -281,7 +282,15 @@ func on_block_hit(point: Vector3) -> void:
 
 
 func _reflect(projectile: Node3D) -> void:
-	var enemy := _nearest_enemy(projectile.global_position, 80.0, false)
+	# Prefer the enemy that fired it; fall back to the nearest one if it is dead or out of range
+	var enemy: Node3D = null
+	var shooter = projectile.get("shooter")
+	if _is_valid_enemy(shooter):
+		var chest: Vector3 = shooter.global_position + Vector3.UP * 1.2
+		if projectile.global_position.distance_to(chest) <= REFLECT_SHOOTER_RANGE:
+			enemy = shooter
+	if enemy == null:
+		enemy = _nearest_enemy(projectile.global_position, 80.0, false)
 	var direction := -camera.global_basis.z
 	if enemy:
 		direction = (enemy.global_position + Vector3.UP * 1.2) - projectile.global_position
