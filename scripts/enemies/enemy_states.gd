@@ -252,6 +252,43 @@ class AttackIdleState:
 			return
 
 
+# --- Dodge (Dodger enemies only): a quick sidestep, perpendicular to the line to the target ---
+class DodgeState:
+	var enemy
+	var dodge_velocity := Vector3.ZERO
+	var time_left := 0.0
+
+	func _init(e):
+		enemy = e
+
+	func enter():
+		time_left = enemy.dodge_duration
+		dodge_velocity = enemy.pick_dodge_direction() * enemy.dodge_speed
+		enemy.should_move = false  # nav avoidance is bypassed: the sidestep moves the body directly
+
+	func update(delta):
+		time_left -= delta
+		# Keep facing the target while sliding sideways
+		if is_instance_valid(enemy.target):
+			var to_target: Vector3 = enemy.target.global_position - enemy.global_position
+			to_target.y = 0.0
+			if to_target.length() > 0.001:
+				var target_basis := Basis.looking_at(to_target.normalized(), Vector3.UP).rotated(Vector3.UP, deg_to_rad(180))
+				enemy.global_transform.basis = enemy.global_transform.basis.slerp(target_basis, delta * enemy.rotation_speed * 2.0)
+
+		# Ease out over the last part of the step so it doesn't stop dead
+		var ease_factor := clampf(time_left / maxf(enemy.dodge_duration * 0.4, 0.001), 0.0, 1.0)
+		enemy.velocity = dodge_velocity * ease_factor
+		enemy.move_and_slide()
+
+		if time_left <= 0.0:
+			enemy.velocity = Vector3.ZERO
+			enemy.finish_dodge()
+
+	func exit():
+		enemy.velocity = Vector3.ZERO
+
+
 # --- Dead ---
 class DeadState:
 	var enemy
