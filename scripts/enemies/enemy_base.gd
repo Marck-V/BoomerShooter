@@ -43,6 +43,10 @@ var attack_idle_animation: String = "Idle"
 
 var is_attacking := false
 var is_dodging := false  # set by dodging enemies: the model is hidden for the duration of the dodge
+const REAPPEAR_FLASH_COLOR := Color(1.8, 1.8, 2.2)  # over 1.0 so the glow picks it up
+const REAPPEAR_FLASH_TIME := 0.25
+var reappear_flash_material: StandardMaterial3D
+var reappear_flash_tween: Tween
 
 # --- State Machine ---
 var state = null
@@ -122,11 +126,38 @@ func _physics_process(delta):
 	if state and state.has_method("update"):
 		state.update(delta)
 
-# Hides or shows the enemy's visuals; hitboxes keep working
+# Hides or shows the enemy's visuals; hitboxes keep working. Showing it again after a dodge flashes it in.
 func set_dodge_vanished(vanished: bool) -> void:
+	var was_vanished := not model_root.visible
 	model_root.visible = not vanished
 	if shield and is_instance_valid(shield) and shield is Node3D:
 		shield.visible = not vanished
+	if was_vanished and not vanished:
+		_play_reappear_flash()
+
+
+# A bright overlay across every mesh of the enemy that fades out, so it flashes into view
+func _play_reappear_flash() -> void:
+	if reappear_flash_material == null:
+		reappear_flash_material = StandardMaterial3D.new()
+		reappear_flash_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		reappear_flash_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	reappear_flash_material.albedo_color = Color(REAPPEAR_FLASH_COLOR, 0.95)
+	for mesh in model_root.find_children("*", "GeometryInstance3D", true, false):
+		(mesh as GeometryInstance3D).material_overlay = reappear_flash_material
+
+	if reappear_flash_tween:
+		reappear_flash_tween.kill()
+	reappear_flash_tween = create_tween().set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+	reappear_flash_tween.tween_property(reappear_flash_material, "albedo_color:a", 0.0, REAPPEAR_FLASH_TIME)
+	reappear_flash_tween.tween_callback(_end_reappear_flash)
+
+
+func _end_reappear_flash() -> void:
+	for mesh in model_root.find_children("*", "GeometryInstance3D", true, false):
+		var geometry := mesh as GeometryInstance3D
+		if geometry.material_overlay == reappear_flash_material:
+			geometry.material_overlay = null
 
 
 # The mesh that gets the hit flash, shield material and unique materials. Models without the
