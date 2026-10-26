@@ -24,6 +24,7 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var dodge_vertical_drift: float = 0.4   # max up/down share of the sidestep
 
 const DODGE_BLOCKED_PADDING := 0.6
+const VISUAL_SCALE := 1.6  # the Kenney model is ~0.6 m; matches the Visual node scale in the scene
 
 @onready var shoot_timer: Timer = $ShootTimer
 @onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
@@ -34,6 +35,7 @@ var bob_time := 0.0
 
 
 func _ready():
+	_build_animations()  # before super(): the Idle state plays "Idle" as soon as the base class is ready
 	super()
 	motion_mode = CharacterBody3D.MOTION_MODE_FLOATING
 	shoot_timer.wait_time = firing_rate
@@ -43,6 +45,51 @@ func _ready():
 	_roll_dodge_timer()
 
 	attack_animation_action = "Spell_Simple_Shoot"
+
+
+# The Kenney flyer model has no skeleton or baked animations: the mesh we flash and tint is its torso
+func _find_model() -> MeshInstance3D:
+	return find_child("torso", true, false) as MeshInstance3D
+
+
+# Procedural animations on the "Visual" node (never on Enemy_Model, which the flinch jolts)
+func _build_animations() -> void:
+	var library := AnimationLibrary.new()
+	library.add_animation("Idle", _make_idle_animation())
+	library.add_animation("Spell_Simple_Shoot", _make_shoot_animation())
+	anim.add_animation_library("", library)
+
+
+func _make_idle_animation() -> Animation:
+	var animation := Animation.new()
+	animation.length = 1.6
+	animation.loop_mode = Animation.LOOP_LINEAR
+	var track := animation.add_track(Animation.TYPE_VALUE)
+	animation.track_set_path(track, "Visual:rotation")
+	animation.track_set_interpolation_type(track, Animation.INTERPOLATION_CUBIC)
+	animation.track_set_interpolation_loop_wrap(track, true)
+	animation.track_insert_key(track, 0.0, Vector3.ZERO)
+	animation.track_insert_key(track, 0.4, Vector3(0.0, 0.0, 0.09))
+	animation.track_insert_key(track, 0.8, Vector3.ZERO)
+	animation.track_insert_key(track, 1.2, Vector3(0.0, 0.0, -0.09))
+	return animation
+
+
+# Quick recoil: the model kicks back and squashes as the blasters fire
+func _make_shoot_animation() -> Animation:
+	var animation := Animation.new()
+	animation.length = 0.35
+	var kick := animation.add_track(Animation.TYPE_VALUE)
+	animation.track_set_path(kick, "Visual:position")
+	animation.track_insert_key(kick, 0.0, Vector3.ZERO)
+	animation.track_insert_key(kick, 0.08, Vector3(0.0, 0.0, -0.18))
+	animation.track_insert_key(kick, 0.35, Vector3.ZERO)
+	var squash := animation.add_track(Animation.TYPE_VALUE)
+	animation.track_set_path(squash, "Visual:scale")
+	animation.track_insert_key(squash, 0.0, Vector3.ONE * VISUAL_SCALE)
+	animation.track_insert_key(squash, 0.08, Vector3(1.15, 1.15, 0.85) * VISUAL_SCALE)
+	animation.track_insert_key(squash, 0.35, Vector3.ONE * VISUAL_SCALE)
+	return animation
 
 
 func get_state_definitions() -> Dictionary:
@@ -133,7 +180,9 @@ func hover(delta: float) -> void:
 	var away := global_position - target.global_position
 	away.y = 0.0
 	away = away.normalized() if away.length() > 0.001 else -global_basis.z
-	var goal := target.global_position + away * preferred_distance \
+	# Without a clear shot (behind a wall), close in instead of holding distance
+	var distance := preferred_distance if has_line_of_sight_to_player() else preferred_distance * 0.25
+	var goal := target.global_position + away * distance \
 			+ Vector3.UP * (hover_height + sin(bob_time) * bob_height)
 
 	var to_goal := goal - global_position
@@ -220,6 +269,7 @@ class FlyDodgeState:
 	func enter():
 		time_left = enemy.dodge_duration
 		dodge_velocity = enemy.pick_dodge_direction() * enemy.dodge_speed
+		DodgeSmear.vanish(enemy, dodge_velocity)
 
 	func update(delta):
 		time_left -= delta
@@ -231,3 +281,7 @@ class FlyDodgeState:
 		enemy.move_and_slide()
 		if time_left <= 0.0:
 			enemy.finish_dodge()
+
+	func exit():
+		enemy.is_dodging = false
+		enemy.set_dodge_vanished(false)

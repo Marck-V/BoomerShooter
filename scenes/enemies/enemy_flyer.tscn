@@ -1,8 +1,81 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=8 format=3]
 
-[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_ranged.tscn" id="1_base"]
-[ext_resource type="Script" path="res://scripts/enemies/enemy_flyer.gd" id="2_script"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_flyer.gd" id="1_script"]
+[ext_resource type="PackedScene" uid="uid://dgupnfiwg2uyr" path="res://models/enemy-flying.glb" id="2_model"]
+[ext_resource type="Script" path="res://scripts/enemies/body_hurtbox.gd" id="3_hurtbox"]
+[ext_resource type="Script" path="res://scripts/utilities/audio.gd" id="4_audio"]
 
-[node name="EnemyFlyer" instance=ExtResource("1_base")]
-script = ExtResource("2_script")
+[sub_resource type="SphereShape3D" id="SphereShape3D_body"]
+radius = 0.5
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_head"]
+radius = 0.2
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_vision"]
+radius = 20.0
+
+[node name="EnemyFlyer" type="CharacterBody3D" groups=["Enemy"]]
+collision_layer = 4
+collision_mask = 7
+script = ExtResource("1_script")
 shoot_range = 18.0
+firing_rate = 2.0
+
+[node name="Enemy_Model" type="Node3D" parent="."]
+
+[node name="Visual" parent="Enemy_Model" instance=ExtResource("2_model")]
+transform = Transform3D(1.6, 0, 0, 0, 1.6, 0, 0, 0, 1.6, 0, 0, 0)
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="Enemy_Model"]
+
+[node name="BodyHurtbox" type="Area3D" parent="Enemy_Model" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("3_hurtbox")
+owner_enemy = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Enemy_Model/BodyHurtbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_body")
+
+[node name="HeadHurtbox" type="Area3D" parent="Enemy_Model" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("3_hurtbox")
+multiplier = 2.0
+owner_enemy = NodePath("../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Enemy_Model/HeadHurtbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
+shape = SubResource("SphereShape3D_head")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_body")
+
+[node name="ShootTimer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="AttackStartCooldown" type="Timer" parent="."]
+wait_time = 0.6
+one_shot = true
+
+[node name="EnergyBallSpawnMarker" type="Marker3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0.7)
+
+[node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
+path_height_offset = 1.0
+avoidance_enabled = true
+height = 1.0
+radius = 0.5
+neighbor_distance = 10.0
+
+[node name="VisionArea" type="Area3D" parent="."]
+
+[node name="ChaseRangeCollider" type="CollisionShape3D" parent="VisionArea"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+shape = SubResource("SphereShape3D_vision")
+
+[node name="AudioPlayer" type="Node3D" parent="."]
+script = ExtResource("4_audio")
