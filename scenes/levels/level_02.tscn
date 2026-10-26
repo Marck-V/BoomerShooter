@@ -15,6 +15,8 @@
 [ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="11_01hg1"]
 [ext_resource type="Material" path="res://trenchbroom/textures/world/texture_10_stairs.tres" id="11_q6ljp"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="12_v5pqk"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_dodger.tscn" id="16_dodger"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_flyer.tscn" id="17_flyer"]
 [ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="13_m2te4"]
 [ext_resource type="Script" uid="uid://frv6krouymm1" path="res://scripts/levels/wave_trigger.gd" id="14_01hg1"]
 [ext_resource type="Material" uid="uid://dtsera8gdg8c1" path="res://trenchbroom/textures/world/texture_11_door.tres" id="15_4dr30"]
@@ -807,7 +809,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 55.3
 [node name="entity_18_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=542248803 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 67.3125, 0.03125, 2)
 
-[node name="entity_19_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1366469238 instance=ExtResource("11_01hg1")]
+[node name="entity_19_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=1366469238 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 56, 0.03125, 2.40625)
 
 [node name="entity_20_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=575981223 instance=ExtResource("11_01hg1")]
@@ -819,7 +821,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 60.3
 [node name="entity_22_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1480326734 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 84.28125, 0.03125, 9.65625)
 
-[node name="entity_23_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1095262196 instance=ExtResource("11_01hg1")]
+[node name="entity_23_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=1095262196 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 54.53125, 0.03125, 14.1875)
 
 [node name="entity_24_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1421958708 instance=ExtResource("11_01hg1")]
@@ -831,7 +833,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 67.1
 [node name="entity_26_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1225872712 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 72.3125, 0.03125, 5.59375)
 
-[node name="entity_27_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=855782862 instance=ExtResource("11_01hg1")]
+[node name="entity_27_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=855782862 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 56.90625, 0.03125, 14.25)
 
 [node name="entity_28_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=89287146 instance=ExtResource("11_01hg1")]
@@ -843,7 +845,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 75.0
 [node name="entity_30_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1498180054 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 72.625, 0.03125, 10.53125)
 
-[node name="entity_31_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=336183334 instance=ExtResource("11_01hg1")]
+[node name="entity_31_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=336183334 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 84.1875, 0.03125, 12.40625)
 
 [node name="entity_32_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1348312641 instance=ExtResource("11_01hg1")]
@@ -855,7 +857,7 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 82.1
 [node name="entity_34_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1590132920 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 81.5, 0.03125, 12.15625)
 
-[node name="entity_35_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=964750795 instance=ExtResource("11_01hg1")]
+[node name="entity_35_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=964750795 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 66.71875, 0.03125, 5.125)
 
 [node name="entity_36_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1961369782 instance=ExtResource("11_01hg1")]
@@ -867,25 +869,25 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 75.7
 [node name="entity_38_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=930013424 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 78.75, 0.03125, 13.1875)
 
-[node name="entity_39_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=2014404336 instance=ExtResource("11_01hg1")]
+[node name="entity_39_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=2014404336 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 54.75, 0.03125, 5.90625)
 
 [node name="entity_40_enemy_ranged" parent="NavigationRegion3D/FuncGodotMap" unique_id=1883519649 instance=ExtResource("12_v5pqk")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 66, 5.03125, -4)
 
-[node name="entity_41_enemy_ranged" parent="NavigationRegion3D/FuncGodotMap" unique_id=2118224303 instance=ExtResource("12_v5pqk")]
+[node name="entity_41_enemy_flyer" parent="NavigationRegion3D/FuncGodotMap" unique_id=2118224303 instance=ExtResource("17_flyer")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 74, 5.03125, -4)
 
 [node name="entity_42_enemy_ranged" parent="NavigationRegion3D/FuncGodotMap" unique_id=1224037804 instance=ExtResource("12_v5pqk")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 82, 5.03125, -4)
 
-[node name="entity_43_enemy_ranged" parent="NavigationRegion3D/FuncGodotMap" unique_id=314870083 instance=ExtResource("12_v5pqk")]
+[node name="entity_43_enemy_flyer" parent="NavigationRegion3D/FuncGodotMap" unique_id=314870083 instance=ExtResource("17_flyer")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 66, 5.03125, 20)
 
 [node name="entity_44_enemy_ranged" parent="NavigationRegion3D/FuncGodotMap" unique_id=1680450851 instance=ExtResource("12_v5pqk")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 74, 5.03125, 20)
 
-[node name="entity_45_enemy_ranged" parent="NavigationRegion3D/FuncGodotMap" unique_id=13751206 instance=ExtResource("12_v5pqk")]
+[node name="entity_45_enemy_flyer" parent="NavigationRegion3D/FuncGodotMap" unique_id=13751206 instance=ExtResource("17_flyer")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 82, 5.03125, 20)
 
 [node name="entity_46_locked_door" type="AnimatableBody3D" parent="NavigationRegion3D/FuncGodotMap" unique_id=927092669]
