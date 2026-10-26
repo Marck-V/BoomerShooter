@@ -42,6 +42,7 @@ var attack_animation_exit: String = ""
 var attack_idle_animation: String = "Idle"
 
 var is_attacking := false
+var is_dodging := false  # set by dodging enemies: the model is hidden for the duration of the dodge
 
 # --- State Machine ---
 var state = null
@@ -50,7 +51,7 @@ var states = {}
 # --- References (set in subclasses) ---
 @onready var nav: NavigationAgent3D = $NavigationAgent3D
 @onready var anim: AnimationPlayer = $"Enemy_Model/AnimationPlayer"
-@onready var model: MeshInstance3D = $"Enemy_Model/Rig/Skeleton3D/Mannequin"
+@onready var model: MeshInstance3D = _find_model()
 @onready var attack_start_cooldown: Timer = $AttackStartCooldown
 @onready var audio_player: Node3D = $"AudioPlayer"
 
@@ -120,6 +121,19 @@ func _set_velocity(new_velocity: Vector3):
 func _physics_process(delta):
 	if state and state.has_method("update"):
 		state.update(delta)
+
+# Hides or shows the enemy's visuals; hitboxes keep working
+func set_dodge_vanished(vanished: bool) -> void:
+	model_root.visible = not vanished
+	if shield and is_instance_valid(shield) and shield is Node3D:
+		shield.visible = not vanished
+
+
+# The mesh that gets the hit flash, shield material and unique materials. Models without the
+# mannequin rig override this.
+func _find_model() -> MeshInstance3D:
+	return $"Enemy_Model/Rig/Skeleton3D/Mannequin"
+
 
 # ---------------------------
 # Abstract Hooks (subclasses override)

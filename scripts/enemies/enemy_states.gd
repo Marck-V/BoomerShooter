@@ -264,6 +264,7 @@ class DodgeState:
 	func enter():
 		time_left = enemy.dodge_duration
 		dodge_velocity = enemy.pick_dodge_direction() * enemy.dodge_speed
+		DodgeSmear.vanish(enemy, dodge_velocity)
 		enemy.should_move = false  # nav avoidance is bypassed: the sidestep moves the body directly
 
 	func update(delta):
@@ -287,6 +288,8 @@ class DodgeState:
 
 	func exit():
 		enemy.velocity = Vector3.ZERO
+		enemy.is_dodging = false
+		enemy.set_dodge_vanished(false)
 
 
 # --- Dead ---
