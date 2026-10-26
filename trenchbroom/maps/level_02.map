@@ -1170,7 +1170,7 @@
 }
 // entity 18
 {
-"classname" "enemy_horde"
+"classname" "enemy_dodger"
 "origin" "77 1792 1"
 "wave" "arena"
 }
@@ -1194,7 +1194,7 @@
 }
 // entity 22
 {
-"classname" "enemy_horde"
+"classname" "enemy_dodger"
 "origin" "454 1745 1"
 "wave" "arena"
 }
@@ -1218,7 +1218,7 @@
 }
 // entity 26
 {
-"classname" "enemy_horde"
+"classname" "enemy_dodger"
 "origin" "456 1821 1"
 "wave" "arena"
 }
@@ -1242,7 +1242,7 @@
 }
 // entity 30
 {
-"classname" "enemy_horde"
+"classname" "enemy_dodger"
 "origin" "397 2694 1"
 "wave" "arena"
 }
@@ -1266,7 +1266,7 @@
 }
 // entity 34
 {
-"classname" "enemy_horde"
+"classname" "enemy_dodger"
 "origin" "164 2135 1"
 "wave" "arena"
 }
@@ -1290,7 +1290,7 @@
 }
 // entity 38
 {
-"classname" "enemy_horde"
+"classname" "enemy_dodger"
 "origin" "189 1752 1"
 "wave" "arena"
 }
@@ -1302,7 +1302,7 @@
 }
 // entity 40
 {
-"classname" "enemy_ranged"
+"classname" "enemy_flyer"
 "origin" "-128 2368 161"
 "wave" "arena"
 }
@@ -1314,7 +1314,7 @@
 }
 // entity 42
 {
-"classname" "enemy_ranged"
+"classname" "enemy_flyer"
 "origin" "640 2112 161"
 "wave" "arena"
 }
@@ -1326,7 +1326,7 @@
 }
 // entity 44
 {
-"classname" "enemy_ranged"
+"classname" "enemy_flyer"
 "origin" "640 2624 161"
 "wave" "arena"
 }
