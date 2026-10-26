@@ -11,6 +11,15 @@ const BURST_STREAK_COUNT := 36
 const BURST_MIST_COUNT := 8
 const CLEANUP_TIME := 1.4
 
+# Glowing blue blood. The colors stay at or under 1.0 and GLOW_BOOST pushes them past it (HDR), so the
+# level's glow picks the streaks and mist up against the dark environment.
+const BLOOD_HEAD := Color(0.35, 0.8, 1.0, 1.0)
+const BLOOD_MID := Color(0.15, 0.5, 1.0, 1.0)
+const BLOOD_TAIL := Color(0.05, 0.25, 0.9, 0.0)
+const MIST_START := Color(0.3, 0.7, 1.0, 0.5)
+const MIST_END := Color(0.1, 0.3, 1.0, 0.0)
+const GLOW_BOOST := 2.2
+
 const BloodDecals = preload("res://scripts/weapons/blood_decals.gd")
 
 static var _streak_mesh: TubeTrailMesh
@@ -70,7 +79,7 @@ func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, lif
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		material.vertex_color_use_as_albedo = true
 		material.use_particle_trails = true
-		material.albedo_color = Color(1.6, 1.0, 1.0)
+		material.albedo_color = Color(GLOW_BOOST, GLOW_BOOST, GLOW_BOOST)
 
 		# Thick at the head of the droplet, tapering to nothing along its trail
 		var taper := Curve.new()
@@ -89,9 +98,9 @@ func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, lif
 	var fade := Gradient.new()
 	fade.offsets = PackedFloat32Array([0.0, 0.6, 1.0])
 	fade.colors = PackedColorArray([
-		Color(0.9, 0.04, 0.08, 1.0),
-		Color(0.65, 0.02, 0.05, 1.0),
-		Color(0.4, 0.0, 0.03, 0.0),
+		BLOOD_HEAD,
+		BLOOD_MID,
+		BLOOD_TAIL,
 	])
 	var ramp := GradientTexture1D.new()
 	ramp.gradient = fade
@@ -147,6 +156,7 @@ func _add_mist(count: int, spread := 30.0) -> void:
 		material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		material.vertex_color_use_as_albedo = true
 		material.albedo_texture = texture
+		material.albedo_color = Color(GLOW_BOOST, GLOW_BOOST, GLOW_BOOST)
 		_mist_mesh = QuadMesh.new()
 		_mist_mesh.size = Vector2(0.22, 0.22)
 		_mist_mesh.material = material
@@ -154,8 +164,8 @@ func _add_mist(count: int, spread := 30.0) -> void:
 	var fade := Gradient.new()
 	fade.offsets = PackedFloat32Array([0.0, 1.0])
 	fade.colors = PackedColorArray([
-		Color(0.7, 0.03, 0.06, 0.4),
-		Color(0.45, 0.0, 0.03, 0.0),
+		MIST_START,
+		MIST_END,
 	])
 
 	var growth := Curve.new()
