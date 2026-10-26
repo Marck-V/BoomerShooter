@@ -1,6 +1,6 @@
 extends RefCounted
 
-# Blood splats left on walls and floors by hit sprays and death bursts.
+# Glowing blue blood splats left on walls and floors by hit sprays and death bursts.
 # Rays from the enemy find nearby surfaces; a Decal is placed there once the blood would
 # have reached it. Splat textures are generated in code, and the total count is capped.
 # Use: BloodDecals.splatter(tree, point, shot_direction, amount_scale)
@@ -12,8 +12,11 @@ const MAX_DECALS := 36
 const HOLD_TIME := 10.0
 const FADE_TIME := 3.0
 const BLOOD_SPEED := 8.0             # how fast the blood travels, for the placement delay
+const BLOOD_COLOR := Color(0.3, 0.7, 1.0)  # colour of the splat texture, which is also its emission colour
+const EMISSION_ENERGY := 2.5         # how brightly the splats glow (the glow effect makes them shine)
 
 static var _textures: Array[ImageTexture] = []
+static var _emission_textures: Array[ImageTexture] = []  # same shapes, glow colour only where the splat is
 static var _active: Array[Decal] = []
 
 
@@ -65,10 +68,13 @@ static func _place_decal(tree: SceneTree, position: Vector3, normal: Vector3, sp
 		oldest.queue_free()
 
 	var textures := _get_textures()
+	var variant := randi() % textures.size()
 	var decal := Decal.new()
-	decal.texture_albedo = textures[randi() % textures.size()]
+	decal.texture_albedo = textures[variant]
 	decal.size = Vector3(splat_size, 0.6, splat_size)
-	decal.modulate = Color(1.0, 0.1, 0.12, 1.0)
+	decal.texture_emission = _emission_textures[variant]
+	decal.emission_energy = EMISSION_ENERGY
+	decal.modulate = Color(1.0, 1.0, 1.0, 1.0)  # only used for the fade-out
 	decal.cull_mask = 1
 	parent.add_child(decal)
 
@@ -83,6 +89,7 @@ static func _place_decal(tree: SceneTree, position: Vector3, normal: Vector3, sp
 	var tween := decal.create_tween()
 	tween.tween_interval(HOLD_TIME)
 	tween.tween_property(decal, "modulate:a", 0.0, FADE_TIME)
+	tween.parallel().tween_property(decal, "emission_energy", 0.0, FADE_TIME)
 	tween.tween_callback(decal.queue_free)
 
 
@@ -93,17 +100,19 @@ static func _random_unit() -> Vector3:
 static func _get_textures() -> Array[ImageTexture]:
 	if _textures.is_empty():
 		for i in TEXTURE_VARIANTS:
-			_textures.append(_make_splat_texture(i * 7919 + 13))
+			var image := _make_splat_image(i * 7919 + 13)
+			_textures.append(ImageTexture.create_from_image(image))
+			_emission_textures.append(ImageTexture.create_from_image(_make_emission_image(image)))
 	return _textures
 
 
 # A main blob, scattered satellite droplets and a couple of droplet trails
-static func _make_splat_texture(seed_value: int) -> ImageTexture:
+static func _make_splat_image(seed_value: int) -> Image:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = seed_value
 
 	var image := Image.create(TEXTURE_SIZE, TEXTURE_SIZE, false, Image.FORMAT_RGBA8)
-	image.fill(Color(0.7, 0.03, 0.06, 0.0))
+	image.fill(Color(BLOOD_COLOR, 0.0))
 	var center := Vector2(TEXTURE_SIZE, TEXTURE_SIZE) * 0.5
 
 	_draw_blob(image, center + Vector2(rng.randf_range(-3, 3), rng.randf_range(-3, 3)), rng.randf_range(9.0, 13.0))
@@ -120,7 +129,17 @@ static func _make_splat_texture(seed_value: int) -> ImageTexture:
 			var blob_radius := lerpf(4.0, 1.0, float(k) / 8.0)
 			_draw_blob(image, center + trail * (10.0 + k * 2.8), blob_radius)
 
-	return ImageTexture.create_from_image(image)
+	return image
+
+
+# Decal emission ignores alpha, so the splat shape is baked in: glow colour where the blood is, black elsewhere
+static func _make_emission_image(splat: Image) -> Image:
+	var image := Image.create(TEXTURE_SIZE, TEXTURE_SIZE, false, Image.FORMAT_RGBA8)
+	for y in TEXTURE_SIZE:
+		for x in TEXTURE_SIZE:
+			var pixel := splat.get_pixel(x, y)
+			image.set_pixel(x, y, Color(pixel.r * pixel.a, pixel.g * pixel.a, pixel.b * pixel.a, 1.0))
+	return image
 
 
 static func _draw_blob(image: Image, center: Vector2, radius: float) -> void:
