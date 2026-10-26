@@ -178,8 +178,8 @@ func _transparent_environment() -> Environment:
 func _process(delta: float) -> void:
 	if not started:
 		return
-	if not is_instance_valid(camera):
-		queue_free()
+	if not is_instance_valid(camera) or not camera.is_inside_tree():
+		queue_free()  # the camera is gone (level restart or quit) while the smear was playing
 		return
 	elapsed += delta
 	var progress := clampf(elapsed / DURATION, 0.0, 1.0)
