@@ -6,6 +6,9 @@ class_name BossFloorHazard
 #   BossFloorHazard.spawn(tree, [Vector3 floor centre, ...], cell_size, damage, warn_time, burn_time)
 
 const SHADER: Shader = preload("res://shaders/boss_hazard_tile.gdshader")
+const BEAM_SHADER: Shader = preload("res://shaders/boss_hazard_beam.gdshader")
+const BEAM_HEIGHT := 14.0
+const BEAM_GROW_TIME := 0.14
 const CLEARANCE := 0.8
 const TICK_TIME := 0.4
 const FLOOR_LIFT := 0.07
@@ -21,6 +24,9 @@ var burning := false
 var finishing := false
 var tick_left := {}                # player -> time until it can be hurt again
 var materials: Array[ShaderMaterial] = []
+var beams: Array[MeshInstance3D] = []
+var beam_materials: Array[ShaderMaterial] = []
+var beam_flash := 0.0
 var light: OmniLight3D
 
 
@@ -75,10 +81,43 @@ func _physics_process(delta: float) -> void:
 			for material in materials:
 				material.set_shader_parameter("active", 1.0)
 			light.light_energy = 3.0
+			_ignite_beams()
 	else:
 		_hurt_players(delta)
+		beam_flash = move_toward(beam_flash, 0.0, delta * 5.0)
+		for material in beam_materials:
+			material.set_shader_parameter("flash", beam_flash)
 		if elapsed >= warn_time + burn_time:
 			_finish()
+
+
+# A column of fire shoots up out of every burning tile, as wide as the tile and flaring as it ignites
+func _ignite_beams() -> void:
+	beam_flash = 0.8
+	var cylinder := CylinderMesh.new()
+	cylinder.top_radius = cell_size * 0.4
+	cylinder.bottom_radius = cell_size * 0.4
+	cylinder.height = BEAM_HEIGHT
+	cylinder.radial_segments = 20
+	cylinder.rings = 1
+	cylinder.cap_top = false
+	cylinder.cap_bottom = false
+	for cell in cells:
+		var material := ShaderMaterial.new()
+		material.shader = BEAM_SHADER
+		material.set_shader_parameter("height", BEAM_HEIGHT)
+		material.set_shader_parameter("radius", cell_size * 0.4)
+		var beam := MeshInstance3D.new()
+		beam.mesh = cylinder
+		beam.material_override = material
+		beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		add_child(beam)
+		beam.global_position = Vector3(cell.x, cell.y + FLOOR_LIFT + BEAM_HEIGHT * 0.5, cell.z)
+		beam.scale = Vector3(0.15, 1.0, 0.15)
+		var grow := create_tween().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		grow.tween_property(beam, "scale", Vector3.ONE, BEAM_GROW_TIME)
+		beams.append(beam)
+		beam_materials.append(material)
 
 
 func _hurt_players(delta: float) -> void:
@@ -113,5 +152,6 @@ func _finish() -> void:
 	finishing = true
 	var tween := create_tween().set_parallel(true)
 	tween.tween_method(func(v): for material in materials: material.set_shader_parameter("fade", v), 1.0, 0.0, FADE_TIME)
+	tween.tween_method(func(v): for material in beam_materials: material.set_shader_parameter("fade", v), 1.0, 0.0, FADE_TIME)
 	tween.tween_property(light, "light_energy", 0.0, FADE_TIME)
 	tween.chain().tween_callback(queue_free)
