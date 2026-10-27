@@ -116,6 +116,11 @@ class ChaseState:
 		else:
 			enemy._on_velocity_computed(enemy.velocity)
 		
+		# --- Lunge: enemies that have one use it while closing in from range ---
+		if enemy.has_method("should_lunge") and enemy.should_lunge():
+			enemy.change_state("Lunge")
+			return
+
 		# --- Attack check ---
 		if enemy.is_in_attack_range():
 			stuck_timer = 0.0  # Reset timer when successfully entering attack
