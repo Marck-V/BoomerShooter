@@ -42,6 +42,11 @@ func get_shield_multiplier() -> float:
 
 
 func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
+	# An empty click is not a shot: it must not advance the glitch shot counter
+	if GlobalVariables.get_ammo("shotgun") <= 0:
+		super.fire(origin, direction, camera, raycast)
+		return
+
 	# Glitch shot logic
 	if has_glitch_shot:
 		shot_tracker += 1
