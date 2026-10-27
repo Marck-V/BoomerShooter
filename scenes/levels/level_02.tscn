@@ -15,12 +15,12 @@
 [ext_resource type="PackedScene" uid="uid://xh7qo3fjn53j" path="res://scenes/enemies/enemy_horde.tscn" id="11_01hg1"]
 [ext_resource type="Material" path="res://trenchbroom/textures/world/texture_10_stairs.tres" id="11_q6ljp"]
 [ext_resource type="PackedScene" uid="uid://cuwunojswrryo" path="res://scenes/enemies/enemy_ranged.tscn" id="12_v5pqk"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_dodger.tscn" id="16_dodger"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_flyer.tscn" id="17_flyer"]
 [ext_resource type="PackedScene" uid="uid://djtfw35x8tqko" path="res://scenes/pickups/base_pickup.tscn" id="13_m2te4"]
 [ext_resource type="Script" uid="uid://frv6krouymm1" path="res://scripts/levels/wave_trigger.gd" id="14_01hg1"]
 [ext_resource type="Material" uid="uid://dtsera8gdg8c1" path="res://trenchbroom/textures/world/texture_11_door.tres" id="15_4dr30"]
 [ext_resource type="Script" uid="uid://bcjl5g00jufap" path="res://scripts/levels/locked_door.gd" id="15_v5pqk"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_dodger.tscn" id="16_dodger"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_flyer.tscn" id="17_flyer"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_level"]
 vertices = PackedVector3Array(47.75, 12.5, -8.25, 47.75, 12.5, 0, 48.25, 12.5, -8, 60, 12.5, -8, 48.5, 0.75, 0.25, 49.5, 1, 0.25, 49.75, 1.25, -0.25, 48.5, 0.75, -7.5, 60, 5.25, -0.75, 87.75, 5.25, -0.75, 87.75, 5.25, -7.5, 60.12963, 5.25, -7.5, 57.995026, 4.75, -5.5030255, 59.75, 5.25, -0.25, 52.5, 0.5, -7.5, 52.5, 0.5, -0.25, 59.75, 0.5, -0.25, 59.75, 0.5, -7.5, 12.25, 5.75, 8.25, 14.5, 5.25, 8.25, 14.5, 5.25, 3.75, 12.25, 6, 3.5, -0.25, 6, -0.25, -0.25, 6, 12.25, 10.861112, 6, 8.694445, 12.25, 6, -0.25, 12.25, 6, 12.25, 12.25, 6, 9.583334, 48, 0.5, 8.5, 46.25, 0.5, 8.5, 46.5, 0.5, 11.75, 48.5, 0.5, 12, 63.5, 0.5, 15.75, 63.75, 0.5, 11, 63.75, 0.5, 5.25, 48.5, 0.5, 8, 49.75, 1.25, 16, 49.541668, 0.5, 14.666666, 49.333332, 0.5, 14.666666, 48.5, 0.75, 16, 63.5, 0.5, 0.5, 51.125, 0.5, 15.975, 50.475, 0.5, 1.9750004, 13.75, 0.5, 7.75, 13.75, 0.5, 4.5, 11.75, 0.5, 4.25, 11.75, 0.5, 8, 0.5, 0.5, 0.5, 0.5, 0.5, 11.75, 11.75, 0.5, 0.5, 11.75, 0.5, 11.75, 71.25, 0.5, 4.25, 73.75, 0.5, 5.25, 74.25, 0.5, 4.75, 74, 0.5, 0.5, 71.5, 0.5, 2, 65.25, 0.5, 4.75, 65.5, 0.5, 5.25, 69, 0.5, 4.5, 64, 0.5, 4.75, 69, 0.5, 1.75, 71.5, 0.5, 14, 70, 0.5, 14.5, 70, 0.5, 15.75, 74, 0.5, 11.5, 71.5, 0.5, 12.25, 75.5, 0.5, 5, 87.75, 0.5, 0.5, 75.5, 0.5, 11, 87.75, 0.5, 15.75, 69.25, 4.5, 2.25, 69.25, 4.5, 3.75, 70.75, 4.5, 3.75, 70.75, 4.5, 2.25, 69.5, 0.5, 2.5, 69.5, 0.5, 3.75, 70.75, 0.5, 3.75, 70.75, 0.5, 2.5, 19.5, 5.25, 8.25, 19.75, 5, 10.5, 24.25, 5.25, 10.5, 24.25, 5.25, 3.75, 20.875, 5.5, 10.5, 23.125, 5.5, 10.5, 68.75, 0.5, 14.25, 71.25, 0.5, 11.75, 64, 0.5, 11.5, 65.5, 0.5, 11, 68.75, 0.5, 12, 20.25, 0.5, 7.75, 20.5, 0.5, 9.5, 23.75, 0.5, 9.25, 23.75, 0.5, 4.5, 64.25, 1.5, 5.25, 64.5, 1.5, 11, 65, 1.5, 8.5, 64.75, 1.5, 5.25, 74.25, 1.5, 5.25, 74.5, 1.5, 11, 75, 1.5, 8.5, 74.75, 1.5, 5.25, 31.75, 5, 14.5, 36.25, 5.25, 14.5, 36.25, 5.25, 12.5, 35.125, 5.5, 13, 32.875, 5.5, 14, 32.875, 5.5, 14.5, 35.125, 5.5, 14.5, 38.5, 5.25, 12.25, 38.5, 5, 7.75, 37.9375, 5.5, 8.9375, 36.8125, 5.5, 11.3125, 38.5, 5.5, 11.125, 38.5, 5.5, 8.875, 31.75, 5, 7.75, 33.975, 5.5, 9.475, 47.75, 5.25, 12.25, 47.75, 5.5, 8, 47.75, 5.5, 10.833334, 46.428574, 5, 7.964285, 46.01505, 5.5, 9.5189495, 35.75, 0.5, 12, 37.5, 0.5, 11.75, 37.25, 0.5, 8.5, 32.5, 0.5, 8.5, 32.5, 0.5, 18.5, 35.75, 0.5, 18.75, 25.25, 0.5, 23.75, 25.5, 0.5, 20.5, 23.75, 0.5, 20.25, 20.5, 0.5, 23.75, 19.75, 5, 17.5, 24.25, 5.25, 17.5, 20.875, 5.5, 17.5, 23.125, 5.5, 17.5, 69.25, 4.5, 12.25, 69.25, 4.5, 13.75, 70.75, 4.5, 13.75, 70.75, 4.5, 12.25, 69.5, 0.5, 12.5, 69.5, 0.5, 13.75, 70.75, 0.5, 13.75, 70.75, 0.5, 12.5, 31.75, 5, 19.5, 29.5, 5, 19.75, 29.5, 5.25, 24.25, 36.25, 5, 24.25, 35.35, 5.5, 23.3, 32.65, 5.5, 20.45, 29.5, 5.5, 20.875, 29.5, 5.5, 23.125, 47.75, 12.5, 16, 47.75, 12.5, 24.25, 48.25, 12.5, 24.25, 48.5, 0.75, 23.75, 60, 5.25, 17, 59.75, 5.25, 16.25, 87.75, 5.25, 23.75, 87.75, 5.25, 17, 60.12963, 5.25, 23.75, 58.010494, 4.75, 21.475471, 52.5, 0.5, 16.5, 52.5, 0.5, 23.75, 59.75, 0.5, 23.75, 59.75, 0.5, 16.5, 24.5, 5, 19.75, 19.75, 5, 24.25, 20.7, 5.5, 23.35, 23.55, 5.5, 20.65, 32.5, 0.5, 20, 32, 0.5, 20.5, 35.75, 0.5, 23.75)
@@ -441,7 +441,7 @@ navigation_mesh = SubResource("NavigationMesh_level")
 
 [node name="FuncGodotMap" type="Node3D" parent="NavigationRegion3D" unique_id=843838679]
 script = ExtResource("5_map")
-local_map_file = "res://trenchbroom/maps/level_02.map"
+local_map_file = "uid://otp3x2pe6xej"
 map_settings = ExtResource("6_settings")
 
 [node name="entity_0_worldspawn" type="StaticBody3D" parent="NavigationRegion3D/FuncGodotMap" unique_id=367403714]
@@ -811,6 +811,10 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 67.3
 
 [node name="entity_19_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=1366469238 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 56, 0.03125, 2.40625)
+dodge_interval_min = 1.5
+dodge_interval_max = 3.5
+dodge_speed = 9.0
+dodge_duration = 0.35
 
 [node name="entity_20_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=575981223 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 80.28125, 0.03125, 7.03125)
@@ -823,6 +827,10 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 84.2
 
 [node name="entity_23_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=1095262196 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 54.53125, 0.03125, 14.1875)
+dodge_interval_min = 1.5
+dodge_interval_max = 3.5
+dodge_speed = 9.0
+dodge_duration = 0.35
 
 [node name="entity_24_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1421958708 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 62.5625, 0.03125, 12.65625)
@@ -835,6 +843,10 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 72.3
 
 [node name="entity_27_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=855782862 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 56.90625, 0.03125, 14.25)
+dodge_interval_min = 1.5
+dodge_interval_max = 3.5
+dodge_speed = 9.0
+dodge_duration = 0.35
 
 [node name="entity_28_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=89287146 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 78, 0.03125, 6.9375)
@@ -847,6 +859,10 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 72.6
 
 [node name="entity_31_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=336183334 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 84.1875, 0.03125, 12.40625)
+dodge_interval_min = 1.5
+dodge_interval_max = 3.5
+dodge_speed = 9.0
+dodge_duration = 0.35
 
 [node name="entity_32_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1348312641 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 78.34375, 0.03125, 2.28125)
@@ -859,6 +875,10 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 81.5
 
 [node name="entity_35_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=964750795 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 66.71875, 0.03125, 5.125)
+dodge_interval_min = 1.5
+dodge_interval_max = 3.5
+dodge_speed = 9.0
+dodge_duration = 0.35
 
 [node name="entity_36_enemy_horde" parent="NavigationRegion3D/FuncGodotMap" unique_id=1961369782 instance=ExtResource("11_01hg1")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 61.65625, 0.03125, 9.15625)
@@ -871,6 +891,10 @@ transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 78.7
 
 [node name="entity_39_enemy_dodger" parent="NavigationRegion3D/FuncGodotMap" unique_id=2014404336 instance=ExtResource("16_dodger")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 54.75, 0.03125, 5.90625)
+dodge_interval_min = 1.5
+dodge_interval_max = 3.5
+dodge_speed = 9.0
+dodge_duration = 0.35
 
 [node name="entity_40_enemy_ranged" parent="NavigationRegion3D/FuncGodotMap" unique_id=1883519649 instance=ExtResource("12_v5pqk")]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 66, 5.03125, -4)
