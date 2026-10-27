@@ -9,6 +9,9 @@ var age := 0.0
 var collected := false
 
 
+# The orb is the same blue as the enemies' blood: it uses the blood's own colours
+const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
+
 static var _drip_mesh: TubeTrailMesh
 
 
@@ -17,7 +20,7 @@ func _ready() -> void:
 	_add_drips()
 
 
-# Droplets fall off the orb and are left behind in the world as it rises, trailing short red streaks
+# Droplets fall off the orb and are left behind in the world as it rises, trailing short blue streaks
 func _add_drips() -> void:
 	if _drip_mesh == null:
 		var material := StandardMaterial3D.new()
@@ -25,7 +28,7 @@ func _add_drips() -> void:
 		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 		material.vertex_color_use_as_albedo = true
 		material.use_particle_trails = true
-		material.albedo_color = Color(1.6, 1.0, 1.0)
+		material.albedo_color = Color(BloodParticles.GLOW_BOOST, BloodParticles.GLOW_BOOST, BloodParticles.GLOW_BOOST)
 
 		var taper := Curve.new()
 		taper.add_point(Vector2(0.0, 1.0))
@@ -43,9 +46,9 @@ func _add_drips() -> void:
 	var fade := Gradient.new()
 	fade.offsets = PackedFloat32Array([0.0, 0.7, 1.0])
 	fade.colors = PackedColorArray([
-		Color(0.95, 0.05, 0.08, 1.0),
-		Color(0.7, 0.02, 0.05, 1.0),
-		Color(0.45, 0.0, 0.03, 0.0),
+		BloodParticles.BLOOD_HEAD,
+		BloodParticles.BLOOD_MID,
+		BloodParticles.BLOOD_TAIL,
 	])
 	var ramp := GradientTexture1D.new()
 	ramp.gradient = fade
