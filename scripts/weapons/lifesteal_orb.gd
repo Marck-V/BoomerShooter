@@ -97,4 +97,7 @@ func damage(_amount = 0, _multiplier = 1.0) -> void:
 		return
 	collected = true
 	GlobalVariables.add_health(heal_amount)
+	var player := get_tree().get_first_node_in_group("Player")
+	if player and player.has_method("play_heal_flash"):
+		player.play_heal_flash()
 	queue_free()
