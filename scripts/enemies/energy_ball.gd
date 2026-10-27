@@ -21,7 +21,7 @@ var always_return_to_shooter := false  # a parried ball goes back to the shooter
 var velocity: Vector3
 
 
-const REFLECT_SPEED_MULT := 1.6
+const REFLECT_SPEED_MULT := 3.2   # a parried ball flies back twice as fast as it came (it used to be 1.6x)
 const REFLECT_DAMAGE_MULT := 2.0
 const REFLECT_MASK := 2 | 4          # environment + enemy bodies
 const REFLECT_COLOR := Color(1.0, 0.85, 0.1)
