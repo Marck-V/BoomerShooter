@@ -3,8 +3,9 @@ extends RefCounted
 # Glowing blue blood splats left on walls and floors by hit sprays and death bursts.
 # Rays from the enemy find nearby surfaces; a Decal is placed there once the blood would
 # have reached it. Splat textures are generated in code, and the total count is capped.
-# Use: BloodDecals.splatter(tree, point, shot_direction, amount_scale)
-#      BloodDecals.burst(tree, point, amount_scale)
+# Use: BloodDecals.splatter(tree, point, shot_direction, amount_scale, thickness)
+#      BloodDecals.burst(tree, point, amount_scale, thickness)
+# `thickness` scales the size of the splats: a big enemy leaves big puddles.
 
 const TEXTURE_SIZE := 64
 const TEXTURE_VARIANTS := 4
@@ -21,21 +22,21 @@ static var _active: Array[Decal] = []
 
 
 # A normal hit: a splat on the surface behind the enemy and sometimes one on the floor
-static func splatter(tree: SceneTree, point: Vector3, direction: Vector3, amount_scale := 1.0) -> void:
+static func splatter(tree: SceneTree, point: Vector3, direction: Vector3, amount_scale := 1.0, thickness := 1.0) -> void:
 	var dir := direction.normalized()
 
 	if randf() < minf(amount_scale * 1.2, 1.0):
 		var wall_dir := (dir + _random_unit() * 0.35).normalized()
-		_cast_splat(tree, point, wall_dir, 6.0, randf_range(0.3, 0.6))
+		_cast_splat(tree, point, wall_dir, 6.0, randf_range(0.3, 0.6) * thickness)
 
 	if randf() < amount_scale * 0.7:
 		var floor_dir := (Vector3.DOWN + Vector3(randf_range(-0.6, 0.6), 0.0, randf_range(-0.6, 0.6)) + dir * 0.4).normalized()
-		_cast_splat(tree, point, floor_dir, 4.0, randf_range(0.3, 0.6))
+		_cast_splat(tree, point, floor_dir, 4.0, randf_range(0.3, 0.6) * thickness)
 
 
 # Death: a big spatter in every direction, mostly across the floor and nearby walls
-static func burst(tree: SceneTree, point: Vector3, amount_scale := 1.0) -> void:
-	var count := maxi(int(9 * amount_scale), 3)
+static func burst(tree: SceneTree, point: Vector3, amount_scale := 1.0, thickness := 1.0) -> void:
+	var count := maxi(int(9 * amount_scale * sqrt(thickness)), 3)
 	for i in count:
 		var angle := randf() * TAU
 		var dir: Vector3
@@ -43,7 +44,7 @@ static func burst(tree: SceneTree, point: Vector3, amount_scale := 1.0) -> void:
 			dir = (Vector3.DOWN + Vector3(cos(angle), 0.0, sin(angle)) * randf_range(0.2, 0.7)).normalized()
 		else:
 			dir = Vector3(cos(angle), randf_range(-0.5, 0.1), sin(angle)).normalized()
-		_cast_splat(tree, point, dir, 5.0, randf_range(0.55, 1.1))
+		_cast_splat(tree, point, dir, 5.0 * sqrt(thickness), randf_range(0.55, 1.1) * thickness)
 
 
 static func _cast_splat(tree: SceneTree, from: Vector3, dir: Vector3, length: float, splat_size: float) -> void:
@@ -71,7 +72,7 @@ static func _place_decal(tree: SceneTree, position: Vector3, normal: Vector3, sp
 	var variant := randi() % textures.size()
 	var decal := Decal.new()
 	decal.texture_albedo = textures[variant]
-	decal.size = Vector3(splat_size, 0.6, splat_size)
+	decal.size = Vector3(splat_size, maxf(0.6, splat_size * 0.5), splat_size)
 	decal.texture_emission = _emission_textures[variant]
 	decal.emission_energy = EMISSION_ENERGY
 	decal.modulate = Color(1.0, 1.0, 1.0, 1.0)  # only used for the fade-out

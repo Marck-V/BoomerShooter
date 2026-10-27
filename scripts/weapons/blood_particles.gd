@@ -2,7 +2,9 @@ extends Node3D
 
 # Blood spray spawned where a bullet hits an enemy. Built in code so there is no scene to maintain.
 # Streaks are GPU particles with trails, so each droplet leaves a tapered ribbon behind it.
-# Use: BloodParticles.spawn(get_tree(), hit_point, shot_direction, amount_scale)
+# Use: BloodParticles.spawn(get_tree(), hit_point, shot_direction, amount_scale, thickness)
+# `thickness` is how thick the enemy's blood is (1 for a normal enemy, 3 for the boss): fatter streaks, bigger puffs
+# and bigger splats on the floor. BloodParticles.thickness_for(enemy) reads it from the enemy.
 
 const STREAK_COUNT := 16
 const BACKSPRAY_COUNT := 5
@@ -26,28 +28,38 @@ static var _streak_mesh: TubeTrailMesh
 static var _mist_mesh: QuadMesh
 
 
-static func spawn(tree: SceneTree, point: Vector3, direction: Vector3, amount_scale := 1.0) -> void:
+static func spawn(tree: SceneTree, point: Vector3, direction: Vector3, amount_scale := 1.0, thickness := 1.0) -> void:
 	var effect: Node3D = new()
 	tree.root.add_child(effect)
-	effect._start(point, direction, amount_scale)
+	effect._start(point, direction, amount_scale, thickness)
+
+
+# How thick the blood of whatever was hit is: the enemy itself, or the hurtbox that belongs to it
+static func thickness_for(target) -> float:
+	if target == null or not is_instance_valid(target):
+		return 1.0
+	var value = target.get("blood_scale")
+	if value == null and target.get("owner_enemy") != null:
+		value = target.get("owner_enemy").get("blood_scale")
+	return maxf(float(value), 0.1) if value != null else 1.0
 
 
 # Death burst: streaks and mist thrown out in every direction from the body
-static func spawn_burst(tree: SceneTree, point: Vector3, amount_scale := 1.0) -> void:
+static func spawn_burst(tree: SceneTree, point: Vector3, amount_scale := 1.0, thickness := 1.0) -> void:
 	var effect: Node3D = new()
 	tree.root.add_child(effect)
-	effect._start_burst(point, amount_scale)
+	effect._start_burst(point, amount_scale, thickness)
 
 
-func _start_burst(point: Vector3, amount_scale: float) -> void:
+func _start_burst(point: Vector3, amount_scale: float, thickness: float) -> void:
 	global_position = point
-	_add_streaks(maxi(int(BURST_STREAK_COUNT * amount_scale), 8), 180.0, 3.0, 8.5, 0.7)
-	_add_mist(maxi(int(BURST_MIST_COUNT * amount_scale), 3), 180.0)
-	BloodDecals.burst(get_tree(), point, amount_scale)
+	_add_streaks(maxi(int(BURST_STREAK_COUNT * amount_scale * sqrt(thickness)), 8), 180.0, 3.0, 8.5, 0.7, thickness)
+	_add_mist(maxi(int(BURST_MIST_COUNT * amount_scale * sqrt(thickness)), 3), 180.0, thickness)
+	BloodDecals.burst(get_tree(), point, amount_scale, thickness)
 	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
 
 
-func _start(point: Vector3, direction: Vector3, amount_scale: float) -> void:
+func _start(point: Vector3, direction: Vector3, amount_scale: float, thickness: float) -> void:
 	var dir := direction.normalized()
 	global_position = point
 
@@ -55,14 +67,14 @@ func _start(point: Vector3, direction: Vector3, amount_scale: float) -> void:
 	var spray := (dir + Vector3.UP * 0.25).normalized()
 	global_basis = _basis_facing(spray)
 
-	_add_streaks(maxi(int(STREAK_COUNT * amount_scale), 4), 38.0, 4.0, 9.0, 0.5)
+	_add_streaks(maxi(int(STREAK_COUNT * amount_scale * sqrt(thickness)), 4), 38.0, 4.0, 9.0, 0.5, thickness)
 
 	# Smaller burst thrown back out of the entry side
-	var back := _add_streaks(maxi(int(BACKSPRAY_COUNT * amount_scale), 2), 55.0, 1.5, 4.0, 0.35)
+	var back := _add_streaks(maxi(int(BACKSPRAY_COUNT * amount_scale * sqrt(thickness)), 2), 55.0, 1.5, 4.0, 0.35, thickness)
 	back.global_basis = _basis_facing((-dir + Vector3.UP * 0.3).normalized())
 
-	_add_mist(maxi(int(MIST_COUNT * amount_scale), 2))
-	BloodDecals.splatter(get_tree(), point, dir, amount_scale)
+	_add_mist(maxi(int(MIST_COUNT * amount_scale * sqrt(thickness)), 2), 30.0, thickness)
+	BloodDecals.splatter(get_tree(), point, dir, amount_scale, thickness)
 	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
 
 
@@ -72,7 +84,7 @@ func _basis_facing(up: Vector3) -> Basis:
 	return Basis(x, up, x.cross(up))
 
 
-func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, life: float) -> GPUParticles3D:
+func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, life: float, thickness := 1.0) -> GPUParticles3D:
 	if _streak_mesh == null:
 		var material := StandardMaterial3D.new()
 		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
@@ -108,13 +120,15 @@ func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, lif
 	var process := ParticleProcessMaterial.new()
 	process.direction = Vector3.UP
 	process.spread = spread
-	process.initial_velocity_min = vel_min
-	process.initial_velocity_max = vel_max
+	# A thick enemy bleeds fatter streaks (the streak's width and length scale together) that fly a bit further
+	var reach := 1.0 + 0.2 * (thickness - 1.0)
+	process.initial_velocity_min = vel_min * reach
+	process.initial_velocity_max = vel_max * reach
 	process.gravity = Vector3(0.0, -12.0, 0.0)
 	process.damping_min = 0.5
 	process.damping_max = 1.5
-	process.scale_min = 0.6
-	process.scale_max = 1.3
+	process.scale_min = 0.6 * thickness
+	process.scale_max = 1.3 * thickness
 	process.color_ramp = ramp
 
 	var streaks := GPUParticles3D.new()
@@ -133,7 +147,7 @@ func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, lif
 	return streaks
 
 
-func _add_mist(count: int, spread := 30.0) -> void:
+func _add_mist(count: int, spread := 30.0, thickness := 1.0) -> void:
 	if _mist_mesh == null:
 		var puff := Gradient.new()
 		puff.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
@@ -186,6 +200,8 @@ func _add_mist(count: int, spread := 30.0) -> void:
 	mist.damping_min = 1.0
 	mist.damping_max = 2.0
 	mist.scale_amount_curve = growth
+	mist.scale_amount_min = thickness
+	mist.scale_amount_max = thickness * 1.3
 	mist.color_ramp = fade
 	add_child(mist)
 	mist.emitting = true

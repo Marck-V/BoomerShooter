@@ -114,7 +114,7 @@ func spawn_impact_particles(raycast: RayCast3D, camera: Camera3D, amount_scale :
 	var collider = raycast.get_collider()
 	if collider is Node and not collider.is_in_group("Shield") and get_hit_enemy(collider) != null:
 		var shot_direction := (hit_point - camera.global_transform.origin).normalized()
-		BloodParticles.spawn(get_tree(), hit_point, shot_direction, amount_scale)
+		BloodParticles.spawn(get_tree(), hit_point, shot_direction, amount_scale, BloodParticles.thickness_for(get_hit_enemy(collider)))
 		return
 
 	var hit_normal := raycast.get_collision_normal()
