@@ -14,6 +14,7 @@ extends CharacterBody3D
 @export var wall_jump_push_time = 0.2
 @export var kick_recovery = 14.0
 @export var damage_flash_time = 0.4
+@export var heal_flash_time = 0.6
 @export var kill_height := -70.0      # falling below this restarts the level (the sky course drops far below the floor)
 @export var grapple_speed := 34.0              # how fast the shield grapple pulls the player
 @export var grapple_arrive_distance := 1.8      # stops this close (camera to point) to the grapple point
@@ -57,6 +58,13 @@ var wall_push_velocity := Vector3.ZERO
 var wall_push_time_left := 0.0
 
 var camera_kick := Vector2.ZERO
+# Sustained camera shake: add_camera_shake() raises the trauma, which then decays on its own. The shake grows with
+# the square of the trauma, so small hits barely register and big ones rattle the view.
+var shake_trauma := 0.0
+var shake_time := 0.0
+const SHAKE_DECAY := 0.9           # trauma lost per second
+const SHAKE_MAX_ANGLE := 0.075     # radians of pitch and yaw at full trauma
+const SHAKE_MAX_ROLL := 0.06
 
 # Set by the offhand shield: true while it is up (parry window or block), so projectiles can be absorbed
 var shield_blocking := false
@@ -77,6 +85,9 @@ const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/damage_flash.gdshader
 const OFFHAND_SHIELD = preload("res://scripts/player/offhand_shield.gd")
 var damage_flash_material: ShaderMaterial
 var damage_flash_tween: Tween
+var heal_flash_material: ShaderMaterial
+var heal_flash_tween: Tween
+const HEAL_FLASH_COLOR := Color(0.2, 1.0, 0.35, 1.0)
 
 
 var tween:Tween
@@ -117,6 +128,7 @@ func _ready():
 	GlobalVariables.player = self
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
 	_setup_damage_flash()
+	_setup_heal_flash()
 	offhand_shield = OFFHAND_SHIELD.new()
 	camera.add_child(offhand_shield)
 	crosshair.texture = current_weapon.data.crosshair
@@ -169,8 +181,18 @@ func _physics_process(delta):
 	move_and_slide()
 
 	camera_kick = camera_kick.lerp(Vector2.ZERO, clampf(delta * kick_recovery, 0.0, 1.0))
-	head.rotation.x = camera_kick.x
-	head.rotation.y = camera_kick.y
+	var shake := Vector3.ZERO
+	if shake_trauma > 0.0:
+		shake_time += delta * 38.0
+		var amount := shake_trauma * shake_trauma
+		shake = Vector3(
+			sin(shake_time * 1.13) + 0.6 * sin(shake_time * 2.71 + 1.3),
+			sin(shake_time * 0.97 + 2.1) + 0.6 * sin(shake_time * 2.37),
+			sin(shake_time * 1.31 + 4.0)) * amount
+		shake_trauma = move_toward(shake_trauma, 0.0, delta * SHAKE_DECAY)
+	head.rotation.x = camera_kick.x + shake.x * SHAKE_MAX_ANGLE
+	head.rotation.y = camera_kick.y + shake.y * SHAKE_MAX_ANGLE
+	head.rotation.z = shake.z * SHAKE_MAX_ROLL
 
 	camera.rotation.z = lerp_angle(camera.rotation.z, -input_mouse.x * 25 * delta, delta * 5)
 	camera.rotation.x = lerp_angle(camera.rotation.x, rotation_target.x, delta * 25)
@@ -431,6 +453,11 @@ func end_grapple(arrived: bool) -> void:
 func apply_camera_kick(pitch: float, yaw: float) -> void:
 	camera_kick += Vector2(pitch, yaw)
 
+
+# A sustained rattle of the view that fades out by itself (0..1; stacks, capped at 1)
+func add_camera_shake(trauma: float) -> void:
+	shake_trauma = minf(shake_trauma + trauma, 1.0)
+
 func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_toggle"):
 		change_weapon((weapon_index + 1) % weapon_nodes.size())
@@ -482,6 +509,43 @@ func _setup_damage_flash() -> void:
 	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	rect.material = damage_flash_material
 	layer.add_child(rect)
+
+# The green counterpart of the red hit vignette: the same screen-edge shader, on its own layer so a heal and a hit
+# can show at the same time, and a little softer and slower since it is good news
+func _setup_heal_flash() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 0
+	add_child(layer)
+
+	heal_flash_material = ShaderMaterial.new()
+	heal_flash_material.shader = DAMAGE_FLASH_SHADER
+	heal_flash_material.set_shader_parameter("flash_color", HEAL_FLASH_COLOR)
+	heal_flash_material.set_shader_parameter("edge_power", 1.6)
+	heal_flash_material.set_shader_parameter("inner_ratio", 0.6)
+	heal_flash_material.set_shader_parameter("feather", 0.5)
+
+	var rect := ColorRect.new()
+	rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	rect.material = heal_flash_material
+	layer.add_child(rect)
+
+
+# Called when something heals the player visibly (the pizza pickup)
+func play_heal_flash() -> void:
+	if heal_flash_material == null:
+		return
+	var peak := 0.75
+	heal_flash_material.set_shader_parameter("intensity", peak)
+	if heal_flash_tween:
+		heal_flash_tween.kill()
+	heal_flash_tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	heal_flash_tween.tween_method(_set_heal_flash_intensity, peak, 0.0, heal_flash_time)
+
+
+func _set_heal_flash_intensity(value: float) -> void:
+	heal_flash_material.set_shader_parameter("intensity", value)
+
 
 func _play_damage_flash(amount) -> void:
 	if damage_flash_material == null or amount <= 0:
