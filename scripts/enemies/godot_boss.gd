@@ -14,11 +14,18 @@ class_name GodotBoss
 const BLOOD_PARTICLES = preload("res://scripts/weapons/blood_particles.gd")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 const ENERGY_BALL: PackedScene = preload("res://scenes/enemies/energy_ball.tscn")
+const SpawnEffect = preload("res://scripts/levels/spawn_effect.gd")
+# What the boss calls in, weighted by how often each is picked
+const ADD_SCENES := [
+	{"scene": preload("res://scenes/enemies/enemy_horde.tscn"), "weight": 3},
+	{"scene": preload("res://scenes/enemies/enemy_dodger.tscn"), "weight": 2},
+	{"scene": preload("res://scenes/enemies/enemy_flyer.tscn"), "weight": 2},
+]
 
 const PHASES := [
 	{"name": "Brawler", "speed": 1.0, "gap": 1.6, "attacks": ["slam", "charge"]},
-	{"name": "Summoner", "speed": 1.1, "gap": 1.3, "attacks": ["slam", "charge", "orbs"]},
-	{"name": "Berserk", "speed": 1.3, "gap": 0.8, "attacks": ["slam", "charge", "orbs"]},
+	{"name": "Summoner", "speed": 1.1, "gap": 1.3, "attacks": ["slam", "charge", "orbs", "summon"]},
+	{"name": "Berserk", "speed": 1.3, "gap": 0.8, "attacks": ["slam", "charge", "orbs", "summon"]},
 ]
 
 const ATTACK_ANIMATION_LENGTH := 1.33
@@ -65,6 +72,25 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 @export var orb_reflect_fraction := 0.08     # share of its full health a parried orb takes off
 @export var orb_stun_time := 2.5
 
+@export_category("Adds")
+@export var summon_count := 3                # per summon in phase 2 (phase 3 calls in one more)
+@export var intro_add_count := 4             # called in with the roar when phase 2 starts
+@export var max_adds := 8                    # it will not summon while this many are alive
+@export var summon_windup := 1.2
+@export var summon_cooldown := 15.0
+@export var add_spawn_distance := Vector2(6.0, 14.0)   # how far from the player (meters) adds appear
+
+@export_category("Floor Hazard")
+# Phase 3: tiles of the floor around the player light up, flash and burn, over and over
+@export var hazard_enabled := true
+@export var hazard_interval := 4.5           # seconds between patterns
+@export var hazard_cells := 6                # tiles per pattern
+@export var hazard_cell_size := 4.0          # meters
+@export var hazard_damage := 20.0            # per tick, while standing in a burning tile
+@export var hazard_warn_time := 1.4
+@export var hazard_burn_time := 1.3
+@export var hazard_spread := 2               # how many tiles from the player a pattern can reach
+
 @export_category("Phases")
 @export var phase_two_at := 0.66
 @export var phase_three_at := 0.33
@@ -87,6 +113,7 @@ var pending_stun_time := 0.0
 var original_material: Material
 var attack_hitbox: Area3D
 var shake_amount := 0.0
+var next_hazard_msec := 0
 
 @onready var footsteps: AudioStreamPlayer3D = $Footsteps
 @onready var debug_label: Label3D = $DebugLabel
@@ -117,6 +144,7 @@ func get_state_definitions() -> Dictionary:
 		"Charge": ChargeState.new(self),
 		"Slam": SlamState.new(self),
 		"Orbs": OrbState.new(self),
+		"Summon": SummonState.new(self),
 		"Recovery": RecoveryState.new(self),
 		"Stunned": StunnedState.new(self),
 		"Transition": TransitionState.new(self),
@@ -145,6 +173,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
 	super(delta)
+	_update_hazard()
 	if shake_amount > 0.0:
 		model_root.position = model_rest.origin + Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)) * shake_amount
 	if debug and debug_label and get_viewport().get_camera_3d():
@@ -342,12 +371,15 @@ func choose_special(distance: float) -> bool:
 			"orbs":
 				if distance >= 1.8 * length:
 					options.append(attack)
+			"summon":
+				if alive_adds() <= max_adds - summon_count:
+					options.append(attack)
 	if options.is_empty():
 		return false
 	var pick: String = options.pick_random()
-	var cooldown := {"slam": slam_cooldown, "charge": charge_cooldown, "orbs": orb_cooldown}[pick] as float
+	var cooldown := {"slam": slam_cooldown, "charge": charge_cooldown, "orbs": orb_cooldown, "summon": summon_cooldown}[pick] as float
 	cooldown_until[pick] = now + int(cooldown * randf_range(0.85, 1.15) * 1000.0)
-	change_state({"slam": "Slam", "charge": "Charge", "orbs": "Orbs"}[pick])
+	change_state({"slam": "Slam", "charge": "Charge", "orbs": "Orbs", "summon": "Summon"}[pick])
 	return true
 
 
@@ -402,6 +434,110 @@ func _check_phase() -> void:
 		change_state("Transition")
 
 
+# ---------------------------
+# Adds
+# ---------------------------
+func alive_adds() -> int:
+	var count := 0
+	for add in get_tree().get_nodes_in_group("BossAdd"):
+		if is_instance_valid(add) and not add.get("destroyed"):
+			count += 1
+	return count
+
+
+# Calls in a few enemies around the player, each with the spawn flash. Returns how many appeared.
+func summon_adds(count: int) -> int:
+	count = mini(count, max_adds - alive_adds())
+	var spawned := 0
+	for i in count:
+		var point = _find_add_point()
+		if point == null:
+			continue
+		var scene: PackedScene = _pick_add_scene()
+		var add = scene.instantiate()
+		add.target = target
+		add.add_to_group("BossAdd")
+		get_parent().add_child(add)
+		add.global_position = point + Vector3.UP * 0.2
+		SpawnEffect.play(get_tree(), point)
+		spawned += 1
+	return spawned
+
+
+func _pick_add_scene() -> PackedScene:
+	var total := 0
+	for entry in ADD_SCENES:
+		total += int(entry["weight"])
+	var roll := randi() % total
+	for entry in ADD_SCENES:
+		roll -= int(entry["weight"])
+		if roll < 0:
+			return entry["scene"]
+	return ADD_SCENES[0]["scene"]
+
+
+# A spot on the navigation mesh around the player, not too close and not in a wall
+func _find_add_point():
+	var map := nav.get_navigation_map()
+	var centre: Vector3 = target.global_position if is_instance_valid(target) else global_position
+	for attempt in 14:
+		var angle := randf() * TAU
+		var distance := randf_range(add_spawn_distance.x, add_spawn_distance.y)
+		var candidate := centre + Vector3(sin(angle), 0.0, cos(angle)) * distance
+		var snapped_point := NavigationServer3D.map_get_closest_point(map, candidate)
+		if Vector2(snapped_point.x - candidate.x, snapped_point.z - candidate.z).length() > 1.5:
+			continue
+		if absf(snapped_point.y - centre.y) > 3.0:
+			continue
+		return snapped_point
+	return null
+
+
+func kill_adds() -> void:
+	for add in get_tree().get_nodes_in_group("BossAdd"):
+		if is_instance_valid(add) and add.has_method("damage") and not add.get("destroyed"):
+			add.damage(1.0e9)
+
+
+# ---------------------------
+# Floor hazard
+# ---------------------------
+func _update_hazard() -> void:
+	if not hazard_enabled or phase < 3 or destroyed or invulnerable or not is_instance_valid(target):
+		return
+	if state == states["Transition"] or state == states["Idle"]:
+		return
+	var now := Time.get_ticks_msec()
+	if now < next_hazard_msec:
+		return
+	next_hazard_msec = now + int(hazard_interval * 1000.0 * randf_range(0.85, 1.15))
+	spawn_hazard_pattern()
+
+
+# Tiles on a grid fixed to the world: always one under the player, the rest scattered close around them
+func spawn_hazard_pattern() -> void:
+	var size := hazard_cell_size
+	var player_floor := floor_point(target.global_position)
+	var reference_y := floor_point(global_position).y
+	var chosen := {}
+	var origin := Vector2i(roundi(player_floor.x / size), roundi(player_floor.z / size))
+	chosen[origin] = true
+	var attempts := 0
+	while chosen.size() < hazard_cells and attempts < 40:
+		attempts += 1
+		var offset := Vector2i(randi_range(-hazard_spread, hazard_spread), randi_range(-hazard_spread, hazard_spread))
+		chosen[origin + offset] = true
+	var floor_cells: Array = []
+	for key in chosen:
+		var centre := floor_point(Vector3(float(key.x) * size, player_floor.y + 1.0, float(key.y) * size))
+		if absf(centre.y - reference_y) > 1.5 or centre.y < player_floor.y - 1.5:
+			continue  # not part of the arena floor (a wall, a ledge or a drop)
+		floor_cells.append(centre)
+	if floor_cells.is_empty():
+		return
+	BossFloorHazard.spawn(get_tree(), floor_cells, size, hazard_damage, hazard_warn_time, hazard_burn_time)
+
+
 # Set up the phase's numbers: speed, attack gaps, shield and glow. Done at the moment of the roar.
 func apply_phase() -> void:
 	var data: Dictionary = PHASES[phase - 1]
@@ -409,6 +545,9 @@ func apply_phase() -> void:
 	enraged = phase >= 3
 	if phase == 2:
 		_add_phase_shield()
+		summon_adds(intro_add_count)
+	if phase >= 3:
+		next_hazard_msec = Time.get_ticks_msec() + 1500
 	settle_glow()
 
 
@@ -435,6 +574,7 @@ func flinch(world_point: Vector3, strength := 1.0) -> void:
 func _die() -> void:
 	if destroyed:
 		return
+	kill_adds()
 	change_state("Dead")
 
 
@@ -745,6 +885,52 @@ class OrbState extends BossState:
 		ball.set_target(enemy.target)
 		Audio.play_at(origin, "assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav, assets/audio/sfx/enemies/Enemy_Shoot2_PitchedUp.wav")
 		enemy.shake_player_camera(0.02, 0.01)
+
+	func exit() -> void:
+		enemy.is_attacking = false
+		enemy.set_shake(0.0)
+		enemy.anim.speed_scale = 1.0
+		enemy.settle_glow()
+
+
+# Rears up and calls in reinforcements around the player. Vulnerable while it does.
+class SummonState extends BossState:
+	enum Phase { WINDUP, CALL, HOLD }
+
+	var phase := Phase.WINDUP
+	var elapsed := 0.0
+
+	func enter() -> void:
+		phase = Phase.WINDUP
+		elapsed = 0.0
+		enemy.is_attacking = true
+		enemy.velocity = Vector3.ZERO
+		enemy.hold_rear_up_pose()
+		enemy.set_glow(true, Color(0.5, 0.4, 1.0))
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav")
+
+	func update(delta: float) -> void:
+		elapsed += delta
+		if is_instance_valid(enemy.target):
+			enemy.face_point(enemy.target.global_position)
+		match phase:
+			Phase.WINDUP:
+				enemy.set_shake(0.025 * (elapsed / enemy.summon_windup))
+				if elapsed >= enemy.summon_windup:
+					phase = Phase.CALL
+					elapsed = 0.0
+					enemy.set_shake(0.0)
+					enemy.release_pose(2.2)
+					enemy.summon_adds(enemy.summon_count + (1 if enemy.phase >= 3 else 0))
+					enemy.shake_player_camera(0.05, 0.02)
+					enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar2.wav")
+			Phase.CALL:
+				if elapsed >= 0.5:
+					phase = Phase.HOLD
+					elapsed = 0.0
+			Phase.HOLD:
+				if elapsed >= 0.5:
+					enemy.change_state("Recovery")
 
 	func exit() -> void:
 		enemy.is_attacking = false
