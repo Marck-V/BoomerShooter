@@ -298,27 +298,72 @@ class DodgeState:
 
 
 # --- Dead ---
+# Falls over with Death01 (sped up so a fight keeps its pace). A small spray marks the kill, and when the body
+# hits the floor it bursts into a big explosion of blood and is gone. The corpse can't be hit, can't hurt
+# anyone and no longer counts as an enemy while it falls. Models without a death clip (the flyer) burst
+# straight away.
 class DeadState:
+	const DEATH_ANIMATION := "Death01"
+	const DEATH_SPEED := 1.6
+	const TOUCHDOWN_TIME := 0.95       # seconds into Death01 when the body reaches the floor
+	const HIT_SPRAY_SCALE := 0.45      # blood at the moment of the kill
+	const LANDING_BURST_SCALE := 1.4   # the big explosion when the body lands
+
 	var enemy
 
 	func _init(e): enemy = e
 
 	func enter():
 		enemy.destroyed = true
-		
-		# Spawn glitchy particle explosion
-		spawn_glitch_particles()
-		
-		Audio.play_at(enemy.global_position,
-						"assets/audio/sfx/enemies/Enemy_Death1.wav,
-						assets/audio/sfx/enemies/Enemy_Death2.wav")
-		enemy.queue_free()
+		_stop_fighting()
+
+		if enemy.anim != null and enemy.anim.has_animation(DEATH_ANIMATION) and enemy.is_inside_tree():
+			_burst(enemy.global_position + Vector3(0, 1.0, 0), HIT_SPRAY_SCALE)
+			_play_death()
+		else:
+			_burst(enemy.global_position + Vector3(0, 1.0, 0), 1.0)
+			_death_sound()
+			enemy.queue_free()
 
 	func update(_delta):
 		pass
-	
-	func spawn_glitch_particles():
-		if !enemy.is_inside_tree():
+
+	# The enemy keeps existing for the animation, so it must stop being a target, an attacker or an obstacle
+	func _stop_fighting() -> void:
+		enemy.velocity = Vector3.ZERO
+		enemy.should_move = false
+		enemy.is_attacking = false
+		enemy.is_dodging = false
+		enemy.set_dodge_vanished(false)  # a dodger that dies mid-dodge reappears as it falls
+		if "attack_token" in enemy:
+			enemy.attack_token += 1  # cancels a punch or combo that is still running
+		enemy.collision_layer = 0
+		if enemy.nav != null:
+			enemy.nav.avoidance_enabled = false
+		for area in enemy.find_children("*", "Area3D", true, false):
+			area.set_deferred("collision_layer", 0)
+			area.set_deferred("monitorable", false)
+			area.set_deferred("monitoring", false)
+		enemy.remove_from_group("Enemy")
+
+	func _play_death() -> void:
+		_death_sound()
+		enemy.anim.speed_scale = DEATH_SPEED
+		enemy.anim.play(DEATH_ANIMATION)
+		await enemy.get_tree().create_timer(TOUCHDOWN_TIME / DEATH_SPEED).timeout
+		if not is_instance_valid(enemy) or not enemy.is_inside_tree():
 			return
-		
-		BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), enemy.global_position + Vector3(0, 1.0, 0))
+		# The body hits the floor and bursts
+		_burst(enemy.global_position + Vector3(0, 0.3, 0), LANDING_BURST_SCALE)
+		_death_sound()
+		enemy.queue_free()
+
+	func _death_sound() -> void:
+		if enemy.is_inside_tree():
+			Audio.play_at(enemy.global_position,
+							"assets/audio/sfx/enemies/Enemy_Death1.wav,
+							assets/audio/sfx/enemies/Enemy_Death2.wav")
+
+	func _burst(point: Vector3, amount_scale: float) -> void:
+		if enemy.is_inside_tree():
+			BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), point, amount_scale)
