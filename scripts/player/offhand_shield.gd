@@ -19,6 +19,7 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 @export var parry_success_cooldown := 0.15 # after reflecting something
 @export var block_release_cooldown := 0.15 # after letting go of a block
 @export var parry_range := 4.0
+@export var melee_parry_range := 3.2       # how close a glowing punch has to be to be parried
 
 # --- Throw ---
 @export var throw_damage := 45.0
@@ -259,6 +260,7 @@ func _start_parry() -> void:
 
 func _check_parry() -> void:
 	var forward := -camera.global_basis.z
+	var reflected_any := false
 	for projectile in get_tree().get_nodes_in_group("EnemyProjectile"):
 		if not is_instance_valid(projectile) or projectile.reflected:
 			continue
@@ -266,6 +268,19 @@ func _check_parry() -> void:
 		if to_projectile.length() > parry_range or to_projectile.normalized().dot(forward) < 0.0:
 			continue
 		_reflect(projectile)
+		reflected_any = true
+	if reflected_any:
+		return
+
+	# Melee: a glowing punch (a lunge) can be parried once the enemy is close enough
+	for enemy in get_tree().get_nodes_in_group("Enemy"):
+		if not is_instance_valid(enemy) or enemy.get("parryable") != true:
+			continue
+		var to_enemy: Vector3 = (enemy.global_position + Vector3.UP * 1.0) - camera.global_position
+		if to_enemy.length() > melee_parry_range or to_enemy.normalized().dot(forward) < 0.2:
+			continue
+		_parry_melee(enemy)
+		return
 
 
 # A projectile reached the player while the shield was up: it is absorbed instead of hurting
@@ -295,8 +310,22 @@ func _reflect(projectile: Node3D) -> void:
 	if enemy:
 		direction = (enemy.global_position + Vector3.UP * 1.2) - projectile.global_position
 	projectile.reflect(enemy, direction)
+	_parry_feedback(projectile.global_position)
 
-	var point := projectile.global_position
+
+# A glowing punch was caught: the enemy's attack is cancelled and it is stunned and knocked back
+func _parry_melee(enemy: Node3D) -> void:
+	var point: Vector3 = enemy.global_position + Vector3.UP * 1.3
+	point = camera.global_position.lerp(point, 0.7)
+	if enemy.has_method("on_parried"):
+		enemy.on_parried()
+	if enemy.has_method("hit_flash"):
+		enemy.hit_flash(point, 3.0, 1.9)
+	_parry_feedback(point)
+
+
+# Shared by every successful parry: clang, sparks, shove-back, camera kick, hit-stop and the rest of the juice
+func _parry_feedback(point: Vector3) -> void:
 	_clang(point, 1.5)
 	_pop(point, PARRY_YELLOW, 1.4)
 	hand_velocity += Vector3(0.0, 0.0, PARRY_RECOIL)

@@ -60,6 +60,8 @@ var camera_kick := Vector2.ZERO
 
 # Set by the offhand shield: true while it is up (parry window or block), so projectiles can be absorbed
 var shield_blocking := false
+var push_impulse := Vector3.ZERO   # one-off shove from enemies, applied through the normal movement blend so it fades quickly
+const BLOCK_DAMAGE_MULTIPLIER := 0.9   # damage taken while the shield is up
 var offhand_shield: Node
 
 # Shield grapple: while true the player is pulled toward grapple_target and gravity is ignored
@@ -160,7 +162,8 @@ func _physics_process(delta):
 	elif wall_push_time_left > 0.0:
 		applied_velocity = wall_push_velocity
 	else:
-		applied_velocity = velocity.lerp(movement_velocity, delta * 10)
+		applied_velocity = velocity.lerp(movement_velocity, delta * 10) + Vector3(push_impulse.x, 0.0, push_impulse.z)
+	push_impulse = Vector3.ZERO
 	applied_velocity.y = -gravity
 	velocity = applied_velocity
 	move_and_slide()
@@ -494,7 +497,14 @@ func _play_damage_flash(amount) -> void:
 func _set_damage_flash_intensity(value: float) -> void:
 	damage_flash_material.set_shader_parameter("intensity", value)
 
+# Shoves the player (horizontal velocity, in units per second)
+func apply_push(impulse: Vector3) -> void:
+	push_impulse += impulse
+
+
 func damage(amount):
+	if shield_blocking:
+		amount *= BLOCK_DAMAGE_MULTIPLIER
 	health -= amount
 	_play_damage_flash(amount)
 	health_updated.emit(health)
