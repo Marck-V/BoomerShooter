@@ -18,6 +18,11 @@ uniform vec3 sun_top_color : source_color = vec3(1.0, 0.85, 0.1);
 uniform vec3 sun_bottom_color : source_color = vec3(1.0, 0.25, 0.4);
 uniform float sun_stripes : hint_range(2.0, 20.0) = 9.0;
 
+uniform float star_rest : hint_range(0.0, 1.0) = 0.55;          // brightness of a swelling star at rest
+uniform float star_glow : hint_range(0.0, 4.0) = 0.9;           // extra brightness at the peak of a star's swell
+uniform float star_halo : hint_range(0.0, 1.0) = 0.35;          // soft halo around a star at its peak
+uniform vec2 star_swell_speed = vec2(0.08, 0.2);               // swells per second, min and max (5 to 12 s each)
+
 float hash21(vec2 p) {
 	p = fract(p * vec2(123.34, 456.21));
 	p += dot(p, p + 45.32);
@@ -48,10 +53,34 @@ void sky() {
 		color = mix(upper_color, top_color, (stepped - 0.4) / 0.6);
 	}
 
-	// Stars, fading in toward the top
-	vec2 cell = floor(vec2(azimuth, elevation) * 260.0);
-	float star = step(0.9965, hash21(cell));
-	color += vec3(1.0) * star * smoothstep(0.25, 0.6, height);
+	// Stars, fading in toward the top. About half of them swell slowly and at random: each rests a little
+	// dimmer, eases up to full brightness with a soft halo, and settles back at its own pace, so which stars
+	// are glowing keeps drifting around the sky. The rest stay steady. Slow and subtle on purpose.
+	vec2 star_pos = vec2(azimuth, elevation) * 260.0;
+	vec2 cell = floor(star_pos);
+	float star_light = 0.0;
+	for (int dy = -1; dy <= 1; dy++) {
+		for (int dx = -1; dx <= 1; dx++) {
+			vec2 c = cell + vec2(float(dx), float(dy));
+			if (hash21(c) < 0.9965) {
+				continue;
+			}
+			float seed_phase = hash21(c + vec2(17.3, 5.1));
+			float seed_speed = hash21(c + vec2(91.7, 33.9));
+			float twinkles = step(0.5, hash21(c + vec2(3.7, 61.3)));
+			float swell = 0.5 + 0.5 * sin(TIME * mix(star_swell_speed.x, star_swell_speed.y, seed_speed) * 6.2831853 + seed_phase * 6.2831853);
+			swell = smoothstep(0.1, 0.9, swell) * twinkles;
+			if (dx == 0 && dy == 0) {
+				// The star itself: steady stars stay at 1.0, swelling ones go between star_rest and 1.0 + star_glow
+				star_light += mix(1.0, mix(star_rest, 1.0 + star_glow, swell), twinkles);
+			} else {
+				// A faint halo on the cells around a star that is near the peak of its swell
+				float d = length(star_pos - (c + 0.5));
+				star_light += swell * swell * star_halo * (1.0 - smoothstep(0.7, 2.0, d));
+			}
+		}
+	}
+	color += vec3(1.0) * star_light * smoothstep(0.25, 0.6, height);
 
 	// Sun glow, then the striped disc
 	vec3 sun = normalize(sun_direction);

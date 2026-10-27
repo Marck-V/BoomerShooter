@@ -19,6 +19,7 @@ shader_parameter/sun_stripes = 9.0
 
 [sub_resource type="Sky" id="Sky_sunset"]
 sky_material = SubResource("ShaderMaterial_sunset")
+process_mode = 3
 
 [resource]
 background_mode = 2

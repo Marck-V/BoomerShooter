@@ -32,6 +32,7 @@ shader_parameter/sun_direction = Vector3(-0.3, 0.12, -1)
 
 [sub_resource type="Sky" id="Sky_oqbgo"]
 sky_material = SubResource("ShaderMaterial_sunset")
+process_mode = 3
 
 [sub_resource type="Environment" id="Environment_v2erg"]
 background_mode = 2
