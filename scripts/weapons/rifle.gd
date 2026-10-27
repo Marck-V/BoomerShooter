@@ -37,6 +37,9 @@ func on_enemy_died(enemy: Node3D):
 	# Only count kills made with the rifle
 	if GlobalVariables.current_weapon != "rifle":
 		return
+	# Kills during a boost don't count toward the next one
+	if quickness_active:
+		return
 
 	enemies_killed += 1
 	print("Enemy killed with rifle:", enemy.name, " | Total killed:", enemies_killed)

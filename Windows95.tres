@@ -1,4 +1,4 @@
-[gd_resource type="Theme" load_steps=118 format=3 uid="uid://csix15cdk72y3"]
+[gd_resource type="Theme" format=3 uid="uid://csix15cdk72y3"]
 
 [ext_resource type="FontFile" uid="uid://uoou3yxialwj" path="res://assets/images/Godot-Windows-95-Theme-main/font/PixelOperator.ttf" id="1_2cwjv"]
 [ext_resource type="Texture2D" uid="uid://tt74t6270vfp" path="res://assets/images/Godot-Windows-95-Theme-main/textures/button/normal.png" id="2_v386v"]

@@ -23,6 +23,10 @@ func _ready() -> void:
     z_index = 2
 
     _update_line()
+    # Button sizes are still settling (theme, fonts) during _ready, so the line follows them
+    resized.connect(_update_line)
+    if get_parent() is RegUpgradeButton:
+        get_parent().resized.connect(_update_line)
 
     if GlobalVariables.has_upgrade(upgrade_id):
         apply_visual_upgrade()
@@ -42,23 +46,18 @@ func _update_line() -> void:
     if get_parent() is RegUpgradeButton:
         var parent_btn := get_parent() as RegUpgradeButton
 
-        line_2d.top_level = true
-        line_2d.global_position = Vector2.ZERO
-        line_2d.z_index = 0
+        # Drawn in this button's own coordinates (from the parent's bottom edge to this button's bottom edge, behind
+        # it), so it never depends on where the TabContainer has laid out the tab. Global positions are wrong in
+        # _ready and in tabs that have not been shown yet.
+        line_2d.top_level = false
+        line_2d.position = Vector2.ZERO
+        line_2d.z_index = -1
 
-        var line_x := global_position.x + size.x * 0.5
-
-        var parent_bottom := Vector2(
-            line_x,
-            parent_btn.global_position.y + parent_btn.size.y
-        )
-        var my_top := Vector2(
-            line_x,
-            global_position.y + 30
-        )
+        var parent_bottom := Vector2(size.x * 0.5, parent_btn.size.y - position.y)
+        var my_bottom := Vector2(size.x * 0.5, size.y)
 
         line_2d.add_point(parent_bottom)
-        line_2d.add_point(my_top)
+        line_2d.add_point(my_bottom)
     else:
         line_2d.hide()
 

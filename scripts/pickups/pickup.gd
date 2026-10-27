@@ -43,7 +43,14 @@ var scale_map = {
 	"Points": Vector3(gold_bar_scale_factor, gold_bar_scale_factor, gold_bar_scale_factor)
 }
 
+var glow_colors = {
+	"Health": Color(0.2, 1.0, 0.35),
+	"Ammo": Color(1.0, 0.7, 0.2),
+	"Points": Color(1.0, 0.85, 0.2)
+}
+
 var model_instance: Node3D
+var glow_instance: MeshInstance3D
 
 
 func _ready() -> void:
@@ -73,6 +80,52 @@ func _build_model() -> void:
 	if type == "Ammo" and ammo_tints.has(weapon_id):
 		_tint(model_instance, ammo_tints[weapon_id])
 	add_child(model_instance)
+	_build_glow()
+
+
+# Soft camera-facing halo behind the model, tinted by pickup type
+func _build_glow() -> void:
+	if glow_instance:
+		glow_instance.queue_free()
+	var color: Color = glow_colors.get(type, glow_colors["Points"])
+	if type == "Ammo" and ammo_tints.has(weapon_id):
+		color = ammo_tints[weapon_id]
+	var mat := ShaderMaterial.new()
+	mat.shader = load("res://shaders/pickup_glow.gdshader")
+	mat.set_shader_parameter("glow_color", color)
+	mat.render_priority = -1
+	var quad := QuadMesh.new()
+	var bounds := _model_bounds()
+	var glow_size: float = clamp(bounds.size.length() * 1.2, 0.9, 1.5)
+	quad.size = Vector2(glow_size, glow_size)
+	quad.material = mat
+	glow_instance = MeshInstance3D.new()
+	glow_instance.mesh = quad
+	glow_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	glow_instance.position = bounds.get_center()
+	add_child(glow_instance)
+
+
+# Bounds of the visible model in the pickup's local space, so the glow sits on the model's center
+func _model_bounds() -> AABB:
+	var result := AABB()
+	var first := true
+	for node in model_instance.find_children("*", "MeshInstance3D", true, false):
+		var mi := node as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		var xf := model_instance.transform
+		var n: Node = mi
+		var chain: Array[Transform3D] = []
+		while n != model_instance:
+			chain.append((n as Node3D).transform)
+			n = n.get_parent()
+		for i in range(chain.size() - 1, -1, -1):
+			xf = xf * chain[i]
+		var box := xf * mi.mesh.get_aabb()
+		result = box if first else result.merge(box)
+		first = false
+	return result
 
 
 func _tint(root: Node, color: Color) -> void:
