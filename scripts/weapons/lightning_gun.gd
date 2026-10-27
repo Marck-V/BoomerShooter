@@ -82,7 +82,7 @@ func _chain_hit_effects(target: Node3D, from_position: Vector3) -> void:
 	direction = direction.normalized() if direction.length() > 0.01 else Vector3.FORWARD
 
 	flash_hit_enemy(target, chest)
-	BloodParticles.spawn(get_tree(), chest, direction)
+	BloodParticles.spawn(get_tree(), chest, direction, 1.0, BloodParticles.thickness_for(target))
 	ElectricAura.apply(target)
 
 

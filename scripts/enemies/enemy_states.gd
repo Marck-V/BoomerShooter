@@ -366,4 +366,4 @@ class DeadState:
 
 	func _burst(point: Vector3, amount_scale: float) -> void:
 		if enemy.is_inside_tree():
-			BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), point, amount_scale)
+			BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), point, amount_scale, BLOOD_PARTICLES.thickness_for(enemy))
