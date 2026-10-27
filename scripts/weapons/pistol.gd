@@ -40,7 +40,10 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 	if shot_fired and raycast.is_colliding() and get_hit_enemy(raycast.get_collider()):
 		_apply_camera_kick()
 
-	# Handle Upgrades
+	# Upgrades only trigger on shots that were actually fired (an empty click does nothing)
+	if not shot_fired:
+		return
+
 	if has_piercing:
 		_do_piercing_hits(camera, raycast)
 
@@ -126,16 +129,20 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 	if first_target and not first_target.has_method("damage") and first_target.get_parent() and first_target.get_parent().has_method("damage"):
 		first_target = first_target.get_parent()
 
-	var damaged = []
-	if first_target:
-		damaged.append(first_target)
+	# The shot is stopped by anything that is not damageable (walls, shields), it only pierces through enemies
+	if not first_target or not first_target.has_method("damage"):
+		return
+
+	var damaged = [first_target]
 
 	var space_state = get_world_3d().direct_space_state
 	var from = hit_pos + dir * 0.1
 	var exclude = [first_collider]
 	var hits = 0
+	var steps = 0
 
-	while hits < max_pierces:
+	while hits < max_pierces and steps < 16:
+		steps += 1
 		var to = from + dir * remaining
 		var params = PhysicsRayQueryParameters3D.create(from, to)
 		params.exclude = exclude
@@ -152,12 +159,16 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 		if target and not target.has_method("damage") and target.get_parent() and target.get_parent().has_method("damage"):
 			target = target.get_parent()
 
-		if target and target.has_method("damage") and not damaged.has(target):
+		# Walls and shields end the shot
+		if not target or not target.has_method("damage"):
+			break
+
+		# A second hurtbox of an enemy that was already hit is skipped without using up a pierce
+		if not damaged.has(target):
 			target.damage(data.damage)
 			flash_hit_enemy(target, result["position"])
-			#print("Pierced enemy: ", target.name)
 			damaged.append(target)
+			hits += 1
 
 		exclude.append(collider)
-		hits += 1
 		from = result["position"] + dir * 0.1
