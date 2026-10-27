@@ -72,6 +72,16 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 @export var orb_reflect_fraction := 0.08     # share of its full health a parried orb takes off
 @export var orb_stun_time := 2.5
 
+@export_category("Entrance")
+# The boss starts hidden and untouchable. When the player comes into range a warning circle grows on the floor,
+# then it drops out of the sky and lands in a burst of dust
+@export var entrance_enabled := true
+@export var entrance_height := 45.0          # meters above where it stands (less if something is in the way)
+@export var entrance_gravity := 55.0         # how fast it falls
+@export var entrance_warn_time := 1.7        # the circle grows for this long before it appears
+@export var landing_radius := 1.5            # in boss lengths: standing under it hurts
+@export var landing_damage := 60.0
+
 @export_category("Adds")
 @export var summon_count := 3                # per summon in phase 2 (phase 3 calls in one more)
 @export var intro_add_count := 4             # called in with the roar when phase 2 starts
@@ -114,6 +124,8 @@ var original_material: Material
 var attack_hitbox: Area3D
 var shake_amount := 0.0
 var next_hazard_msec := 0
+var entrance_pending := false
+var stored_layers := {}                      # collision objects hidden during the entrance -> their layer
 
 @onready var footsteps: AudioStreamPlayer3D = $Footsteps
 @onready var debug_label: Label3D = $DebugLabel
@@ -148,6 +160,7 @@ func get_state_definitions() -> Dictionary:
 		"Recovery": RecoveryState.new(self),
 		"Stunned": StunnedState.new(self),
 		"Transition": TransitionState.new(self),
+		"Entrance": EntranceState.new(self),
 		"Dead": DeadState.new(self),
 	}
 
@@ -169,6 +182,8 @@ func _ready() -> void:
 		health_bar.set_health(health)
 	if debug_label:
 		debug_label.visible = debug
+	if entrance_enabled:
+		_hide_for_entrance()
 
 
 func _physics_process(delta: float) -> void:
@@ -241,6 +256,12 @@ func shake_player_camera(pitch: float, yaw: float) -> void:
 		target.apply_camera_kick(pitch, randf_range(-yaw, yaw))
 
 
+# A sustained rattle on top of the kick (the landing, the slam), fading by itself
+func rattle_player_camera(trauma: float) -> void:
+	if is_instance_valid(target) and target.has_method("add_camera_shake"):
+		target.add_camera_shake(trauma)
+
+
 func _update_footsteps() -> void:
 	# Horizontal movement speed (ignore vertical)
 	var horizontal_speed := Vector3(velocity.x, 0, velocity.z).length()
@@ -274,24 +295,67 @@ func remove_charge_material() -> void:
 		model.set_surface_override_material(0, shield_material if shield != null and is_instance_valid(shield) else original_material)
 
 
-# Fades the body's emission to a colour (or off). The base material only: the glass shield has no emission.
+# Fades a coloured glow over the whole body, or out again. On the normal body it is an additive overlay on the
+# mesh (it also works over the charge material). The glass shield is far brighter than any overlay, so while the
+# shield is up its own colour is tinted towards the glow as well.
+const GLOW_BOOST := 3.0            # how far over 1.0 the overlay colour goes (what the old emission did), so it reads as light
+const GLOW_OVERLAY_ALPHA := 1.0    # overlay strength at full glow on the normal body
+const GLOW_OVERLAY_ALPHA_SHIELDED := 0.3   # softer over the shield, which is tinted separately
+const SHIELD_TINT_BRIGHTNESS := 6.0
+var glow_overlay: StandardMaterial3D
+var glow_tween: Tween
+var glow_active := false
+var glow_amount := 0.0             # 0 = no glow, 1 = full
+var glow_color := Color(1.0, 0.4, 0.1)
+var shield_base_albedo := Color(5.0, 0.0, 7.0, 1.0)
+
+
+# energy is how strong the glow gets (3 is full); seconds is how long the fade takes
 func set_glow(active: bool, color := Color(1.0, 0.4, 0.1), energy := 3.0, seconds := 0.6) -> void:
-	var mat := model.get_surface_override_material(0) as StandardMaterial3D
-	if mat == null:
-		return
+	if glow_overlay == null:
+		glow_overlay = StandardMaterial3D.new()
+		glow_overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		glow_overlay.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		glow_overlay.albedo_color = Color(1.0, 1.0, 1.0, 0.0)
+		var current = shield_material.get_shader_parameter("albedo")
+		if current is Color:
+			shield_base_albedo = current
+	if glow_tween != null and glow_tween.is_valid():
+		glow_tween.kill()
+	glow_active = active
+	var target_amount := 0.0
 	if active:
-		mat.emission_enabled = true
-		mat.emission = color
-		create_tween().tween_property(mat, "emission_energy_multiplier", energy, seconds)
-	else:
-		var tween := create_tween()
-		tween.tween_property(mat, "emission_energy_multiplier", 0.0, seconds)
-		tween.tween_callback(_emission_off.bind(mat))
+		glow_color = color
+		target_amount = clampf(energy / 3.0, 0.0, 1.5)
+		if not hit_flash_active:
+			model.material_overlay = glow_overlay
+	glow_tween = create_tween()
+	glow_tween.tween_method(_apply_glow, glow_amount, target_amount, seconds)
+	if not active:
+		glow_tween.tween_callback(_glow_off)
 
 
-func _emission_off(mat: StandardMaterial3D) -> void:
-	if mat.emission_energy_multiplier <= 0.1:
-		mat.emission_enabled = false
+func _apply_glow(amount: float) -> void:
+	glow_amount = amount
+	var shielded := shield != null and is_instance_valid(shield)
+	var strength := GLOW_OVERLAY_ALPHA_SHIELDED if shielded else GLOW_OVERLAY_ALPHA
+	glow_overlay.albedo_color = Color(glow_color.r * GLOW_BOOST, glow_color.g * GLOW_BOOST, glow_color.b * GLOW_BOOST, minf(amount * strength, 1.0))
+	if shielded:
+		var tint := Color(glow_color.r * SHIELD_TINT_BRIGHTNESS, glow_color.g * SHIELD_TINT_BRIGHTNESS, glow_color.b * SHIELD_TINT_BRIGHTNESS, 1.0)
+		shield_material.set_shader_parameter("albedo", shield_base_albedo.lerp(tint, clampf(amount, 0.0, 1.0)))
+
+
+func _glow_off() -> void:
+	if not glow_active and not hit_flash_active and model.material_overlay == glow_overlay:
+		model.material_overlay = null
+
+
+# The shared hit flash uses the same overlay slot and clears it when it ends: put the glow back
+func _clear_hit_flash() -> void:
+	super()
+	if glow_overlay != null and (glow_active or glow_overlay.albedo_color.a > 0.01):
+		model.material_overlay = glow_overlay
 
 
 # The glow it keeps between attacks once enraged
@@ -321,6 +385,9 @@ func _add_phase_shield() -> void:
 # ---------------------------
 func _on_vision_area_body_entered(body: Node3D) -> void:
 	if body == target and state != states["Dead"] and state == states["Idle"]:
+		if entrance_pending:
+			change_state("Entrance")  # the drop shows the health bar when it lands
+			return
 		if health_bar:
 			health_bar.show_bar()
 		next_attack_msec = Time.get_ticks_msec() + 1500
@@ -341,6 +408,41 @@ func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 		if body.has_method("damage"):
 			body.damage(damage_to_player)
 		hit_done = true
+
+
+# ---------------------------
+# Entrance
+# ---------------------------
+# Out of sight and out of reach until it lands: nothing can hit, shoot or collide with it
+func _hide_for_entrance() -> void:
+	entrance_pending = true
+	invulnerable = true
+	model_root.visible = false
+	stored_layers.clear()
+	stored_layers[self] = collision_layer
+	collision_layer = 0
+	for area in find_children("*", "Area3D", true, false):
+		stored_layers[area] = area.collision_layer
+		area.collision_layer = 0
+
+
+func _show_after_entrance() -> void:
+	model_root.visible = true
+	for node in stored_layers:
+		if is_instance_valid(node):
+			node.collision_layer = stored_layers[node]
+	stored_layers.clear()
+
+
+# How far up it can start: the sky is open over the arena, but stop short of anything in the way
+func entrance_clearance() -> float:
+	var from := global_position + Vector3.UP * unit()
+	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.UP * entrance_height)
+	query.collision_mask = 2
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return entrance_height
+	return maxf(hit["position"].y - from.y - 2.0 * unit(), 4.0 * unit())
 
 
 # ---------------------------
@@ -808,6 +910,7 @@ class SlamState extends BossState:
 		ImpactParticles.spawn(enemy.get_tree(), centre + Vector3.UP * 0.3, Vector3.UP, 2.5)
 		enemy.play_sfx("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav")
 		enemy.shake_player_camera(0.1, 0.03)
+		enemy.rattle_player_camera(0.55)
 		warning.finish(0.1)
 		enemy.settle_glow()
 
@@ -937,6 +1040,95 @@ class SummonState extends BossState:
 		enemy.set_shake(0.0)
 		enemy.anim.speed_scale = 1.0
 		enemy.settle_glow()
+
+
+# Waits unseen while a circle grows on the floor, falls out of the sky, lands in a cloud of dust and slams.
+class EntranceState extends BossState:
+	enum Phase { WARN, FALL, LAND }
+
+	var phase := Phase.WARN
+	var elapsed := 0.0
+	var rest_y := 0.0
+	var start_y := 0.0
+	var fall_speed := 0.0
+	var warning: BossTelegraph
+	var reach := 6.0
+
+	func enter() -> void:
+		phase = Phase.WARN
+		elapsed = 0.0
+		fall_speed = 0.0
+		enemy.velocity = Vector3.ZERO
+		enemy.is_attacking = true
+		rest_y = enemy.global_position.y
+		start_y = rest_y + enemy.entrance_clearance()
+		reach = enemy.landing_radius * enemy.unit()
+		warning = BossTelegraph.circle(enemy.get_tree(), enemy.floor_point(enemy.global_position), reach)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav")
+
+	func update(delta: float) -> void:
+		elapsed += delta
+		match phase:
+			Phase.WARN:
+				warning.set_progress(elapsed / enemy.entrance_warn_time)
+				enemy.shake_player_camera(0.004 + 0.012 * (elapsed / enemy.entrance_warn_time), 0.004)
+				if elapsed >= enemy.entrance_warn_time:
+					phase = Phase.FALL
+					elapsed = 0.0
+					enemy.global_position.y = start_y
+					enemy.model_root.visible = true
+					enemy.model_root.scale = Vector3(0.9, 1.15, 0.9)   # stretched by the fall
+					enemy.set_glow(true, Color(1.0, 0.5, 0.2), 2.0, 0.3)
+					enemy.hold_rear_up_pose()
+			Phase.FALL:
+				fall_speed += enemy.entrance_gravity * delta
+				enemy.global_position.y -= fall_speed * delta
+				if is_instance_valid(enemy.target):
+					enemy.face_point(enemy.target.global_position)
+				if enemy.global_position.y <= rest_y:
+					enemy.global_position.y = rest_y
+					phase = Phase.LAND
+					elapsed = 0.0
+					_land()
+			Phase.LAND:
+				if elapsed >= 1.1:
+					enemy.change_state("Chase")
+
+	func _land() -> void:
+		var tree := enemy.get_tree()
+		var length := enemy.unit()
+		var floor_spot := enemy.floor_point(enemy.global_position)
+		# Squash on impact, then settle back
+		enemy.model_root.scale = Vector3(1.25, 0.7, 1.25)
+		var tween := enemy.create_tween().set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		tween.tween_property(enemy.model_root, "scale", Vector3.ONE, 0.6)
+		BossDust.spawn(tree, floor_spot, length)
+		BossShockwave.spawn(tree, floor_spot, 5.0 * length, 9.0 * length, 0.0, true)
+		ImpactParticles.spawn(tree, floor_spot + Vector3.UP * 0.3, Vector3.UP, 3.0)
+		# Standing right under it hurts
+		if is_instance_valid(enemy.target) and enemy.flat_distance_to_target() <= reach and enemy.target.global_position.y - floor_spot.y < 1.0:
+			if enemy.target.has_method("damage"):
+				enemy.target.damage(enemy.landing_damage)
+		enemy.shake_player_camera(0.16, 0.05)
+		enemy.rattle_player_camera(1.0)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar2.wav")
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav")
+		enemy.release_pose(2.4)
+		enemy._show_after_entrance()
+		if enemy.health_bar:
+			enemy.health_bar.show_bar()
+		warning.finish(0.15)
+
+	func exit() -> void:
+		enemy.entrance_pending = false
+		enemy.invulnerable = false
+		enemy.is_attacking = false
+		enemy.model_root.scale = Vector3.ONE
+		enemy.anim.speed_scale = 1.0
+		enemy.settle_glow()
+		if is_instance_valid(warning):
+			warning.finish(0.1)
+		enemy.next_attack_msec = Time.get_ticks_msec() + 1800
 
 
 # Tired after an attack: slow, and takes extra damage
