@@ -1155,6 +1155,86 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.460964, 5, 3.25004)
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1697022250]
 navigation_mesh = SubResource("NavigationMesh_5ubjb")
 
+[node name="JumpLink_1_22_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(2.59, 10.20, 43.00)
+end_position = Vector3(2.59, 12.14, 45.51)
+
+[node name="JumpLink_2_22_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(23.09, 10.20, 42.50)
+end_position = Vector3(22.84, 11.97, 45.25)
+
+[node name="JumpLink_9_10_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(137.09, 18.40, 57.75)
+end_position = Vector3(140.34, 20.20, 57.75)
+
+[node name="JumpLink_9_15_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(108.34, 18.40, 57.75)
+end_position = Vector3(105.34, 18.40, 57.75)
+
+[node name="JumpLink_12_18_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-33.91, 14.50, 66.89)
+end_position = Vector3(-35.91, 13.70, 66.90)
+
+[node name="JumpLink_12_18_1" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-33.91, 14.50, 62.78)
+end_position = Vector3(-35.91, 12.50, 64.04)
+
+[node name="JumpLink_17_18_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-48.41, 9.70, 63.25)
+end_position = Vector3(-45.66, 11.70, 63.00)
+
+[node name="JumpLink_18_21_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-45.66, 11.70, 69.50)
+end_position = Vector3(-48.41, 9.70, 69.50)
+
+[node name="JumpLink_23_24_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-18.19, 10.30, 93.78)
+end_position = Vector3(-19.41, 10.30, 95.25)
+
+[node name="JumpLink_23_24_1" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-23.66, 10.30, 99.75)
+end_position = Vector3(-22.16, 10.30, 98.25)
+
+[node name="JumpLink_23_25_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(41.09, 10.30, 93.75)
+end_position = Vector3(42.59, 10.30, 95.25)
+
+[node name="JumpLink_23_25_1" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(41.09, 10.30, 100.50)
+end_position = Vector3(42.59, 10.30, 99.00)
+
+[node name="JumpLink_23_27_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-23.66, 10.30, 162.50)
+end_position = Vector3(-22.16, 10.30, 164.00)
+
+[node name="JumpLink_23_27_1" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(-17.94, 10.30, 161.71)
+end_position = Vector3(-19.41, 10.30, 163.25)
+
+[node name="JumpLink_23_28_0" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(41.09, 10.30, 168.50)
+end_position = Vector3(42.59, 10.30, 167.00)
+
+[node name="JumpLink_23_28_1" type="NavigationLink3D" parent="."]
+travel_cost = 1.5
+start_position = Vector3(41.09, 10.30, 161.75)
+end_position = Vector3(42.59, 10.30, 163.25)
+
 [node name="FuncGodotMap" type="Node3D" parent="NavigationRegion3D" unique_id=1118038687]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 0)
 script = ExtResource("6_q1ikm")

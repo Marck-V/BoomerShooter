@@ -92,6 +92,36 @@ func _ready():
 	nav.avoidance_mask = 1
 
 	nav.velocity_computed.connect(Callable(_on_velocity_computed))
+	nav.link_reached.connect(_on_link_reached)
+
+
+# ---------------------------
+# Navigation links (jumpable gaps)
+# ---------------------------
+# Set by the agent when it reaches a NavigationLink3D: the link's entry and exit points. An enemy with a
+# "Jump" state takes the jump while chasing; the others ignore links.
+var pending_link := {}
+var jump_ready_msec := 0   # no new jump before this time, so the agent can't re-trigger on the link it just crossed
+
+
+func _on_link_reached(details: Dictionary) -> void:
+	if destroyed or not states.has("Jump") or Time.get_ticks_msec() < jump_ready_msec:
+		return
+	if state != states.get("Chase") or not _can_jump():
+		return
+	pending_link = details
+	# The signal fires from inside the chase state's update: switch once that has finished, or its remaining
+	# lines would go on to apply walking velocity to the jumping enemy
+	_start_jump.call_deferred()
+
+
+func _start_jump() -> void:
+	if not destroyed and state == states.get("Chase"):
+		change_state("Jump")
+
+
+func _can_jump() -> bool:
+	return not is_attacking and not is_dodging
 
 
 # Uses the player when no target was assigned in the editor. Deferred so the player has entered the tree.
@@ -187,6 +217,7 @@ func is_in_attack_range() -> bool:
 # ---------------------------
 func damage(amount: float, multiplier: float = 1.0):
 	var dmg := amount * multiplier
+	var shielded := shield != null and is_instance_valid(shield)
 	if shield:
 		dmg = shield.absorb_damage(dmg)
 	
@@ -195,6 +226,46 @@ func damage(amount: float, multiplier: float = 1.0):
 	if health <= 0.0 and not destroyed:
 		GlobalVariables.enemy_died.emit(self)
 		change_state("Dead")
+	elif not shielded:
+		# The head and neck hurtboxes have a multiplier above 1
+		_play_hit_reaction(multiplier > 1.0)
+
+
+# ---------------------------
+# Hit reactions
+# ---------------------------
+# A short flinch animation when the enemy is hurt: Hit_Head for head and neck hits, Hit_Chest for the rest.
+# It never cuts into an attack, dodge or stun, and has a cooldown so rapid fire doesn't hold the enemy in it.
+const HIT_REACTION_COOLDOWN := 0.45
+var hit_reaction_ready_msec := 0
+
+
+func _play_hit_reaction(head: bool) -> void:
+	if destroyed or anim == null or Time.get_ticks_msec() < hit_reaction_ready_msec or not _can_play_hit_reaction():
+		return
+	var reaction := "Hit_Head" if head else "Hit_Chest"
+	if not anim.has_animation(reaction):
+		return  # models without these clips (the flyer) just keep the code-driven jolt
+	hit_reaction_ready_msec = Time.get_ticks_msec() + int(HIT_REACTION_COOLDOWN * 1000.0)
+
+	# Go back to whatever was playing, or to Idle if that was a one-shot
+	var previous := anim.current_animation
+	var resume := "Idle"
+	if previous != "" and anim.has_animation(previous) and previous != reaction:
+		if previous == attack_idle_animation or anim.get_animation(previous).loop_mode != Animation.LOOP_NONE:
+			resume = previous
+	anim.play(reaction)
+	anim.queue(resume)
+
+
+# Subclasses add their own conditions (a lunging or stunned enemy is not interrupted)
+func _can_play_hit_reaction() -> bool:
+	if is_attacking or is_dodging:
+		return false
+	var current := anim.current_animation
+	if current != "" and anim.is_playing() and current in [attack_animation_enter, attack_animation_action, attack_animation_exit]:
+		return false
+	return true
 
 
 # ---------------------------
@@ -371,6 +442,8 @@ func cache_original_materials():
 func change_state(state_name: String):
 	if not states.has(state_name):
 		return
+	if destroyed and state_name != "Dead":
+		return  # a corpse stays dead (switching its vision area off, for one, would send it back to Idle)
 	if state and state.has_method("exit"):
 		state.exit()
 	state = states[state_name]

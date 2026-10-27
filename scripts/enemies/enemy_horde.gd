@@ -31,12 +31,42 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var parry_stun_time := 1.6
 @export var parry_stun_damage_multiplier := 1.5
 
+@export_group("Gap jump")
+# Where the level has a NavigationLink3D across a small gap, the enemy jumps it: Jump_Start sped up across the
+# flight, an arc over the gap, then Jump_Land. Only used while chasing.
+@export var jump_enabled := true
+@export var jump_speed := 6.0               # horizontal speed of the jump, in units per second
+@export var jump_min_time := 0.45
+@export var jump_max_time := 0.9
+@export var jump_height := 0.9              # how far above the straight line the arc peaks (at least dy + 0.6 when jumping up)
+@export var jump_land_time := 0.3           # recovery crouch before it carries on
+
+@export_group("Punch combo")
+# Up close the enemy throws a 1-2 instead of a single swing: a left jab (Punch_Jab) and then, if the player
+# is still in reach, a heavier right cross (Punch_Cross). The lunge keeps its single glowing swing.
+@export var combo_chain_range := 1.9        # the cross only follows if the player is within this distance
+@export var combo_step_distance := 0.8      # it steps in during the combo until it is this close, so every punch reaches
+@export var combo_step_speed := 3.0
+
+# Each hit: which hand, when its hitbox is live (seconds into the clip, read from the fists' positions while
+# the animation plays) and how much of damage_to_player it deals.
+const COMBO := [
+	{"animation": "Punch_Jab", "length": 0.87, "hits": [
+		{"hand": "L", "start": 0.15, "end": 0.42, "damage": 0.3},
+	]},
+	{"animation": "Punch_Cross", "length": 1.0, "hits": [
+		{"hand": "R", "start": 0.2, "end": 0.62, "damage": 0.8},
+	]},
+]
+
 const MAX_SIMULTANEOUS_LUNGES := 2
 const AURA_SHADER: Shader = preload("res://shaders/parry_aura.gdshader")
 const AURA_COLOR := Color(1.0, 0.75, 0.15)
 const GLOW_LIGHT_COLOR := Color(1.0, 0.8, 0.2)
 
 var hit_done := false
+var hit_damage_scale := 1.0                 # share of damage_to_player the current hit deals
+var left_hitbox: Area3D
 var attack_token := 0                       # bumped when an attack is cancelled, so a running attack stops
 var parryable := false                      # true while a parry would catch this enemy's punch
 var is_stunned := false
@@ -62,6 +92,7 @@ func _ready():
 	vision_area.connect("body_entered", Callable(self, "_on_body_entered"))
 	vision_area.connect("body_exited", Callable(self, "_on_body_exited"))
 	attack_hitbox.connect("body_entered", Callable(self, "_on_attack_hitbox_body_entered"))
+	_build_left_hitbox()
 
 	attack_animation_action = "Sword_Attack"
 	attack_idle_animation = "Sword_Idle"
@@ -77,6 +108,7 @@ func get_state_definitions() -> Dictionary:
 		"Chase": ENEMY_STATES.ChaseState.new(self),
 		"Attack": ENEMY_STATES.AttackState.new(self),
 		"AttackIdle": ENEMY_STATES.AttackIdleState.new(self),
+		"Jump": JumpState.new(self),
 		"Lunge": LungeState.new(self),
 		"Stunned": StunnedState.new(self),
 		"Dead": ENEMY_STATES.DeadState.new(self),
@@ -105,7 +137,16 @@ func can_attack() -> bool:
 
 
 func perform_attack() -> void:
+	if lunging:
+		_perform_heavy_attack()
+	else:
+		_perform_combo()
+
+
+# The single swing used by the lunge: Sword_Attack with its one long damage window (this is what a parry catches)
+func _perform_heavy_attack() -> void:
 	is_attacking = true
+	hit_damage_scale = 1.0
 	var token := attack_token
 
 	# Play the attack animation
@@ -150,7 +191,7 @@ func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 		if lunging and body.get("shield_blocking") == true:
 			_shove_blocking_player(body)
 		if body.has_method("damage"):
-			body.damage(damage_to_player)
+			body.damage(damage_to_player * hit_damage_scale)
 
 		hit_done = true
 
@@ -181,6 +222,93 @@ func _shove_blocking_player(player: Node3D) -> void:
 
 
 # ---------------------------
+# Punch combo
+# ---------------------------
+# The left fist needs a hitbox of its own: a copy of the right one, on the left hand
+func _build_left_hitbox() -> void:
+	var left_hand := get_node_or_null("Enemy_Model/Rig/Skeleton3D/LeftHand")
+	if left_hand == null:
+		return
+	left_hitbox = attack_hitbox.duplicate() as Area3D
+	left_hitbox.name = "LeftAttackHitbox"
+	left_hitbox.monitoring = false
+	left_hand.add_child(left_hitbox)
+	var callback := Callable(self, "_on_attack_hitbox_body_entered")
+	if not left_hitbox.body_entered.is_connected(callback):
+		left_hitbox.body_entered.connect(callback)
+
+
+func _hitbox_for(hand: String) -> Area3D:
+	return left_hitbox if hand == "L" and left_hitbox != null else attack_hitbox
+
+
+func _perform_combo() -> void:
+	is_attacking = true
+	var token := attack_token
+	var first := true
+	for punch in COMBO:
+		# The follow-up only comes if the player is still close
+		if not first and (not is_instance_valid(target) or global_position.distance_to(target.global_position) > combo_chain_range):
+			break
+		first = false
+		anim.play(punch["animation"])
+		audio_player.play("assets/audio/sfx/enemies/Enemy_Hit1.wav, 						   assets/audio/sfx/enemies/Enemy_Hit2.wav, 						   assets/audio/sfx/enemies/Enemy_Hit3.wav")
+
+		var hits: Array = punch["hits"]
+		var active := -1                      # index of the hit whose hitbox is live right now
+		var elapsed := 0.0
+		while elapsed < punch["length"]:
+			await get_tree().physics_frame
+			if token != attack_token:
+				return  # cancelled (death); whoever cancelled it has cleaned up
+			var step := get_physics_process_delta_time()
+			elapsed += step
+			face_target(step, 1.0)
+			_combo_step_in()
+
+			var wanted := -1
+			for i in hits.size():
+				if elapsed >= hits[i]["start"] and elapsed < hits[i]["end"]:
+					wanted = i
+					break
+			if wanted != active:
+				if active >= 0:
+					_hitbox_for(hits[active]["hand"]).monitoring = false
+				if wanted >= 0:
+					hit_done = false  # every punch can land once
+					hit_damage_scale = hits[wanted]["damage"]
+					_hitbox_for(hits[wanted]["hand"]).monitoring = true
+				active = wanted
+		if active >= 0:
+			_hitbox_for(hits[active]["hand"]).monitoring = false
+
+	velocity = Vector3.ZERO
+	attack_timer.start(attack_cooldown)
+	is_attacking = false
+
+
+func _combo_step_in() -> void:
+	if not is_instance_valid(target):
+		return
+	var to_target := target.global_position - global_position
+	to_target.y = 0.0
+	if to_target.length() > combo_step_distance:
+		velocity = to_target.normalized() * combo_step_speed
+		move_and_slide()
+	else:
+		velocity = Vector3.ZERO
+
+
+# A lunging, jumping or dazed enemy is not interrupted by a flinch
+func _can_play_hit_reaction() -> bool:
+	return not lunging and not is_stunned and state != states.get("Jump") and super()
+
+
+func _can_jump() -> bool:
+	return jump_enabled and not lunging and not is_stunned and super()
+
+
+# ---------------------------
 # Lunge
 # ---------------------------
 func _roll_lunge_cooldown(min_seconds := -1.0) -> void:
@@ -197,6 +325,8 @@ func should_lunge() -> bool:
 	var distance := global_position.distance_to(target.global_position)
 	if distance < lunge_min_range or distance > lunge_max_range:
 		return false
+	if not _path_reaches_target(distance):
+		return false  # across a gap with no way over: the dash would carry it out over thin air
 	var query := PhysicsRayQueryParameters3D.create(global_position + Vector3.UP, target.global_position + Vector3.UP)
 	query.exclude = [self]
 	query.collision_mask = 1 | 2
@@ -208,6 +338,19 @@ func should_lunge() -> bool:
 		if other != self and other.get("lunging") == true:
 			active += 1
 	return active < MAX_SIMULTANEOUS_LUNGES
+
+
+# True when the agent's current path actually gets to the target without a long detour (a jump link counts)
+func _path_reaches_target(straight_distance: float) -> bool:
+	var path := nav.get_current_navigation_path()
+	if path.size() < 2:
+		return true  # no path yet: the chase will sort it out
+	var length := 0.0
+	for i in path.size() - 1:
+		length += Vector2(path[i].x - path[i + 1].x, path[i].z - path[i + 1].z).length()
+	var end := path[path.size() - 1]
+	var gap_to_target := Vector2(end.x - target.global_position.x, end.z - target.global_position.z).length()
+	return gap_to_target < 2.5 and length <= straight_distance * 1.6 + 2.0
 
 
 # Turns towards the target on the spot (the model faces +Z, hence the extra half turn)
@@ -363,6 +506,73 @@ func _on_attack_cooldown_timeout() -> void:
 # ---------------------------
 # States
 # ---------------------------
+# Jumps a gap bridged by a NavigationLink3D: an arc from where the agent reached the link to its far end.
+class JumpState:
+	var enemy
+	var start := Vector3.ZERO
+	var end := Vector3.ZERO
+	var duration := 0.6
+	var apex := 1.0
+	var elapsed := 0.0
+	var landing := false
+	var landing_left := 0.0
+
+	func _init(e):
+		enemy = e
+
+	func enter():
+		enemy.velocity = Vector3.ZERO
+		enemy.should_move = false
+		var link: Dictionary = enemy.pending_link
+		var entry: Vector3 = link.get("link_entry_position", enemy.global_position)
+		var exit_point: Vector3 = link.get("link_exit_position", enemy.global_position)
+		start = enemy.global_position
+		# The enemy stands a little off the navigation mesh's height; keep that offset on the far side
+		end = exit_point + Vector3(0.0, start.y - entry.y, 0.0)
+		var run := Vector2(end.x - start.x, end.z - start.z).length()
+		duration = clampf(run / enemy.jump_speed, enemy.jump_min_time, enemy.jump_max_time)
+		apex = maxf(enemy.jump_height, (end.y - start.y) + 0.6)
+		elapsed = 0.0
+		landing = false
+		# Jump_Start is a whole hop (crouch, spring, legs tucked, legs lowered): fit it to the flight
+		enemy.anim.play("Jump_Start")
+		enemy.anim.speed_scale = enemy.anim.get_animation("Jump_Start").length / (duration * 0.95)
+
+	func update(delta):
+		enemy.should_move = false  # nothing else may drive the body while it jumps
+		if landing:
+			enemy.face_target(delta, 2.0)
+			landing_left -= delta
+			if landing_left <= 0.0:
+				enemy.change_state("Chase")
+			return
+		elapsed += delta
+		var t := clampf(elapsed / duration, 0.0, 1.0)
+		var position := start.lerp(end, t)
+		position.y = lerpf(start.y, end.y, t) + 4.0 * apex * t * (1.0 - t)
+		enemy.global_position = position
+		_face(end, delta)
+		if t >= 1.0:
+			enemy.global_position = end
+			landing = true
+			landing_left = enemy.jump_land_time
+			enemy.anim.play("Jump_Land")
+			enemy.anim.speed_scale = 2.2
+
+	func _face(point: Vector3, delta: float) -> void:
+		var to_point: Vector3 = point - enemy.global_position
+		to_point.y = 0.0
+		if to_point.length() < 0.05:
+			return
+		var target_basis := Basis.looking_at(to_point.normalized(), Vector3.UP).rotated(Vector3.UP, deg_to_rad(180))
+		enemy.global_transform.basis = enemy.global_transform.basis.slerp(target_basis, clampf(delta * 12.0, 0.0, 1.0))
+
+	func exit():
+		enemy.anim.speed_scale = 1.0
+		enemy.velocity = Vector3.ZERO
+		enemy.jump_ready_msec = Time.get_ticks_msec() + 700  # the agent may still be 'on' the link it just crossed
+
+
 # Crouch with a charging fist, dash at the player, then the normal punch as the finishing blow.
 class LungeState:
 	enum Phase { WINDUP, DASH, STRIKE }
