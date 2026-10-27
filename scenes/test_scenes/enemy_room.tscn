@@ -1103,53 +1103,69 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 160.802, -12.0102, 61.3397)
 target = NodePath("../../Player")
 
 [node name="MeleeEnemy33" parent="Enemies" unique_id=1618087335 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 18.9499)
 has_shield = true
 
 [node name="MeleeEnemy34" parent="Enemies" unique_id=235676796 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 16.6484)
 
 [node name="MeleeEnemy35" parent="Enemies" unique_id=16370181 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 18.9499)
 has_shield = true
 
 [node name="MeleeEnemy36" parent="Enemies" unique_id=336580540 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 16.6484)
 
 [node name="MeleeEnemy37" parent="Enemies" unique_id=1670559837 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 14.3528)
 
 [node name="MeleeEnemy38" parent="Enemies" unique_id=2081824498 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 12.0513)
 
 [node name="MeleeEnemy39" parent="Enemies" unique_id=1824801771 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 14.3528)
 
 [node name="MeleeEnemy40" parent="Enemies" unique_id=1892839320 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 12.0513)
 
 [node name="MeleeEnemy41" parent="Enemies" unique_id=263795817 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 9.89789)
 
 [node name="MeleeEnemy42" parent="Enemies" unique_id=1157107681 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10.6004, 5, 7.59639)
 
 [node name="MeleeEnemy43" parent="Enemies" unique_id=901495066 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 9.89789)
 
 [node name="MeleeEnemy44" parent="Enemies" unique_id=816317197 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.30269, 5, 7.59639)
 
 [node name="MeleeEnemy45" parent="Enemies" unique_id=1896335262 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 21.107, 5, 3.25004)
 
 [node name="MeleeEnemy46" parent="Enemies" unique_id=1138960058 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 17.8093, 5, 3.25004)
 
 [node name="MeleeEnemy47" parent="Enemies" unique_id=927158951 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15.9416, 5, 3.25004)
 
 [node name="MeleeEnemy48" parent="Enemies" unique_id=1833045380 instance=ExtResource("4_qjlkt")]
+dummy = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.460964, 5, 3.25004)
 
 [node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1697022250]
