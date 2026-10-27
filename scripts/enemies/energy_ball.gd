@@ -17,6 +17,7 @@ const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 var scale_progress: float = 0.0
 var target: Node3D
 var shooter: Node3D  # enemy that fired this ball, so a parry can send it back to them
+var always_return_to_shooter := false  # a parried ball goes back to the shooter however far away it is (the boss's orbs)
 var velocity: Vector3
 
 
@@ -150,13 +151,21 @@ func set_target(t: Node3D) -> void:
 
 func _on_body_entered(body):
 	if reflected:
+		# The boss has its own response to a returned orb (it breaks the shield and staggers it)
+		if body.has_method("on_reflected_orb_hit"):
+			body.on_reflected_orb_hit(damage)
+			if body.has_method("hit_flash"):
+				body.hit_flash(global_position, REFLECT_HIT_STRENGTH, REFLECT_HIT_FLASH_RADIUS)
+			BloodParticles.spawn(get_tree(), global_position, velocity, 2.0, BloodParticles.thickness_for(body))
+			queue_free()
+			return
 		if body.is_in_group("Enemy") and body.has_method("damage"):
 			var shielded: bool = "shield" in body and body.shield != null and is_instance_valid(body.shield)
 			body.damage(damage)
 			if body.has_method("hit_flash"):
 				body.hit_flash(global_position, REFLECT_HIT_STRENGTH, REFLECT_HIT_FLASH_RADIUS)
 			if not shielded:
-				BloodParticles.spawn(get_tree(), global_position, velocity, 1.3)
+				BloodParticles.spawn(get_tree(), global_position, velocity, 1.3, BloodParticles.thickness_for(body))
 		queue_free()
 		return
 

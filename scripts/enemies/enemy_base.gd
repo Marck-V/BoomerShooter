@@ -8,6 +8,8 @@ class_name EnemyBase
 @export var target: Node3D
 @export var debug: bool = false
 @export var wave: String = ""   # set by map entities: held out of the level until the matching wave_trigger fires
+@export var blood_scale: float = 1.0 # how thick this enemy's blood is: bigger enemies bleed fatter streaks and bigger splats
+@export var dummy: bool = false # a training dummy: stands still and never attacks, but can be hit and killed like any enemy
 
 var shield: Node = null
 var original_materials: Array[Material] = []
@@ -21,7 +23,7 @@ var hit_flash_points: Array[Vector3] = []
 var hit_flash_target: ShaderMaterial
 
 # Visual-only flinch: jolts the model node, never the enemy body, so movement is unaffected.
-@onready var model_root: Node3D = $"Enemy_Model"
+@onready var model_root: Node3D = _find_model_root()
 const FLINCH_SHOVE := 0.16      # meters the model is knocked back
 const FLINCH_TILT := 0.16       # radians the model tips back
 const FLINCH_TIME := 0.16       # seconds to ease back to rest
@@ -54,10 +56,10 @@ var states = {}
 
 # --- References (set in subclasses) ---
 @onready var nav: NavigationAgent3D = $NavigationAgent3D
-@onready var anim: AnimationPlayer = $"Enemy_Model/AnimationPlayer"
+@onready var anim: AnimationPlayer = _find_anim()
 @onready var model: MeshInstance3D = _find_model()
-@onready var attack_start_cooldown: Timer = $AttackStartCooldown
-@onready var audio_player: Node3D = $"AudioPlayer"
+@onready var attack_start_cooldown: Timer = get_node_or_null("AttackStartCooldown")
+@onready var audio_player: Node3D = get_node_or_null("AudioPlayer")
 
 # --- Shield ---
 @export var has_shield: bool = false
@@ -81,7 +83,13 @@ func _ready():
 	# Enemies spawned by map entities have no target wired in the scene, so find the player
 	_resolve_target.call_deferred()
 	
-	# Avoidance settings
+	_setup_navigation()
+	nav.velocity_computed.connect(Callable(_on_velocity_computed))
+	nav.link_reached.connect(_on_link_reached)
+
+
+# Avoidance settings. Enemies that move the body themselves (the boss) override this.
+func _setup_navigation() -> void:
 	nav.avoidance_enabled = true
 	nav.radius = 0.35  # Personal space
 	nav.neighbor_distance = 10  # Look for enemies within 5m
@@ -90,9 +98,6 @@ func _ready():
 	nav.max_speed = movement_speed
 	nav.avoidance_layers = 1
 	nav.avoidance_mask = 1
-
-	nav.velocity_computed.connect(Callable(_on_velocity_computed))
-	nav.link_reached.connect(_on_link_reached)
 
 
 # ---------------------------
@@ -188,6 +193,16 @@ func _end_reappear_flash() -> void:
 		var geometry := mesh as GeometryInstance3D
 		if geometry.material_overlay == reappear_flash_material:
 			geometry.material_overlay = null
+
+
+# Where the model and its animation player live. Models that don't use the mannequin's node layout (the boss)
+# override these.
+func _find_model_root() -> Node3D:
+	return $"Enemy_Model"
+
+
+func _find_anim() -> AnimationPlayer:
+	return $"Enemy_Model/AnimationPlayer"
 
 
 # The mesh that gets the hit flash, shield material and unique materials. Models without the
@@ -444,6 +459,8 @@ func change_state(state_name: String):
 		return
 	if destroyed and state_name != "Dead":
 		return  # a corpse stays dead (switching its vision area off, for one, would send it back to Idle)
+	if dummy and state_name != "Idle" and state_name != "Dead":
+		return  # a dummy never chases, attacks, dodges or jumps
 	if state and state.has_method("exit"):
 		state.exit()
 	state = states[state_name]

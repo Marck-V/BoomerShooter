@@ -302,7 +302,7 @@ func _reflect(projectile: Node3D) -> void:
 	var shooter = projectile.get("shooter")
 	if _is_valid_enemy(shooter):
 		var chest: Vector3 = shooter.global_position + Vector3.UP * 1.2
-		if projectile.global_position.distance_to(chest) <= REFLECT_SHOOTER_RANGE:
+		if projectile.get("always_return_to_shooter") == true or projectile.global_position.distance_to(chest) <= REFLECT_SHOOTER_RANGE:
 			enemy = shooter
 	if enemy == null:
 		enemy = _nearest_enemy(projectile.global_position, 80.0, false)
@@ -705,7 +705,7 @@ func _hit_enemy(enemy: Node3D, point: Vector3) -> void:
 	if shielded:
 		ImpactParticles.spawn(get_tree(), point, -direction, 1.0)
 	else:
-		BloodParticles.spawn(get_tree(), point, direction, 0.8)
+		BloodParticles.spawn(get_tree(), point, direction, 0.8, BloodParticles.thickness_for(enemy))
 
 	visited_ids.append(enemy.get_instance_id())
 	bounces += 1
