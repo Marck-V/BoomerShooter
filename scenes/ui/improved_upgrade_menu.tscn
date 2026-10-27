@@ -70,7 +70,7 @@ offset_right = 284.0
 offset_bottom = 80.0
 text = "Ammo Refund"
 upgrade_id = "pistol_ammo_refund"
-description = "Every pistol shot has a chance to refund some ammo."
+description = "Each pistol shot has a 10% chance to refund 10 ammo."
 
 [node name="PistolButton2" parent="Panel/TabContainer/Pistol/PistolButton1" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
@@ -79,8 +79,7 @@ offset_right = 120.0
 offset_bottom = 196.66
 text = "Piercing Shot"
 upgrade_id = "pistol_piercing"
-description = "Every pistol shot fires a piercing shot that goes through 
-multiple enemies."
+description = "Pistol shots pierce through enemies, hitting up to 3 more targets in line for full damage."
 
 [node name="PistolButton3" parent="Panel/TabContainer/Pistol/PistolButton1/PistolButton2" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
@@ -89,7 +88,7 @@ offset_right = 120.0
 offset_bottom = 219.34
 text = "Malware"
 upgrade_id = "pistol_lifesteal"
-description = "Each sucessful hit has a chance to restore some health."
+description = "Hitting an enemy has a 20% chance to drop a health orb. Shoot the orb within 3 seconds to heal 5 health."
 
 [node name="Shotgun" type="Control" parent="Panel/TabContainer"]
 visible = false
@@ -104,7 +103,7 @@ offset_right = 284.0
 offset_bottom = 80.0
 text = "Precision"
 upgrade_id = "shotgun_precision"
-description = "Reduces the spread of each shot."
+description = "Tightens the shotgun pellet spread from 5 to 3 degrees."
 is_stat_upgrade = true
 property_name = "spread"
 amount = -2.0
@@ -116,7 +115,7 @@ offset_right = 120.0
 offset_bottom = 196.66
 text = "Shield Break"
 upgrade_id = "shotgun_shield_break"
-description = "Increases damage dealt to shielded enemies."
+description = "Shotgun pellets deal 50% more damage to enemy shields."
 
 [node name="ShotgunButton3" parent="Panel/TabContainer/Shotgun/ShotgunButton1/ShotgunButton2" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
@@ -125,7 +124,7 @@ offset_right = 120.0
 offset_bottom = 219.34
 text = "Glitch Shot"
 upgrade_id = "shotgun_glitch_shot"
-description = "Grants increased damage on every third shot on the same enemy."
+description = "Every third shotgun shot deals 25% extra damage. The gun glows red when the boosted shot is ready."
 
 [node name="Rifle" type="Control" parent="Panel/TabContainer"]
 layout_mode = 2
@@ -139,7 +138,7 @@ offset_right = 284.0
 offset_bottom = 80.0
 text = "Rate of Fire"
 upgrade_id = "rifle_firerate"
-description = "Increases the base rate of fire of the rifle."
+description = "Shortens the delay between rifle shots from 0.20s to 0.15s."
 is_stat_upgrade = true
 property_name = "cooldown"
 amount = -0.05
@@ -151,7 +150,7 @@ offset_right = 120.0
 offset_bottom = 196.66
 text = "Quickness"
 upgrade_id = "rifle_quickness"
-description = "Killing 3 enemies in a short period of time grants a speed boost."
+description = "Killing 3 enemies with the rifle, each within 5 seconds of the last, doubles your movement speed for 3 seconds."
 
 [node name="PurchaseButton" type="Button" parent="Panel"]
 layout_mode = 2
@@ -197,9 +196,11 @@ text = "Description"
 
 [node name="DescriptionLabel" type="Label" parent="Panel/DescriptionPanel"]
 layout_mode = 0
+offset_left = 6.0
 offset_top = 57.0
-offset_right = 208.0
+offset_right = 414.0
 offset_bottom = 81.0
+autowrap_mode = 3
 text = "Select an Upgrade to view its description."
 
 [node name="PointsLabel" type="Label" parent="Panel"]
