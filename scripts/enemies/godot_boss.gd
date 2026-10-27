@@ -1,566 +1,895 @@
-extends CharacterBody3D
+extends EnemyBase
+class_name GodotBoss
 
-# --- State machine ---
-var state = null
-var states = {}
+# The Godot robot boss. It has only four animations (idle, run, attack, die), so every move is built from those
+# plus whole-body effects: the attack clip is a two-handed slam that rears back until about 0.35 s and thrusts
+# at about 0.5 s, and holding it at the rear-up pose makes a stance for charging a slam or firing orbs.
+#
+# The fight has three phases, changing at set fractions of its health:
+#   1 Brawler    melee, charge (crashing into a wall stuns it), shockwave slam
+#   2 Summoner   gets a shield and fires slow orbs that can be parried back, which pops the shield and staggers it
+#   3 Berserk    faster, glowing, shorter gaps between attacks
+# On each change it rears up, roars and throws everyone back, and cannot be hurt for a moment.
 
-# --- General vars ---
-var destroyed: bool = false
-var original_material : Material
-var shield_material : ShaderMaterial = preload("res://shaders/glass_shader.tres")
-var animation_done := false
-var just_charged := false
-var hit_done := false
-var is_attacking := false
+const BLOOD_PARTICLES = preload("res://scripts/weapons/blood_particles.gd")
+const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
+const ENERGY_BALL: PackedScene = preload("res://scenes/enemies/energy_ball.tscn")
 
-# --- Enemy properties ---
+const PHASES := [
+	{"name": "Brawler", "speed": 1.0, "gap": 1.6, "attacks": ["slam", "charge"]},
+	{"name": "Summoner", "speed": 1.1, "gap": 1.3, "attacks": ["slam", "charge", "orbs"]},
+	{"name": "Berserk", "speed": 1.3, "gap": 0.8, "attacks": ["slam", "charge", "orbs"]},
+]
+
+const ATTACK_ANIMATION_LENGTH := 1.33
+const REAR_UP_POSE := 0.3          # seconds into the attack clip: arms back, head up
+const THRUST_TIME := 0.55          # seconds into the attack clip when the hands are slammed forward
+
 @export_category("Basic Attributes")
-@export var movement_speed: float = 2.0
-@export var health: float = 250.0
-@export var target: Node3D                  # Player node to chase
-@export var debug := false
+@export var health_bar: Control
 @export var damage_to_player: float = 50
 @export var attack_cooldown: float = 1.2
-@export var health_bar : Control
+@export var vulnerable_multiplier := 1.5    # damage multiplier while it is stunned or open after an attack
 
 @export_category("Hitbox")
-@export var damage_window_start: float = 0.2
-@export var damage_window_end: float = 1.2
+@export var damage_window_start: float = 0.45
+@export var damage_window_end: float = 0.85
 
 @export_category("Charge Attack Attributes")
 @export var charge_speed: float = 10.0
 @export var charge_damage: float = 100.0
 @export var charge_duration: float = 0.8
-@export var charge_cooldown: float = 4.0
+@export var charge_cooldown: float = 6.0
 @export var charge_windup_time: float = 1.3
 @export var charge_recovery_time: float = 2.1
+@export var charge_steering := 1.2           # how sharply the charge turns towards the player (radians per second)
+@export var crash_stun_time := 3.0           # stunned for this long after charging into a wall
 @export var charge_material: StandardMaterial3D = preload("res://shaders/boss_charge_shader.tres")
 
-# --- Scene references ---
-@onready var nav: NavigationAgent3D = $NavigationAgent3D
-@onready var anim: AnimationPlayer = $"godotman/AnimationPlayer"
-@onready var ray: RayCast3D = $HitRaycast
-@onready var model = $godotman/godot_rig/Skeleton3D/godot_mesh
-@onready var shield = $Shield if has_node("Shield") else null
-@onready var attack_timer = $AttackTimer
-@onready var charge_timer = $ChargeTimer
-@onready var debug_label: Label3D = $DebugLabel
-@onready var vision_area = $VisionArea
+@export_category("Shockwave Slam")
+# Distances are in "boss lengths" (the boss's scale), so the attack keeps its proportions on any size of boss
+@export var slam_radius := 5.5               # how far the wave travels
+@export var slam_speed := 3.6                # how fast it travels
+@export var slam_damage := 40.0
+@export var slam_windup := 1.1
+@export var slam_cooldown := 8.0
+@export var slam_trigger_distance := 6.0     # it only slams when the player is this close
+
+@export_category("Orb Volley")
+@export var orb_count := 3
+@export var orb_damage := 35.0
+@export var orb_speed := 8.0
+@export var orb_max_scale := 3.5
+@export var orb_windup := 1.3
+@export var orb_cooldown := 9.0
+@export var orb_reflect_fraction := 0.08     # share of its full health a parried orb takes off
+@export var orb_stun_time := 2.5
+
+@export_category("Phases")
+@export var phase_two_at := 0.66
+@export var phase_three_at := 0.33
+@export var phase_shield_hp := 800.0
+@export var transition_time := 2.4
+
+# --- Fight state ---
+var phase := 1
+var max_health := 0.0
+var base_speed := 0.0
+var invulnerable := false
+var vulnerability := 1.0                     # set by the states that leave the boss open
+var enraged := false
+var hit_done := false
+var cooldown_until := {}                     # attack name -> time (msec) it can be used again
+var next_attack_msec := 0                    # no special attack before this
+var next_think_msec := 0
+var melee_ready_msec := 0
+var pending_stun_time := 0.0
+var original_material: Material
+var attack_hitbox: Area3D
+var shake_amount := 0.0
+
 @onready var footsteps: AudioStreamPlayer3D = $Footsteps
-@onready var attack_hitbox: Area3D = $godotman/godot_rig/Skeleton3D/RightHandAttach/RightAttackHitbox
+@onready var debug_label: Label3D = $DebugLabel
 
 
-# ---------------------------
-#  Lifecycle
-# ---------------------------
-func _ready():
-	states = {
+func _find_model_root() -> Node3D:
+	return $godotman
+
+
+func _find_anim() -> AnimationPlayer:
+	return $"godotman/AnimationPlayer"
+
+
+func _find_model() -> MeshInstance3D:
+	return $godotman/godot_rig/Skeleton3D/godot_mesh
+
+
+# The boss moves its own body, so the shared avoidance settings are not wanted
+func _setup_navigation() -> void:
+	nav.avoidance_enabled = false
+
+
+func get_state_definitions() -> Dictionary:
+	return {
 		"Idle": IdleState.new(self),
 		"Chase": ChaseState.new(self),
-		"Attack": AttackState.new(self),
-		"Recovery": RecoveryState.new(self),
-		"Dead": DeadState.new(self),
+		"Melee": MeleeState.new(self),
 		"Charge": ChargeState.new(self),
+		"Slam": SlamState.new(self),
+		"Orbs": OrbState.new(self),
+		"Recovery": RecoveryState.new(self),
+		"Stunned": StunnedState.new(self),
+		"Transition": TransitionState.new(self),
+		"Dead": DeadState.new(self),
 	}
-	change_state("Idle")
-	
-	# Init charge shader
-	model.mesh = model.mesh.duplicate()
-	make_mesh_materials_unique(model)
-	if model.get_surface_override_material(0):
-		original_material = model.get_surface_override_material(0)
-	else:
-		original_material = model.mesh.surface_get_material(0)
 
-	model.set_surface_override_material(0, original_material)
 
-	# Init shield
-	if shield:
-		shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
-		apply_shield_material()
+func _ready() -> void:
+	super()
+	max_health = health
+	base_speed = movement_speed
+	blood_scale = maxf(blood_scale, 0.75 * unit())   # a big enemy: fat streaks and big splats
+	original_material = original_materials[0] if original_materials.size() > 0 else null
 
-	# Init charge animation logic
-	anim.connect("animation_finished", Callable(self, "_on_animation_finished"))
-	charge_timer.connect("timeout", Callable(self, "_on_charge_timer_timeout"))
-	
-	# --- Hitbox setup (NEW) ---
-	if attack_hitbox:
-		# ensure monitoring is off by default
+	attack_hitbox = get_node_or_null("godotman/godot_rig/Skeleton3D/RightHandAttach/RightAttackHitbox")
+	if attack_hitbox != null:
 		attack_hitbox.monitoring = false
-		# connect to the body_entered signal so the boss can apply damage
-		attack_hitbox.connect("body_entered", Callable(self, "_on_attack_hitbox_body_entered"))
-	else:
-		if debug:
-			print("[Boss] No attack_hitbox found. Using raycast fallback for melee damage.")
+		attack_hitbox.body_entered.connect(_on_attack_hitbox_body_entered)
 
-	# Init health bar
 	if health_bar:
 		health_bar.set_max_health(health)
 		health_bar.set_health(health)
-
 	if debug_label:
 		debug_label.visible = debug
 
-func _physics_process(delta):
-	if state and state.has_method("update"):
-		state.update(delta)
 
-	# Keep debug label above boss head
-	if debug_label:
-		var _viewport = get_viewport()
-		if _viewport:
-			debug_label.look_at(_viewport.get_camera_3d().global_position, Vector3.UP)
+func _physics_process(delta: float) -> void:
+	super(delta)
+	if shake_amount > 0.0:
+		model_root.position = model_rest.origin + Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)) * shake_amount
+	if debug and debug_label and get_viewport().get_camera_3d():
+		debug_label.look_at(get_viewport().get_camera_3d().global_position, Vector3.UP)
+
+
+# ---------------------------
+# Helpers
+# ---------------------------
+# The boss's scale: distances in the fight are given in boss lengths
+func unit() -> float:
+	return global_basis.get_scale().x
+
+
+func forward() -> Vector3:
+	return global_basis.z.normalized()
+
+
+func face_point(point: Vector3) -> void:
+	var flat := Vector3(point.x, global_position.y, point.z)
+	if flat.distance_to(global_position) > 0.05:
+		look_at(flat, Vector3.UP, true)
+
+
+# The point on the floor under/over `point`, so warnings and waves sit on the real floor (the boss's own origin
+# floats a little above it)
+func floor_point(point: Vector3) -> Vector3:
+	var query := PhysicsRayQueryParameters3D.create(point + Vector3.UP * 3.0, point + Vector3.DOWN * 8.0)
+	query.collision_mask = 2
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if hit.is_empty():
+		return point
+	return Vector3(point.x, hit["position"].y, point.z)
+
+
+func flat_distance_to_target() -> float:
+	if not is_instance_valid(target):
+		return INF
+	return Vector2(target.global_position.x - global_position.x, target.global_position.z - global_position.z).length()
+
+
+# Holds the attack clip at the rear-up pose, and lets go of it again at a chosen speed
+func hold_rear_up_pose() -> void:
+	anim.play("attack")
+	anim.seek(REAR_UP_POSE, true)
+	anim.speed_scale = 0.0
+
+
+func release_pose(speed := 2.2) -> void:
+	anim.speed_scale = speed
+
+
+func set_shake(amount: float) -> void:
+	shake_amount = amount
+	if amount <= 0.0 and model_root != null:
+		model_root.position = model_rest.origin
+
+
+func play_sfx(paths: String) -> void:
+	Audio.play(paths)
+
+
+func shake_player_camera(pitch: float, yaw: float) -> void:
+	if is_instance_valid(target) and target.has_method("apply_camera_kick"):
+		target.apply_camera_kick(pitch, randf_range(-yaw, yaw))
+
 
 func _update_footsteps() -> void:
 	# Horizontal movement speed (ignore vertical)
-	var horizontal_speed = Vector3(velocity.x, 0, velocity.z).length()
-
-	# Only play footsteps when grounded and moving above a small threshold
-	var should_play = is_on_floor() and horizontal_speed > 0.1
-
+	var horizontal_speed := Vector3(velocity.x, 0, velocity.z).length()
+	var should_play := is_on_floor() and horizontal_speed > 0.1
 	if should_play:
-		# Start playing if not already playing
 		if not footsteps.playing:
-			# If a stream is assigned and it is a looping clip, play() will loop.
-			# Otherwise it will play once — that's fine for short step loops.
 			footsteps.play()
-			if debug:
-				print("[Boss] Footsteps started (speed=", horizontal_speed, ")")
+	elif footsteps.playing:
+		footsteps.stop()
+
+
+# ---------------------------
+# Visuals: charge material, glow, shield
+# ---------------------------
+func make_mesh_materials_unique(mesh_instance: MeshInstance3D) -> void:
+	var mesh: Mesh = mesh_instance.mesh.duplicate()
+	for i in range(mesh.get_surface_count()):
+		var mat: Material = mesh.surface_get_material(i)
+		if mat:
+			mesh.surface_set_material(i, mat.duplicate())
+	mesh_instance.mesh = mesh
+
+
+func apply_charge_material() -> void:
+	if model:
+		model.set_surface_override_material(0, charge_material)
+
+
+func remove_charge_material() -> void:
+	if model:
+		model.set_surface_override_material(0, shield_material if shield != null and is_instance_valid(shield) else original_material)
+
+
+# Fades the body's emission to a colour (or off). The base material only: the glass shield has no emission.
+func set_glow(active: bool, color := Color(1.0, 0.4, 0.1), energy := 3.0, seconds := 0.6) -> void:
+	var mat := model.get_surface_override_material(0) as StandardMaterial3D
+	if mat == null:
+		return
+	if active:
+		mat.emission_enabled = true
+		mat.emission = color
+		create_tween().tween_property(mat, "emission_energy_multiplier", energy, seconds)
 	else:
-		# Stop if currently playing
-		if footsteps.playing:
-			footsteps.stop()
-			if debug:
-				print("[Boss] Footsteps stopped (speed=", horizontal_speed, ")")
-				
+		var tween := create_tween()
+		tween.tween_property(mat, "emission_energy_multiplier", 0.0, seconds)
+		tween.tween_callback(_emission_off.bind(mat))
+
+
+func _emission_off(mat: StandardMaterial3D) -> void:
+	if mat.emission_energy_multiplier <= 0.1:
+		mat.emission_enabled = false
+
+
+# The glow it keeps between attacks once enraged
+func settle_glow() -> void:
+	if enraged:
+		set_glow(true, Color(1.0, 0.15, 0.1), 1.4, 0.4)
+	else:
+		set_glow(false)
+
+
+func _add_phase_shield() -> void:
+	if shield != null and is_instance_valid(shield):
+		return
+	var new_shield = SHIELD_SCENE.instantiate()
+	new_shield.name = "Shield"
+	new_shield.max_hp = phase_shield_hp
+	new_shield.hp = phase_shield_hp
+	add_child(new_shield)
+	shield = new_shield
+	shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
+	shield_material = shield_material.duplicate()
+	apply_shield_material()
+
+
+# ---------------------------
+# Vision
+# ---------------------------
 func _on_vision_area_body_entered(body: Node3D) -> void:
-	if body == target and state != states["Dead"]:
+	if body == target and state != states["Dead"] and state == states["Idle"]:
 		if health_bar:
 			health_bar.show_bar()
+		next_attack_msec = Time.get_ticks_msec() + 1500
 		change_state("Chase")
+
+
+func _on_body_entered(body: Node3D) -> void:
+	_on_vision_area_body_entered(body)
+
+
+func _on_vision_area_body_exited(_body: Node3D) -> void:
+	pass
+
 
 func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 	# only damage the target and only once per attack
 	if body == target and not hit_done:
 		if body.has_method("damage"):
 			body.damage(damage_to_player)
-			if debug:
-				print("[Boss] Hitbox: dealt ", damage_to_player, " damage to target")
 		hit_done = true
 
+
 # ---------------------------
-#  Attack window / hitbox handling (NEW)
+# Choosing attacks
 # ---------------------------
-func perform_attack() -> void:
-	"""
-	Performs the attack animation and enables the attack_hitbox only during
-	the configured damage window. If no attack_hitbox exists, this function
-	does not disable the raycast fallback — AttackState still has a fallback.
-	"""
-	is_attacking = true  # optional: for your logic if you track this
-
-	# Play the attack animation
-	anim.play("attack")
-	animation_done = false
-
-	# Optional: play audio similar to your other code
-	Audio.play("assets/audio/sfx/boss/Boss_Hit1.wav, \
-				assets/audio/sfx/boss/Boss_Hit2.wav, \
-				assets/audio/sfx/boss/Boss_Hit3.wav")
-
-	# Wait until window start
-	await get_tree().create_timer(damage_window_start).timeout
-
-	# Reset hit flag right before enabling hitbox
-	hit_done = false
-	if attack_hitbox:
-		attack_hitbox.monitoring = true
-
-	# Damage window duration
-	var damage_duration = max(0.0, damage_window_end - damage_window_start)
-	await get_tree().create_timer(damage_duration).timeout
-
-	if attack_hitbox:
-		attack_hitbox.monitoring = false
-
-	# Wait until the animation finishes fully
-	await anim.animation_finished
-
-	# Start cooldown
-	if attack_timer:
-		attack_timer.start(attack_cooldown)
-
-	# allow next attacks
-	is_attacking = false
+func melee_range() -> float:
+	return 0.9 * unit()
 
 
-func apply_shield_material():
-	$ShieldShader.visible = true
-	model.set_surface_override_material(0, shield_material)
-	
-func remove_shield_material():
-	$ShieldShader.visible = false
-	model.set_surface_override_material(0, original_material)
+# Called by the chase state: starts a special attack when one is ready and fits the distance
+func choose_special(distance: float) -> bool:
+	var now := Time.get_ticks_msec()
+	if now < next_think_msec or now < next_attack_msec:
+		return false
+	next_think_msec = now + 250
+	var options: Array[String] = []
+	var length := unit()
+	for attack in PHASES[phase - 1]["attacks"]:
+		if now < int(cooldown_until.get(attack, 0)):
+			continue
+		match attack:
+			"slam":
+				if distance <= slam_trigger_distance * length:
+					options.append(attack)
+			"charge":
+				if distance >= 1.5 * length and _lane_is_clear():
+					options.append(attack)
+			"orbs":
+				if distance >= 1.8 * length:
+					options.append(attack)
+	if options.is_empty():
+		return false
+	var pick: String = options.pick_random()
+	var cooldown := {"slam": slam_cooldown, "charge": charge_cooldown, "orbs": orb_cooldown}[pick] as float
+	cooldown_until[pick] = now + int(cooldown * randf_range(0.85, 1.15) * 1000.0)
+	change_state({"slam": "Slam", "charge": "Charge", "orbs": "Orbs"}[pick])
+	return true
 
-func apply_charge_material():
-	if model:
-		model.set_surface_override_material(0, charge_material)
 
-		if debug:
-			print("[Boss] Charge material applied")
+# Nothing solid between the boss and the player, so a charge has a lane to run along
+func _lane_is_clear() -> bool:
+	var from := global_position + Vector3.UP * unit() * 0.6
+	var to := target.global_position + Vector3.UP * 0.8
+	var query := PhysicsRayQueryParameters3D.create(from, to)
+	query.exclude = [self]
+	query.collision_mask = 2
+	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
-func remove_charge_material():
-	if model:
-		model.set_surface_override_material(0, original_material)
 
-		if debug:
-			print("[Boss] Charge material removed.")
+func start_attack_gap() -> void:
+	next_attack_msec = Time.get_ticks_msec() + int(float(PHASES[phase - 1]["gap"]) * 1000.0)
 
-func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
-	var mesh = mesh_instance.mesh.duplicate()
-	for i in range(mesh.get_surface_count()):
-		var mat = mesh.surface_get_material(i)
-		if mat:
-			mesh.surface_set_material(i, mat.duplicate())
-	mesh_instance.mesh = mesh
 
-func set_charge_glow(active: bool, instant: bool = false):
-	var mat = model.get_surface_override_material(0)
-	if mat == null:
+# ---------------------------
+# Damage and phases
+# ---------------------------
+func damage(amount: float, multiplier: float = 1.0) -> void:
+	if destroyed or invulnerable:
 		return
+	var dealt := amount * multiplier
+	if shield != null and is_instance_valid(shield):
+		dealt = shield.absorb_damage(amount)
+	dealt *= vulnerability
+	_lose_health(dealt)
 
-	var target_emission := 3.0 if active else 0.0
-	var target_color := Color(1.0, 0.4, 0.1) if active else Color(0, 0, 0)
 
-	if instant:
-		mat.emission_enabled = active
-		mat.emission = target_color
-		mat.emission_energy_multiplier = target_emission
-	else:
-		var tween = create_tween()
-		tween.tween_property(mat, "emission_energy_multiplier", target_emission, 0.6)
-		if active:
-			mat.emission_enabled = true
-			mat.emission = target_color
-		else:
-			tween.tween_callback(Callable(self, "_disable_emission_if_inactive"))
-
-func _disable_emission_if_inactive():
-	var mat = model.get_surface_override_material(0)
-	if mat and mat.emission_energy_multiplier <= 0.1:
-		mat.emission_enabled = false
-
-func _on_animation_finished(anim_name: String):
-	# Only mark done for attack animation
-	if anim_name == "attack":
-		animation_done = true
-		if debug:
-			print("[Boss] Attack animation finished.")
-
-func _on_charge_timer_timeout():
-	if debug:
-		print("[Boss] Charge cooldown finished — ready to charge again.")
-
-	if state == states["Chase"]:
-		change_state("Charge")
-
-# ---------------------------
-#  State Management
-# ---------------------------
-func change_state(state_name: String):
-	if not states.has(state_name):
-		if debug:
-			print("[Boss] Tried to change to unknown state:", state_name)
-		return
-
-	if state and state.has_method("exit"):
-		state.exit()
-		if debug:
-			print("[Boss] Exiting state:", get_state_name(state))
-
-	state = states[state_name]
-	if state and state.has_method("enter"):
-		state.enter()
-
-	# Debug updates
-	if debug:
-		print("[Boss] Entering state:", state_name)
-	if debug_label:
-		debug_label.text = "State: %s\nCharge CD: %.2f" % [get_state_name(state), charge_timer.time_left]
-
-func get_state_name(current_state):
-	for state_name in states.keys():
-		if states[state_name] == current_state:
-			return state_name
-	return "Unknown"
-
-# ---------------------------
-#  Combat + Damage
-# ---------------------------
-func damage(amount: float, multiplier : float = 1.0):
-	print("Received damage: ", amount)
-	if shield:
-		amount = shield.absorb_damage(amount)
-	else:
-		amount *= multiplier
-	health -= amount
-	if health <= 0 and not destroyed:
-		change_state("Dead")
-
+func _lose_health(amount: float) -> void:
+	health = maxf(health - amount, 0.0)
 	if health_bar:
 		health_bar.set_health(health)
+	if health <= 0.0:
+		_die()
+		return
+	_check_phase()
 
-func add_shield():
-	var shield_scene = preload("res://scenes/enemies/shield.tscn")
-	var shield_instance = shield_scene.instantiate()
-	add_child(shield_instance)
 
-func _on_shield_destroyed():
-	remove_shield_material()
+func _check_phase() -> void:
+	if destroyed or state == states["Transition"]:
+		return
+	var ratio := health / max_health
+	var next := phase
+	if phase == 1 and ratio <= phase_two_at:
+		next = 2
+	elif phase == 2 and ratio <= phase_three_at:
+		next = 3
+	if next != phase:
+		phase = next
+		change_state("Transition")
+
+
+# Set up the phase's numbers: speed, attack gaps, shield and glow. Done at the moment of the roar.
+func apply_phase() -> void:
+	var data: Dictionary = PHASES[phase - 1]
+	movement_speed = base_speed * float(data["speed"])
+	enraged = phase >= 3
+	if phase == 2:
+		_add_phase_shield()
+	settle_glow()
+
+
+# A parried orb came back: it pops the shield, takes a big bite out of its health and staggers it
+func on_reflected_orb_hit(_orb_damage: float) -> void:
+	if destroyed or invulnerable:
+		return
+	if shield != null and is_instance_valid(shield):
+		shield.absorb_damage(1.0e9)
+	flinch(global_position + Vector3.UP * unit() * 1.2, 3.0)
+	shake_player_camera(0.05, 0.02)
+	play_sfx("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav")
+	_lose_health(max_health * orb_reflect_fraction)
+	if not destroyed and state != states["Transition"]:
+		pending_stun_time = orb_stun_time
+		change_state("Stunned")
+
+
+# The boss is big, so it only flinches a little
+func flinch(world_point: Vector3, strength := 1.0) -> void:
+	super(world_point, strength * 0.4)
+
+
+func _die() -> void:
+	if destroyed:
+		return
+	change_state("Dead")
 
 
 # ---------------------------
-#  States
+# States
 # ---------------------------
-class IdleState:
-	var enemy
-	func _init(e): enemy = e
+class BossState:
+	var enemy: GodotBoss
 
-	func enter():
+	func _init(e: GodotBoss) -> void:
+		enemy = e
+
+
+class IdleState extends BossState:
+	func enter() -> void:
+		enemy.anim.speed_scale = 1.0
 		enemy.anim.play("idle")
 		enemy.velocity = Vector3.ZERO
-		if enemy.debug:
-			print("[Boss] Idle: Waiting for target...")
-
-	func update(_delta):
-		if not enemy.target:
-			return
 
 
-class ChaseState:
-	var enemy
-	func _init(e): enemy = e
-
-	func enter():
+class ChaseState extends BossState:
+	func enter() -> void:
+		enemy.anim.speed_scale = 1.0
 		enemy.anim.play("run")
-		if enemy.debug:
-			print("[Boss] Started chasing target.")
 
-	func update(_delta):
-		# if enemy.debug:
-		# 	print("[Boss] Chase: charge timer stopped = %s, time left %s" 
-		# 			% [enemy.charge_timer.is_stopped(), snappedf(enemy.charge_timer.time_left, 0.01)])
-
-		if enemy.charge_timer.is_stopped():
-			enemy.change_state("Charge")
+	func update(_delta: float) -> void:
+		if not is_instance_valid(enemy.target):
+			return
+		var distance := enemy.flat_distance_to_target()
+		# A special attack that is ready comes before a swing, so staying in its face doesn't avoid the slam
+		if enemy.choose_special(distance):
+			return
+		if distance <= enemy.melee_range() and Time.get_ticks_msec() >= enemy.melee_ready_msec:
+			enemy.change_state("Melee")
 			return
 
 		enemy.nav.set_target_position(enemy.target.global_position)
-		var next_pos = enemy.nav.get_next_path_position()
-		var dir = (next_pos - enemy.global_position).normalized()
-		enemy.velocity = dir * enemy.movement_speed
-
-		if dir.length() > 0.01:
-			var target_look_at = Vector3(enemy.target.global_position.x, enemy.global_position.y, enemy.target.global_position.z) + dir
-			enemy.look_at(target_look_at, Vector3.UP, true)
-		
+		var next_position := enemy.nav.get_next_path_position()
+		var direction := (next_position - enemy.global_position).normalized()
+		enemy.velocity = direction * enemy.movement_speed
+		enemy.face_point(enemy.target.global_position)
 		enemy.move_and_slide()
-		
 		enemy._update_footsteps()
 
-		enemy.ray.force_raycast_update()
-		if enemy.ray.is_colliding() and enemy.ray.get_collider() == enemy.target:
-			enemy.change_state("Attack")
 
+# A swing: the clip's own rear-up is the warning, shown on the floor where the hands will land
+class MeleeState extends BossState:
+	var elapsed := 0.0
+	var warning: BossTelegraph
+	var hitbox_on := false
 
-class AttackState:
-	var enemy
-	var used_ray_fallback := false
-
-	func _init(e): enemy = e
-
-	func enter():
-		enemy.animation_done = false
-		used_ray_fallback = false
-
-		if enemy.debug:
-			print("[Boss] Performing attack!")
-
-		# start attack cooldown right away (prevents spam); perform_attack will restart timer once done as well
-		if enemy.attack_timer:
-			enemy.attack_timer.start(enemy.attack_cooldown)
-
-		# Start the attack sequence (handles damage window if attack_hitbox exists)
-		# We don't await here because we want the state update() to keep running while the sequence uses await internally.
-		enemy.perform_attack()
-
-	func update(_delta):
-		# Fallback: if there's no attack_hitbox, do the raycast-based hit once per attack
-		if not enemy.attack_hitbox and not used_ray_fallback:
-			if not enemy.target:
-				return
-			enemy.ray.force_raycast_update()
-			if enemy.ray.is_colliding() and enemy.ray.get_collider() == enemy.target:
-				var col = enemy.ray.get_collider()
-				if col and col.has_method("damage"):
-					col.damage(enemy.damage_to_player)
-					used_ray_fallback = true
-					if enemy.debug:
-						print("[Boss] Ray fallback: dealt", enemy.damage_to_player, "damage to player")
-
-		# Transition out once animation completed (animation_done is set in _on_animation_finished)
-		if enemy.animation_done:
-			if enemy.debug:
-				print("[Boss] Attack animation complete")
-
-			if enemy.just_charged:
-				enemy.just_charged = false
-				# Remove the charge material when leaving the charge state
-				enemy.remove_charge_material()
-				# Fade glow down
-				enemy.set_charge_glow(false)
-				enemy.change_state("Recovery")
-			else:
-				enemy.change_state("Chase")
-
-
-class ChargeState:
-	var enemy
-	var direction = Vector3.ZERO
-	var elapsed = 0.0
-	var phase = "windup"
-
-	func _init(_enemy): enemy = _enemy
-
-	func enter():
-		phase = "windup"
+	func enter() -> void:
 		elapsed = 0.0
+		hitbox_on = false
+		enemy.hit_done = false
+		enemy.is_attacking = true
 		enemy.velocity = Vector3.ZERO
+		enemy.melee_ready_msec = Time.get_ticks_msec() + int(enemy.attack_cooldown * 1000.0)
+		enemy.anim.speed_scale = 1.0
+		enemy.anim.play("attack")
+		var length := enemy.unit()
+		warning = BossTelegraph.circle(enemy.get_tree(), enemy.floor_point(enemy.global_position + enemy.forward() * 0.55 * length), 0.75 * length)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav")
 
-		if enemy.target:
-			enemy.nav.set_target_position(enemy.target.global_position)
-			direction = (enemy.target.global_position - enemy.global_position).normalized()
-
-		# Apply visual indicator
-		enemy.apply_charge_material()
-
-		# Turn on charge glow
-		enemy.set_charge_glow(true)
-		Audio.play("assets/audio/sfx/boss/Boss_Roar1.wav, \
-						assets/audio/sfx/boss/Boss_Roar2.wav")
-
-		# Wind-up animation (temp)
-		enemy.anim.play("idle")
-		enemy.anim.speed_scale = 0.7
-
-		if enemy.debug:
-			print("[Boss] Charge: WIND-UP started!")
-
-	func update(delta):
+	func update(delta: float) -> void:
 		elapsed += delta
+		if elapsed < enemy.damage_window_start and is_instance_valid(enemy.target):
+			enemy.face_point(enemy.target.global_position)
+			warning.global_position = enemy.floor_point(enemy.global_position + enemy.forward() * 0.55 * enemy.unit()) + Vector3.UP * BossTelegraph.FLOOR_LIFT
+			warning.set_progress(elapsed / enemy.damage_window_start)
+		if not hitbox_on and elapsed >= enemy.damage_window_start and elapsed < enemy.damage_window_end:
+			hitbox_on = true
+			enemy.hit_done = false
+			if enemy.attack_hitbox:
+				enemy.attack_hitbox.monitoring = true
+			warning.finish(0.1)
+		if hitbox_on and elapsed >= enemy.damage_window_end:
+			hitbox_on = false
+			if enemy.attack_hitbox:
+				enemy.attack_hitbox.monitoring = false
+		if elapsed >= ATTACK_ANIMATION_LENGTH:
+			enemy.change_state("Chase")
 
+	func exit() -> void:
+		enemy.is_attacking = false
+		if enemy.attack_hitbox:
+			enemy.attack_hitbox.monitoring = false
+		if is_instance_valid(warning):
+			warning.finish(0.1)
+
+
+# Winds up with a lane on the floor showing where it will run, then rushes. It keeps turning a little while
+# running, but hitting a wall stuns it, so the way to beat it is to sidestep into one.
+class ChargeState extends BossState:
+	enum Phase { WINDUP, CHARGING }
+
+	var phase := Phase.WINDUP
+	var elapsed := 0.0
+	var direction := Vector3.ZERO
+	var lane: BossTelegraph
+	var lane_length := 20.0
+	var hit_player := false
+
+	func enter() -> void:
+		phase = Phase.WINDUP
+		elapsed = 0.0
+		hit_player = false
+		enemy.is_attacking = true
+		enemy.velocity = Vector3.ZERO
+		direction = _aim()
+		enemy.apply_charge_material()
+		enemy.set_glow(true)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav")
+		enemy.anim.speed_scale = 0.7
+		enemy.anim.play("idle")
+		lane_length = enemy.charge_speed * enemy.charge_duration
+		var start := enemy.floor_point(enemy.global_position)
+		lane = BossTelegraph.lane(enemy.get_tree(), start, start + direction * lane_length, 1.7 * enemy.unit())
+
+	func _aim() -> Vector3:
+		var to_target := enemy.target.global_position - enemy.global_position
+		to_target.y = 0.0
+		return to_target.normalized() if to_target.length() > 0.01 else enemy.forward()
+
+	func update(delta: float) -> void:
+		elapsed += delta
 		match phase:
-			"windup":
-				# Wait during wind-up before starting the charge
+			Phase.WINDUP:
+				# It keeps aiming for most of the wind-up and then commits, so the player can sidestep
+				if elapsed < enemy.charge_windup_time * 0.7 and is_instance_valid(enemy.target):
+					direction = direction.slerp(_aim(), clampf(6.0 * delta, 0.0, 1.0)).normalized()
+				enemy.face_point(enemy.global_position + direction)
+				enemy.set_shake(0.02 * (elapsed / enemy.charge_windup_time))
+				var start := enemy.floor_point(enemy.global_position)
+				lane.set_lane(start, start + direction * lane_length, 1.7 * enemy.unit())
+				lane.set_progress(elapsed / enemy.charge_windup_time)
 				if elapsed >= enemy.charge_windup_time:
-					enemy.anim.speed_scale = 1.0  # reset animation speed
-					enemy.anim.play("run")
-					phase = "charging"
+					phase = Phase.CHARGING
 					elapsed = 0.0
-
-					if enemy.debug:
-						print("[Boss] Wind-up complete — CHARGING!")
-
-			"charging":
-				enemy.just_charged = true
-
-				# Charge "steering" logic, like Rein from OW
-				if enemy.target:
-					var to_target = (enemy.target.global_position - enemy.global_position).normalized()
-					
-					# Adjust how sharply boss turns (smaller = tighter turns)
-					var turn_speed = 2.0  # radians per second — tweak to tune responsiveness
-					
-					# Smoothly rotate the direction vector toward the target
-					direction = direction.slerp(to_target, turn_speed * delta).normalized()
-
-				# Apply velocity and movement — KEEP ONLY THIS FOR LINEAR CHARGE
+					enemy.set_shake(0.0)
+					enemy.anim.speed_scale = 1.0
+					enemy.anim.play("run")
+					lane.finish(0.15)
+			Phase.CHARGING:
+				if is_instance_valid(enemy.target):
+					direction = direction.slerp(_aim(), clampf(enemy.charge_steering * delta, 0.0, 1.0)).normalized()
 				enemy.velocity = direction * enemy.charge_speed
+				enemy.face_point(enemy.global_position + direction)
 				enemy.move_and_slide()
 				enemy._update_footsteps()
 
-				# Make boss face movement direction — REMOVE TO REMOVE "STEERING"
-				var look_point = enemy.global_position + direction
-				enemy.look_at(look_point, Vector3.UP)
-				enemy.rotate_y(deg_to_rad(180))
-				
-				# Collision Check
-				enemy.ray.force_raycast_update()
-				if enemy.ray.is_colliding() and enemy.ray.get_collider() == enemy.target:
+				if not hit_player and is_instance_valid(enemy.target) and enemy.flat_distance_to_target() <= 0.6 * enemy.unit():
+					hit_player = true
 					if enemy.target.has_method("damage"):
 						enemy.target.damage(enemy.charge_damage)
-						if enemy.debug:
-							print("[Boss] Charge hit player — dealt", enemy.charge_damage, "damage.")
-					enemy.change_state("Attack")
+					if enemy.target.has_method("apply_push"):
+						enemy.target.apply_push(direction * 25.0)
+					enemy.shake_player_camera(0.08, 0.03)
+					enemy.change_state("Recovery")
 					return
-
+				if _hit_a_wall():
+					enemy.pending_stun_time = enemy.crash_stun_time
+					enemy.change_state("Stunned")
+					return
 				if elapsed >= enemy.charge_duration:
-					if enemy.debug:
-						print("[Boss] Charge duration ended — following up with Attack.")
-					enemy.change_state("Attack")
-					return
-	
-	""" If we want charge shader to end immediately after done charging,
-		Uncomment this code and modifiy the just_charged logic in AttackState"""
-	# func exit():
-	# 	# Remove the charge material when leaving the charge state
-	# 	enemy.remove_charge_material()
+					enemy.change_state("Recovery")
 
-	# 	# Fade glow down
-	# 	enemy.set_charge_glow(false)
+	func _hit_a_wall() -> bool:
+		for i in enemy.get_slide_collision_count():
+			var collision := enemy.get_slide_collision(i)
+			if absf(collision.get_normal().y) < 0.4 and collision.get_collider() != enemy.target:
+				return true
+		return false
 
-class RecoveryState:
-	var enemy
-	var elapsed = 0.0
+	func exit() -> void:
+		enemy.is_attacking = false
+		enemy.set_shake(0.0)
+		enemy.remove_charge_material()
+		enemy.settle_glow()
+		if is_instance_valid(lane):
+			lane.finish(0.1)
 
-	func _init(e): enemy = e
 
-	func enter():
+# Rears up, then brings both hands down: a shockwave runs out along the floor and hurts anyone on the ground
+class SlamState extends BossState:
+	enum Phase { WINDUP, STRIKE, HOLD }
+
+	var phase := Phase.WINDUP
+	var elapsed := 0.0
+	var warning: BossTelegraph
+	var reach := 20.0
+
+	func enter() -> void:
+		phase = Phase.WINDUP
 		elapsed = 0.0
+		enemy.is_attacking = true
 		enemy.velocity = Vector3.ZERO
-		enemy.anim.play("idle") # for the time being
+		reach = enemy.slam_radius * enemy.unit()
+		enemy.hold_rear_up_pose()
+		enemy.set_glow(true)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav")
+		warning = BossTelegraph.circle(enemy.get_tree(), enemy.floor_point(enemy.global_position), reach)
 
-		if enemy.debug:
-			print("[Boss] Entering recovery phase after attack.")
-
-	func update(delta):
+	func update(delta: float) -> void:
 		elapsed += delta
-		if elapsed >= enemy.charge_recovery_time:
-			if enemy.debug:
-				print("[Boss] Recovery done — starting charge cooldown.")
-			
-			# Start charge cooldown
-			enemy.charge_timer.start(enemy.charge_cooldown)
+		match phase:
+			Phase.WINDUP:
+				if is_instance_valid(enemy.target):
+					enemy.face_point(enemy.target.global_position)
+				enemy.set_shake(0.025 * (elapsed / enemy.slam_windup))
+				warning.global_position = enemy.floor_point(enemy.global_position) + Vector3.UP * BossTelegraph.FLOOR_LIFT
+				warning.set_progress(elapsed / enemy.slam_windup)
+				if elapsed >= enemy.slam_windup:
+					phase = Phase.STRIKE
+					elapsed = 0.0
+					enemy.set_shake(0.0)
+					enemy.release_pose(2.4)
+			Phase.STRIKE:
+				if enemy.anim.current_animation_position >= THRUST_TIME or elapsed > 0.6:
+					phase = Phase.HOLD
+					elapsed = 0.0
+					_impact()
+			Phase.HOLD:
+				if elapsed >= 0.7:
+					enemy.change_state("Recovery")
 
+	func _impact() -> void:
+		var length := enemy.unit()
+		var centre := enemy.floor_point(enemy.global_position + enemy.forward() * 0.6 * length)
+		BossShockwave.spawn(enemy.get_tree(), centre, reach, enemy.slam_speed * length, enemy.slam_damage)
+		ImpactParticles.spawn(enemy.get_tree(), centre + Vector3.UP * 0.3, Vector3.UP, 2.5)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav")
+		enemy.shake_player_camera(0.1, 0.03)
+		warning.finish(0.1)
+		enemy.settle_glow()
+
+	func exit() -> void:
+		enemy.is_attacking = false
+		enemy.set_shake(0.0)
+		enemy.anim.speed_scale = 1.0
+		enemy.settle_glow()
+		if is_instance_valid(warning):
+			warning.finish(0.1)
+
+
+# Rears up and fires slow orbs at the player. A parried orb flies back, pops the shield and staggers the boss.
+class OrbState extends BossState:
+	enum Phase { WINDUP, FIRING, HOLD }
+
+	var phase := Phase.WINDUP
+	var elapsed := 0.0
+	var fired := 0
+	var total := 3
+
+	func enter() -> void:
+		phase = Phase.WINDUP
+		elapsed = 0.0
+		fired = 0
+		total = enemy.orb_count + (2 if enemy.phase >= 3 else 0)
+		enemy.is_attacking = true
+		enemy.velocity = Vector3.ZERO
+		enemy.hold_rear_up_pose()
+		enemy.set_glow(true, Color(1.0, 0.2, 0.8))
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav")
+
+	func update(delta: float) -> void:
+		elapsed += delta
+		if is_instance_valid(enemy.target):
+			enemy.face_point(enemy.target.global_position)
+		match phase:
+			Phase.WINDUP:
+				enemy.set_shake(0.02 * (elapsed / enemy.orb_windup))
+				if elapsed >= enemy.orb_windup:
+					phase = Phase.FIRING
+					elapsed = 0.0
+					enemy.set_shake(0.0)
+			Phase.FIRING:
+				if fired < total and elapsed >= 0.3 * float(fired):
+					_fire(fired)
+					fired += 1
+				elif fired >= total and elapsed >= 0.3 * float(total) + 0.4:
+					phase = Phase.HOLD
+					elapsed = 0.0
+					enemy.release_pose(2.0)
+			Phase.HOLD:
+				if elapsed >= 0.6:
+					enemy.change_state("Recovery")
+
+	func _fire(index: int) -> void:
+		if not is_instance_valid(enemy.target):
+			return
+		var length := enemy.unit()
+		var origin := enemy.global_position + Vector3.UP * 1.0 * length + enemy.forward() * 0.9 * length
+		var aim := (enemy.target.global_position + Vector3.UP - origin).normalized()
+		aim = aim.rotated(Vector3.UP, (float(index) - float(total - 1) * 0.5) * deg_to_rad(16.0))
+		var ball = ENERGY_BALL.instantiate()
+		ball.damage = enemy.orb_damage
+		ball.SPEED = enemy.orb_speed
+		ball.max_scale = enemy.orb_max_scale
+		ball.scale_speed = 2.0
+		ball.turn_rate = 1.1
+		ball.shooter = enemy
+		ball.always_return_to_shooter = true
+		ball.get_node("SelfQueueTimer").wait_time = 9.0
+		enemy.get_tree().current_scene.add_child(ball)
+		ball.global_position = origin
+		ball.velocity = aim * ball.SPEED
+		ball.set_target(enemy.target)
+		Audio.play_at(origin, "assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav, assets/audio/sfx/enemies/Enemy_Shoot2_PitchedUp.wav")
+		enemy.shake_player_camera(0.02, 0.01)
+
+	func exit() -> void:
+		enemy.is_attacking = false
+		enemy.set_shake(0.0)
+		enemy.anim.speed_scale = 1.0
+		enemy.settle_glow()
+
+
+# Tired after an attack: slow, and takes extra damage
+class RecoveryState extends BossState:
+	var elapsed := 0.0
+	var duration := 2.1
+
+	func enter() -> void:
+		elapsed = 0.0
+		duration = enemy.charge_recovery_time
+		enemy.velocity = Vector3.ZERO
+		enemy.vulnerability = 1.0 + (enemy.vulnerable_multiplier - 1.0) * 0.5
+		enemy.anim.speed_scale = 0.6
+		enemy.anim.play("idle")
+
+	func update(delta: float) -> void:
+		elapsed += delta
+		if elapsed >= duration:
 			enemy.change_state("Chase")
 
+	func exit() -> void:
+		enemy.vulnerability = 1.0
+		enemy.anim.speed_scale = 1.0
+		enemy.start_attack_gap()
 
-class DeadState:
-	var enemy
-	func _init(e): enemy = e
 
-	func enter():
-		if enemy.debug:
-			print("[Boss] Died.")
+# Dazed (after hitting a wall or taking a parried orb): helpless and takes a lot more damage
+class StunnedState extends BossState:
+	var elapsed := 0.0
+	var duration := 3.0
 
-		Audio.play("assets/audio/sfx/boss/Boss_Death1.wav")
-		enemy.destroyed = true
+	func enter() -> void:
+		elapsed = 0.0
+		duration = enemy.pending_stun_time
 		enemy.velocity = Vector3.ZERO
+		enemy.vulnerability = enemy.vulnerable_multiplier
+		enemy.anim.speed_scale = 0.35
+		enemy.anim.play("idle")
+		enemy.set_glow(true, Color(0.4, 0.75, 1.0), 2.0, 0.2)
+		enemy.shake_player_camera(0.06, 0.02)
+
+	func update(delta: float) -> void:
+		elapsed += delta
+		enemy.set_shake(0.012 + 0.01 * sin(elapsed * 30.0))
+		if elapsed >= duration:
+			enemy.change_state("Chase")
+
+	func exit() -> void:
+		enemy.vulnerability = 1.0
+		enemy.anim.speed_scale = 1.0
+		enemy.set_shake(0.0)
+		enemy.settle_glow()
+		enemy.start_attack_gap()
+
+
+# Between phases: rears up, roars and throws the player back, and cannot be hurt. The new phase takes hold at
+# the moment of the roar.
+class TransitionState extends BossState:
+	enum Phase { REAR, ROAR }
+
+	var phase := Phase.REAR
+	var elapsed := 0.0
+
+	func enter() -> void:
+		phase = Phase.REAR
+		elapsed = 0.0
+		_roared = false
+		enemy.invulnerable = true
+		enemy.is_attacking = true
+		enemy.velocity = Vector3.ZERO
+		enemy.vulnerability = 1.0
+		enemy.remove_charge_material()
+		enemy.hold_rear_up_pose()
+		enemy.set_glow(true, Color(1.0, 0.9, 0.7), 3.0, 0.3)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav")
+
+	func update(delta: float) -> void:
+		elapsed += delta
+		match phase:
+			Phase.REAR:
+				enemy.set_shake(0.03 * minf(elapsed / (enemy.transition_time * 0.45), 1.0))
+				if elapsed >= enemy.transition_time * 0.45:
+					phase = Phase.ROAR
+					elapsed = 0.0
+					enemy.set_shake(0.0)
+					enemy.release_pose(2.2)
+			Phase.ROAR:
+				if not _roared and (enemy.anim.current_animation_position >= THRUST_TIME - 0.05 or elapsed >= 0.45):
+					_roar()
+				if elapsed >= enemy.transition_time * 0.55:
+					enemy.change_state("Chase")
+
+	var _roared := false
+
+	func _roar() -> void:
+		_roared = true
+		var length := enemy.unit()
+		BossShockwave.spawn(enemy.get_tree(), enemy.floor_point(enemy.global_position), 3.5 * length, 4.0 * length, 0.0, true)
+		enemy.shake_player_camera(0.12, 0.04)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar2.wav")
+		enemy.apply_phase()
+
+	func exit() -> void:
+		_roared = false
+		enemy.invulnerable = false
+		enemy.is_attacking = false
+		enemy.set_shake(0.0)
+		enemy.anim.speed_scale = 1.0
+		enemy.settle_glow()
+		enemy.start_attack_gap()
+
+
+class DeadState extends BossState:
+	func enter() -> void:
+		enemy.destroyed = true
+		enemy.invulnerable = true
+		enemy.velocity = Vector3.ZERO
+		enemy.is_attacking = false
+		enemy.set_shake(0.0)
+		enemy.remove_charge_material()
+		for area in enemy.find_children("*", "Area3D", true, false):
+			area.set_deferred("collision_layer", 0)
+			area.set_deferred("monitorable", false)
+			area.set_deferred("monitoring", false)
+		enemy.collision_layer = 0
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Death1.wav")
+		enemy.anim.speed_scale = 1.0
 		enemy.anim.play("die")
-		enemy.health_bar.hide_bar()
+		if enemy.health_bar:
+			enemy.health_bar.hide_bar()
+		_finish()
 
+	func _finish() -> void:
 		await enemy.anim.animation_finished
-
+		if not is_instance_valid(enemy) or not enemy.is_inside_tree():
+			return
+		# It hits the floor and bursts, like the smaller enemies
+		var length := enemy.unit()
+		for offset in [Vector3.ZERO, Vector3(1, 0, 0.6), Vector3(-1, 0, -0.6)]:
+			BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), enemy.global_position + offset * length * 0.5 + Vector3.UP * 0.4 * length, 1.4, enemy.blood_scale)
+		await enemy.get_tree().create_timer(1.2).timeout
 		GameManager.win()
-
-		
