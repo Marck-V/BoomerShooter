@@ -4,7 +4,10 @@ const BLOOD_PARTICLES = preload("res://scripts/weapons/blood_particles.gd")
 
 # --- Idle ---
 class IdleState:
+	const VISION_CHECK_INTERVAL := 0.25
+
 	var enemy
+	var vision_check_timer := 0.0
 
 	func _init(e):
 		enemy = e
@@ -13,9 +16,17 @@ class IdleState:
 		enemy.anim.play("Idle")
 		enemy.velocity = Vector3.ZERO
 		enemy.should_move = false
+		vision_check_timer = 0.0
 
-	func update(_delta):
-		pass
+	func update(delta):
+		# body_entered only fires once, so an enemy that went idle with the player already in its vision
+		# (a ranged enemy that gave up chasing, or one that was stunned) has to look again
+		vision_check_timer += delta
+		if vision_check_timer < VISION_CHECK_INTERVAL:
+			return
+		vision_check_timer = 0.0
+		if is_instance_valid(enemy.target) and enemy.sees_target():
+			enemy.change_state("Chase")
 
 
 # --- Chase ---
@@ -38,8 +49,9 @@ class ChaseState:
 	
 	func update(_delta):
 		if not is_instance_valid(enemy.target):
+			enemy.change_state("Idle")
 			return
-		
+
 		# For ranged enemies: detect if stuck chasing without being able to shoot
 		if enemy.get("shoot_range") != null:  # Check if this is a ranged enemy
 			stuck_timer += _delta
