@@ -143,6 +143,12 @@ func _resolve_target() -> void:
 		call("_on_body_entered", player)
 
 
+# True while the target is inside the enemy's vision area. Enemies without one never see anything this way.
+func sees_target() -> bool:
+	var vision := get_node_or_null("VisionArea") as Area3D
+	return vision != null and vision.monitoring and is_instance_valid(target) and vision.overlaps_body(target)
+
+
 func _on_velocity_computed(safe_velocity: Vector3):
 	# Use the avoidance-adjusted velocity
 	if should_move:
@@ -423,18 +429,17 @@ func remove_shield_material():
 # Safe Mesh Duplication
 # ---------------------------
 func make_mesh_materials_unique(mesh_instance: MeshInstance3D):
-	var old_mesh := mesh_instance.mesh
-	if old_mesh == null:
+	# The mesh itself stays shared between enemies: only the materials are copied, as per-instance overrides
+	var mesh := mesh_instance.mesh
+	if mesh == null:
 		return
-	
-	var new_mesh := ArrayMesh.new()
-	for i in range(old_mesh.get_surface_count()):
-		var surface_arrays := old_mesh.surface_get_arrays(i)
-		var mat := old_mesh.surface_get_material(i)
-		new_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, surface_arrays)
+
+	for i in range(mesh.get_surface_count()):
+		var mat := mesh_instance.get_surface_override_material(i)
+		if mat == null:
+			mat = mesh.surface_get_material(i)
 		if mat:
-			new_mesh.surface_set_material(i, mat.duplicate())
-	mesh_instance.mesh = new_mesh
+			mesh_instance.set_surface_override_material(i, mat.duplicate())
 
 
 # ---------------------------
