@@ -158,8 +158,7 @@ func _perform_heavy_attack() -> void:
 					   assets/audio/sfx/enemies/Enemy_Hit3.wav")
 
 	# Wait until attack animation reaches "damage window start"
-	await get_tree().create_timer(damage_window_start).timeout
-	if token != attack_token:
+	if not await _wait_attack(damage_window_start, token):
 		return  # parried (or otherwise cancelled) before the punch landed
 
 	# Reset hit flag RIGHT before enabling hitbox (not at start of function)
@@ -168,14 +167,14 @@ func _perform_heavy_attack() -> void:
 
 	# Calculate damage window duration
 	var damage_duration = max(0.0, damage_window_end - damage_window_start)
-	await get_tree().create_timer(damage_duration).timeout
+	var still_attacking := await _wait_attack(damage_duration, token)
 	attack_hitbox.monitoring = false
-	if token != attack_token:
+	if not still_attacking:
 		return
 
 	# Wait until the animation finishes fully
-	await anim.animation_finished
-	if token != attack_token:
+	var remaining := (anim.current_animation_length - anim.current_animation_position) / maxf(anim.speed_scale, 0.01)
+	if not await _wait_attack(maxf(remaining, 0.0), token):
 		return
 
 	# Start cooldown
@@ -183,6 +182,19 @@ func _perform_heavy_attack() -> void:
 
 	# Allow future attacks
 	is_attacking = false
+
+
+# Waits for the given time and says whether the attack carries on: false once it was cancelled (parry, death).
+# The wait is a timer owned by this enemy, so if the enemy is freed meanwhile the wait is dropped with it instead
+# of resuming this function on a freed object.
+func _wait_attack(seconds: float, token: int) -> bool:
+	var timer := Timer.new()
+	timer.one_shot = true
+	add_child(timer)
+	timer.start(maxf(seconds, 0.001))
+	await timer.timeout
+	timer.queue_free()
+	return token == attack_token
 
 
 func _on_attack_hitbox_body_entered(body: Node3D) -> void:
