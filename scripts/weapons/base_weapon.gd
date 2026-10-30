@@ -67,6 +67,20 @@ func trigger_recoil():
 func get_shield_multiplier() -> float:
 	return 1.0
 
+
+func is_shield_hit(collider: Object) -> bool:
+	return collider is Node and collider.is_in_group("Shield")
+
+
+# Damages what a shot hit. A shield hitbox passes the damage on to its enemy like any hurtbox; this only adds the
+# metal clang and the weapon's bonus against shields.
+func damage_hit(collider: Object, amount: float, point: Vector3) -> void:
+	if is_shield_hit(collider):
+		play_sound_3d(SHIELD_HIT_SOUND, point)
+		amount *= get_shield_multiplier()
+	collider.damage(amount)
+
+
 func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	if !data or !raycast:
 		return
@@ -92,17 +106,13 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
  
 		if raycast.is_colliding():
 			var collider = raycast.get_collider()
-			if collider and collider.has_method("damage"):
-				collider.damage(data.damage)
 
-			# Flash before the shield absorbs the hit, since it may be destroyed by it.
+			# Flash before the damage lands, since a shield that it breaks is gone afterwards.
 			# Pellets of multi-shot weapons jolt less each
 			flash_hit_enemy(collider, raycast.get_collision_point(), 1.0 if data.shot_count <= 1 else 0.4)
 
-			if collider.is_in_group("Shield"):
-				play_sound_3d(SHIELD_HIT_SOUND, raycast.get_collision_point())
-				var mult = get_shield_multiplier()
-				collider.get_parent().absorb_damage(data.damage * mult)
+			if collider and collider.has_method("damage"):
+				damage_hit(collider, data.damage, raycast.get_collision_point())
 
 			# Multi-pellet weapons get lighter bursts per pellet
 			spawn_impact_particles(raycast, camera, 1.0 if data.shot_count <= 1 else 0.5)
@@ -112,7 +122,7 @@ func spawn_impact_particles(raycast: RayCast3D, camera: Camera3D, amount_scale :
 
 	# Flesh hits spray blood along the shot; walls, floors and shields throw sparks and smoke
 	var collider = raycast.get_collider()
-	if collider is Node and not collider.is_in_group("Shield") and get_hit_enemy(collider) != null:
+	if collider is Node and not is_shield_hit(collider) and get_hit_enemy(collider) != null:
 		var shot_direction := (hit_point - camera.global_transform.origin).normalized()
 		BloodParticles.spawn(get_tree(), hit_point, shot_direction, amount_scale, BloodParticles.thickness_for(get_hit_enemy(collider)))
 		return
@@ -148,9 +158,6 @@ func play_sound_3d(sound_path: String, position: Vector3, volume_db := -4.0) -> 
 func get_hit_enemy(collider: Object):
 	if not collider is Node:
 		return null
-	if collider.is_in_group("Shield"):
-		# ShieldHitbox -> Shield -> enemy
-		return collider.get_parent().get_parent()
 	if collider.is_in_group("Enemy"):
 		return collider
 	return collider.get("owner_enemy")

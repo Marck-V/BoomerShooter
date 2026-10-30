@@ -1,6 +1,7 @@
-[gd_scene load_steps=3 format=3 uid="uid://c7i0pfrqlkigr"]
+[gd_scene load_steps=4 format=3 uid="uid://c7i0pfrqlkigr"]
 
 [ext_resource type="Script" uid="uid://lntasjp1tjyj" path="res://scripts/enemies/shield.gd" id="1_8ngx5"]
+[ext_resource type="Script" path="res://scripts/enemies/shield_hitbox.gd" id="2_hitbox"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_8ngx5"]
 radius = 0.4
@@ -13,6 +14,7 @@ script = ExtResource("1_8ngx5")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
 collision_layer = 8
 collision_mask = 8
+script = ExtResource("2_hitbox")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ShieldHitbox"]
 shape = SubResource("CapsuleShape3D_8ngx5")
