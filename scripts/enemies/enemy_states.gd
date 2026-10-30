@@ -200,11 +200,9 @@ class RangedAttackState:
 	func enter():
 		enemy.velocity = Vector3.ZERO
 		enemy.should_move = false
-		# Play enter animation and pause on last frame
+		# Play the enter animation: it stays on its last frame until the first shot
 		if enemy.attack_animation_enter != "":
 			enemy.anim.play(enemy.attack_animation_enter)
-			await enemy.anim.animation_finished
-			# Stay on last frame of enter animation
 	
 	func update(_delta):
 		if not is_instance_valid(enemy.target):
@@ -231,9 +229,7 @@ class RangedAttackState:
 		
 		# Cooldown ready → shoot
 		if enemy.can_attack():
-			enemy.perform_attack()
-			# Wait for shoot animation to finish, then pause on last frame
-			await enemy.anim.animation_finished
+			enemy.perform_attack()  # the shoot animation ends on its last frame
 	
 	func exit():
 		if enemy.attack_animation_exit != "":
