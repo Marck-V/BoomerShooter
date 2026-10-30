@@ -730,8 +730,6 @@ func _raycast(from: Vector3, to: Vector3, mask: int) -> Dictionary:
 func _enemy_from_collider(collider: Object) -> Node3D:
 	if not collider is Node:
 		return null
-	if collider.is_in_group("Shield"):
-		return collider.get_parent().get_parent()
 	if collider.is_in_group("Enemy"):
 		return collider
 	return collider.get("owner_enemy")

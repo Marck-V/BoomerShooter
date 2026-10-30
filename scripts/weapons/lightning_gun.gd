@@ -60,11 +60,11 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 			var collider = raycast.get_collider()
 
 			if collider and collider.has_method("damage"):
-				collider.damage(chain_damage)
-				flash_hit_enemy(collider, raycast.get_collision_point())
-
 				# The hit can be a hurtbox or a shield; the chain starts from the enemy it belongs to
 				var chain_target = get_hit_enemy(collider)
+				flash_hit_enemy(collider, raycast.get_collision_point())
+				damage_hit(collider, chain_damage, raycast.get_collision_point())
+
 				if chain_target:
 					ElectricAura.apply(chain_target)
 					_run_chain(chain_target)

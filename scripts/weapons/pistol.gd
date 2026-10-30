@@ -66,7 +66,7 @@ func _spawn_lifesteal_orb(raycast: RayCast3D) -> void:
 		return
 
 	var collider = raycast.get_collider()
-	var hit_enemy = collider is Node and (collider.is_in_group("Enemy") or ("owner_enemy" in collider and collider.owner_enemy))
+	var hit_enemy = collider is Node and not is_shield_hit(collider) and (collider.is_in_group("Enemy") or ("owner_enemy" in collider and collider.owner_enemy))
 	if not hit_enemy:
 		return
 
@@ -126,6 +126,8 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 		return
 
 	var first_target = first_collider
+	if is_shield_hit(first_target):
+		return  # shields stop the shot
 	if first_target and not first_target.has_method("damage") and first_target.get_parent() and first_target.get_parent().has_method("damage"):
 		first_target = first_target.get_parent()
 
@@ -160,7 +162,7 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 			target = target.get_parent()
 
 		# Walls and shields end the shot
-		if not target or not target.has_method("damage"):
+		if not target or not target.has_method("damage") or is_shield_hit(target):
 			break
 
 		# A second hurtbox of an enemy that was already hit is skipped without using up a pierce

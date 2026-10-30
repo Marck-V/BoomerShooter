@@ -373,6 +373,7 @@ func _add_phase_shield() -> void:
 	new_shield.name = "Shield"
 	new_shield.max_hp = phase_shield_hp
 	new_shield.hp = phase_shield_hp
+	new_shield.passes_damage_through = true  # the boss keeps taking part of every hit while its shield is up
 	add_child(new_shield)
 	shield = new_shield
 	shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
