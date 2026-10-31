@@ -26,6 +26,7 @@ var current_weapon: BaseWeapon
 var weapon_index := 0
 
 var current_movement_speed = base_movement_speed
+var speed_multiplier := 1.0   # temporary boosts (the rifle's quickness), on top of walking or sliding speed
 var gamepad_sensitivity := 0.075
 var mouse_captured := true
 
@@ -214,6 +215,12 @@ func _physics_process(delta):
 	if position.y < kill_height:
 		get_tree().reload_current_scene()
 
+# Turns the player to face a world yaw, including the target the view eases towards
+func set_facing(yaw: float) -> void:
+	rotation.y = yaw
+	rotation_target.y = yaw
+
+
 func _input(event):
 	if event is InputEventMouseMotion and mouse_captured:
 		var sens = GlobalVariables.mouse_sensitivity * 0.0001
@@ -233,7 +240,7 @@ func handle_controls(_delta):
 		input_mouse = Vector2.ZERO
 
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
-	movement_velocity = Vector3(input.x, 0, input.y).normalized() * current_movement_speed
+	movement_velocity = Vector3(input.x, 0, input.y).normalized() * current_movement_speed * speed_multiplier
 
 	if Input.is_action_just_pressed("slide"):
 		can_slide = true
@@ -336,7 +343,9 @@ func slide():
 		can_slide = false
 		sliding = false
 		slide_speed = 0
-	
+		current_movement_speed = base_movement_speed
+		return
+
 	current_movement_speed = slide_speed
 
 

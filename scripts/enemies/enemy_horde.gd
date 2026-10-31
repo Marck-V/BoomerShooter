@@ -116,13 +116,23 @@ func get_state_definitions() -> Dictionary:
 
 
 func _on_body_entered(body: Node3D):
-	if body == target:
+	if body == target and not _is_committed():
 		change_state("Chase")
 
 
 func _on_body_exited(body: Node3D):
-	if body == target:
+	if body == target and not _is_committed():
 		change_state("Idle")
+
+
+# These moves finish on their own whatever the vision area reports (cutting a jump short would leave it in mid-air)
+func _is_committed() -> bool:
+	return state == states.get("Jump") or state == states.get("Lunge") or state == states.get("Stunned")
+
+
+# Where a committed move goes when it ends: the player may have left its vision meanwhile
+func resume_after_move() -> void:
+	change_state("Chase" if sees_target() else "Idle")
 
 
 func is_in_attack_range() -> bool:
@@ -556,7 +566,7 @@ class JumpState:
 			enemy.face_target(delta, 2.0)
 			landing_left -= delta
 			if landing_left <= 0.0:
-				enemy.change_state("Chase")
+				enemy.resume_after_move()
 			return
 		elapsed += delta
 		var t := clampf(elapsed / duration, 0.0, 1.0)
@@ -649,7 +659,7 @@ class LungeState:
 					enemy.velocity = to_target.normalized() * enemy.lunge_speed * 0.5
 					enemy.move_and_slide()
 				if not enemy.is_attacking:
-					enemy.change_state("Chase")
+					enemy.resume_after_move()
 
 	func exit():
 		enemy.lunging = false
@@ -685,7 +695,7 @@ class StunnedState:
 		enemy.velocity = knockback
 		enemy.move_and_slide()
 		if timer <= 0.0:
-			enemy.change_state("Chase")
+			enemy.resume_after_move()
 
 	func exit():
 		enemy.is_stunned = false

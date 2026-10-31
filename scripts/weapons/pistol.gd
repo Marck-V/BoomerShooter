@@ -123,7 +123,9 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 	if not first_target or not first_target.has_method("damage"):
 		return
 
-	var damaged = [first_target]
+	# Tracks enemies, not colliders: one enemy has many hurtboxes and each shot may only hit it once
+	var first_enemy = get_hit_enemy(first_target)
+	var damaged = [first_enemy if first_enemy else first_target]
 
 	var space_state = get_world_3d().direct_space_state
 	var from = hit_pos + dir * 0.1
@@ -134,7 +136,7 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 	while hits < max_pierces and steps < 16:
 		steps += 1
 		var to = from + dir * remaining
-		var params = PhysicsRayQueryParameters3D.create(from, to)
+		var params = PhysicsRayQueryParameters3D.create(from, to, raycast.collision_mask)
 		params.exclude = exclude
 		params.collide_with_areas = true
 		params.collide_with_bodies = true
@@ -154,10 +156,12 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 			break
 
 		# A second hurtbox of an enemy that was already hit is skipped without using up a pierce
-		if not damaged.has(target):
-			target.damage(data.damage)
+		var hit_enemy = get_hit_enemy(target)
+		var hit_key = hit_enemy if hit_enemy else target
+		if not damaged.has(hit_key):
 			flash_hit_enemy(target, result["position"])
-			damaged.append(target)
+			target.damage(data.damage)
+			damaged.append(hit_key)
 			hits += 1
 
 		exclude.append(collider)
