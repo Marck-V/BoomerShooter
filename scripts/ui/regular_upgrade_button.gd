@@ -7,12 +7,6 @@ class_name RegUpgradeButton
 @export var cost : int = 5
 @export_multiline var description : String = ""
 
-@export_subgroup("Upgrade Effect")
-@export var is_stat_upgrade: bool = false  # true = stat change, false = behavior
-@export_enum("cooldown", "max_distance", "damage", "spread", "shot_count")
-var property_name : String
-@export var amount : float = 1.0
-
 
 var level: int = 0:
     set(value):
@@ -73,5 +67,5 @@ func apply_visual_upgrade() -> void:
 
 func reset() -> void:
     level = 0
-    disabled = true
+    disabled = get_parent() is RegUpgradeButton  # the first upgrade of each tree can be bought straight away
     line_2d.default_color = Color(0.18, 0.18, 0.18)
