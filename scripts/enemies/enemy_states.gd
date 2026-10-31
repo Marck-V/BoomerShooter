@@ -64,7 +64,7 @@ class ChaseState:
 		path_update_timer += _delta
 		if path_update_timer >= PATH_UPDATE_INTERVAL:
 			path_update_timer = 0.0
-			enemy.nav.set_target_position(enemy.target.global_position)
+			enemy.nav.set_target_position(enemy.chase_destination())
 		
 		var next_pos = enemy.nav.get_next_path_position()
 		var raw_dir = (next_pos - enemy.global_position).normalized()
@@ -82,7 +82,7 @@ class ChaseState:
 		var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
 		
 		enemy.should_move = true
-		enemy.velocity = dir * enemy.movement_speed * speed_multiplier
+		enemy.velocity = dir * enemy.chase_speed() * speed_multiplier
 		
 		# --- Line-of-sight ---
 		var space_state = enemy.get_world_3d().direct_space_state
@@ -100,7 +100,7 @@ class ChaseState:
 		var max_vertical_angle = deg_to_rad(30)
 		var to_target: Vector3
 		
-		if ray_result.size() == 0 and abs(vertical_angle) <= max_vertical_angle:
+		if enemy.chase_faces_target() or (ray_result.size() == 0 and abs(vertical_angle) <= max_vertical_angle):
 			to_target = enemy.target.global_position
 		else:
 			to_target = enemy.global_position + dir
@@ -134,7 +134,7 @@ class ChaseState:
 			return
 
 		# --- Attack check ---
-		if enemy.is_in_attack_range():
+		if enemy.is_in_attack_range() and enemy.can_start_attack():
 			stuck_timer = 0.0  # Reset timer when successfully entering attack
 			enemy.change_state("Attack")
 
@@ -176,9 +176,9 @@ class AttackState:
 			enemy.change_state("Chase")
 			return
 		
-		# Cooldown still running → wait
-		if not enemy.can_attack():
-			enemy.change_state("AttackIdle")
+		# Its turn is over: back to the chase, which keeps it near until the next one
+		if not enemy.can_start_attack():
+			enemy.change_state("Chase")
 			return
 		
 		# Attack!
