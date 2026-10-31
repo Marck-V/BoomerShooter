@@ -11,6 +11,7 @@ var chain_damage = 50
 const CHAIN_HOP_DELAY := 0.1  # seconds between jumps
 
 const AMMO_PER_SHOT := 1
+const HIT_FLASH_COLOR := Color(0.3, 0.6, 1.0)   # blue, like the lightning
 
 var glow_material: StandardMaterial3D
 
@@ -41,7 +42,6 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 		return
 
 	Audio.play(data.sound)
-	muzzle.play("default")
 	play_muzzle_flash(true)
 	trigger_recoil()
 
@@ -62,7 +62,7 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 			if collider and collider.has_method("damage"):
 				# The hit can be a hurtbox or a shield; the chain starts from the enemy it belongs to
 				var chain_target = get_hit_enemy(collider)
-				flash_hit_enemy(collider, raycast.get_collision_point())
+				flash_hit_enemy(collider, raycast.get_collision_point(), 1.0, HIT_FLASH_COLOR)
 				damage_hit(collider, chain_damage, raycast.get_collision_point())
 
 				if chain_target:
@@ -81,7 +81,7 @@ func _chain_hit_effects(target: Node3D, from_position: Vector3) -> void:
 	direction.y = 0.0
 	direction = direction.normalized() if direction.length() > 0.01 else Vector3.FORWARD
 
-	flash_hit_enemy(target, chest)
+	flash_hit_enemy(target, chest, 1.0, HIT_FLASH_COLOR)
 	BloodParticles.spawn(get_tree(), chest, direction, 1.0, BloodParticles.thickness_for(target))
 	ElectricAura.apply(target)
 
@@ -176,4 +176,3 @@ func _spawn_lightning_arc(start: Vector3, end: Vector3):
 	var tween := create_tween()
 	tween.tween_property(mat, "shader_parameter/glow_strength", 0.0, 0.2)
 	tween.tween_callback(Callable(mesh_instance, "queue_free"))
-

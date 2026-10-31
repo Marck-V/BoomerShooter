@@ -94,8 +94,8 @@ func _process(delta: float) -> void:
 	tick_left -= delta
 	if tick_left <= 0.0:
 		tick_left += TICK_TIME
-		if enemy.has_method("damage"):
-			enemy.damage(damage_per_second * TICK_TIME)
+		if enemy.has_method("damage_silently"):
+			enemy.damage_silently(damage_per_second * TICK_TIME)
 	if time_left <= 0.0:
 		_extinguish()
 
