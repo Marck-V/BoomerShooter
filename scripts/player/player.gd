@@ -95,6 +95,9 @@ var tween:Tween
 
 signal health_updated
 signal weapon_changed
+signal key_collected(key: String)
+
+var keys := {}   # colours of the level keys the player holds; gone when the level reloads
 
 @onready var camera = $Head/Camera
 @onready var raycast = $Head/Camera/RayCast
@@ -214,6 +217,15 @@ func _physics_process(delta):
 
 	if position.y < kill_height:
 		get_tree().reload_current_scene()
+
+func add_key(key: String) -> void:
+	keys[key] = true
+	key_collected.emit(key)
+
+
+func has_key(key: String) -> bool:
+	return keys.has(key)
+
 
 # Turns the player to face a world yaw, including the target the view eases towards
 func set_facing(yaw: float) -> void:
@@ -381,7 +393,6 @@ func action_shoot():
 			return
 		blaster_cooldown.start(current_weapon.data.cooldown)
 		current_weapon.fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
-		current_weapon.trigger_recoil()
 
 func action_dash():
 	if grappling and Input.is_action_just_pressed("dash"):

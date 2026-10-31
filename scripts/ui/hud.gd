@@ -17,6 +17,7 @@ func _ready() -> void:
     interact_label.visible = false
     player.weapon_changed.connect(_on_weapon_changed)
     player.health_updated.connect(_on_health_updated)
+    player.key_collected.connect(_on_key_collected)
     GlobalVariables.ammo_changed.connect(on_ammo_changed)
     upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
     upgrade_station.get_node("Area3D").connect("body_exited", on_upgrade_station_body_exit)
@@ -29,6 +30,11 @@ func _ready() -> void:
 
 func on_points_changed(value : int):
     points_label.text = "Points: " + str(value)
+
+func _on_key_collected(key: String):
+    var icon := get_node_or_null("InGameHUD/KeysContainer/" + key.capitalize() + "Key") as CanvasItem
+    if icon:
+        icon.visible = true
 
 func _on_health_updated(health):
     health_label.text = str(health) + "%"
