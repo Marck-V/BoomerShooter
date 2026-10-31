@@ -54,7 +54,7 @@ static func _cast_splat(tree: SceneTree, from: Vector3, dir: Vector3, length: fl
 
 	var hit_position: Vector3 = hit["position"]
 	var delay := from.distance_to(hit_position) / BLOOD_SPEED
-	tree.create_timer(delay).timeout.connect(_place_decal.bind(tree, hit_position, hit["normal"], splat_size))
+	tree.create_timer(delay, false).timeout.connect(_place_decal.bind(tree, hit_position, hit["normal"], splat_size))
 
 
 static func _place_decal(tree: SceneTree, position: Vector3, normal: Vector3, splat_size: float) -> void:

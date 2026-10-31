@@ -175,8 +175,9 @@ func _on_body_entered(body):
 		return
 
 	if body.is_in_group("Player") and body.has_method("damage"):
-		audio_player.play("assets/audio/sfx/enemies/Enemy_ProjectileHit1.wav,
-						   assets/audio/sfx/enemies/Enemy_ProjectileHit2.wav")
+		# The shared player: this ball's own one is freed along with it before the sound could start
+		Audio.play("assets/audio/sfx/enemies/Enemy_ProjectileHit1.wav,
+				   assets/audio/sfx/enemies/Enemy_ProjectileHit2.wav")
 		body.damage(damage)
 	queue_free()
 

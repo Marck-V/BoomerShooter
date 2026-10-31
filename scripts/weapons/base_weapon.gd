@@ -13,6 +13,7 @@ var last_sound_3d_msec := 0
 
 @export var data: Weapon
 @export var rest_position := Vector3.ZERO
+var base_data: Weapon   # the stats from the .tres; data is this weapon's copy with its owned upgrades applied
 var recoil_offset := Vector3.ZERO
 var recoil_timer := 0.0
 var sway_time := 0.0
@@ -41,6 +42,31 @@ func _ready():
 	muzzle.position = muzzle_location.position
 	muzzle_base_scale = muzzle.scale
 	_setup_muzzle_flash()
+	base_data = data
+	_apply_stat_upgrades()
+	GlobalVariables.upgrade_purchased.connect(_on_upgrades_changed)
+	GlobalVariables.upgrades_reset.connect(_on_upgrades_changed)
+
+
+func _apply_stat_upgrades() -> void:
+	if base_data == null:
+		return
+	data = base_data.duplicate()
+	for upgrade_id in GlobalVariables.STAT_UPGRADES:
+		var upgrade: Dictionary = GlobalVariables.STAT_UPGRADES[upgrade_id]
+		if upgrade["weapon"] == data.weapon_id and GlobalVariables.has_upgrade(upgrade_id):
+			data.set(upgrade["property"], data.get(upgrade["property"]) + upgrade["amount"])
+
+
+func _on_upgrades_changed(_upgrade_id := "") -> void:
+	_apply_stat_upgrades()
+	_refresh_upgrades()
+
+
+# Weapons with behavior upgrades read which ones are owned here
+func _refresh_upgrades() -> void:
+	pass
+
 
 func _process(delta):
 	if recoil_timer > 0:

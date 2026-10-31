@@ -53,7 +53,7 @@ static func play(tree: SceneTree, position: Vector3) -> void:
 	tween.tween_property(material, "albedo_color:a", 0.0, 0.5)
 	tween.tween_property(column, "scale", Vector3(0.2, 1.0, 0.2), 0.5).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_property(light, "light_energy", 0.0, 0.45)
-	tree.create_timer(LIFETIME).timeout.connect(root.queue_free)
+	tree.create_timer(LIFETIME, false).timeout.connect(root.queue_free)
 
 
 # One-shot GPU particle burst whose particles leave a tapering trail (like the blood streaks, but blue and floaty)

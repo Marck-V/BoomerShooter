@@ -62,4 +62,22 @@ func play_at(position: Vector3, sound_paths: String) -> void:
 	var chosen := list[randi() % list.size()].strip_edges()
 	var path := "res://" + chosen
 
-	queue.append({"path": path, "pos": position})
+	if use_3d:
+		queue.append({"path": path, "pos": position})
+	else:
+		_play_one_shot_3d(path, position)
+
+
+# The 2D pool (the Audio autoload) can't place a sound in the world, so it gets a positional player of its own
+func _play_one_shot_3d(path: String, position: Vector3) -> void:
+	var player := AudioStreamPlayer3D.new()
+	player.stream = load(path)
+	player.bus = bus
+	player.volume_db = -10
+	player.pitch_scale = randf_range(0.9, 1.1)
+	player.unit_size = 6.0
+	player.max_distance = 60.0
+	player.finished.connect(player.queue_free)
+	add_child(player)
+	player.global_position = position
+	player.play()

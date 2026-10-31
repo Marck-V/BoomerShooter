@@ -67,15 +67,13 @@ func activate_quickness_boost():
 	GlobalVariables.quickness_active.emit()
 	quickness_active = true
 
-	# Directly modify the player's base movement speed
 	if GlobalVariables.player:
-		GlobalVariables.player.current_movement_speed *= quickness_boost_mult
+		GlobalVariables.player.speed_multiplier = quickness_boost_mult
 
-	print("Player speed increased to:", GlobalVariables.player.current_movement_speed)
-	var timer := get_tree().create_timer(quickness_duration)
+	var timer := get_tree().create_timer(quickness_duration, false)
 	timer.timeout.connect(func():
 		if GlobalVariables.player:
-			GlobalVariables.player.current_movement_speed /= quickness_boost_mult
+			GlobalVariables.player.speed_multiplier = 1.0
 		quickness_active = false
 		GlobalVariables.quickness_ended.emit()
 		print("Quickness boost ended.")

@@ -28,7 +28,7 @@ func _start(size: float) -> void:
 	_add_plume(26, 2.2, size)
 	# A few darker chunks of floor kicked up
 	_add_chunks(18, size)
-	get_tree().create_timer(LIFETIME).timeout.connect(queue_free)
+	get_tree().create_timer(LIFETIME, false).timeout.connect(queue_free)
 
 
 # Ring emission with an outward velocity: soft puffs that grow while they fade
