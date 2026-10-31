@@ -312,9 +312,9 @@ class DodgeState:
 # straight away.
 class DeadState:
 	const DEATH_ANIMATION := "Death01"
-	const DEATH_SPEED := 1.6
+	const DEATH_SPEED := 2.6
 	const TOUCHDOWN_TIME := 0.95       # seconds into Death01 when the body reaches the floor
-	const HIT_SPRAY_SCALE := 0.45      # blood at the moment of the kill
+	const HIT_SPRAY_SCALE := 1.0       # blood at the moment of the kill
 	const LANDING_BURST_SCALE := 1.4   # the big explosion when the body lands
 
 	var enemy

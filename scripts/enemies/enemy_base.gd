@@ -15,8 +15,10 @@ var shield: Node = null
 var original_materials: Array[Material] = []
 var shield_material: ShaderMaterial = preload("res://shaders/glass_shader.tres")
 const HIT_FLASH_SHADER: Shader = preload("res://shaders/hit_flash.gdshader")
-const HIT_FLASH_RADIUS := 0.35
-const HIT_FLASH_TIME := 0.12
+const HIT_FLASH_RADIUS := 0.55
+const HIT_FLASH_HOLD := 0.06     # seconds at full brightness, so it registers before it fades
+const HIT_FLASH_TIME := 0.18
+const HIT_FLASH_COLOR := Color(1.0, 0.95, 0.85)   # the shader's default: weapons with their own look pass another
 var hit_flash_material: ShaderMaterial
 var hit_flash_tween: Tween
 var hit_flash_points: Array[Vector3] = []
@@ -237,6 +239,8 @@ func is_in_attack_range() -> bool:
 # Damage & Death
 # ---------------------------
 func damage(amount: float, multiplier: float = 1.0):
+	if destroyed:
+		return
 	var dmg := amount * multiplier
 	var shielded := shield != null and is_instance_valid(shield)
 	if shield:
@@ -250,6 +254,20 @@ func damage(amount: float, multiplier: float = 1.0):
 	elif not shielded:
 		# The head and neck hurtboxes have a multiplier above 1
 		_play_hit_reaction(multiplier > 1.0)
+	_report_hit(multiplier > 1.0, shielded)
+
+
+# Damage over time (burning, the flamethrower's ticks): only a kill is reported, not every tick
+func damage_silently(amount: float) -> void:
+	silent_damage = true
+	damage(amount)
+	silent_damage = false
+
+
+# A shield answers hits with its own clang, so only a hit that reaches the body gets the marker
+func _report_hit(headshot: bool, shielded: bool) -> void:
+	if destroyed or not (shielded or silent_damage):
+		GlobalVariables.enemy_hit.emit(self, headshot, destroyed)
 
 
 # ---------------------------
@@ -258,6 +276,7 @@ func damage(amount: float, multiplier: float = 1.0):
 # A short flinch animation when the enemy is hurt: Hit_Head for head and neck hits, Hit_Chest for the rest.
 # It never cuts into an attack, dodge or stun, and has a cooldown so rapid fire doesn't hold the enemy in it.
 const HIT_REACTION_COOLDOWN := 0.45
+var silent_damage := false
 var hit_reaction_ready_msec := 0
 
 
@@ -329,7 +348,7 @@ func _end_flinch() -> void:
 	model_root.transform = model_rest
 
 
-func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0) -> void:
+func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0, color := HIT_FLASH_COLOR) -> void:
 	if hit_flash_material == null:
 		hit_flash_material = ShaderMaterial.new()
 		hit_flash_material.shader = HIT_FLASH_SHADER
@@ -358,12 +377,14 @@ func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0) -> vo
 	hit_flash_target.set_shader_parameter("hit_count", hit_flash_points.size())
 	hit_flash_target.set_shader_parameter("radius", HIT_FLASH_RADIUS * radius_scale / maxf(local_scale, 0.001))
 	hit_flash_target.set_shader_parameter("intensity", 1.0)
+	hit_flash_target.set_shader_parameter("flash_color", color)
 	if not shielded:
 		model.material_overlay = hit_flash_material
 
 	if hit_flash_tween:
 		hit_flash_tween.kill()
 	hit_flash_tween = create_tween()
+	hit_flash_tween.tween_interval(HIT_FLASH_HOLD)
 	hit_flash_tween.tween_method(_set_hit_flash_intensity, 1.0, 0.0, HIT_FLASH_TIME)
 	hit_flash_tween.tween_callback(_clear_hit_flash)
 
