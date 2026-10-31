@@ -10,6 +10,9 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var damage_window_start: float = 0.2
 @export var damage_window_end: float = 1.1
 @export var vision_range: float = 10.0
+# Once chasing it only gives up beyond this distance, so a route that detours out of its vision area (a ramp out of a
+# pit) doesn't leave it standing idle halfway
+@export var chase_leash: float = 40.0
 
 @export_group("Lunge")
 # While closing in from range the enemy sometimes crouches, dashes and punches. The fist glows yellow for
@@ -121,18 +124,28 @@ func _on_body_entered(body: Node3D):
 
 
 func _on_body_exited(body: Node3D):
-	if body == target and not _is_committed():
+	if body == target and not _is_committed() and not _within_leash():
 		change_state("Idle")
+
+
+func _physics_process(delta):
+	super(delta)
+	if state == states["Chase"] and not _within_leash():
+		change_state("Idle")
+
+
+func _within_leash() -> bool:
+	return is_instance_valid(target) and global_position.distance_to(target.global_position) <= chase_leash
 
 
 # These moves finish on their own whatever the vision area reports (cutting a jump short would leave it in mid-air)
 func _is_committed() -> bool:
-	return state == states.get("Jump") or state == states.get("Lunge") or state == states.get("Stunned")
+	return state in [states.get("Jump"), states.get("Lunge"), states.get("Stunned"), states.get("Dodge")]
 
 
 # Where a committed move goes when it ends: the player may have left its vision meanwhile
 func resume_after_move() -> void:
-	change_state("Chase" if sees_target() else "Idle")
+	change_state("Chase" if _within_leash() else "Idle")
 
 
 func is_in_attack_range() -> bool:

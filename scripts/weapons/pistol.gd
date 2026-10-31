@@ -32,16 +32,14 @@ func _ready() -> void:
 func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	var ammo_before = GlobalVariables.get_ammo("pistol")
 	super.fire(origin, _direction, camera, raycast)
-	var shot_fired = GlobalVariables.get_ammo("pistol") < ammo_before
+	# An empty click is only the sound: no recoil, camera kick or upgrades
+	if GlobalVariables.get_ammo("pistol") >= ammo_before:
+		return
 
 	_play_recoil()
 
-	if shot_fired and raycast.is_colliding() and get_hit_enemy(raycast.get_collider()):
+	if raycast.is_colliding() and get_hit_enemy(raycast.get_collider()):
 		_apply_camera_kick()
-
-	# Upgrades only trigger on shots that were actually fired (an empty click does nothing)
-	if not shot_fired:
-		return
 
 	if has_piercing:
 		_do_piercing_hits(camera, raycast)
