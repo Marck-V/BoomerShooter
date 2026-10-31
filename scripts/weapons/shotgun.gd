@@ -30,8 +30,6 @@ func _ready():
 	glow_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	glow_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	glow_material.albedo_color = Color(1.0, 0.1, 0.1, 0.6)
-	GlobalVariables.upgrade_purchased.connect(on_upgrade_purchased)
-	base_dmg = data.damage
 	_refresh_upgrades()
 
 
@@ -81,19 +79,12 @@ func _reset_rotation():
 
 
 func _refresh_upgrades() -> void:
+	base_dmg = data.damage
 	has_precision = GlobalVariables.has_upgrade(precision)
 	has_shield_break = GlobalVariables.has_upgrade(shield_break)
 	has_glitch_shot = GlobalVariables.has_upgrade(glitch_shot)
-	_update_glitch_glow()
-
-
-func on_upgrade_purchased(upgrade_id: String) -> void:
-	if upgrade_id == precision:
-		has_precision = true
-	if upgrade_id == shield_break:
-		has_shield_break = true
-	if upgrade_id == glitch_shot:
-		has_glitch_shot = true
+	if not has_glitch_shot:
+		shot_tracker = 0
 	_update_glitch_glow()
 
 

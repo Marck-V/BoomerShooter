@@ -27,7 +27,6 @@ var return_time := 0.01       # How long to return to normal
 
 func _ready() -> void:
 	super._ready()
-	GlobalVariables.upgrade_purchased.connect(on_upgrade_purchased)
 	_refresh_upgrades()
 
 func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
@@ -80,17 +79,6 @@ func _refresh_upgrades() -> void:
 	has_ammo_refund = GlobalVariables.has_upgrade(refund)
 	has_piercing = GlobalVariables.has_upgrade(piercing)
 	has_lifesteal = GlobalVariables.has_upgrade(lifesteal)
-	
-func on_upgrade_purchased(upgrade_id: String) -> void:
-	if upgrade_id == refund:
-		has_ammo_refund = true
-		print("Pistol Ammo Refund Active")    
-	elif upgrade_id == piercing:
-		has_piercing = true
-		print("Pistol Piercing Active")
-	elif upgrade_id == lifesteal:
-		has_lifesteal = true
-		print("Pistol Lifesteal Active")
 
 
 # Recoil Animation

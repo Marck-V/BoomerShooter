@@ -10,12 +10,21 @@ var sfx_volume: float = 0.2
 var fullscreen: bool = false
 
 const SETTINGS_PATH := "user://settings.cfg"
+
+# Upgrades that change a weapon stat. The weapon .tres files hold the base stats and are never written to: each
+# weapon adds these on top for the upgrades the save says are owned.
+const STAT_UPGRADES := {
+	"shotgun_precision": {"weapon": "shotgun", "property": "spread", "amount": -2.0},
+	"rifle_firerate": {"weapon": "rifle", "property": "cooldown", "amount": -0.05},
+}
+
 var _settings_save_timer: Timer
 
 signal points_changed(new_value: int)
 signal ammo_changed(weapon_id, new_value: int)
 signal health_changed(new_value: int)
 signal upgrade_purchased(upgrade_id: String)
+signal upgrades_reset
 signal quickness_active
 signal quickness_ended
 signal exit_upgrade_menu
@@ -121,6 +130,11 @@ func has_upgrade(id: String) -> bool:
 func purchase_upgrade(id: String):
 	save_data.upgrades[id] = true
 	upgrade_purchased.emit(id)
+	save_to_disk()
+
+func reset_upgrades():
+	save_data.upgrades.clear()
+	upgrades_reset.emit()
 	save_to_disk()
 
 func save_to_disk():
