@@ -1,7 +1,5 @@
 extends Node
 
-@onready var upgrade_station: Node3D = $"../UpgradeStation"
-@onready var player: CharacterBody3D = $"../Player"
 @onready var hud = $"../HUD"
 @onready var interact_box = $"../HUD/InGameHUD/InteractContainer"
 @onready var red_key_zone: Area3D = $"../KeyCheckAreas/RedKeyZone"
@@ -20,14 +18,8 @@ extends Node
 @onready var boss_door_area: Area3D = $"../BossDoors/BossDoorArea"
 var boss_door_area_occupied: bool = false
 
-var upgrade_station_camera
-var player_camera
-var upgrade_area_occupied: bool = false
 var has_red_key: bool = false
 var has_blue_key: bool = false
-
-var upgrade_scene: PackedScene = preload("res://scenes/ui/improved_upgrade_menu.tscn")
-var upgrade_menu_instance : Node = null
 
 var player_in_red_key_zone: bool = false
 var player_in_blue_key_zone: bool = false
@@ -36,9 +28,6 @@ var enemies_in_blue_zone: int = 0
 
 
 func _ready() -> void:
-	upgrade_station.get_node("Area3D").connect("body_entered", on_upgrade_station_body_entered)
-	upgrade_station.get_node("Area3D").connect("body_exited", on_upgrade_station_body_exited)
-
 	red_key.connect("body_entered", _on_red_key_body_entered)
 	red_key.connect("body_exited", _on_red_key_body_exited)
 
@@ -49,33 +38,12 @@ func _ready() -> void:
 	boss_door_area.connect("body_exited", _on_boss_door_area_body_exited)
 
 	enter_boss_area.connect("body_entered", _on_enter_boss_area_body_entered)
-	upgrade_station_camera = upgrade_station.get_node("Camera3D")
-	player_camera = player.get_node("Head/Camera")
 
 
 func _process(_delta):
 	# Keep enemy count updated
 	enemies_in_red_zone = get_enemy_count(red_key_zone)
 	enemies_in_blue_zone = get_enemy_count(blue_key_zone)
-
-	# Upgrade Station Interaction
-	if Input.is_action_just_pressed("interact") and upgrade_area_occupied:
-		# The menu frees itself when closed (Escape / Close button), so check validity, not just null
-		if not is_instance_valid(upgrade_menu_instance):
-			upgrade_menu_instance = upgrade_scene.instantiate()
-			hud.visible = false
-			get_tree().paused = true
-			get_parent().add_child(upgrade_menu_instance)
-		else:
-			print("Upgrade menu has already been added to the scene!")
-
-	if Input.is_action_just_pressed("back") and upgrade_area_occupied:
-		hud.visible = true
-		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-		get_tree().paused = false
-		if is_instance_valid(upgrade_menu_instance):
-			upgrade_menu_instance.queue_free()
-		upgrade_menu_instance = null
 
 	# --- Red key pickup ---
 	if Input.is_action_just_pressed("interact") and player_in_red_key_zone and not has_red_key:
@@ -194,15 +162,6 @@ func get_enemy_count(zone: Area3D) -> int:
 	#print("Enemies in  %s:" % zone.name, count)
 	return count
 
-
-func on_upgrade_station_body_entered(body):
-	if body.is_in_group("Player"):
-		upgrade_area_occupied = true
-
-
-func on_upgrade_station_body_exited(body):
-	if body.is_in_group("Player"):
-		upgrade_area_occupied = false
 
 func _on_enter_boss_area_body_entered(body) -> void:
 	if body.is_in_group("Player"):

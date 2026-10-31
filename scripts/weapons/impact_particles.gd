@@ -28,7 +28,7 @@ func _start(point: Vector3, normal: Vector3, amount_scale: float) -> void:
 
 	_add_sparks(maxi(int(SPARK_COUNT * amount_scale), 3))
 	_add_smoke(maxi(int(SMOKE_COUNT * amount_scale), 2))
-	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
+	get_tree().create_timer(CLEANUP_TIME, false).timeout.connect(queue_free)
 
 
 func _add_sparks(count: int) -> void:

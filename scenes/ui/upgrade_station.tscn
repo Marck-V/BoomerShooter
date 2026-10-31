@@ -1,6 +1,7 @@
 [gd_scene load_steps=5 format=3 uid="uid://qrpq15dcfyie"]
 
 [ext_resource type="PackedScene" uid="uid://ca7yoq3ekxj1g" path="res://models/Computer_Retro.glb" id="1_a7e7t"]
+[ext_resource type="Script" path="res://scripts/ui/upgrade_station.gd" id="2_station"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_a7e7t"]
 size = Vector3(1.54688, 3.42847, 4.5061)
@@ -12,6 +13,7 @@ size = Vector3(1.01019, 1.36182, 1.76404)
 size = Vector2(0.3, 0.265)
 
 [node name="UpgradeStation" type="Node3D"]
+script = ExtResource("2_station")
 
 [node name="Computer_Retro" parent="." instance=ExtResource("1_a7e7t")]
 transform = Transform3D(0.4, 0, 0, 0, 0.4, 0, 0, 0, 0.4, 0, 0, 0)

@@ -83,3 +83,4 @@ func _on_quickness_ended():
 
 func _on_exit_upgrade_menu():
     visible = true
+    update_weapon_stats_display()

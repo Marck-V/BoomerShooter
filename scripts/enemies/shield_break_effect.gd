@@ -31,7 +31,7 @@ func _start() -> void:
 	_add_pop()
 	_add_sparks()
 	_add_shards()
-	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
+	get_tree().create_timer(CLEANUP_TIME, false).timeout.connect(queue_free)
 
 
 func _add_pop() -> void:

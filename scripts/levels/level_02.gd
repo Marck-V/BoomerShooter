@@ -50,7 +50,7 @@ func _move_player_to_start() -> void:
 	if start == null:
 		return
 	player.global_position = start.global_position + Vector3(0, 0.1, 0)
-	player.global_rotation.y = start.global_rotation.y
+	player.set_facing(start.global_rotation.y)
 
 
 func _find_entity(classname: String) -> Node3D:

@@ -104,9 +104,6 @@ offset_bottom = 80.0
 text = "Precision"
 upgrade_id = "shotgun_precision"
 description = "Tightens the shotgun pellet spread from 5 to 3 degrees."
-is_stat_upgrade = true
-property_name = "spread"
-amount = -2.0
 
 [node name="ShotgunButton2" parent="Panel/TabContainer/Shotgun/ShotgunButton1" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
@@ -139,9 +136,6 @@ offset_bottom = 80.0
 text = "Rate of Fire"
 upgrade_id = "rifle_firerate"
 description = "Shortens the delay between rifle shots from 0.20s to 0.15s."
-is_stat_upgrade = true
-property_name = "cooldown"
-amount = -0.05
 
 [node name="RifleButton2" parent="Panel/TabContainer/Rifle/RifleButton1" instance=ExtResource("2_0fsr2")]
 layout_mode = 0

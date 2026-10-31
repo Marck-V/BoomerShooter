@@ -100,7 +100,7 @@ func _run_chain(first_enemy: Node3D) -> void:
 		_chain_hit_effects(next_enemy, from_position)
 		# Remembered now: the enemy may die and be freed before the next jump
 		from_position = next_enemy.global_position
-		await get_tree().create_timer(CHAIN_HOP_DELAY).timeout
+		await get_tree().create_timer(CHAIN_HOP_DELAY, false).timeout
 
 
 # The nearest living enemy within chain_radius of a point that has not been hit by this chain yet.

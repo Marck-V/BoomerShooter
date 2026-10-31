@@ -67,7 +67,7 @@ func _spawn_enemies() -> void:
 		parents[enemy].add_child(enemy)
 		SpawnEffect.play(get_tree(), (enemy as Node3D).global_position)
 		if spawn_interval > 0.0:
-			await get_tree().create_timer(spawn_interval).timeout
+			await get_tree().create_timer(spawn_interval, false).timeout
 	if remaining.is_empty():
 		_wave_cleared()
 

@@ -109,7 +109,7 @@ func _extinguish() -> void:
 	embers.emitting = false
 	light.visible = false
 	# Stay in the tree briefly so remaining sparks finish; re-igniting cancels the cleanup
-	get_tree().create_timer(1.0).timeout.connect(_finish_extinguish)
+	get_tree().create_timer(1.0, false).timeout.connect(_finish_extinguish)
 
 
 func _finish_extinguish() -> void:
