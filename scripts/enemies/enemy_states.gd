@@ -358,7 +358,7 @@ class DeadState:
 		_death_sound()
 		enemy.anim.speed_scale = DEATH_SPEED
 		enemy.anim.play(DEATH_ANIMATION)
-		await enemy.get_tree().create_timer(TOUCHDOWN_TIME / DEATH_SPEED).timeout
+		await enemy.get_tree().create_timer(TOUCHDOWN_TIME / DEATH_SPEED, false).timeout
 		if not is_instance_valid(enemy) or not enemy.is_inside_tree():
 			return
 		# The body hits the floor and bursts

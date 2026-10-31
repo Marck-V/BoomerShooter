@@ -1270,5 +1270,5 @@ class DeadState extends BossState:
 		var length := enemy.unit()
 		for offset in [Vector3.ZERO, Vector3(1, 0, 0.6), Vector3(-1, 0, -0.6)]:
 			BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), enemy.global_position + offset * length * 0.5 + Vector3.UP * 0.4 * length, 1.4, enemy.blood_scale)
-		await enemy.get_tree().create_timer(1.2).timeout
+		await enemy.get_tree().create_timer(1.2, false).timeout
 		GameManager.win()

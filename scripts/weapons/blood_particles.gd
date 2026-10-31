@@ -56,7 +56,7 @@ func _start_burst(point: Vector3, amount_scale: float, thickness: float) -> void
 	_add_streaks(maxi(int(BURST_STREAK_COUNT * amount_scale * sqrt(thickness)), 8), 180.0, 3.0, 8.5, 0.7, thickness)
 	_add_mist(maxi(int(BURST_MIST_COUNT * amount_scale * sqrt(thickness)), 3), 180.0, thickness)
 	BloodDecals.burst(get_tree(), point, amount_scale, thickness)
-	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
+	get_tree().create_timer(CLEANUP_TIME, false).timeout.connect(queue_free)
 
 
 func _start(point: Vector3, direction: Vector3, amount_scale: float, thickness: float) -> void:
@@ -75,7 +75,7 @@ func _start(point: Vector3, direction: Vector3, amount_scale: float, thickness: 
 
 	_add_mist(maxi(int(MIST_COUNT * amount_scale * sqrt(thickness)), 2), 30.0, thickness)
 	BloodDecals.splatter(get_tree(), point, dir, amount_scale, thickness)
-	get_tree().create_timer(CLEANUP_TIME).timeout.connect(queue_free)
+	get_tree().create_timer(CLEANUP_TIME, false).timeout.connect(queue_free)
 
 
 func _basis_facing(up: Vector3) -> Basis:

@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="Weapon" format=3]
+[gd_resource type="Resource" script_class="Weapon" format=3 uid="uid://b5vm3ii86jbb1"]
 
 [ext_resource type="Script" path="res://resources/weapon.gd" id="1_1vsk4"]
 [ext_resource type="Texture2D" path="res://assets/images/white_crosshairs/crosshair002.png" id="1_uny8x"]
