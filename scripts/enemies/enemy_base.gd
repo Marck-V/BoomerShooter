@@ -234,6 +234,20 @@ func can_attack() -> bool:
 func is_in_attack_range() -> bool:
 	return false  # default, overridden by specific enemies
 
+# Whether it may begin an attack now that it is in range. Enemies that take turns override this.
+func can_start_attack() -> bool:
+	return true
+
+# Where the chase state paths to, how fast and whether it looks at the target on the way
+func chase_destination() -> Vector3:
+	return target.global_position
+
+func chase_speed() -> float:
+	return movement_speed
+
+func chase_faces_target() -> bool:
+	return false
+
 
 # ---------------------------
 # Damage & Death
