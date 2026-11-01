@@ -178,6 +178,7 @@ func play_sound_3d(sound_path: String, position: Vector3, volume_db := -4.0) -> 
 	player.pitch_scale = randf_range(0.92, 1.08)
 	player.max_distance = 40.0
 	player.unit_size = 6.0
+	player.attenuation_filter_db = 0.0
 	player.finished.connect(player.queue_free)
 	get_tree().root.add_child(player)
 	player.global_position = position

@@ -14,6 +14,7 @@ func _ready() -> void:
 
 		if use_3d:
 			p = AudioStreamPlayer3D.new()
+			p.attenuation_filter_db = 0.0   # far sounds fade but keep their highs: the default filter muffles them
 		else:
 			p = AudioStreamPlayer.new()
 
@@ -77,6 +78,7 @@ func _play_one_shot_3d(path: String, position: Vector3) -> void:
 	player.pitch_scale = randf_range(0.9, 1.1)
 	player.unit_size = 6.0
 	player.max_distance = 60.0
+	player.attenuation_filter_db = 0.0
 	player.finished.connect(player.queue_free)
 	add_child(player)
 	player.global_position = position

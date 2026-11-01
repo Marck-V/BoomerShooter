@@ -768,6 +768,7 @@ func _clang(position_in_world: Vector3, pitch: float, stream: AudioStream = null
 	player.pitch_scale = pitch * randf_range(0.96, 1.04)
 	player.max_distance = 40.0
 	player.unit_size = 6.0
+	player.attenuation_filter_db = 0.0
 	player.finished.connect(player.queue_free)
 	get_tree().root.add_child(player)
 	player.global_position = position_in_world
