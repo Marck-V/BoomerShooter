@@ -510,7 +510,9 @@ func damage(amount: float, multiplier: float = 1.0) -> void:
 	if shield != null and is_instance_valid(shield):
 		dealt = shield.absorb_damage(amount)
 	dealt *= vulnerability
+	var shielded := shield != null and is_instance_valid(shield)
 	_lose_health(dealt)
+	_report_hit(multiplier > 1.0, shielded)
 
 
 func _lose_health(amount: float) -> void:

@@ -16,10 +16,6 @@ var lifesteal_orb_scene = preload("res://scenes/weapons/lifesteal_orb.tscn")
 var max_pierces = 3
 var max_distance = 300.0
 
-# --- Shot Feel ---
-var kick_pitch := 0.02          # Camera kick upward (radians, ~1.1 degrees)
-var kick_yaw := 0.006           # Max random sideways kick (radians)
-
 # --- Recoil Animation Parameters ---
 var recoil_angle := -45.0     # How far up the pistol tilts
 var recoil_time := 0.1        # How long the kick lasts
@@ -32,16 +28,11 @@ func _ready() -> void:
 func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
 	var ammo_before = GlobalVariables.get_ammo("pistol")
 	super.fire(origin, _direction, camera, raycast)
-	var shot_fired = GlobalVariables.get_ammo("pistol") < ammo_before
+	# An empty click is only the sound: no recoil or upgrades
+	if GlobalVariables.get_ammo("pistol") >= ammo_before:
+		return
 
 	_play_recoil()
-
-	if shot_fired and raycast.is_colliding() and get_hit_enemy(raycast.get_collider()):
-		_apply_camera_kick()
-
-	# Upgrades only trigger on shots that were actually fired (an empty click does nothing)
-	if not shot_fired:
-		return
 
 	if has_piercing:
 		_do_piercing_hits(camera, raycast)
@@ -53,12 +44,6 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 	
 	if has_lifesteal and randf() < 0.20:
 		_spawn_lifesteal_orb(raycast)
-
-func _apply_camera_kick() -> void:
-	var player = GlobalVariables.player
-	if player and is_instance_valid(player):
-		player.apply_camera_kick(kick_pitch, randf_range(-kick_yaw, kick_yaw))
-
 
 func _spawn_lifesteal_orb(raycast: RayCast3D) -> void:
 	if not raycast.is_colliding():
@@ -90,12 +75,8 @@ func _play_recoil():
 
 	t.tween_property(self, "rotation_degrees:x", recoil_angle, recoil_time) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	t.tween_property(self, "recoil_offset:z", recoil_offset.z - 0.02, recoil_time * 0.6) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 	t.tween_property(self, "rotation_degrees:x", 0.0, return_time) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	t.tween_property(self, "recoil_offset:z", 0.0, return_time) \
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 
 

@@ -30,6 +30,7 @@ signal quickness_ended
 signal exit_upgrade_menu
 
 signal enemy_died(enemy: Node3D)
+signal enemy_hit(enemy: Node3D, headshot: bool, killed: bool)   # damage the player should feel: drives the hit marker
 
 
 func _init():

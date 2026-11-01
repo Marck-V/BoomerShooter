@@ -10,6 +10,9 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var damage_window_start: float = 0.2
 @export var damage_window_end: float = 1.1
 @export var vision_range: float = 10.0
+# Once chasing it only gives up beyond this distance, so a route that detours out of its vision area (a ramp out of a
+# pit) doesn't leave it standing idle halfway
+@export var chase_leash: float = 40.0
 
 @export_group("Lunge")
 # While closing in from range the enemy sometimes crouches, dashes and punches. The fist glows yellow for
@@ -30,6 +33,15 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var lunge_windup_animation := "Crouch_Idle"
 @export var parry_stun_time := 1.6
 @export var parry_stun_damage_multiplier := 1.5
+
+@export_group("Crowd")
+# Melee enemies take turns: a few hold an attack slot and go for the player, while the rest fan out on their own
+# angle and circle at a distance until a slot is free.
+@export var ring_radius_min := 4.5
+@export var ring_radius_max := 8.0
+@export var engage_distance := 9.0          # a free slot is only claimed this close
+@export var circle_speed_scale := 0.35      # share of its speed while circling
+@export var circle_turn_speed := 0.35       # radians per second around the player
 
 @export_group("Gap jump")
 # Where the level has a NavigationLink3D across a small gap, the enemy jumps it: Jump_Start sped up across the
@@ -60,11 +72,26 @@ const COMBO := [
 ]
 
 const MAX_SIMULTANEOUS_LUNGES := 2
+const MAX_ATTACKERS := 3
+const FLANK_SPREAD := deg_to_rad(110.0)     # furthest off the direct line it fans out
+const FLANK_MAX_HEIGHT_GAP := 1.5           # above this the player is on another level: take the direct route
+const FLANK_WALL_MARGIN := 1.0
+const SLOT_HOLD_TIME := 4.0                 # gives up a slot it has not used in this long
+const RUN_ANIMATION := "Sprint"
+const CIRCLE_ANIMATION := "Walk"
+
+static var attack_slot_holders: Array = []
 const AURA_SHADER: Shader = preload("res://shaders/parry_aura.gdshader")
 const AURA_COLOR := Color(1.0, 0.75, 0.15)
 const GLOW_LIGHT_COLOR := Color(1.0, 0.8, 0.2)
 
 var hit_done := false
+var holds_attack_slot := false
+var slot_held_time := 0.0
+var flank_assigned := false
+var flank_angle := 0.0
+var flank_radius := 0.0
+var circle_direction := 1.0
 var hit_damage_scale := 1.0                 # share of damage_to_player the current hit deals
 var left_hitbox: Area3D
 var attack_token := 0                       # bumped when an attack is cancelled, so a running attack stops
@@ -121,18 +148,120 @@ func _on_body_entered(body: Node3D):
 
 
 func _on_body_exited(body: Node3D):
-	if body == target and not _is_committed():
+	if body == target and not _is_committed() and not _within_leash():
 		change_state("Idle")
+
+
+func _physics_process(delta):
+	super(delta)
+	if state == states["Chase"] and not _within_leash():
+		change_state("Idle")
+	_update_attack_turn(delta)
+
+
+func _exit_tree() -> void:
+	release_attack_slot()
+	attack_token += 1   # a level restart can take it out of the tree mid punch: the running attack must stop
+
+
+func can_start_attack() -> bool:
+	return can_attack() and _claim_attack_slot()
+
+
+func _claim_attack_slot() -> bool:
+	if holds_attack_slot:
+		return true
+	attack_slot_holders = attack_slot_holders.filter(func(holder): return is_instance_valid(holder) and not holder.destroyed)
+	if attack_slot_holders.size() >= MAX_ATTACKERS:
+		return false
+	attack_slot_holders.append(self)
+	holds_attack_slot = true
+	slot_held_time = 0.0
+	return true
+
+
+func release_attack_slot() -> void:
+	if holds_attack_slot:
+		attack_slot_holders.erase(self)
+		holds_attack_slot = false
+
+
+func _update_attack_turn(delta: float) -> void:
+	if destroyed or not is_instance_valid(target):
+		return
+	if holds_attack_slot and not is_attacking and state != states.get("Lunge"):
+		slot_held_time += delta
+		if slot_held_time > SLOT_HOLD_TIME:
+			release_attack_slot()
+			attack_timer.start(attack_cooldown)   # lets another enemy have a turn
+	if state != states["Chase"]:
+		return
+	if not holds_attack_slot and can_attack() and global_position.distance_to(target.global_position) <= engage_distance:
+		_claim_attack_slot()
+	if _is_circling():
+		flank_angle += circle_direction * circle_turn_speed * delta
+	_update_chase_animation()
+
+
+func _is_circling() -> bool:
+	return state == states["Chase"] and not holds_attack_slot and flank_assigned \
+			and global_position.distance_to(target.global_position) <= flank_radius + 1.5
+
+
+# Walks while circling and runs otherwise. A hit reaction playing is left to finish.
+func _update_chase_animation() -> void:
+	var wanted := CIRCLE_ANIMATION if _is_circling() else RUN_ANIMATION
+	var current := anim.current_animation
+	if current != wanted and (current == RUN_ANIMATION or current == CIRCLE_ANIMATION) and anim.has_animation(wanted):
+		anim.play(wanted, 0.2)
+
+
+func _assign_flank() -> void:
+	flank_assigned = true
+	var from_target := global_position - target.global_position
+	flank_angle = atan2(from_target.x, from_target.z) + randf_range(-FLANK_SPREAD, FLANK_SPREAD)
+	flank_radius = randf_range(ring_radius_min, ring_radius_max)
+	circle_direction = 1.0 if randf() < 0.5 else -1.0
+
+
+func chase_destination() -> Vector3:
+	var goal := target.global_position
+	if holds_attack_slot:
+		return goal
+	if not flank_assigned:
+		_assign_flank()
+	if absf(goal.y - global_position.y) > FLANK_MAX_HEIGHT_GAP:
+		return goal
+	var point := goal + Vector3(sin(flank_angle), 0.0, cos(flank_angle)) * flank_radius
+	# A spot behind a wall could be anywhere on the far side: stay on the player's side of it
+	var query := PhysicsRayQueryParameters3D.create(goal + Vector3.UP, point + Vector3.UP, PhysicsLayers.ENVIRONMENT)
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		var wall: Vector3 = hit["position"]
+		return Vector3(wall.x, goal.y, wall.z) - (point - goal).normalized() * FLANK_WALL_MARGIN
+	return point
+
+
+func chase_speed() -> float:
+	return movement_speed * (circle_speed_scale if _is_circling() else 1.0)
+
+
+func chase_faces_target() -> bool:
+	return _is_circling()
+
+
+func _within_leash() -> bool:
+	return is_instance_valid(target) and global_position.distance_to(target.global_position) <= chase_leash
 
 
 # These moves finish on their own whatever the vision area reports (cutting a jump short would leave it in mid-air)
 func _is_committed() -> bool:
-	return state == states.get("Jump") or state == states.get("Lunge") or state == states.get("Stunned")
+	return state in [states.get("Jump"), states.get("Lunge"), states.get("Stunned"), states.get("Dodge")]
 
 
 # Where a committed move goes when it ends: the player may have left its vision meanwhile
 func resume_after_move() -> void:
-	change_state("Chase" if sees_target() else "Idle")
+	change_state("Chase" if _within_leash() else "Idle")
 
 
 func is_in_attack_range() -> bool:
@@ -192,6 +321,7 @@ func _perform_heavy_attack() -> void:
 
 	# Allow future attacks
 	is_attacking = false
+	release_attack_slot()
 
 
 # Waits for the given time and says whether the attack carries on: false once it was cancelled (parry, death).
@@ -307,6 +437,7 @@ func _perform_combo() -> void:
 	velocity = Vector3.ZERO
 	attack_timer.start(attack_cooldown)
 	is_attacking = false
+	release_attack_slot()
 
 
 func _combo_step_in() -> void:
@@ -359,7 +490,7 @@ func should_lunge() -> bool:
 	for other in get_tree().get_nodes_in_group("Enemy"):
 		if other != self and other.get("lunging") == true:
 			active += 1
-	return active < MAX_SIMULTANEOUS_LUNGES
+	return active < MAX_SIMULTANEOUS_LUNGES and _claim_attack_slot()
 
 
 # True when the agent's current path actually gets to the target without a long detour (a jump link counts)
@@ -387,6 +518,18 @@ func face_target(delta: float, speed_multiplier := 2.0) -> void:
 	global_transform.basis = global_transform.basis.slerp(target_basis, clampf(delta * rotation_speed * speed_multiplier, 0.0, 1.0))
 
 
+func _on_shoved() -> void:
+	attack_token += 1
+	parryable = false
+	is_attacking = false
+	attack_hitbox.set_deferred("monitoring", false)
+	if left_hitbox:
+		left_hitbox.set_deferred("monitoring", false)
+	release_attack_slot()
+	if state == states.get("Lunge") or state == states.get("Attack"):
+		change_state("Chase")
+
+
 # Called by the player's shield when a parry catches the punch: cancels the attack and stuns the enemy
 func on_parried() -> void:
 	attack_token += 1
@@ -395,6 +538,7 @@ func on_parried() -> void:
 	attack_hitbox.set_deferred("monitoring", false)
 	is_attacking = false
 	attack_timer.start(attack_cooldown)
+	release_attack_slot()
 	change_state("Stunned")
 
 
@@ -665,6 +809,8 @@ class LungeState:
 		enemy.lunging = false
 		enemy.parryable = false
 		enemy.set_parry_glow(false)
+		if not enemy.is_attacking:
+			enemy.release_attack_slot()
 		enemy.anim.speed_scale = 1.0
 		enemy.velocity = Vector3.ZERO
 		enemy._roll_lunge_cooldown()

@@ -15,7 +15,10 @@ var last_sound_3d_msec := 0
 @export var rest_position := Vector3.ZERO
 var base_data: Weapon   # the stats from the .tres; data is this weapon's copy with its owned upgrades applied
 var recoil_offset := Vector3.ZERO
-var recoil_timer := 0.0
+const RECOIL_DISTANCE := 0.016     # meters the gun jumps back toward the player, per point of recoil_strength
+const RECOIL_LIFT := 0.3           # share of that distance it also rises
+const RECOIL_RETURN_SPEED := 14.0
+const CAMERA_KICK_YAW := 0.3       # share of the camera kick that can go sideways
 var sway_time := 0.0
 var walk_bob_speed := 7.0         # Slightly slower bobbing, less "jumpy"
 var walk_bob_amount := 0.005      # Subtle vertical motion
@@ -27,7 +30,6 @@ var bob_offset := Vector3.ZERO
 var muzzle_flash_time := 0.1
 var muzzle_flash_size := 0.07    # Glow quad size in meters
 var muzzle_light_energy := 10.0
-var muzzle_base_scale := Vector3.ONE
 var muzzle_light: OmniLight3D
 var muzzle_flash_mesh: MeshInstance3D
 var muzzle_flash_material: StandardMaterial3D
@@ -39,8 +41,7 @@ var muzzle_flash_tween: Tween
 func _ready():
 	GlobalVariables.refill_all_ammo()
 	rest_position = position
-	muzzle.position = muzzle_location.position
-	muzzle_base_scale = muzzle.scale
+	muzzle.visible = false   # the flat 2D burst: the muzzle flash is only the soft glow and light
 	_setup_muzzle_flash()
 	base_data = data
 	_apply_stat_upgrades()
@@ -69,11 +70,7 @@ func _refresh_upgrades() -> void:
 
 
 func _process(delta):
-	if recoil_timer > 0:
-		recoil_timer -= delta
-		recoil_offset = recoil_offset.lerp(Vector3.ZERO, delta)
-	else:
-		recoil_offset = Vector3.ZERO
+	recoil_offset = recoil_offset.lerp(Vector3.ZERO, 1.0 - exp(-delta * RECOIL_RETURN_SPEED))
 
 	if is_moving:
 		sway_time += delta * walk_bob_speed
@@ -86,10 +83,17 @@ func _process(delta):
 	position = rest_position + recoil_offset + bob_offset
 
 
+# The gun jumps back toward the player (+Z in the weapon holder) and the camera kicks up
 func trigger_recoil():
-	recoil_offset.z = -0.01 * data.recoil_strength # You can export this as a weapon stat if you want more control
-	recoil_timer = 0.1
-	
+	var distance := RECOIL_DISTANCE * data.recoil_strength
+	recoil_offset = Vector3(0.0, distance * RECOIL_LIFT, distance)
+	var player = GlobalVariables.player
+	if player and is_instance_valid(player):
+		player.apply_camera_kick(data.camera_kick, randf_range(-data.camera_kick, data.camera_kick) * CAMERA_KICK_YAW)
+		if data.camera_shake > 0.0:
+			player.add_camera_shake(data.camera_shake)
+
+
 func get_shield_multiplier() -> float:
 	return 1.0
 
@@ -115,7 +119,6 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 		return
 		
 	Audio.play(data.sound)
-	muzzle.play("default")
 	play_muzzle_flash()
 	trigger_recoil()
 
@@ -175,6 +178,7 @@ func play_sound_3d(sound_path: String, position: Vector3, volume_db := -4.0) -> 
 	player.pitch_scale = randf_range(0.92, 1.08)
 	player.max_distance = 40.0
 	player.unit_size = 6.0
+	player.attenuation_filter_db = 0.0
 	player.finished.connect(player.queue_free)
 	get_tree().root.add_child(player)
 	player.global_position = position
@@ -189,13 +193,13 @@ func get_hit_enemy(collider: Object):
 	return collider.get("owner_enemy")
 
 
-func flash_hit_enemy(collider: Object, point: Vector3, strength := 1.0) -> void:
+func flash_hit_enemy(collider: Object, point: Vector3, strength := 1.0, color := EnemyBase.HIT_FLASH_COLOR) -> void:
 	var enemy = get_hit_enemy(collider)
 	if enemy and enemy.has_method("hit_flash"):
 		# Headshots (hurtbox multiplier above 1) jolt the enemy harder
 		if "multiplier" in collider and collider.multiplier > 1.0:
 			strength *= 1.5
-		enemy.hit_flash(point, strength)
+		enemy.hit_flash(point, strength, 1.0, color)
 
 
 func _setup_muzzle_flash() -> void:
@@ -253,8 +257,6 @@ func play_muzzle_flash(blue := false) -> void:
 		muzzle_flash_mesh.position = flash_position
 		muzzle_light.position = flash_position
 
-	muzzle.modulate = Color(0.2, 1.0, 6.0) if blue else Color(3.0, 2.4, 1.4)
-	muzzle.scale = muzzle_base_scale * 1.3
 	muzzle_light.light_color = Color(0.3, 0.6, 1.0) if blue else Color(1.0, 0.75, 0.35)
 	muzzle_light.light_energy = muzzle_light_energy
 	muzzle_light.visible = true

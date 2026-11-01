@@ -308,7 +308,6 @@ wait_time = 4.0
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 path_height_offset = 0.5
-debug_enabled = true
 
 [node name="HitRaycast" type="RayCast3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1.42393, 0, 0.358517, 0)
@@ -326,6 +325,7 @@ offset = Vector2(200, 300)
 billboard = 1
 
 [node name="Footsteps" type="AudioStreamPlayer3D" parent="."]
+attenuation_filter_db = 0.0
 stream = ExtResource("4_4ckck")
 bus = &"SFX"
 

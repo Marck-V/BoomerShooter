@@ -8,6 +8,7 @@ const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 const ShieldModel = preload("res://scripts/player/shield_model.gd")
 const ShieldTrail = preload("res://scripts/player/shield_trail.gd")
 const CLANG_SOUND := "res://assets/sounds/bullet_hit_metal.mp3"
+const PARRY_SOUND: AudioStream = preload("res://assets/sounds/metal_axe_hit.mp3")
 const THROW_SOUND := "assets/sounds/simple_whoosh.mp3"
 
 enum State { READY, PARRY, RECOVER, THROWN, BLOCK }
@@ -95,7 +96,6 @@ const PARRY_KICK_PITCH := 0.07
 static var _ring_texture: GradientTexture2D
 
 var base_fov := 90.0
-var hit_stop_active := false
 var edge_material: ShaderMaterial
 var edge_tween: Tween
 var fov_tween: Tween
@@ -326,7 +326,7 @@ func _parry_melee(enemy: Node3D) -> void:
 
 # Shared by every successful parry: clang, sparks, shove-back, camera kick, hit-stop and the rest of the juice
 func _parry_feedback(point: Vector3) -> void:
-	_clang(point, 1.5)
+	_clang(point, 1.0, PARRY_SOUND)
 	_pop(point, PARRY_YELLOW, 1.4)
 	hand_velocity += Vector3(0.0, 0.0, PARRY_RECOIL)
 	hand.rotation_degrees.z = 9.0
@@ -352,21 +352,10 @@ func _exit_tree() -> void:
 
 
 func _parry_impact_effects(point: Vector3) -> void:
-	_hit_stop()
+	GameManager.hit_stop(HIT_STOP_TIME, HIT_STOP_SCALE)
 	_fov_punch()
 	_edge_flash()
 	_shockwave_ring(point)
-
-
-func _hit_stop() -> void:
-	if hit_stop_active:
-		return
-	hit_stop_active = true
-	Engine.time_scale = HIT_STOP_SCALE
-	# Timer ignores time scale, so the freeze lasts HIT_STOP_TIME in real time
-	await get_tree().create_timer(HIT_STOP_TIME, true, false, true).timeout
-	Engine.time_scale = 1.0
-	hit_stop_active = false
 
 
 func _fov_punch() -> void:
@@ -769,16 +758,17 @@ func _make_disc(face_forward: bool) -> Node3D:
 	return root
 
 
-func _clang(position_in_world: Vector3, pitch: float) -> void:
+func _clang(position_in_world: Vector3, pitch: float, stream: AudioStream = null) -> void:
 	if _clang_stream == null:
 		_clang_stream = load(CLANG_SOUND)
 	var player := AudioStreamPlayer3D.new()
-	player.stream = _clang_stream
+	player.stream = stream if stream else _clang_stream
 	player.bus = "SFX"
 	player.volume_db = -2.0
 	player.pitch_scale = pitch * randf_range(0.96, 1.04)
 	player.max_distance = 40.0
 	player.unit_size = 6.0
+	player.attenuation_filter_db = 0.0
 	player.finished.connect(player.queue_free)
 	get_tree().root.add_child(player)
 	player.global_position = position_in_world
