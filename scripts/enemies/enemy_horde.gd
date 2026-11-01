@@ -161,6 +161,7 @@ func _physics_process(delta):
 
 func _exit_tree() -> void:
 	release_attack_slot()
+	attack_token += 1   # a level restart can take it out of the tree mid punch: the running attack must stop
 
 
 func can_start_attack() -> bool:
@@ -515,6 +516,18 @@ func face_target(delta: float, speed_multiplier := 2.0) -> void:
 		return
 	var target_basis := Basis.looking_at(to_target.normalized(), Vector3.UP).rotated(Vector3.UP, deg_to_rad(180))
 	global_transform.basis = global_transform.basis.slerp(target_basis, clampf(delta * rotation_speed * speed_multiplier, 0.0, 1.0))
+
+
+func _on_shoved() -> void:
+	attack_token += 1
+	parryable = false
+	is_attacking = false
+	attack_hitbox.set_deferred("monitoring", false)
+	if left_hitbox:
+		left_hitbox.set_deferred("monitoring", false)
+	release_attack_slot()
+	if state == states.get("Lunge") or state == states.get("Attack"):
+		change_state("Chase")
 
 
 # Called by the player's shield when a parry catches the punch: cancels the attack and stuns the enemy

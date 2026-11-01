@@ -166,6 +166,8 @@ func _set_velocity(new_velocity: Vector3):
 
 
 func _physics_process(delta):
+	if Time.get_ticks_msec() < shove_hold_until_msec:
+		return
 	if state and state.has_method("update"):
 		state.update(delta)
 
@@ -282,6 +284,60 @@ func damage_silently(amount: float) -> void:
 func _report_hit(headshot: bool, shielded: bool) -> void:
 	if destroyed or not (shielded or silent_damage):
 		GlobalVariables.enemy_hit.emit(self, headshot, destroyed)
+
+
+# ---------------------------
+# Shove
+# ---------------------------
+# Throws the enemy out to `radius` from a point and holds it there for a moment, so the space around the point stays
+# clear. It goes straight away from the point if that lands on floor with no wall in between, otherwise the nearest
+# direction that does. If there is none it stays put: with no gravity it would float off a ledge.
+const SHOVE_TIME := 0.2
+const SHOVE_HOLD_TIME := 0.7
+const SHOVE_ANGLES := [0.0, 45.0, -45.0, 90.0, -90.0, 135.0, -135.0, 180.0]
+const SHOVE_FLOOR_DEPTH := 2.5
+var shove_tween: Tween
+var shove_hold_until_msec := 0
+
+
+func shove_from(point: Vector3, radius: float) -> void:
+	if destroyed:
+		return
+	var away := global_position - point
+	away.y = 0.0
+	if away.length() < 0.05:
+		away = Vector3.RIGHT.rotated(Vector3.UP, randf() * TAU)   # right on top of the point: any way out will do
+	away = away.normalized()
+	for angle: float in SHOVE_ANGLES:
+		var landing := point + away.rotated(Vector3.UP, deg_to_rad(angle)) * radius
+		landing.y = global_position.y
+		if _can_shove_to(point, landing):
+			_start_shove(landing)
+			return
+
+
+func _can_shove_to(point: Vector3, landing: Vector3) -> bool:
+	var tree := get_tree()
+	var height := Vector3.UP * 1.0
+	var from := Vector3(point.x, landing.y, point.z) + height
+	if not PhysicsLayers.surface_ray(tree, from, landing + height).is_empty():
+		return false   # a wall in the way
+	return not PhysicsLayers.surface_ray(tree, landing + height, landing + Vector3.DOWN * SHOVE_FLOOR_DEPTH).is_empty()
+
+
+func _start_shove(landing: Vector3) -> void:
+	shove_hold_until_msec = Time.get_ticks_msec() + int((SHOVE_TIME + SHOVE_HOLD_TIME) * 1000.0)
+	velocity = Vector3.ZERO
+	_on_shoved()
+	if shove_tween:
+		shove_tween.kill()
+	shove_tween = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	shove_tween.tween_property(self, "global_position", landing, SHOVE_TIME)
+
+
+# Subclasses stop what they were doing here (a punch that is under way)
+func _on_shoved() -> void:
+	pass
 
 
 # ---------------------------
