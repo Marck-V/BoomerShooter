@@ -1,0 +1,24 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="PackedScene" uid="uid://dbgnnsy4gp4aw" path="res://scenes/enemies/GodotBoss.tscn" id="1_base"]
+[ext_resource type="Script" path="res://scripts/enemies/enemy_brute.gd" id="2_script"]
+
+[node name="EnemyBrute" instance=ExtResource("1_base")]
+transform = Transform3D(1.8, 0, 0, 0, 1.8, 0, 0, 0, 1.8, 0, 0, 0)
+script = ExtResource("2_script")
+movement_speed = 5.0
+health = 600.0
+damage_to_player = 30.0
+charge_speed = 13.0
+charge_damage = 40.0
+charge_cooldown = 7.0
+slam_radius = 3.5
+slam_damage = 30.0
+slam_trigger_distance = 3.5
+entrance_enabled = false
+hazard_enabled = false
+phase_two_at = -1.0
+phase_three_at = -1.0
+
+[node name="VisionArea" parent="." index="7"]
+transform = Transform3D(2.5, 0, 0, 0, 2.5, 0, 0, 0, 2.5, 0, 0, 0)

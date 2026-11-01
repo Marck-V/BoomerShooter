@@ -9,6 +9,7 @@ cooldown = 0.1
 max_distance = 8
 damage = 6.0
 recoil_strength = 1
+camera_kick = 0.0015
 weapon_id = "flamethrower"
 sound = ""
 crosshair = ExtResource("1_cross")

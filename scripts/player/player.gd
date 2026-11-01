@@ -15,7 +15,9 @@ extends CharacterBody3D
 @export var kick_recovery = 14.0
 @export var damage_flash_time = 0.4
 @export var heal_flash_time = 0.6
-@export var kill_height := -70.0      # falling below this restarts the level (the sky course drops far below the floor)
+@export var fall_reset_distance := 35.0   # falling this far below the last solid ground counts as falling off the map
+@export var fall_damage := 20
+@export var kill_height := -70.0      # falling below this before ever touching the ground restarts the level
 @export var grapple_speed := 34.0              # how fast the shield grapple pulls the player
 @export var grapple_arrive_distance := 1.8      # stops this close (camera to point) to the grapple point
 @export var grapple_max_time := 1.6
@@ -37,6 +39,20 @@ var input_mouse: Vector2
 var health:int = 100
 var gravity := 0.0
 var previously_floored := false
+
+# Where a fall off the map puts the player back: the last spot they stood on with solid ground all around them
+const SAFE_GROUND_CHECK_INTERVAL := 0.1
+const SAFE_GROUND_MARGIN := 0.7       # floor needed this far out on every side, so they don't land on the very edge
+const SAFE_GROUND_DEPTH := 1.0
+const FALL_FADE_TIME := 0.4
+const LANDING_CLEAR_RADIUS := 4.0     # enemies this close to the landing spot are shoved out to this distance
+const LANDING_CLEAR_HEIGHT := 2.5
+const LANDING_WAVE_SPEED := 30.0
+var has_safe_ground := false
+var safe_ground := Vector3.ZERO
+var safe_ground_timer := 0.0
+var fall_fade: ColorRect
+var fall_fade_tween: Tween
 
 var jump_single := true
 var jump_double := true
@@ -95,6 +111,9 @@ var tween:Tween
 
 signal health_updated
 signal weapon_changed
+signal key_collected(key: String)
+
+var keys := {}   # colours of the level keys the player holds; gone when the level reloads
 
 @onready var camera = $Head/Camera
 @onready var raycast = $Head/Camera/RayCast
@@ -130,6 +149,7 @@ func _ready():
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
 	_setup_damage_flash()
 	_setup_heal_flash()
+	_setup_fall_fade()
 	offhand_shield = OFFHAND_SHIELD.new()
 	camera.add_child(offhand_shield)
 	crosshair.texture = current_weapon.data.crosshair
@@ -212,8 +232,85 @@ func _physics_process(delta):
 	previously_floored = is_on_floor()
 	
 
-	if position.y < kill_height:
+	_update_safe_ground(delta)
+	if has_safe_ground:
+		if global_position.y < safe_ground.y - fall_reset_distance:
+			_recover_from_fall()
+	elif position.y < kill_height:
 		get_tree().reload_current_scene()
+
+func add_key(key: String) -> void:
+	keys[key] = true
+	key_collected.emit(key)
+
+
+func has_key(key: String) -> bool:
+	return keys.has(key)
+
+
+func _update_safe_ground(delta: float) -> void:
+	safe_ground_timer -= delta
+	if safe_ground_timer > 0.0 or not is_on_floor():
+		return
+	safe_ground_timer = SAFE_GROUND_CHECK_INTERVAL
+	for offset: Vector3 in [Vector3.ZERO, Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]:
+		if not _is_solid_ground_below(global_position + offset * SAFE_GROUND_MARGIN):
+			return
+	safe_ground = global_position
+	has_safe_ground = true
+
+
+# Doors and other moving bodies don't count: they may not be there when the player comes back
+func _is_solid_ground_below(point: Vector3) -> bool:
+	var hit := PhysicsLayers.surface_ray(get_tree(), point + Vector3.UP * 0.5, point + Vector3.DOWN * SAFE_GROUND_DEPTH)
+	return not hit.is_empty() and hit["collider"] is StaticBody3D
+
+
+# Back to the last safe spot with a quick fade, minus some health, and straight back into the fight
+func _recover_from_fall() -> void:
+	grappling = false
+	dashing = false
+	wall_push_time_left = 0.0
+	push_impulse = Vector3.ZERO
+	velocity = Vector3.ZERO
+	gravity = 0.0
+	refresh_air_moves()
+	global_position = safe_ground + Vector3.UP * 0.1
+	reset_physics_interpolation()
+	_clear_landing_spot()
+	_play_fall_fade()
+	damage(fall_damage)
+
+
+func _clear_landing_spot() -> void:
+	for enemy in get_tree().get_nodes_in_group("Enemy"):
+		if not enemy.has_method("shove_from"):
+			continue
+		var offset: Vector3 = enemy.global_position - safe_ground
+		var flat_distance := Vector2(offset.x, offset.z).length()
+		if flat_distance < LANDING_CLEAR_RADIUS and absf(offset.y) < LANDING_CLEAR_HEIGHT:
+			enemy.shove_from(safe_ground, LANDING_CLEAR_RADIUS)
+	BossShockwave.spawn(get_tree(), safe_ground, LANDING_CLEAR_RADIUS * 1.5, LANDING_WAVE_SPEED, 0.0, true)
+
+
+func _play_fall_fade() -> void:
+	fall_fade.color.a = 1.0
+	if fall_fade_tween:
+		fall_fade_tween.kill()
+	fall_fade_tween = create_tween()
+	fall_fade_tween.tween_property(fall_fade, "color:a", 0.0, FALL_FADE_TIME)
+
+
+func _setup_fall_fade() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 0
+	add_child(layer)
+	fall_fade = ColorRect.new()
+	fall_fade.color = Color(0.0, 0.0, 0.0, 0.0)
+	fall_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	fall_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	layer.add_child(fall_fade)
+
 
 # Turns the player to face a world yaw, including the target the view eases towards
 func set_facing(yaw: float) -> void:
@@ -381,7 +478,6 @@ func action_shoot():
 			return
 		blaster_cooldown.start(current_weapon.data.cooldown)
 		current_weapon.fire(global_transform.origin, -camera.global_transform.basis.z, camera, raycast)
-		current_weapon.trigger_recoil()
 
 func action_dash():
 	if grappling and Input.is_action_just_pressed("dash"):
@@ -583,3 +679,4 @@ func damage(amount):
 	health_updated.emit(health)
 	if health <= 0:
 		GameManager.player_died()
+

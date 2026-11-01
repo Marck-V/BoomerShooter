@@ -37,3 +37,38 @@
 
 @PointClass color(51 255 102) size(-8 -8 -8, 8 8 8) = grapple_point : "Small green sphere. Hit it with the thrown shield (F) to be pulled to it; refreshes jumps and dash."
 []
+
+@SolidClass color(255 153 51) = key_door : "Door that stays shut until the player walks up to it holding the matching key, then slides down into the floor."
+[
+	key(string) : "Which key opens it: red or blue" : "red"
+]
+
+@PointClass color(255 153 51) size(-8 -8 -8, 8 8 8) = level_key : "Key the player collects by walking through it. Opens the key_door of the same colour."
+[
+	key(string) : "Which key this is: red or blue" : "red"
+]
+
+@PointClass color(255 128 51) size(-16 -16 0, 16 16 56) = enemy_dodger : "Ranged enemy that periodically sidesteps at random."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
+
+@PointClass color(255 64 153) size(-16 -16 0, 16 16 56) = enemy_melee_dodger : "Melee enemy that weaves toward the player with quick sidesteps."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
+
+@PointClass color(153 102 255) size(-16 -16 0, 16 16 56) = enemy_flyer : "Flying enemy that hovers, shoots and sidesteps in the air."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
+
+@PointClass color(255 140 0) size(-16 -16 0, 16 16 56) = enemy_bomber : "Glowing runner that explodes beside the player, or where it is killed. The blast hurts other enemies too."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
+
+@PointClass color(153 26 26) size(-24 -24 0, 24 24 96) = enemy_brute : "Big, slow and tough: swings, charges and slams a shockwave. Its charge ignores ledges, so place it on a walled floor."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]

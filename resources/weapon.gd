@@ -9,6 +9,8 @@ class_name Weapon
 @export_range(0, 5) var spread: float = 0  # Spread of each shot
 @export_range(1, 5) var shot_count: int = 1  # Amount of shots
 @export_range(1,5) var recoil_strength: int = 1
+@export var camera_kick: float = 0.01  # radians the camera jumps up per shot
+@export var camera_shake: float = 0.0  # sustained rattle added per shot (0..1), for the heavy hitters
 @export var weapon_id : String
 
 

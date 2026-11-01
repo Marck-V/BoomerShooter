@@ -15,8 +15,10 @@ var shield: Node = null
 var original_materials: Array[Material] = []
 var shield_material: ShaderMaterial = preload("res://shaders/glass_shader.tres")
 const HIT_FLASH_SHADER: Shader = preload("res://shaders/hit_flash.gdshader")
-const HIT_FLASH_RADIUS := 0.35
-const HIT_FLASH_TIME := 0.12
+const HIT_FLASH_RADIUS := 0.55
+const HIT_FLASH_HOLD := 0.06     # seconds at full brightness, so it registers before it fades
+const HIT_FLASH_TIME := 0.18
+const HIT_FLASH_COLOR := Color(1.0, 0.95, 0.85)   # the shader's default: weapons with their own look pass another
 var hit_flash_material: ShaderMaterial
 var hit_flash_tween: Tween
 var hit_flash_points: Array[Vector3] = []
@@ -164,6 +166,8 @@ func _set_velocity(new_velocity: Vector3):
 
 
 func _physics_process(delta):
+	if Time.get_ticks_msec() < shove_hold_until_msec:
+		return
 	if state and state.has_method("update"):
 		state.update(delta)
 
@@ -232,11 +236,27 @@ func can_attack() -> bool:
 func is_in_attack_range() -> bool:
 	return false  # default, overridden by specific enemies
 
+# Whether it may begin an attack now that it is in range. Enemies that take turns override this.
+func can_start_attack() -> bool:
+	return true
+
+# Where the chase state paths to, how fast and whether it looks at the target on the way
+func chase_destination() -> Vector3:
+	return target.global_position
+
+func chase_speed() -> float:
+	return movement_speed
+
+func chase_faces_target() -> bool:
+	return false
+
 
 # ---------------------------
 # Damage & Death
 # ---------------------------
 func damage(amount: float, multiplier: float = 1.0):
+	if destroyed:
+		return
 	var dmg := amount * multiplier
 	var shielded := shield != null and is_instance_valid(shield)
 	if shield:
@@ -250,6 +270,74 @@ func damage(amount: float, multiplier: float = 1.0):
 	elif not shielded:
 		# The head and neck hurtboxes have a multiplier above 1
 		_play_hit_reaction(multiplier > 1.0)
+	_report_hit(multiplier > 1.0, shielded)
+
+
+# Damage over time (burning, the flamethrower's ticks): only a kill is reported, not every tick
+func damage_silently(amount: float) -> void:
+	silent_damage = true
+	damage(amount)
+	silent_damage = false
+
+
+# A shield answers hits with its own clang, so only a hit that reaches the body gets the marker
+func _report_hit(headshot: bool, shielded: bool) -> void:
+	if destroyed or not (shielded or silent_damage):
+		GlobalVariables.enemy_hit.emit(self, headshot, destroyed)
+
+
+# ---------------------------
+# Shove
+# ---------------------------
+# Throws the enemy out to `radius` from a point and holds it there for a moment, so the space around the point stays
+# clear. It goes straight away from the point if that lands on floor with no wall in between, otherwise the nearest
+# direction that does. If there is none it stays put: with no gravity it would float off a ledge.
+const SHOVE_TIME := 0.2
+const SHOVE_HOLD_TIME := 0.7
+const SHOVE_ANGLES := [0.0, 45.0, -45.0, 90.0, -90.0, 135.0, -135.0, 180.0]
+const SHOVE_FLOOR_DEPTH := 2.5
+var shove_tween: Tween
+var shove_hold_until_msec := 0
+
+
+func shove_from(point: Vector3, radius: float) -> void:
+	if destroyed:
+		return
+	var away := global_position - point
+	away.y = 0.0
+	if away.length() < 0.05:
+		away = Vector3.RIGHT.rotated(Vector3.UP, randf() * TAU)   # right on top of the point: any way out will do
+	away = away.normalized()
+	for angle: float in SHOVE_ANGLES:
+		var landing := point + away.rotated(Vector3.UP, deg_to_rad(angle)) * radius
+		landing.y = global_position.y
+		if _can_shove_to(point, landing):
+			_start_shove(landing)
+			return
+
+
+func _can_shove_to(point: Vector3, landing: Vector3) -> bool:
+	var tree := get_tree()
+	var height := Vector3.UP * 1.0
+	var from := Vector3(point.x, landing.y, point.z) + height
+	if not PhysicsLayers.surface_ray(tree, from, landing + height).is_empty():
+		return false   # a wall in the way
+	return not PhysicsLayers.surface_ray(tree, landing + height, landing + Vector3.DOWN * SHOVE_FLOOR_DEPTH).is_empty()
+
+
+func _start_shove(landing: Vector3) -> void:
+	shove_hold_until_msec = Time.get_ticks_msec() + int((SHOVE_TIME + SHOVE_HOLD_TIME) * 1000.0)
+	velocity = Vector3.ZERO
+	_on_shoved()
+	if shove_tween:
+		shove_tween.kill()
+	shove_tween = create_tween().set_process_mode(Tween.TWEEN_PROCESS_PHYSICS).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	shove_tween.tween_property(self, "global_position", landing, SHOVE_TIME)
+
+
+# Subclasses stop what they were doing here (a punch that is under way)
+func _on_shoved() -> void:
+	pass
 
 
 # ---------------------------
@@ -258,6 +346,7 @@ func damage(amount: float, multiplier: float = 1.0):
 # A short flinch animation when the enemy is hurt: Hit_Head for head and neck hits, Hit_Chest for the rest.
 # It never cuts into an attack, dodge or stun, and has a cooldown so rapid fire doesn't hold the enemy in it.
 const HIT_REACTION_COOLDOWN := 0.45
+var silent_damage := false
 var hit_reaction_ready_msec := 0
 
 
@@ -329,7 +418,7 @@ func _end_flinch() -> void:
 	model_root.transform = model_rest
 
 
-func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0) -> void:
+func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0, color := HIT_FLASH_COLOR) -> void:
 	if hit_flash_material == null:
 		hit_flash_material = ShaderMaterial.new()
 		hit_flash_material.shader = HIT_FLASH_SHADER
@@ -358,12 +447,14 @@ func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0) -> vo
 	hit_flash_target.set_shader_parameter("hit_count", hit_flash_points.size())
 	hit_flash_target.set_shader_parameter("radius", HIT_FLASH_RADIUS * radius_scale / maxf(local_scale, 0.001))
 	hit_flash_target.set_shader_parameter("intensity", 1.0)
+	hit_flash_target.set_shader_parameter("flash_color", color)
 	if not shielded:
 		model.material_overlay = hit_flash_material
 
 	if hit_flash_tween:
 		hit_flash_tween.kill()
 	hit_flash_tween = create_tween()
+	hit_flash_tween.tween_interval(HIT_FLASH_HOLD)
 	hit_flash_tween.tween_method(_set_hit_flash_intensity, 1.0, 0.0, HIT_FLASH_TIME)
 	hit_flash_tween.tween_callback(_clear_hit_flash)
 

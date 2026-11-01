@@ -22,13 +22,12 @@ var ammo_paths = {
 	"pistol": "res://models/weapons/pistol_ammo_mesh.tscn",
 	"shotgun": "res://models/weapons/shotgun_ammo_mesh.tscn",
 	"rifle": "res://models/weapons/rifle_ammo_mesh.tscn",
-	"flamethrower": "res://models/weapons/rifle_ammo_mesh.tscn",   # placeholder model, tinted below
+	"flamethrower": "res://models/weapons/flamethrower_ammo.glb",   # the gas canister from the flamethrower's model
 	"lightning": "res://models/weapons/rifle_ammo_mesh.tscn"
 }
 
 # Weapons without their own ammo model borrow the rifle one with a glow in their color
 var ammo_tints = {
-	"flamethrower": Color(1.0, 0.45, 0.1, 0.55),
 	"lightning": Color(0.2, 0.5, 1.0, 0.55)
 }
 

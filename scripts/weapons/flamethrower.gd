@@ -213,7 +213,7 @@ func _burn_enemies_in_cone(camera: Camera3D) -> void:
 		if not space.intersect_ray(query).is_empty():
 			continue
 
-		enemy.damage(data.damage)
+		enemy.damage_silently(data.damage)   # a tick every 0.1 s would drown out the hit marker
 		_ignite(enemy)
 
 
