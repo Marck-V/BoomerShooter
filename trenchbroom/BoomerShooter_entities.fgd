@@ -62,3 +62,13 @@
 [
 	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
 ]
+
+@PointClass color(255 140 0) size(-16 -16 0, 16 16 56) = enemy_bomber : "Glowing runner that explodes beside the player, or where it is killed. The blast hurts other enemies too."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
+
+@PointClass color(153 26 26) size(-24 -24 0, 24 24 96) = enemy_brute : "Big, slow and tough: swings, charges and slams a shockwave. Its charge ignores ledges, so place it on a walled floor."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]

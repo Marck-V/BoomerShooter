@@ -2159,7 +2159,7 @@
 }
 // entity 20
 {
-"classname" "enemy_horde"
+"classname" "enemy_bomber"
 "origin" "100 1932 1"
 "wave" "arena"
 }
@@ -2177,7 +2177,7 @@
 }
 // entity 23
 {
-"classname" "enemy_horde"
+"classname" "enemy_bomber"
 "origin" "405 2002 1"
 "wave" "arena"
 }
@@ -2189,7 +2189,7 @@
 }
 // entity 25
 {
-"classname" "enemy_horde"
+"classname" "enemy_brute"
 "origin" "179 2314 1"
 "wave" "arena"
 }
@@ -2201,7 +2201,7 @@
 }
 // entity 27
 {
-"classname" "enemy_horde"
+"classname" "enemy_bomber"
 "origin" "222 2496 1"
 "wave" "arena"
 }
@@ -2471,31 +2471,31 @@
 // entity 68
 {
 "classname" "enemy_horde"
-"origin" "6528 3328 -799"
+"origin" "6976 3328 -799"
 "wave" "hub"
 }
 // entity 69
 {
 "classname" "enemy_horde"
-"origin" "6912 2880 -799"
+"origin" "6720 2752 -799"
 "wave" "hub"
 }
 // entity 70
 {
-"classname" "enemy_horde"
-"origin" "6976 3328 -799"
+"classname" "enemy_bomber"
+"origin" "6528 3328 -799"
 "wave" "hub"
 }
 // entity 71
 {
-"classname" "enemy_horde"
-"origin" "6720 2752 -799"
+"classname" "enemy_bomber"
+"origin" "6912 2880 -799"
 "wave" "hub"
 }
 // entity 72
 {
-"classname" "enemy_horde"
-"origin" "6720 3520 -799"
+"classname" "enemy_brute"
+"origin" "6912 3520 -799"
 "wave" "hub"
 }
 // entity 73
@@ -2577,37 +2577,37 @@
 // entity 86
 {
 "classname" "enemy_horde"
-"origin" "6272 1792 -1183"
+"origin" "6528 1984 -1183"
 "wave" "foundry"
 }
 // entity 87
 {
 "classname" "enemy_horde"
-"origin" "6528 1984 -1183"
+"origin" "7168 1664 -1183"
 "wave" "foundry"
 }
 // entity 88
 {
 "classname" "enemy_horde"
-"origin" "6848 2048 -1183"
+"origin" "6144 1280 -1183"
 "wave" "foundry"
 }
 // entity 89
 {
 "classname" "enemy_horde"
-"origin" "7168 1664 -1183"
+"origin" "6656 1472 -1183"
 "wave" "foundry"
 }
 // entity 90
 {
-"classname" "enemy_horde"
-"origin" "6144 1280 -1183"
+"classname" "enemy_bomber"
+"origin" "6272 1792 -1183"
 "wave" "foundry"
 }
 // entity 91
 {
-"classname" "enemy_horde"
-"origin" "6656 1472 -1183"
+"classname" "enemy_bomber"
+"origin" "6848 2048 -1183"
 "wave" "foundry"
 }
 // entity 92
@@ -2678,29 +2678,35 @@
 }
 // entity 100
 {
-"classname" "enemy_melee_dodger"
-"origin" "6560 2208 -799"
+"classname" "enemy_brute"
+"origin" "7104 1344 -1183"
 "wave" "foundry"
 }
 // entity 101
 {
 "classname" "enemy_melee_dodger"
-"origin" "6880 2208 -799"
+"origin" "6560 2208 -799"
 "wave" "foundry"
 }
 // entity 102
 {
-"classname" "enemy_flyer"
-"origin" "6240 1600 -671"
+"classname" "enemy_melee_dodger"
+"origin" "6880 2208 -799"
 "wave" "foundry"
 }
 // entity 103
 {
 "classname" "enemy_flyer"
-"origin" "7232 1856 -671"
+"origin" "6240 1600 -671"
 "wave" "foundry"
 }
 // entity 104
+{
+"classname" "enemy_flyer"
+"origin" "7232 1856 -671"
+"wave" "foundry"
+}
+// entity 105
 {
 "classname" "key_door"
 "key" "red"
@@ -2714,119 +2720,119 @@
 ( 6816 3776 -672 ) ( 6816 3792 -672 ) ( 6816 3792 -800 ) world/texture_11_door [ 0 1 0 0 ] [ 0 0 -1 0 ] 90 0.125 0.125
 }
 }
-// entity 105
+// entity 106
 {
 "classname" "grapple_point"
 "origin" "6720 4544 -256"
 }
-// entity 106
+// entity 107
 {
 "classname" "grapple_point"
 "origin" "7296 4416 -128"
 }
-// entity 107
+// entity 108
 {
 "classname" "grapple_point"
 "origin" "7296 4992 64"
 }
-// entity 108
+// entity 109
 {
 "classname" "grapple_point"
 "origin" "6144 4288 -352"
 }
-// entity 109
+// entity 110
 {
 "classname" "enemy_horde"
 "origin" "6656 4224 -799"
 }
-// entity 110
+// entity 111
 {
 "classname" "enemy_horde"
 "origin" "7040 4160 -799"
 }
-// entity 111
+// entity 112
 {
 "classname" "enemy_horde"
 "origin" "6400 4928 -799"
 }
-// entity 112
+// entity 113
 {
 "classname" "enemy_horde"
 "origin" "6976 5184 -799"
 }
-// entity 113
+// entity 114
 {
 "classname" "enemy_horde"
 "origin" "7296 5248 -799"
 }
-// entity 114
+// entity 115
 {
 "classname" "enemy_horde"
 "origin" "6528 5312 -799"
 }
-// entity 115
+// entity 116
 {
 "classname" "enemy_melee_dodger"
 "origin" "6144 4864 -543"
 }
-// entity 116
+// entity 117
 {
 "classname" "enemy_melee_dodger"
 "origin" "6144 5248 -543"
 }
-// entity 117
+// entity 118
 {
 "classname" "enemy_melee_dodger"
 "origin" "6720 4544 -415"
 }
-// entity 118
+// entity 119
 {
 "classname" "enemy_ranged"
 "origin" "7296 4288 -287"
 }
-// entity 119
+// entity 120
 {
 "classname" "enemy_melee_dodger"
 "origin" "7296 4672 -287"
 }
-// entity 120
+// entity 121
 {
 "classname" "enemy_melee_dodger"
 "origin" "6528 5280 -31"
 }
-// entity 121
+// entity 122
 {
 "classname" "level_key"
 "origin" "6912 5280 6"
 "key" "blue"
 }
-// entity 122
+// entity 123
 {
 "classname" "pickup"
 "origin" "6144 5056 -518"
 "type" "Ammo"
 "weapon_id" "shotgun"
 }
-// entity 123
+// entity 124
 {
 "classname" "pickup"
 "origin" "6720 4416 -390"
 "type" "Health"
 }
-// entity 124
+// entity 125
 {
 "classname" "pickup"
 "origin" "7360 4736 -262"
 "type" "Ammo"
 "weapon_id" "rifle"
 }
-// entity 125
+// entity 126
 {
 "classname" "pickup"
 "origin" "7296 5312 -6"
 "type" "Health"
 }
-// entity 126
+// entity 127
 {
 "classname" "wave_trigger"
 "wave" "stack"
@@ -2840,7 +2846,7 @@
 ( 7488 5120 128 ) ( 7488 5440 128 ) ( 7488 5440 -32 ) special/clip [ 0 1 0 0 ] [ 0 0 -1 0 ] 90 0.125 0.125
 }
 }
-// entity 127
+// entity 128
 {
 "classname" "locked_door"
 "wave" "stack"
@@ -2855,67 +2861,67 @@
 ( 6816 3968 -672 ) ( 6816 3984 -672 ) ( 6816 3984 -800 ) world/texture_11_door [ 0 1 0 0 ] [ 0 0 -1 0 ] 90 0.125 0.125
 }
 }
-// entity 128
+// entity 129
 {
 "classname" "enemy_horde"
 "origin" "6080 4160 -799"
 "wave" "stack"
 }
-// entity 129
-{
-"classname" "enemy_horde"
-"origin" "6720 4096 -799"
-"wave" "stack"
-}
 // entity 130
-{
-"classname" "enemy_horde"
-"origin" "7296 4096 -799"
-"wave" "stack"
-}
-// entity 131
 {
 "classname" "enemy_horde"
 "origin" "6848 4800 -799"
 "wave" "stack"
 }
-// entity 132
+// entity 131
 {
 "classname" "enemy_horde"
 "origin" "6272 5248 -799"
 "wave" "stack"
 }
-// entity 133
+// entity 132
 {
 "classname" "enemy_horde"
 "origin" "7168 5120 -799"
 "wave" "stack"
 }
+// entity 133
+{
+"classname" "enemy_bomber"
+"origin" "6720 4096 -799"
+"wave" "stack"
+}
 // entity 134
 {
-"classname" "enemy_melee_dodger"
-"origin" "6400 4480 -799"
+"classname" "enemy_bomber"
+"origin" "7296 4096 -799"
 "wave" "stack"
 }
 // entity 135
 {
 "classname" "enemy_melee_dodger"
-"origin" "7040 4544 -799"
+"origin" "6400 4480 -799"
 "wave" "stack"
 }
 // entity 136
 {
-"classname" "enemy_flyer"
-"origin" "6400 4800 33"
+"classname" "enemy_melee_dodger"
+"origin" "7040 4544 -799"
 "wave" "stack"
 }
 // entity 137
 {
 "classname" "enemy_flyer"
-"origin" "7296 4864 33"
+"origin" "6400 4800 33"
 "wave" "stack"
 }
 // entity 138
+{
+"classname" "enemy_flyer"
+"origin" "7296 4864 33"
+"wave" "stack"
+}
+// entity 139
 {
 "classname" "key_door"
 "key" "blue"
@@ -2929,32 +2935,32 @@
 ( 7376 3040 -672 ) ( 7376 3232 -672 ) ( 7376 3232 -800 ) world/texture_11_door [ 0 1 0 0 ] [ 0 0 -1 0 ] 90 0.125 0.125
 }
 }
-// entity 139
+// entity 140
 {
 "classname" "grapple_point"
 "origin" "8320 3136 -480"
 }
-// entity 140
+// entity 141
 {
 "classname" "grapple_point"
 "origin" "7872 2752 -480"
 }
-// entity 141
+// entity 142
 {
 "classname" "grapple_point"
 "origin" "8768 2752 -480"
 }
-// entity 142
+// entity 143
 {
 "classname" "grapple_point"
 "origin" "7872 3520 -480"
 }
-// entity 143
+// entity 144
 {
 "classname" "grapple_point"
 "origin" "8768 3520 -480"
 }
-// entity 144
+// entity 145
 {
 "classname" "wave_trigger"
 "wave" "vault"
@@ -2968,7 +2974,7 @@
 ( 7872 2944 -640 ) ( 7872 3328 -640 ) ( 7872 3328 -800 ) special/clip [ 0 1 0 0 ] [ 0 0 -1 0 ] 90 0.125 0.125
 }
 }
-// entity 145
+// entity 146
 {
 "classname" "locked_door"
 "wave" "vault"
@@ -2983,7 +2989,7 @@
 ( 7632 3040 -672 ) ( 7632 3232 -672 ) ( 7632 3232 -800 ) world/texture_11_door [ 0 1 0 0 ] [ 0 0 -1 0 ] 90 0.125 0.125
 }
 }
-// entity 146
+// entity 147
 {
 "classname" "locked_door"
 "wave" "vault"
@@ -2997,351 +3003,351 @@
 ( 9040 3040 -672 ) ( 9040 3232 -672 ) ( 9040 3232 -800 ) world/texture_11_door [ 0 1 0 0 ] [ 0 0 -1 0 ] 90 0.125 0.125
 }
 }
-// entity 147
-{
-"classname" "enemy_horde"
-"origin" "8000 2688 -799"
-"wave" "vault"
-}
 // entity 148
-{
-"classname" "enemy_horde"
-"origin" "8384 2688 -799"
-"wave" "vault"
-}
-// entity 149
 {
 "classname" "enemy_horde"
 "origin" "8640 2816 -799"
 "wave" "vault"
 }
-// entity 150
-{
-"classname" "enemy_horde"
-"origin" "8896 3072 -799"
-"wave" "vault"
-}
-// entity 151
+// entity 149
 {
 "classname" "enemy_horde"
 "origin" "8000 3584 -799"
 "wave" "vault"
 }
-// entity 152
-{
-"classname" "enemy_horde"
-"origin" "8384 3584 -799"
-"wave" "vault"
-}
-// entity 153
-{
-"classname" "enemy_horde"
-"origin" "8640 3456 -799"
-"wave" "vault"
-}
-// entity 154
+// entity 150
 {
 "classname" "enemy_horde"
 "origin" "8896 3328 -799"
 "wave" "vault"
 }
-// entity 155
+// entity 151
 {
 "classname" "enemy_horde"
 "origin" "7936 3136 -799"
 "wave" "vault"
 }
-// entity 156
+// entity 152
 {
 "classname" "enemy_horde"
 "origin" "8704 3136 -799"
 "wave" "vault"
 }
-// entity 157
+// entity 153
 {
 "classname" "enemy_horde"
 "origin" "7744 2688 -799"
 "wave" "vault"
 }
-// entity 158
+// entity 154
 {
 "classname" "enemy_horde"
 "origin" "7744 3584 -799"
 "wave" "vault"
 }
+// entity 155
+{
+"classname" "enemy_bomber"
+"origin" "8000 2688 -799"
+"wave" "vault"
+}
+// entity 156
+{
+"classname" "enemy_bomber"
+"origin" "8640 3456 -799"
+"wave" "vault"
+}
+// entity 157
+{
+"classname" "enemy_bomber"
+"origin" "8896 3072 -799"
+"wave" "vault"
+}
+// entity 158
+{
+"classname" "enemy_brute"
+"origin" "8384 2688 -799"
+"wave" "vault"
+}
 // entity 159
 {
-"classname" "enemy_melee_dodger"
-"origin" "8192 3136 -703"
+"classname" "enemy_brute"
+"origin" "8384 3584 -799"
 "wave" "vault"
 }
 // entity 160
 {
 "classname" "enemy_melee_dodger"
-"origin" "8448 3136 -703"
+"origin" "8192 3136 -703"
 "wave" "vault"
 }
 // entity 161
 {
 "classname" "enemy_melee_dodger"
-"origin" "8832 2944 -799"
+"origin" "8448 3136 -703"
 "wave" "vault"
 }
 // entity 162
 {
 "classname" "enemy_melee_dodger"
-"origin" "8832 3328 -799"
+"origin" "8832 2944 -799"
 "wave" "vault"
 }
 // entity 163
 {
-"classname" "enemy_ranged"
-"origin" "8064 2528 -575"
+"classname" "enemy_melee_dodger"
+"origin" "8832 3328 -799"
 "wave" "vault"
 }
 // entity 164
 {
 "classname" "enemy_ranged"
-"origin" "8576 3744 -575"
+"origin" "8064 2528 -575"
 "wave" "vault"
 }
 // entity 165
 {
-"classname" "enemy_melee_dodger"
-"origin" "8576 2528 -575"
+"classname" "enemy_ranged"
+"origin" "8576 3744 -575"
 "wave" "vault"
 }
 // entity 166
 {
 "classname" "enemy_melee_dodger"
-"origin" "8064 3744 -575"
+"origin" "8576 2528 -575"
 "wave" "vault"
 }
 // entity 167
 {
-"classname" "enemy_flyer"
-"origin" "8640 2816 -575"
+"classname" "enemy_melee_dodger"
+"origin" "8064 3744 -575"
 "wave" "vault"
 }
 // entity 168
 {
 "classname" "enemy_flyer"
-"origin" "8640 3456 -575"
+"origin" "8640 2816 -575"
 "wave" "vault"
 }
 // entity 169
+{
+"classname" "enemy_flyer"
+"origin" "8640 3456 -575"
+"wave" "vault"
+}
+// entity 170
 {
 "classname" "pickup"
 "origin" "8320 3136 -678"
 "type" "Health"
 }
-// entity 170
+// entity 171
 {
 "classname" "pickup"
 "origin" "7808 2528 -550"
 "type" "Ammo"
 "weapon_id" "shotgun"
 }
-// entity 171
+// entity 172
 {
 "classname" "pickup"
 "origin" "8832 3744 -550"
 "type" "Health"
 }
-// entity 172
+// entity 173
 {
 "classname" "pickup"
 "origin" "8832 2528 -550"
 "type" "Ammo"
 "weapon_id" "lightning"
 }
-// entity 173
+// entity 174
 {
 "classname" "pickup"
 "origin" "6976 2944 -774"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 174
+// entity 175
 {
 "classname" "pickup"
 "origin" "6560 2208 -774"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 175
+// entity 176
 {
 "classname" "pickup"
 "origin" "6400 1600 -1158"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 176
+// entity 177
 {
 "classname" "pickup"
 "origin" "6400 4224 -774"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 177
+// entity 178
 {
 "classname" "pickup"
 "origin" "7232 4096 -262"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 178
+// entity 179
 {
 "classname" "pickup"
 "origin" "8064 2688 -774"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 179
+// entity 180
 {
 "classname" "pickup"
 "origin" "8576 3584 -774"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 180
+// entity 181
 {
 "classname" "pickup"
 "origin" "9152 3040 -774"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 181
+// entity 182
 {
 "classname" "pickup"
 "origin" "6464 3392 -774"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 182
+// entity 183
 {
 "classname" "pickup"
 "origin" "6848 2240 -774"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 183
+// entity 184
 {
 "classname" "pickup"
 "origin" "6912 1792 -1158"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 184
+// entity 185
 {
 "classname" "pickup"
 "origin" "6144 4800 -518"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 185
+// entity 186
 {
 "classname" "pickup"
 "origin" "7040 4352 -774"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 186
+// entity 187
 {
 "classname" "pickup"
 "origin" "8000 3520 -774"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 187
+// entity 188
 {
 "classname" "pickup"
 "origin" "8640 2688 -774"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 188
+// entity 189
 {
 "classname" "pickup"
 "origin" "9248 3040 -774"
 "type" "Points"
 }
-// entity 189
+// entity 190
 {
 "classname" "pickup"
 "origin" "9248 3136 -774"
 "type" "Health"
 }
-// entity 190
+// entity 191
 {
 "classname" "pickup"
 "origin" "9248 3232 -774"
 "type" "Points"
 }
-// entity 191
+// entity 192
 {
 "classname" "pickup"
 "origin" "128 960 26"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 192
+// entity 193
 {
 "classname" "pickup"
 "origin" "384 1728 26"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 193
+// entity 194
 {
 "classname" "pickup"
 "origin" "-128 2400 186"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 194
+// entity 195
 {
 "classname" "pickup"
 "origin" "1216 3136 -742"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 195
+// entity 196
 {
 "classname" "pickup"
 "origin" "3664 3136 -678"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 196
+// entity 197
 {
 "classname" "pickup"
 "origin" "5440 3264 -774"
 "type" "Ammo"
 "weapon_id" "pistol"
 }
-// entity 197
+// entity 198
 {
 "classname" "pickup"
 "origin" "128 1792 26"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 198
+// entity 199
 {
 "classname" "pickup"
 "origin" "384 2688 26"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 199
+// entity 200
 {
 "classname" "pickup"
 "origin" "640 2400 186"
 "type" "Ammo"
 "weapon_id" "flamethrower"
 }
-// entity 200
+// entity 201
 {
 "classname" "pickup"
 "origin" "5696 3008 -774"
