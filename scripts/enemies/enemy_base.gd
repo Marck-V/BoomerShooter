@@ -198,6 +198,18 @@ func _stay_on_navmesh() -> void:
 	global_position = corrected
 
 
+# Roughly how much space the body takes up, in metres: x is its radius and y its height from the feet. Read from the
+# body's collision capsule. Enemies whose model is bigger than that override it.
+func body_size() -> Vector2:
+	for child in get_children():
+		var collider := child as CollisionShape3D
+		if collider != null and collider.shape is CapsuleShape3D:
+			var capsule := collider.shape as CapsuleShape3D
+			var body_scale := collider.global_basis.get_scale().y
+			return Vector2(capsule.radius, capsule.height + collider.position.y - capsule.height * 0.5) * body_scale
+	return Vector2(0.35, 1.75)
+
+
 # Off for jumps, which leave the mesh on purpose. Enemies that aren't bound to the floor override this.
 func _keeps_to_navmesh() -> bool:
 	return state != states.get("Jump")

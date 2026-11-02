@@ -4,13 +4,15 @@ extends RefCounted
 # a chunky low-res multi-color sprite, a tint ramp that shifts in steps, and particles
 # simulated at a low fixed rate so the motion looks choppy.
 
-const SPRITE_SIZE := 12            # drawn with nearest filtering, so each texel becomes a visible block
+const SPRITE_SIZE := 16            # drawn with nearest filtering, so each texel becomes a visible block
 const PARTICLE_FPS := 15
+const HOT_BRIGHTNESS := 1.5        # additive fire goes past 1.0 by this much, so the level's glow picks it up
 
 static var cached_texture: ImageTexture
 
 
-# Hot white/yellow core with orange edges, speckled with brighter pixels, like old pre-rendered fire
+# A flame tongue, pointed at the top and round at the bottom: hot yellow/white low down, orange further out and
+# deep red at the edges and tip, which break up into loose pixels like old pre-rendered fire
 static func make_texture() -> ImageTexture:
 	if cached_texture:
 		return cached_texture
@@ -18,18 +20,22 @@ static func make_texture() -> ImageTexture:
 	var noise := RandomNumberGenerator.new()
 	noise.seed = 95
 	var palette := [
-		[Color(1.0, 1.0, 0.85), Color(1.0, 0.95, 0.55)],     # core
-		[Color(1.0, 0.9, 0.3), Color(1.0, 0.75, 0.15)],      # middle
-		[Color(1.0, 0.58, 0.1), Color(0.95, 0.4, 0.05)],     # rim
+		[Color(1.0, 1.0, 0.8), Color(1.0, 0.93, 0.5)],       # core
+		[Color(1.0, 0.82, 0.25), Color(1.0, 0.68, 0.12)],    # middle
+		[Color(1.0, 0.48, 0.08), Color(0.95, 0.34, 0.05)],   # rim
+		[Color(0.8, 0.14, 0.03), Color(0.58, 0.07, 0.03)],   # edges and tip
 	]
-	var half := SPRITE_SIZE * 0.5
 	for y in SPRITE_SIZE:
 		for x in SPRITE_SIZE:
-			var offset := (Vector2(x + 0.5, y + 0.5) - Vector2(half, half)) / half
-			var reach := offset.length() + noise.randf_range(-0.18, 0.18)
-			if reach > 0.95:
+			var across := (x + 0.5) / SPRITE_SIZE * 2.0 - 1.0
+			var down := (y + 0.5) / SPRITE_SIZE                # 0 at the tip, 1 at the base
+			var width := pow(down / 0.7, 0.8) if down < 0.7 else sqrt(maxf(1.0 - pow((down - 0.7) / 0.3, 2.0), 0.0))
+			if width <= 0.0:
 				continue
-			var tier := 0 if reach < 0.35 else (1 if reach < 0.65 else 2)
+			var reach := absf(across) / (width * 0.95) + (1.0 - down) * 0.45 + noise.randf_range(-0.16, 0.16)
+			if reach > 1.1 or (reach > 0.85 and noise.randf() < 0.45):
+				continue
+			var tier := 0 if reach < 0.35 else (1 if reach < 0.6 else (2 if reach < 0.85 else 3))
 			if noise.randf() < 0.12:
 				tier = maxi(tier - 1, 0)      # hot speckle
 			var choices: Array = palette[tier]
@@ -40,7 +46,8 @@ static func make_texture() -> ImageTexture:
 
 # options: amount, lifetime, size, speed (Vector2), damping (Vector2), spread, gravity,
 # scale_curve (Array of Vector2), colors (Array of [offset, Color]), texture (or null for a plain square),
-# direction (default +Z), box (Vector3 half extents; default is a small sphere), additive, rotate, fade_near
+# direction (default +Z), box (Vector3 half extents; default is a small sphere), additive, rotate, fade_near,
+# brightness (over 1.0 makes it glow)
 static func make_emitter(options: Dictionary) -> GPUParticles3D:
 	var particles := GPUParticles3D.new()
 	particles.amount = options["amount"]
@@ -94,6 +101,8 @@ static func make_emitter(options: Dictionary) -> GPUParticles3D:
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	material.vertex_color_use_as_albedo = true
 	material.vertex_color_is_srgb = true
+	var brightness: float = options.get("brightness", 1.0)
+	material.albedo_color = Color(brightness, brightness, brightness)
 	material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	if options.get("fade_near", false):
