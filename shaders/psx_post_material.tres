@@ -5,6 +5,7 @@
 [resource]
 shader = ExtResource("1_8nx35")
 shader_parameter/effect_strength = 1.0
+shader_parameter/pixel_height = 240.0
 shader_parameter/enable_fog = false
 shader_parameter/fog_color = Color(0.972549, 0.972549, 0.972549, 1)
 shader_parameter/noise_color = Color(0, 0, 0, 1)
@@ -13,6 +14,10 @@ shader_parameter/fog_fade_range = 50.0
 shader_parameter/enable_noise = false
 shader_parameter/noise_time_fac = 4.0
 shader_parameter/enable_color_limitation = true
-shader_parameter/color_levels = 32
+shader_parameter/color_levels = 20
 shader_parameter/enable_dithering = true
-shader_parameter/dither_strength = 0.3
+shader_parameter/dither_strength = 1.0
+shader_parameter/saturation = 0.75
+shader_parameter/contrast = 1.05
+shader_parameter/tint = Color(1, 0.94, 0.9, 1)
+shader_parameter/vignette_strength = 0.65

@@ -67,6 +67,7 @@ layout_mode = 2
 alignment = 1
 
 [node name="MusicLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=112799075]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
@@ -74,6 +75,7 @@ text = "Music Volume"
 vertical_alignment = 1
 
 [node name="SFXLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=654234476]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
@@ -81,6 +83,7 @@ text = "SFX Volume"
 vertical_alignment = 1
 
 [node name="SensitivityLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=1725819565]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
@@ -88,10 +91,19 @@ text = "Aim Sensitivity"
 vertical_alignment = 1
 
 [node name="PSXLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=871826815]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "Retro Filter"
+vertical_alignment = 1
+
+[node name="VignetteLabel" type="Label" parent="SettingsPanel/HBoxContainer/VboxLabels" unique_id=1604417231]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_0b1cv")
+theme_override_font_sizes/font_size = 32
+text = "Vignette"
 vertical_alignment = 1
 
 [node name="VboxValues" type="VBoxContainer" parent="SettingsPanel/HBoxContainer" unique_id=12099552]
@@ -100,6 +112,7 @@ layout_mode = 2
 alignment = 1
 
 [node name="MusicVolumeLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=1253365697]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
@@ -107,6 +120,7 @@ text = "0.2"
 alignment = 2
 
 [node name="SFXVolumeLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=930644583]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
@@ -114,6 +128,7 @@ text = "0.2"
 alignment = 2
 
 [node name="SensitivityValueLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=766168692]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
@@ -121,10 +136,19 @@ text = "7.0"
 alignment = 2
 
 [node name="PSXValueLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=243647688]
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_0b1cv")
 theme_override_font_sizes/font_size = 32
 text = "100%"
+alignment = 2
+
+[node name="VignetteValueLabel" type="LineEdit" parent="SettingsPanel/HBoxContainer/VboxValues" unique_id=1188306452]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_0b1cv")
+theme_override_font_sizes/font_size = 32
+text = "65%"
 alignment = 2
 
 [node name="VBoxSliders" type="VBoxContainer" parent="SettingsPanel/HBoxContainer" unique_id=1562464940]
@@ -164,6 +188,14 @@ max_value = 1.0
 step = 0.05
 value = 1.0
 
+[node name="VignetteSlider" type="HSlider" parent="SettingsPanel/HBoxContainer/VBoxSliders" unique_id=907753118]
+custom_minimum_size = Vector2(400, 50)
+layout_mode = 2
+theme = ExtResource("3_yu862")
+max_value = 1.0
+step = 0.05
+value = 0.65
+
 [node name="FullscreenCheckButton" type="CheckButton" parent="SettingsPanel" unique_id=285966257]
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 1
@@ -173,9 +205,9 @@ anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
 offset_left = -150.0
-offset_top = -265.0
+offset_top = -205.0
 offset_right = 150.0
-offset_bottom = -221.0
+offset_bottom = -161.0
 grow_horizontal = 2
 grow_vertical = 0
 theme = ExtResource("3_yu862")
@@ -201,5 +233,6 @@ text = "Back"
 [connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/SFXSlider" to="." method="_on_sfx_slider_value_changed"]
 [connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/SensitivitySlider" to="." method="_on_sensitivity_slider_value_changed"]
 [connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/PSXSlider" to="." method="_on_psx_slider_value_changed"]
+[connection signal="value_changed" from="SettingsPanel/HBoxContainer/VBoxSliders/VignetteSlider" to="." method="_on_vignette_slider_value_changed"]
 [connection signal="toggled" from="SettingsPanel/FullscreenCheckButton" to="." method="_on_fullscreen_check_button_toggled"]
 [connection signal="pressed" from="SettingsPanel/BackButton" to="." method="_on_back_button_pressed"]

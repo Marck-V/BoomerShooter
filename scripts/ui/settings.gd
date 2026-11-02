@@ -9,6 +9,8 @@ extends Control
 @onready var sensitivity_slider: HSlider = $SettingsPanel/HBoxContainer/VBoxSliders/SensitivitySlider
 @onready var psx_value_label: LineEdit = $SettingsPanel/HBoxContainer/VboxValues/PSXValueLabel
 @onready var psx_slider: HSlider = $SettingsPanel/HBoxContainer/VBoxSliders/PSXSlider
+@onready var vignette_value_label: LineEdit = $SettingsPanel/HBoxContainer/VboxValues/VignetteValueLabel
+@onready var vignette_slider: HSlider = $SettingsPanel/HBoxContainer/VBoxSliders/VignetteSlider
 @onready var fullscreen_check: CheckButton = $SettingsPanel/FullscreenCheckButton
 
 
@@ -17,30 +19,35 @@ func _ready():
 	music_slider.step = 0.01
 	sfx_slider.step = 0.01
 	psx_slider.step = 0.01
+	vignette_slider.step = 0.01
 
 	# Initialize from the saved settings (loaded by GlobalVariables on startup)
 	music_slider.value = GlobalVariables.music_volume
 	sfx_slider.value = GlobalVariables.sfx_volume
 	sensitivity_slider.value = GlobalVariables.mouse_sensitivity
 	psx_slider.value = GlobalVariables.psx_strength
+	vignette_slider.value = GlobalVariables.vignette_strength
 	fullscreen_check.set_pressed_no_signal(GlobalVariables.fullscreen)
 
 	_update_music_label(music_slider.value)
 	_update_sfx_label(sfx_slider.value)
 	_update_sensitivity_label(sensitivity_slider.value)
 	_update_psx_label(psx_slider.value)
+	_update_vignette_label(vignette_slider.value)
 
 	# Text input applies on Enter or when the box loses focus; clicking in selects everything
-	for line_edit in [music_volume_label, sfx_volume_label, sensitivity_value_label, psx_value_label]:
+	for line_edit in [music_volume_label, sfx_volume_label, sensitivity_value_label, psx_value_label, vignette_value_label]:
 		line_edit.select_all_on_focus = true
 	music_volume_label.text_submitted.connect(_on_music_input_submitted)
 	sfx_volume_label.text_submitted.connect(_on_sfx_input_submitted)
 	sensitivity_value_label.text_submitted.connect(_on_sensitivity_input_submitted)
 	psx_value_label.text_submitted.connect(_on_psx_input_submitted)
+	vignette_value_label.text_submitted.connect(_on_vignette_input_submitted)
 	music_volume_label.focus_exited.connect(func(): _on_music_input_submitted(music_volume_label.text))
 	sfx_volume_label.focus_exited.connect(func(): _on_sfx_input_submitted(sfx_volume_label.text))
 	sensitivity_value_label.focus_exited.connect(func(): _on_sensitivity_input_submitted(sensitivity_value_label.text))
 	psx_value_label.focus_exited.connect(func(): _on_psx_input_submitted(psx_value_label.text))
+	vignette_value_label.focus_exited.connect(func(): _on_vignette_input_submitted(vignette_value_label.text))
 
 
 # ---- SLIDER CALLBACKS ----
@@ -132,3 +139,21 @@ func _on_psx_input_submitted(text: String):
 
 func _update_psx_label(value: float):
 	psx_value_label.text = str(int(round(value * 100))) + "%"
+
+
+# ---- VIGNETTE ----
+func _on_vignette_slider_value_changed(value: float):
+	GlobalVariables.vignette_strength = value
+	GlobalVariables.request_settings_save()
+	if GlobalVariables.player and is_instance_valid(GlobalVariables.player):
+		GlobalVariables.player.psx_material.set_shader_parameter("vignette_strength", value)
+	_update_vignette_label(value)
+
+func _on_vignette_input_submitted(text: String):
+	var number = _parse_number(text)
+	if number != null:
+		vignette_slider.value = clampf(number / 100.0, 0.0, 1.0)
+	_update_vignette_label(vignette_slider.value)
+
+func _update_vignette_label(value: float):
+	vignette_value_label.text = str(int(round(value * 100))) + "%"
