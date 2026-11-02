@@ -147,6 +147,7 @@ func _ready():
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	GlobalVariables.player = self
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
+	psx_material.set_shader_parameter("vignette_strength", GlobalVariables.vignette_strength)
 	_setup_damage_flash()
 	_setup_heal_flash()
 	_setup_fall_fade()

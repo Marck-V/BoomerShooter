@@ -5,6 +5,7 @@ var current_weapon
 var player
 var mouse_sensitivity: float = 20
 var psx_strength: float = 1.0
+var vignette_strength: float = 0.65
 var music_volume: float = 0.2
 var sfx_volume: float = 0.2
 var fullscreen: bool = false
@@ -62,6 +63,7 @@ func load_settings() -> void:
 		sfx_volume = clampf(cfg.get_value("audio", "sfx_volume", sfx_volume), 0.0, 1.0)
 		mouse_sensitivity = cfg.get_value("controls", "mouse_sensitivity", mouse_sensitivity)
 		psx_strength = clampf(cfg.get_value("video", "psx_strength", psx_strength), 0.0, 1.0)
+		vignette_strength = clampf(cfg.get_value("video", "vignette_strength", vignette_strength), 0.0, 1.0)
 		fullscreen = cfg.get_value("video", "fullscreen", fullscreen)
 
 	_apply_bus_volume("Music", music_volume)
@@ -76,6 +78,7 @@ func save_settings() -> void:
 	cfg.set_value("audio", "sfx_volume", sfx_volume)
 	cfg.set_value("controls", "mouse_sensitivity", mouse_sensitivity)
 	cfg.set_value("video", "psx_strength", psx_strength)
+	cfg.set_value("video", "vignette_strength", vignette_strength)
 	cfg.set_value("video", "fullscreen", fullscreen)
 	cfg.save(SETTINGS_PATH)
 
