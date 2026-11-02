@@ -996,6 +996,7 @@ class OrbState extends BossState:
 		ball.turn_rate = 1.1
 		ball.shooter = enemy
 		ball.always_return_to_shooter = true
+		ball.shell_color = Color(1.0, 0.48, 0.06)   # orange-gold, heavier than a normal shot but still a parryable one
 		ball.get_node("SelfQueueTimer").wait_time = 9.0
 		enemy.get_tree().current_scene.add_child(ball)
 		ball.global_position = origin
