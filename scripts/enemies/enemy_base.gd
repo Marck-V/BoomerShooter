@@ -168,8 +168,40 @@ func _set_velocity(new_velocity: Vector3):
 func _physics_process(delta):
 	if Time.get_ticks_msec() < shove_hold_until_msec:
 		return
+	_stay_on_navmesh()
 	if state and state.has_method("update"):
 		state.update(delta)
+
+
+# Enemies have no gravity, so anything that carries one past a ledge or up a wall (a lunge, knockback, avoidance)
+# would leave it hanging there. This catches every kind of movement by putting it back on the navigation mesh.
+const NAVMESH_MAX_DRIFT := 0.15     # further sideways off the mesh than this gets corrected (slopes read as a little drift)
+const NAVMESH_MAX_HOVER := 0.75     # the same for height: it normally stands a little off the mesh's height
+const NAVMESH_MAX_CORRECTION := 2.0 # further than this it isn't a drift (no mesh here, placed off it): leave it alone
+
+
+func _stay_on_navmesh() -> void:
+	if destroyed or not _keeps_to_navmesh():
+		return
+	var map := nav.get_navigation_map()
+	if NavigationServer3D.map_get_iteration_id(map) == 0:
+		return
+	var closest := NavigationServer3D.map_get_closest_point(map, global_position)
+	if closest.distance_to(global_position) > NAVMESH_MAX_CORRECTION:
+		return
+	var corrected := global_position
+	if Vector2(closest.x - corrected.x, closest.z - corrected.z).length() > NAVMESH_MAX_DRIFT:
+		corrected.x = closest.x
+		corrected.z = closest.z
+	if absf(closest.y - corrected.y) > NAVMESH_MAX_HOVER:
+		corrected.y = closest.y
+	global_position = corrected
+
+
+# Off for jumps, which leave the mesh on purpose. Enemies that aren't bound to the floor override this.
+func _keeps_to_navmesh() -> bool:
+	return state != states.get("Jump")
+
 
 # Hides or shows the enemy's visuals; hitboxes keep working. Showing it again after a dodge flashes it in.
 func set_dodge_vanished(vanished: bool) -> void:

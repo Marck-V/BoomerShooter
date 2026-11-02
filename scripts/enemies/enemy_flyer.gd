@@ -111,6 +111,10 @@ func _on_body_exited(body: Node3D):
 		change_state("Idle")
 
 
+func _keeps_to_navmesh() -> bool:
+	return false
+
+
 func _physics_process(delta):
 	super(delta)
 	if destroyed or not is_instance_valid(target) or state != states["Fly"]:

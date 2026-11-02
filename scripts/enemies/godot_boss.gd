@@ -186,6 +186,11 @@ func _ready() -> void:
 		_hide_for_entrance()
 
 
+# Moves its own body through its attacks, and its big collider doesn't fit the mesh's edge margin
+func _keeps_to_navmesh() -> bool:
+	return false
+
+
 func _physics_process(delta: float) -> void:
 	super(delta)
 	_update_hazard()
