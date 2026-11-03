@@ -20,3 +20,9 @@ mono_crash.*.json
 
 # Python bytecode from tools/
 __pycache__/
+
+# Blender source files and preview renders (rebuilt by tools/assetgen)
+art/
+*.blend
+*.blend1
+*.blend2
