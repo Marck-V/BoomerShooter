@@ -1,6 +1,11 @@
 extends Area3D
 
 const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
+const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
+const ParryFx = preload("res://scripts/enemies/parry_fx.gd")
+const GlowTrail = preload("res://scripts/enemies/glow_trail.gd")
+const AURA_SHADER: Shader = preload("res://shaders/parry_aura.gdshader")
+const CORE_SHADER: Shader = preload("res://shaders/energy_ball_core.gdshader")
 
 @onready var mesh_instance_3d = $MeshInstance3D
 @onready var collision_shape_3d = $CollisionShape3D
@@ -19,26 +24,173 @@ var target: Node3D
 var shooter: Node3D  # enemy that fired this ball, so a parry can send it back to them
 var always_return_to_shooter := false  # a parried ball goes back to the shooter however far away it is (the boss's orbs)
 var velocity: Vector3
+var shell_color := Color(1.0, 0.72, 0.1)  # outer glow. Set before the ball enters the tree.
 
 
 const REFLECT_SPEED_MULT := 3.2   # a parried ball flies back twice as fast as it came (it used to be 1.6x)
 const REFLECT_DAMAGE_MULT := 2.0
 const REFLECT_MASK := 2 | 4          # environment + enemy bodies
-const REFLECT_COLOR := Color(1.0, 0.85, 0.1)
 const REFLECT_HIT_STRENGTH := 3.0     # flinch strength on the enemy a reflected ball lands on
 const REFLECT_HIT_FLASH_RADIUS := 1.9 # hit flash radius multiplier
-const TRAIL_POINTS := 14
+
+# Yellow always means "you can parry this"; a ball the player sent back turns cyan, like the shield
+const SHARD_COLOR := Color(1.4, 1.1, 0.1)
+const INCOMING_COLOR := Color(1.0, 0.75, 0.0)
+const INCOMING_TAIL_COLOR := Color(1.0, 0.42, 0.0)
+const REFLECT_SHARD_COLOR := Color(0.5, 1.5, 2.0)
+const REFLECT_COLOR := Color(0.1, 0.75, 1.0)
+const REFLECT_TAIL_COLOR := Color(0.1, 0.35, 1.0)
+
+const TRAIL_POINTS := 8
+const REFLECT_TRAIL_POINTS := 14
 const TRAIL_SPACING := 0.25
-const TRAIL_WIDTH := 0.2
+const TRAIL_WIDTH := 0.1              # at the head, at scale 1
+
+const CORE_SCALE := 0.32              # the scene's core mesh
+const INNER_SHELL_RADIUS := 0.23
+const OUTER_SHELL_RADIUS := 0.31      # close to the 0.25 collision radius, so what you see is what can hit you
+const SHARD_COUNT := 3
+const SHARD_ORBIT := 0.29
+const SHARD_SPIN := 7.0               # radians per second
+const LIGHT_RANGE := 4.0
+const LIGHT_ENERGY := 1.2
+const STRETCH_PER_SPEED := 0.012      # how much longer the ball gets along its path per m/s
+const MAX_STRETCH := 1.5
+
+# Once the ball is close enough to parry it burns brighter and pulses faster
+const PULSE_SPEED := 8.0
+const PARRY_PULSE_SPEED := 26.0
+const PARRY_CUE_RATE := 12.0
+const BASE_GLOW := 1.8
+const PARRY_CUE_GLOW := 4.0
+const PARRY_CUE_LIGHT := 2.5
+const FALLBACK_PARRY_RANGE := 4.0
+
+const GLINT_SIZE := 0.9
+
+const FLASH_LIFE := 0.14
+const MUZZLE_FLASH_SIZE := 0.45
+const IMPACT_FLASH_SIZE := 0.8
 
 var reflected := false
-var trail_mesh: ImmediateMesh
-var trail_points: Array[Vector3] = []
+var trail: Node3D
+var glinted := false
+
+var visuals: Node3D
+var spinner: Node3D
+var core_material: ShaderMaterial
+var inner_shell: ShaderMaterial
+var outer_shell: ShaderMaterial
+var shard_material: StandardMaterial3D
+var light: OmniLight3D
+var embers: GPUParticles3D
+var parry_cue := 0.0
+var pulse_phase := 0.0
 
 
 func _ready():
 	velocity = global_transform.basis.z * SPEED
 	add_to_group("EnemyProjectile")
+	_build_visuals()
+	_start_trail()
+	# Deferred because whoever spawned the ball only moves it to the muzzle after adding it
+	_spawn_muzzle_flash.call_deferred()
+
+
+# Hot core, two yellow rims around it, shards circling them, a small light and a few sparks. Everything lives under
+# one node so it can stretch along the ball's path.
+func _build_visuals() -> void:
+	visuals = Node3D.new()
+	add_child(visuals)
+	mesh_instance_3d.reparent(visuals, false)
+	core_material = ShaderMaterial.new()
+	core_material.shader = CORE_SHADER
+	mesh_instance_3d.set_surface_override_material(0, core_material)
+
+	inner_shell = _add_shell(INNER_SHELL_RADIUS, INCOMING_COLOR, 1.0, 0.0)
+	outer_shell = _add_shell(OUTER_SHELL_RADIUS, shell_color, 2.0, 2.0)
+
+	shard_material = _make_glow_material(SHARD_COLOR)
+	var shard_mesh := SphereMesh.new()
+	shard_mesh.radial_segments = 4
+	shard_mesh.rings = 1
+	shard_mesh.radius = 0.05
+	shard_mesh.height = 0.18
+	shard_mesh.material = shard_material
+	spinner = Node3D.new()
+	spinner.rotation = Vector3(randf_range(0.3, 0.9), randf() * TAU, 0.0)
+	visuals.add_child(spinner)
+	for i in SHARD_COUNT:
+		var angle := TAU * i / SHARD_COUNT
+		var shard := MeshInstance3D.new()
+		shard.mesh = shard_mesh
+		shard.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		shard.position = Vector3(cos(angle), 0.0, sin(angle)) * SHARD_ORBIT
+		spinner.add_child(shard)
+
+	light = OmniLight3D.new()
+	light.light_color = INCOMING_COLOR
+	light.omni_range = LIGHT_RANGE
+	light.light_energy = LIGHT_ENERGY
+	add_child(light)
+
+	embers = ParryFx.make_embers(OUTER_SHELL_RADIUS)
+	add_child(embers)
+
+
+func _add_shell(radius: float, color: Color, rim_power: float, phase: float) -> ShaderMaterial:
+	var material := ShaderMaterial.new()
+	material.shader = AURA_SHADER
+	material.set_shader_parameter("aura_color", color)
+	material.set_shader_parameter("rim_power", rim_power)
+	material.set_shader_parameter("phase", phase)
+	var mesh := SphereMesh.new()
+	mesh.radial_segments = 12
+	mesh.rings = 6
+	mesh.radius = radius
+	mesh.height = radius * 2.0
+	mesh.material = material
+	var shell := MeshInstance3D.new()
+	shell.mesh = mesh
+	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	visuals.add_child(shell)
+	return material
+
+
+func _make_glow_material(color: Color) -> StandardMaterial3D:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.albedo_color = color
+	return material
+
+
+func _spawn_muzzle_flash() -> void:
+	_spawn_flash(get_parent(), global_position, INCOMING_COLOR, MUZZLE_FLASH_SIZE)
+
+
+# A ball of light that swells and fades out. Lives on its own, so it outlasts the projectile that made it.
+static func _spawn_flash(parent: Node, point: Vector3, color: Color, size: float) -> void:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.albedo_color = Color(color.r * 2.5, color.g * 2.5, color.b * 2.5, 1.0)
+	var mesh := SphereMesh.new()
+	mesh.radial_segments = 10
+	mesh.rings = 5
+	mesh.radius = 0.5
+	mesh.height = 1.0
+	mesh.material = material
+	var flash := MeshInstance3D.new()
+	flash.mesh = mesh
+	flash.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	parent.add_child(flash)
+	flash.global_position = point
+	flash.scale = Vector3.ONE * size * 0.4
+	var tween := flash.create_tween().set_parallel()
+	tween.tween_property(flash, "scale", Vector3.ONE * size, FLASH_LIFE)
+	tween.tween_property(material, "albedo_color:a", 0.0, FLASH_LIFE)
+	tween.chain().tween_callback(flash.queue_free)
 
 
 # Sends the ball back: it now ignores the player, homes on new_target and hurts enemies
@@ -53,72 +205,69 @@ func reflect(new_target: Node3D, direction: Vector3) -> void:
 	target = new_target
 	$SelfQueueTimer.start()
 
-	var material: Material = mesh_instance_3d.get_active_material(0)
-	if material is StandardMaterial3D:
-		var tinted := material.duplicate() as StandardMaterial3D
-		tinted.albedo_color = REFLECT_COLOR
-		tinted.emission = REFLECT_COLOR
-		tinted.emission_energy_multiplier = 2.5
-		mesh_instance_3d.set_surface_override_material(0, tinted)
-	_start_trail()
+	core_material.set_shader_parameter("edge_color", REFLECT_COLOR)
+	core_material.set_shader_parameter("center_color", Color.WHITE)
+	shard_material.albedo_color = REFLECT_SHARD_COLOR
+	inner_shell.set_shader_parameter("aura_color", REFLECT_COLOR)
+	outer_shell.set_shader_parameter("aura_color", REFLECT_COLOR)
+	light.light_color = REFLECT_COLOR
+	embers.emitting = false
+	trail.head_color = REFLECT_COLOR
+	trail.tail_color = REFLECT_TAIL_COLOR
+	trail.max_points = REFLECT_TRAIL_POINTS
+	_spawn_flash(get_parent(), global_position, REFLECT_COLOR, IMPACT_FLASH_SIZE)
 
 
-# Bright ribbon behind the reflected ball, built from its recent positions (world space)
 func _start_trail() -> void:
-	trail_mesh = ImmediateMesh.new()
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.vertex_color_use_as_albedo = true
-	material.albedo_color = Color(3.0, 2.4, 0.5)
-	var trail := MeshInstance3D.new()
-	trail.mesh = trail_mesh
-	trail.material_override = material
-	trail.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	trail.top_level = true
+	trail = GlowTrail.new()
+	trail.source = self
+	trail.head_color = INCOMING_COLOR
+	trail.tail_color = INCOMING_TAIL_COLOR
+	trail.max_points = TRAIL_POINTS
+	trail.spacing = TRAIL_SPACING
+	trail.width = TRAIL_WIDTH
 	add_child(trail)
-	trail.global_transform = Transform3D.IDENTITY
-	trail_points.append(global_position)
 
 
-func _process(_delta: float) -> void:
-	if not reflected or trail_mesh == null:
-		return
-	if trail_points.is_empty() or global_position.distance_to(trail_points[0]) >= TRAIL_SPACING:
-		trail_points.push_front(global_position)
-		if trail_points.size() > TRAIL_POINTS:
-			trail_points.pop_back()
-	_rebuild_trail()
+func _process(delta: float) -> void:
+	_animate_visuals(delta)
 
 
-func _rebuild_trail() -> void:
-	trail_mesh.clear_surfaces()
-	var count := trail_points.size()
-	if count < 2:
-		return
+func _animate_visuals(delta: float) -> void:
+	spinner.rotate_object_local(Vector3.UP, SHARD_SPIN * delta)
+	var stretch := minf(1.0 + velocity.length() * STRETCH_PER_SPEED, MAX_STRETCH)
+	var squeeze := 1.0 / sqrt(stretch)
+	visuals.scale = Vector3(squeeze, squeeze, stretch)
+
+	var can_be_parried := _can_be_parried()
+	if can_be_parried and not glinted:
+		glinted = true
+		ParryFx.play_star_glint(self, GLINT_SIZE)
+	parry_cue = move_toward(parry_cue, 1.0 if can_be_parried else 0.0, PARRY_CUE_RATE * delta)
+	pulse_phase += lerpf(PULSE_SPEED, PARRY_PULSE_SPEED, parry_cue) * delta
+	var pulse := 0.5 + 0.5 * sin(pulse_phase)
+	var glow := lerpf(BASE_GLOW, PARRY_CUE_GLOW, parry_cue) * lerpf(0.8, 1.15, pulse)
+	inner_shell.set_shader_parameter("intensity", glow)
+	outer_shell.set_shader_parameter("intensity", glow)
+	mesh_instance_3d.scale = Vector3.ONE * CORE_SCALE * lerpf(0.92, 1.08, pulse)
+	light.light_energy = LIGHT_ENERGY * lerpf(1.0, PARRY_CUE_LIGHT, parry_cue) * lerpf(0.8, 1.1, pulse)
+
+
+# Same test the shield uses (offhand_shield.gd _check_parry), so the cue is true whenever it shows
+func _can_be_parried() -> bool:
+	if reflected:
+		return false
 	var camera := get_viewport().get_camera_3d()
-	var head := global_position
-	trail_mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
-	for i in count:
-		var point := head if i == 0 else trail_points[i]
-		var next_point := trail_points[i + 1] if i < count - 1 else point
-		var previous_point := head if i == 0 else trail_points[i - 1]
-		var direction := (previous_point - next_point).normalized()
-		if direction.length_squared() < 0.0001:
-			direction = Vector3.FORWARD
-		var to_camera := (camera.global_position - point).normalized() if camera else Vector3.UP
-		var side := direction.cross(to_camera)
-		if side.length_squared() < 0.0001:
-			side = direction.cross(Vector3.UP)
-		var fade := 1.0 - float(i) / float(count - 1)
-		side = side.normalized() * TRAIL_WIDTH * fade
-		trail_mesh.surface_set_color(Color(1.0, 0.95, 0.5, fade))
-		trail_mesh.surface_add_vertex(point - side)
-		trail_mesh.surface_set_color(Color(1.0, 0.95, 0.5, fade))
-		trail_mesh.surface_add_vertex(point + side)
-	trail_mesh.surface_end()
+	if camera == null:
+		return false
+	var parry_range := FALLBACK_PARRY_RANGE
+	var player = GlobalVariables.player
+	if player and is_instance_valid(player):
+		var shield = player.get("offhand_shield")
+		if shield:
+			parry_range = shield.parry_range
+	var to_ball := global_position - camera.global_position
+	return to_ball.length() <= parry_range and to_ball.dot(-camera.global_basis.z) >= 0.0
 
 
 func _physics_process(delta):
@@ -128,21 +277,19 @@ func _physics_process(delta):
 		var scale_value = lerp(1.0, max_scale, scale_progress)
 		scale = Vector3.ONE * scale_value
 
-	if not is_instance_valid(target):
-		global_position += velocity * delta
-		return
-
-	# Homing calculation
-	var to_target = (target.global_position + target_offset - global_position).normalized()
-	var turn_strength = clamp(turn_rate * delta / velocity.length(), 0, 1)
-	velocity = velocity.slerp(to_target * SPEED, turn_strength)
+	if is_instance_valid(target):
+		# Homing calculation
+		var to_target = (target.global_position + target_offset - global_position).normalized()
+		var turn_strength = clamp(turn_rate * delta / velocity.length(), 0, 1)
+		velocity = velocity.slerp(to_target * SPEED, turn_strength)
 
 	# Move projectile
 	global_position += velocity * delta
 
 	# Face direction of travel
-	if velocity.length() > 0.01:
-		look_at(global_position + velocity.normalized(), Vector3.UP)
+	var direction := velocity.normalized()
+	if velocity.length() > 0.01 and absf(direction.y) < 0.999:
+		look_at(global_position + direction, Vector3.UP)
 
 
 func set_target(t: Node3D) -> void:
@@ -150,6 +297,11 @@ func set_target(t: Node3D) -> void:
 
 
 func _on_body_entered(body):
+	# The player already gets the damage flash or the shield's block sparks, right in front of the camera
+	if not body.is_in_group("Player"):
+		_spawn_flash(get_parent(), global_position, REFLECT_COLOR if reflected else INCOMING_COLOR, IMPACT_FLASH_SIZE * scale.x)
+		ImpactParticles.spawn(get_tree(), global_position, -velocity.normalized(), 0.8)
+
 	if reflected:
 		# The boss has its own response to a returned orb (it breaks the shield and staggers it)
 		if body.has_method("on_reflected_orb_hit"):
@@ -191,4 +343,5 @@ func _is_in_front_of(player: Node3D) -> bool:
 
 
 func _on_self_queue_timer_timeout():
+	_spawn_flash(get_parent(), global_position, REFLECT_COLOR if reflected else INCOMING_COLOR, MUZZLE_FLASH_SIZE * scale.x)
 	queue_free()

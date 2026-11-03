@@ -81,9 +81,16 @@ const RUN_ANIMATION := "Sprint"
 const CIRCLE_ANIMATION := "Walk"
 
 static var attack_slot_holders: Array = []
-const AURA_SHADER: Shader = preload("res://shaders/parry_aura.gdshader")
+const ParryFx = preload("res://scripts/enemies/parry_fx.gd")
+const GlowTrail = preload("res://scripts/enemies/glow_trail.gd")
+const ARM_HEAT_SHADER: Shader = preload("res://shaders/arm_heat.gdshader")
 const AURA_COLOR := Color(1.0, 0.75, 0.15)
 const GLOW_LIGHT_COLOR := Color(1.0, 0.8, 0.2)
+const FIST_OFFSET := Vector3(0.0, 0.1, 0.0)  # from the hand bone (at the wrist) to the middle of the fist
+const WISP_RADIUS := 0.09
+const RING_START_SCALE := 2.4              # the ring closes in from here and lands on the fist as the parry window opens
+const RING_END_SCALE := 0.5
+const FIST_GLINT_SIZE := 1.3
 
 var hit_done := false
 var holds_attack_slot := false
@@ -99,9 +106,13 @@ var parryable := false                      # true while a parry would catch thi
 var is_stunned := false
 var lunging := false
 var next_lunge_msec := 0
-var glow_root: Node3D                       # holds the aura shells and halo; hidden unless a parryable attack is coming
-var glow_inner_material: ShaderMaterial
-var glow_outer_material: ShaderMaterial
+var glow_root: Node3D                       # holds the ring and light; hidden unless a parryable attack is coming
+var glow_fist: Node3D
+var glow_elbow: Node3D
+var glow_arm: MeshInstance3D                # second copy of the body that only draws the heat, so hit flashes keep working
+var glow_arm_material: ShaderMaterial
+var glow_wisps: GPUParticles3D
+var glow_trail: Node3D
 var glow_halo: MeshInstance3D
 var glow_halo_material: StandardMaterial3D
 var glow_light: OmniLight3D
@@ -549,25 +560,52 @@ func damage(amount: float, multiplier: float = 1.0):
 # ---------------------------
 # Yellow fist aura: the sign that this punch can be parried
 # ---------------------------
-# Two rim-lit shells and a soft ring halo around the fist, so the hand itself stays visible inside the glow.
+# The arm heats up from the knuckles, wisps stream off the fist, a ribbon follows the swing and a ring closes in on the
+# fist. The ring lands as the parry window opens, and a star glint marks that moment.
 func _build_parry_glow() -> void:
 	var hand := get_node_or_null("Enemy_Model/Rig/Skeleton3D/RightHand")
 	if hand == null:
 		return
+	glow_elbow = get_node_or_null("Enemy_Model/Rig/Skeleton3D/RightForearm")
+	glow_fist = Node3D.new()
+	glow_fist.position = FIST_OFFSET
+	hand.add_child(glow_fist)
 	glow_root = Node3D.new()
 	glow_root.visible = false
-	hand.add_child(glow_root)
+	glow_fist.add_child(glow_root)
 
-	glow_inner_material = _make_aura_material(2.0, 0.0)
-	glow_outer_material = _make_aura_material(3.2, 1.7)
-	glow_root.add_child(_make_aura_shell(0.13, glow_inner_material))
-	glow_root.add_child(_make_aura_shell(0.21, glow_outer_material))
+	if model and glow_elbow:
+		glow_arm_material = ShaderMaterial.new()
+		glow_arm_material.shader = ARM_HEAT_SHADER
+		glow_arm = MeshInstance3D.new()
+		glow_arm.mesh = model.mesh
+		glow_arm.skin = model.skin
+		glow_arm.material_override = glow_arm_material
+		glow_arm.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		glow_arm.visible = false
+		model.get_parent().add_child(glow_arm)
+		glow_arm.transform = model.transform
+		glow_arm.skeleton = model.skeleton
+
+	# Outside glow_root: when the punch ends these stop emitting and fade on their own
+	glow_wisps = ParryFx.make_wisps(WISP_RADIUS)
+	glow_wisps.emitting = false
+	glow_fist.add_child(glow_wisps)
+	glow_trail = GlowTrail.new()
+	glow_trail.source = glow_fist
+	glow_trail.active = false
+	glow_trail.head_color = Color(1.0, 0.75, 0.0)
+	glow_trail.tail_color = Color(1.0, 0.35, 0.0)
+	glow_trail.max_points = 12
+	glow_trail.spacing = 0.12
+	glow_trail.width = 0.08
+	glow_fist.add_child(glow_trail)
 
 	# A soft ring that always faces the camera, with an empty centre so it never covers the fist
 	var ring := Gradient.new()
-	ring.offsets = PackedFloat32Array([0.0, 0.3, 0.55, 0.8, 1.0])
+	ring.offsets = PackedFloat32Array([0.0, 0.66, 0.74, 0.78, 0.86])
 	ring.colors = PackedColorArray([
-		Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.55), Color(1, 1, 1, 0.12), Color(1, 1, 1, 0.0)])
+		Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.0), Color(1, 1, 1, 1.0), Color(1, 1, 1, 0.5), Color(1, 1, 1, 0.0)])
 	var texture := GradientTexture2D.new()
 	texture.gradient = ring
 	texture.fill = GradientTexture2D.FILL_RADIAL
@@ -580,6 +618,7 @@ func _build_parry_glow() -> void:
 	glow_halo_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	glow_halo_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
 	glow_halo_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	glow_halo_material.billboard_keep_scale = true
 	glow_halo_material.albedo_texture = texture
 	glow_halo_material.albedo_color = Color(AURA_COLOR * 2.0, 0.0)
 	glow_halo_material.disable_fog = true
@@ -599,35 +638,27 @@ func _build_parry_glow() -> void:
 	glow_root.add_child(glow_light)
 
 
-func _make_aura_material(rim_power: float, phase: float) -> ShaderMaterial:
-	var material := ShaderMaterial.new()
-	material.shader = AURA_SHADER
-	material.set_shader_parameter("aura_color", AURA_COLOR)
-	material.set_shader_parameter("rim_power", rim_power)
-	material.set_shader_parameter("phase", phase)
-	material.set_shader_parameter("intensity", 0.0)
-	return material
-
-
-func _make_aura_shell(radius: float, material: ShaderMaterial) -> MeshInstance3D:
-	var sphere := SphereMesh.new()
-	sphere.radius = radius
-	sphere.height = radius * 2.0
-	sphere.radial_segments = 16
-	sphere.rings = 8
-	var shell := MeshInstance3D.new()
-	shell.mesh = sphere
-	shell.material_override = material
-	shell.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	return shell
-
-
 func set_parry_glow(enabled: bool) -> void:
 	if glow_root == null:
 		return
 	glow_root.visible = enabled
+	glow_halo.visible = enabled
+	glow_wisps.emitting = enabled
+	glow_trail.active = enabled
+	if glow_arm:
+		glow_arm.visible = enabled
 	if not enabled:
 		glow_strength = 0.0
+
+
+# The punch can be parried from now on: the ring has landed, and the glint says so
+func _open_parry_window() -> void:
+	parryable = true
+	glow_strength = 1.0
+	if glow_root == null:
+		return
+	glow_halo.visible = false
+	ParryFx.play_star_glint(glow_fist, FIST_GLINT_SIZE)
 
 
 func _process(delta: float) -> void:
@@ -636,12 +667,15 @@ func _process(delta: float) -> void:
 	glow_time += delta
 	# Builds up through the wind-up and pulses faster and brighter as the punch gets closer
 	var pulse := 1.0 + 0.12 * sin(glow_time * (12.0 + glow_strength * 10.0))
-	glow_root.scale = Vector3.ONE * (0.75 + 0.35 * glow_strength) * pulse
-	glow_inner_material.set_shader_parameter("intensity", 0.3 + 0.9 * glow_strength)
-	glow_outer_material.set_shader_parameter("intensity", 0.12 + 0.6 * glow_strength)
-	glow_halo.scale = Vector3.ONE * (0.8 + 0.4 * glow_strength) * pulse
-	glow_halo_material.albedo_color = Color(AURA_COLOR * 1.6, 0.1 + 0.4 * glow_strength)
+	glow_wisps.amount_ratio = lerpf(0.3, 1.0, glow_strength)
+	glow_halo.scale = Vector3.ONE * lerpf(RING_START_SCALE, RING_END_SCALE, glow_strength * glow_strength)
+	glow_halo_material.albedo_color = Color(AURA_COLOR * 1.6, 0.15 + 0.6 * glow_strength)
 	glow_light.light_energy = 1.0 * glow_strength
+	if glow_arm_material:
+		glow_arm_material.set_shader_parameter("fist_point", glow_fist.global_position)
+		glow_arm_material.set_shader_parameter("elbow_point", glow_elbow.global_position)
+		glow_arm_material.set_shader_parameter("reach", lerpf(0.15, 1.0, glow_strength))
+		glow_arm_material.set_shader_parameter("intensity", lerpf(0.4, 0.8, glow_strength) * pulse)
 
 
 func draw_debug_gizmos():
@@ -776,8 +810,7 @@ class LungeState:
 				if timer <= 0.0:
 					phase = Phase.DASH
 					timer = enemy.lunge_dash_time
-					enemy.glow_strength = 1.0
-					enemy.parryable = true
+					enemy._open_parry_window()
 					enemy.anim.play("Sprint")
 					enemy.anim.speed_scale = 1.4
 			Phase.DASH:

@@ -15,7 +15,7 @@ extends CharacterBody3D
 @export var kick_recovery = 14.0
 @export var damage_flash_time = 0.4
 @export var heal_flash_time = 0.6
-@export var fall_reset_distance := 35.0   # falling this far below the last solid ground counts as falling off the map
+@export var fall_reset_distance := 60.0   # falling this far below the last solid ground counts as falling off the map. Must be more than the level's deepest real drop.
 @export var fall_damage := 20
 @export var kill_height := -70.0      # falling below this before ever touching the ground restarts the level
 @export var grapple_speed := 34.0              # how fast the shield grapple pulls the player

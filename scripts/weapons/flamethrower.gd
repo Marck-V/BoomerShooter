@@ -8,7 +8,7 @@ const FLAME_LINGER := 0.16        # seconds the flame keeps burning after the la
 const TICKS_PER_AMMO := 3         # one ammo unit buys this many damage ticks (10 ticks/sec)
 const CONE_BASE_RADIUS := 0.5     # meters, flame width at the nozzle
 const CONE_SPREAD := 0.17         # extra meters of width per meter of distance
-const TARGET_HEIGHT := 1.0        # aim at the enemy chest, not its feet
+const NORMAL_BODY_RADIUS := 0.35  # the cone's width already allows for a body this wide; only wider ones add to it
 const BURN_DURATION := 3.0        # seconds an enemy keeps burning after the flame leaves it
 const BURN_DPS := 6.0             # damage per second while burning
 
@@ -200,12 +200,16 @@ func _burn_enemies_in_cone(camera: Camera3D) -> void:
 		if enemy == null or not enemy.has_method("damage") or enemy.get("destroyed"):
 			continue
 
-		var target := enemy.global_position + Vector3.UP * TARGET_HEIGHT
+		# The nearest point of the enemy's body to the flame's centre line, so a tall enemy burns wherever it's aimed at
+		var body: Vector2 = enemy.body_size() if enemy.has_method("body_size") else Vector2(NORMAL_BODY_RADIUS, 1.75)
+		var feet := enemy.global_position
+		var closest := Geometry3D.get_closest_points_between_segments(feet, feet + Vector3.UP * body.y, origin, origin + forward * data.max_distance)
+		var target: Vector3 = closest[0]
 		var to_target := target - origin
 		var along := to_target.dot(forward)
 		if along < 0.0 or along > data.max_distance:
 			continue
-		var off_axis := (to_target - forward * along).length()
+		var off_axis := (to_target - forward * along).length() - maxf(body.x - NORMAL_BODY_RADIUS, 0.0)
 		if off_axis > CONE_BASE_RADIUS + along * CONE_SPREAD:
 			continue
 
@@ -222,7 +226,7 @@ func _ignite(enemy: Node3D) -> void:
 	var shield = enemy.get("shield")
 	if shield != null and is_instance_valid(shield):
 		return
-	if enemy.get("destroyed") == true:
+	if enemy.get("destroyed") == true or enemy.get("invulnerable") == true:
 		return
 	var burning = enemy.get_node_or_null("Burning")
 	if burning == null:

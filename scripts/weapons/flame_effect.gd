@@ -24,31 +24,32 @@ var light_level := 0.0
 func _ready() -> void:
 	var texture := FlameParticles.make_texture()
 
-	# Tint ramps multiply the multi-color sprite: it stays hot early and cools to red/brown at the tip
+	# Tint ramps multiply the multi-color sprite: it stays hot early and cools to deep red at the tip. Upright,
+	# unrotated sprites keep the chunky pixels on one grid, and adding them together makes the overlaps blaze.
 	flame = FlameParticles.make_emitter({
-		"amount": 100, "lifetime": 0.45, "texture": texture,
-		"size": 0.55, "speed": Vector2(13.0, 17.0), "damping": Vector2(3.0, 5.0),
-		"spread": 8.5, "gravity": Vector3(0, 0.8, 0), "rotate": true, "fade_near": true,
-		"scale_curve": [Vector2(0.0, 0.15), Vector2(0.4, 1.1), Vector2(1.0, 0.95)],
+		"amount": 70, "lifetime": 0.45, "texture": texture, "additive": true,
+		"size": 0.42, "speed": Vector2(13.0, 17.0), "damping": Vector2(3.0, 5.0),
+		"spread": 8.5, "gravity": Vector3(0, 1.2, 0), "fade_near": true,
+		"scale_curve": [Vector2(0.0, 0.15), Vector2(0.4, 1.1), Vector2(1.0, 0.8)],
 		"colors": [
-			[0.0, Color(1.0, 1.0, 1.0, 1.0)],
-			[0.4, Color(1.0, 0.85, 0.7, 1.0)],
-			[0.62, Color(1.0, 0.62, 0.45, 1.0)],
-			[0.8, Color(0.85, 0.4, 0.35, 0.85)],
-			[0.92, Color(0.55, 0.22, 0.22, 0.5)],
+			[0.0, Color(1.0, 0.85, 0.55, 0.45)],
+			[0.35, Color(1.0, 0.6, 0.25, 0.45)],
+			[0.62, Color(1.0, 0.38, 0.12, 0.45)],
+			[0.8, Color(0.8, 0.16, 0.05, 0.4)],
+			[0.92, Color(0.5, 0.08, 0.03, 0.25)],
 		],
 	})
 
 	# Short, wide-angle puffs that fill the flanks so the stream reads as one fat flame, not a thin beam
 	licks = FlameParticles.make_emitter({
-		"amount": 48, "lifetime": 0.3, "texture": texture,
-		"size": 0.4, "speed": Vector2(7.0, 11.0), "damping": Vector2(3.0, 5.0),
-		"spread": 24.0, "gravity": Vector3(0, 0.5, 0), "rotate": true, "fade_near": true,
+		"amount": 32, "lifetime": 0.3, "texture": texture, "additive": true,
+		"size": 0.3, "speed": Vector2(7.0, 11.0), "damping": Vector2(3.0, 5.0),
+		"spread": 24.0, "gravity": Vector3(0, 0.8, 0), "fade_near": true,
 		"scale_curve": [Vector2(0.0, 0.3), Vector2(0.4, 1.0), Vector2(1.0, 0.6)],
 		"colors": [
-			[0.0, Color(1.0, 0.95, 0.85, 1.0)],
-			[0.35, Color(1.0, 0.75, 0.55, 1.0)],
-			[0.7, Color(0.9, 0.48, 0.38, 0.85)],
+			[0.0, Color(1.0, 0.75, 0.42, 0.4)],
+			[0.35, Color(1.0, 0.5, 0.18, 0.4)],
+			[0.7, Color(0.8, 0.2, 0.07, 0.35)],
 		],
 	})
 
@@ -65,9 +66,10 @@ func _ready() -> void:
 	})
 
 	embers = FlameParticles.make_emitter({
-		"amount": 18, "lifetime": 0.8, "texture": null, "additive": true,
-		"size": 0.03, "speed": Vector2(10.0, 17.0), "damping": Vector2(2.0, 5.0),
-		"spread": 16.0, "gravity": Vector3(0, -5.0, 0),
+		"amount": 30, "lifetime": 0.9, "texture": null, "additive": true,
+		"brightness": FlameParticles.HOT_BRIGHTNESS,
+		"size": 0.045, "speed": Vector2(10.0, 17.0), "damping": Vector2(2.0, 5.0),
+		"spread": 18.0, "gravity": Vector3(0, 2.0, 0),
 		"scale_curve": [Vector2(0.0, 1.0), Vector2(1.0, 0.4)],
 		"colors": [
 			[0.0, Color(1.0, 0.95, 0.5, 1.0)],
@@ -78,17 +80,19 @@ func _ready() -> void:
 
 	# Bright fireball bursting out of the nozzle
 	flare = FlameParticles.make_emitter({
-		"amount": 5, "lifetime": 0.15, "texture": texture,
+		"amount": 5, "lifetime": 0.15, "texture": texture, "additive": true,
+		"brightness": FlameParticles.HOT_BRIGHTNESS,
 		"size": 0.28, "speed": Vector2(1.0, 2.0), "damping": Vector2(0.0, 0.0),
-		"spread": 20.0, "gravity": Vector3.ZERO, "rotate": true, "fade_near": true,
+		"spread": 20.0, "gravity": Vector3.ZERO, "fade_near": true,
 		"scale_curve": [Vector2(0.0, 0.7), Vector2(1.0, 1.1)],
 		"colors": [[0.0, Color(1.0, 1.0, 1.0, 1.0)]],
 	})
 
 	pilot = FlameParticles.make_emitter({
-		"amount": 5, "lifetime": 0.35, "texture": texture,
+		"amount": 5, "lifetime": 0.35, "texture": texture, "additive": true,
+		"brightness": FlameParticles.HOT_BRIGHTNESS,
 		"size": 0.04, "speed": Vector2(0.1, 0.25), "damping": Vector2(0.0, 0.0),
-		"spread": 20.0, "gravity": Vector3(0, 0.3, 0), "rotate": true, "direction": Vector3.UP,
+		"spread": 20.0, "gravity": Vector3(0, 0.3, 0), "direction": Vector3.UP,
 		"scale_curve": [Vector2(0.0, 0.6), Vector2(0.4, 1.0), Vector2(1.0, 0.2)],
 		"colors": [
 			[0.0, Color(1.0, 1.0, 1.0, 1.0)],
@@ -104,7 +108,7 @@ func _ready() -> void:
 		add_child(emitter)
 
 	# Lights along the stream so the room, floor and enemies pick up the glow
-	for setup in [[0.9, 4.0, 6.0], [3.2, 6.0, 10.0], [6.0, 4.0, 10.0]]:
+	for setup in [[0.9, 6.0, 7.0], [3.2, 9.0, 11.0], [6.0, 6.0, 11.0]]:
 		var light := OmniLight3D.new()
 		light.light_color = Color(1.0, 0.58, 0.18)
 		light.omni_range = setup[2]
