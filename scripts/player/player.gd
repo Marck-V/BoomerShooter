@@ -113,7 +113,7 @@ signal health_updated
 signal weapon_changed
 signal key_collected(key: String)
 
-var keys := {}   # colours of the level keys the player holds; gone when the level reloads
+var keys := {}   # colours of the level keys the player holds; a respawn gives back the ones held at the checkpoint
 
 @onready var camera = $Head/Camera
 @onready var raycast = $Head/Camera/RayCast
@@ -238,7 +238,7 @@ func _physics_process(delta):
 		if global_position.y < safe_ground.y - fall_reset_distance:
 			_recover_from_fall()
 	elif position.y < kill_height:
-		get_tree().reload_current_scene()
+		Checkpoints.respawn()
 
 func add_key(key: String) -> void:
 	keys[key] = true
@@ -579,8 +579,8 @@ func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_5") and weapon_nodes.size() >= 5:
 		change_weapon(4)
 
-func change_weapon(index):
-	if index == weapon_index:
+func change_weapon(index, play_sound := true):
+	if index == weapon_index or index < 0 or index >= weapon_nodes.size():
 		return
 
 	# Disable currently equipped weapon
@@ -593,7 +593,8 @@ func change_weapon(index):
 	current_weapon.visible = true
 	current_weapon.set_process(true)
 	crosshair.texture = current_weapon.data.crosshair
-	Audio.play("assets/sounds/weapon_change.ogg")
+	if play_sound:
+		Audio.play("assets/sounds/weapon_change.ogg")
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	weapon_changed.emit(current_weapon)
 

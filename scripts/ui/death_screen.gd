@@ -13,7 +13,7 @@ func show_death_screen():
 func _on_retry_button_pressed() -> void:
 	get_tree().paused = false
 	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
-	get_tree().reload_current_scene()
+	Checkpoints.respawn()
 
 
 func _on_quit_button_pressed() -> void:
