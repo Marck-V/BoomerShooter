@@ -112,6 +112,8 @@ var phase := 1
 var max_health := 0.0
 var base_speed := 0.0
 var invulnerable := false
+const BODY_RADIUS := 0.65   # body_size() at scale 1
+const BODY_HEIGHT := 2.2
 var vulnerability := 1.0                     # set by the states that leave the boss open
 var enraged := false
 var hit_done := false
@@ -189,6 +191,11 @@ func _ready() -> void:
 # Moves its own body through its attacks, and its big collider doesn't fit the mesh's edge margin
 func _keeps_to_navmesh() -> bool:
 	return false
+
+
+# The robot's shoulders and head stick out well past its collision capsule
+func body_size() -> Vector2:
+	return Vector2(BODY_RADIUS, BODY_HEIGHT) * unit()
 
 
 func _physics_process(delta: float) -> void:
@@ -989,6 +996,7 @@ class OrbState extends BossState:
 		ball.turn_rate = 1.1
 		ball.shooter = enemy
 		ball.always_return_to_shooter = true
+		ball.shell_color = Color(1.0, 0.48, 0.06)   # orange-gold, heavier than a normal shot but still a parryable one
 		ball.get_node("SelfQueueTimer").wait_time = 9.0
 		enemy.get_tree().current_scene.add_child(ball)
 		ball.global_position = origin

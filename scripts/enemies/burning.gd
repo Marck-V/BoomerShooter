@@ -7,8 +7,9 @@ extends Node3D
 const FlameParticles = preload("res://scripts/weapons/flame_particles.gd")
 
 const TICK_TIME := 0.5
-const BODY_HEIGHT := 0.9
 const LIGHT_FLICKER_FPS := 12.0
+const NORMAL_HEIGHT := 1.75       # a normal enemy's height. Bigger enemies get more, bigger flames from it.
+const MAX_FIRE_AMOUNT := 110
 
 var enemy: Node3D
 var time_left := 0.0
@@ -19,47 +20,62 @@ var embers: GPUParticles3D
 var light: OmniLight3D
 var flicker_timer := 0.0
 var extinguished := false
+var light_scale := 1.0
 
 
 func _ready() -> void:
 	enemy = get_parent() as Node3D
 	var texture := FlameParticles.make_texture()
 
+	# Undoes the enemy's own scale, so everything here is in metres. The fire is fitted to its body instead, and
+	# wraps around the outside of it: a fire the body's size would be hidden inside the model.
+	scale = Vector3.ONE / enemy.global_basis.get_scale()
+	var body: Vector2 = enemy.body_size() if enemy.has_method("body_size") else Vector2(0.35, NORMAL_HEIGHT)
+	var radius := body.x
+	var height := body.y
+	var size_scale := sqrt(height / NORMAL_HEIGHT)
+
 	fire = FlameParticles.make_emitter({
-		"amount": 32, "lifetime": 0.55, "texture": texture,
-		"size": 0.5, "speed": Vector2(1.0, 2.2), "damping": Vector2(0.0, 0.5),
-		"spread": 25.0, "gravity": Vector3(0, 1.5, 0), "rotate": true,
-		"direction": Vector3.UP, "box": Vector3(0.28, 0.7, 0.18),
-		"scale_curve": [Vector2(0.0, 0.5), Vector2(0.35, 1.0), Vector2(1.0, 0.3)],
+		"amount": mini(int(36 * height / NORMAL_HEIGHT * size_scale), MAX_FIRE_AMOUNT),
+		"lifetime": 0.6, "texture": texture, "additive": true,
+		"brightness": FlameParticles.HOT_BRIGHTNESS,
+		"size": 0.55 * size_scale, "speed": Vector2(1.2, 2.6), "damping": Vector2(0.0, 0.5),
+		"spread": 18.0, "gravity": Vector3(0, 2.5, 0),
+		"direction": Vector3.UP, "box": Vector3(radius * 0.9, height * 0.42, radius * 0.9),
+		"scale_curve": [Vector2(0.0, 0.7), Vector2(0.3, 1.0), Vector2(1.0, 0.25)],
 		"colors": [
-			[0.0, Color(1.0, 1.0, 1.0, 1.0)],
-			[0.35, Color(1.0, 0.85, 0.7, 1.0)],
-			[0.6, Color(1.0, 0.62, 0.45, 0.95)],
-			[0.82, Color(0.8, 0.38, 0.32, 0.7)],
+			[0.0, Color(1.0, 0.95, 0.72, 0.95)],
+			[0.3, Color(1.0, 0.7, 0.32, 0.85)],
+			[0.58, Color(1.0, 0.4, 0.13, 0.75)],
+			[0.82, Color(0.72, 0.14, 0.05, 0.5)],
 		],
 	})
-	fire.position.y = BODY_HEIGHT
+	fire.position.y = height * 0.5
 	add_child(fire)
 
+	# Square sparks drifting up off the fire
 	embers = FlameParticles.make_emitter({
-		"amount": 8, "lifetime": 0.9, "texture": null, "additive": true,
-		"size": 0.03, "speed": Vector2(1.5, 3.0), "damping": Vector2(0.0, 0.0),
-		"spread": 35.0, "gravity": Vector3(0, 1.0, 0),
-		"direction": Vector3.UP, "box": Vector3(0.25, 0.6, 0.15),
-		"scale_curve": [Vector2(0.0, 1.0), Vector2(1.0, 0.3)],
+		"amount": mini(int(16 * height / NORMAL_HEIGHT), 40), "lifetime": 1.2, "texture": null, "additive": true,
+		"brightness": FlameParticles.HOT_BRIGHTNESS,
+		"size": 0.045 * size_scale, "speed": Vector2(1.5, 3.2), "damping": Vector2(0.0, 0.5),
+		"spread": 30.0, "gravity": Vector3(0, 1.0, 0),
+		"direction": Vector3.UP, "box": Vector3(radius, height * 0.45, radius),
+		"scale_curve": [Vector2(0.0, 1.0), Vector2(1.0, 0.5)],
 		"colors": [
 			[0.0, Color(1.0, 0.9, 0.4, 1.0)],
-			[0.5, Color(1.0, 0.5, 0.1, 1.0)],
+			[0.45, Color(1.0, 0.5, 0.1, 1.0)],
+			[0.8, Color(0.8, 0.15, 0.04, 1.0)],
 		],
 	})
-	embers.position.y = BODY_HEIGHT
+	embers.position.y = height * 0.5
 	add_child(embers)
 
+	light_scale = size_scale
 	light = OmniLight3D.new()
 	light.light_color = Color(1.0, 0.55, 0.15)
-	light.omni_range = 4.5
-	light.light_energy = 1.8
-	light.position.y = 1.2
+	light.omni_range = 6.0 * size_scale
+	light.light_energy = 3.0 * light_scale
+	light.position.y = height * 0.65
 	add_child(light)
 
 	fire.emitting = true
@@ -85,7 +101,7 @@ func _process(delta: float) -> void:
 	flicker_timer -= delta
 	if flicker_timer <= 0.0:
 		flicker_timer = 1.0 / LIGHT_FLICKER_FPS
-		light.light_energy = 0.0 if extinguished else randf_range(1.2, 2.0)
+		light.light_energy = 0.0 if extinguished else randf_range(2.2, 3.8) * light_scale
 
 	if extinguished:
 		return

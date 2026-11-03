@@ -1,8 +1,8 @@
 shader_type spatial;
 render_mode unshaded, blend_add, cull_back, depth_draw_never, shadows_disabled;
 
-// Aura shell for the glowing fist of a parryable attack. Only the rim of the sphere lights up, so the fist
-// inside stays visible: the centre is fully transparent and the glow builds towards the silhouette.
+// Aura shell around a parryable projectile. Only the rim of the sphere lights up, so what's inside stays
+// visible: the centre is fully transparent and the glow builds towards the silhouette.
 
 uniform vec3 aura_color : source_color = vec3(1.0, 0.75, 0.15);
 uniform float intensity : hint_range(0.0, 4.0) = 1.0;
