@@ -1,7 +1,8 @@
 extends Area3D
 
 # A TrenchBroom point entity ("level_key"): a floating coloured key the player collects by walking through it.
-# The player holds on to it until the level reloads, and the key_door of the same colour opens for them.
+# The player holds on to it for the rest of the level (a checkpoint remembers it), and the key_door of the same
+# colour opens for them.
 
 const KEY_SCENE: PackedScene = preload("res://scenes/pickups/key.tscn")
 const COLORS := {"red": Color(1.0, 0.15, 0.1), "blue": Color(0.15, 0.4, 1.0)}
@@ -60,4 +61,5 @@ func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("Player") and body.has_method("add_key"):
 		body.add_key(key)
 		Audio.play("assets/sounds/key_grab.mp3")
+		Checkpoints.mark_gone(self)
 		queue_free()

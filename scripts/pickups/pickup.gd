@@ -161,5 +161,6 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 		"Points":
 			GlobalVariables.add_points(points_amount)
 			Audio.play("assets/sounds/money_pickup.mp3")
-	
+
+	Checkpoints.mark_gone(self)
 	queue_free()

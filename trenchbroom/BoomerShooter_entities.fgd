@@ -72,3 +72,6 @@
 [
 	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
 ]
+
+@SolidClass color(51 255 230) = checkpoint : "Neon curtain across a corridor. The first time the player walks through it, their progress is saved and dying brings them back here. Stretch it across a path they must take, thinner along the way they walk than across: its curtain spans the long side."
+[]

@@ -41,6 +41,14 @@ func lock() -> void:
 		is_open = false
 
 
+# Opens straight away with no sound, for a wave already beaten before the checkpoint the player came back to
+func open_now() -> void:
+	if tween:
+		tween.kill()
+	position.y = open_y
+	is_open = true
+
+
 func _move(target_y: float) -> void:
 	Audio.play_at(global_position, "assets/sounds/garage_door_open.wav")
 	if tween:

@@ -33,6 +33,12 @@ func _exit_tree() -> void:
 func _hold_wave_enemies() -> void:
 	if wave.is_empty():
 		return
+	# Beaten before the checkpoint the player came back to: its enemies are already gone, so just open up
+	if Checkpoints.is_wave_cleared(wave):
+		triggered = true
+		for door in _wave_doors():
+			door.open_now()
+		return
 	for enemy in get_tree().get_nodes_in_group("Enemy"):
 		if "wave" in enemy and enemy.wave == wave:
 			var parent := enemy.get_parent()
@@ -78,6 +84,7 @@ func _on_enemy_died(enemy: Node3D) -> void:
 
 
 func _wave_cleared() -> void:
+	Checkpoints.mark_wave_cleared(wave)
 	for door in _wave_doors():
 		door.unlock()
 
