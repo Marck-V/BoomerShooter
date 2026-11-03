@@ -143,6 +143,17 @@ func reset_upgrades():
 
 func save_to_disk():
 	ResourceSaver.save(save_data, "user://player_save.res")
+
+# Puts points, ammo and upgrades back the way a checkpoint recorded them
+func restore_progress(points: int, ammo: Dictionary, upgrades: Dictionary):
+	save_data.points = points
+	save_data.ammo = ammo.duplicate()
+	save_data.upgrades = upgrades.duplicate()
+	points_changed.emit(save_data.points)
+	for weapon_id in save_data.ammo:
+		ammo_changed.emit(weapon_id, save_data.ammo[weapon_id])
+	upgrades_reset.emit()   # weapons re-read which upgrades they have
+	save_to_disk()
 	
 # Ammo
 func get_ammo(weapon: String):

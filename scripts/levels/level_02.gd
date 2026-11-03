@@ -25,6 +25,7 @@ func _ready() -> void:
 	_move_player_to_start()
 	# Always bake fresh so the nav mesh matches the current map (a mesh saved in the scene can go stale)
 	_bake_navigation()
+	Checkpoints.level_started(self)
 
 
 # Builds the map and waits until every step has finished
