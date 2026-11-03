@@ -13,7 +13,9 @@ The sky course's building gets a door in its east wall, leading to:
   Vault    (east, blue door) the final arena: a raised centre and high catwalks reached by grapple. Clearing the
            wave opens a reward room.
 
-Safe to run again: it replaces everything it made (all of it is east of x = 184 m). Hand edits there are lost.
+The reward room's east door leads on to the boss arena, which boss_arena.py builds east of x = 292.25 m.
+
+Safe to run again: it replaces everything it made (all of it between x = 184 m and 292.25 m). Hand edits there are lost.
 All positions in meters, x east, y north, z up. Player reach: double jump ~3.2 m, dash ~5 m.
 """
 import os
@@ -310,7 +312,7 @@ for x, y, floor in ((202.0, 106.0, F), (214.0, 70.0, F), (216.0, 56.0, PIT), (19
     pickup(x, y, floor, "Ammo", weapon_id="flamethrower")
 
 # Reward room behind the vault's far door
-room(282.5, 292.0, 92.0, 104.0, F, F + 5.5, TRIM, skip=("west",))
+room(282.5, 292.0, 92.0, 104.0, F, F + 5.5, TRIM, skip=("west",), east=[door_gap(95.0, 101.0)])
 box(282.0, 282.5, 91.5, 95.0, F - SLAB, F + 5.5, VAULT_WALL, "reward wall")
 box(282.0, 282.5, 101.0, 104.5, F - SLAB, F + 5.5, VAULT_WALL, "reward wall")
 box(282.5, 292.0, 92.0, 104.0, F + 5.5, F + 6.0, TRIM, "reward roof")
@@ -319,18 +321,19 @@ for y, kind in ((95.0, "Points"), (98.0, "Health"), (101.0, "Points")):
 
 # --- Write it: drop this wing's previous version, then add the new one
 LIMIT = m(184.0)
+EAST_LIMIT = m(292.25)   # the boss arena, east of here, is boss_arena.py's
 mf = MapFile(MAP)
-removed_brushes = mf.remove_world_brushes(lambda bounds: bounds[0][0] >= LIMIT)
+removed_brushes = mf.remove_world_brushes(lambda bounds: LIMIT <= bounds[0][0] < EAST_LIMIT)
 
 
 def in_wing(e):
     origin = e.origin()
     if origin is not None:
-        return origin[0] > LIMIT
+        return LIMIT < origin[0] < EAST_LIMIT
     if e.classname == "worldspawn":
         return False
     faces = e.text[e.text.index("{"):]
-    return bool(faces.count("(")) and brush_bounds(faces)[0][0] >= LIMIT
+    return bool(faces.count("(")) and LIMIT <= brush_bounds(faces)[0][0] < EAST_LIMIT
 
 
 removed_entities = mf.remove(in_wing)

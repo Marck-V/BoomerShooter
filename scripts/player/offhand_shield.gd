@@ -276,7 +276,9 @@ func _check_parry() -> void:
 	for enemy in get_tree().get_nodes_in_group("Enemy"):
 		if not is_instance_valid(enemy) or enemy.get("parryable") != true:
 			continue
-		var to_enemy: Vector3 = (enemy.global_position + Vector3.UP * 1.0) - camera.global_position
+		# A big enemy can say where the part to parry is (the hand boss's jabbing fingertip)
+		var parry_at: Vector3 = enemy.parry_point() if enemy.has_method("parry_point") else enemy.global_position + Vector3.UP * 1.0
+		var to_enemy: Vector3 = parry_at - camera.global_position
 		if to_enemy.length() > melee_parry_range or to_enemy.normalized().dot(forward) < 0.2:
 			continue
 		_parry_melee(enemy)

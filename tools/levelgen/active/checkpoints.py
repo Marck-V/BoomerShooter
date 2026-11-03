@@ -6,6 +6,7 @@ Each one fills a corridor the player has to walk down, wall to wall and floor to
   arena exit   the corridor just past the big arena's exit door
   hub          the hall from the sky course's building to the hub door, before the hub's wave
   vault        the hall between the blue key door and the vault door, before the final arena
+  boss         the hall from the vault's reward room to the hand boss's arena
 
 Safe to run again: it replaces every checkpoint in the map. Hand-placed checkpoints are lost.
 Positions in map units (the corridors' wall faces), x east, y north, z up.
@@ -25,6 +26,7 @@ CHECKPOINTS = [
     (256, 384, 2880, 2992, 0, 128),         # arena exit
     (5920, 6048, 3008, 3264, -800, -624),   # hub
     (7424, 7568, 3008, 3264, -800, -624),   # vault
+    (9472, 9536, 3008, 3264, -800, -640),   # boss: the hall into the hand's arena
 ]
 
 b = MapBuilder()
