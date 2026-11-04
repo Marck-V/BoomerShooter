@@ -1,0 +1,9 @@
+[gd_scene format=3 uid="uid://b3togmmgeu0gi"]
+
+[ext_resource type="PackedScene" uid="uid://b3ow38bkm2a8p" path="res://models/hand_boss/hand_boss.glb" id="1_5hob3"]
+
+[node name="HandBossPreview" type="Node3D" unique_id=913437002]
+
+[node name="HandBoss" parent="." unique_id=2007330130 instance=ExtResource("1_5hob3")]
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=976327012]
