@@ -62,6 +62,8 @@ func _volume_bounds() -> AABB:
 
 # Across the corridor's long side, halfway along its short one
 func _build_curtain() -> void:
+	if not is_inside_tree():
+		return   # removed (or replaced by the map build) before the deferred call ran
 	bounds = _volume_bounds()
 	var along_x := bounds.size.x >= bounds.size.z
 	var width := bounds.size.x if along_x else bounds.size.z
