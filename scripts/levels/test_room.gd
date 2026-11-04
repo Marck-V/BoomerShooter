@@ -4,8 +4,8 @@ extends Node3D
 # pillars, for trying out enemies without a level getting in the way.
 #
 # God mode is on by default: hits still land and lower your health, but it never goes below 1 and refills once it
-# drops under refill_below. Ammo is unlimited too (unlimited_ammo). Nothing is placed in the room; spawn what you
-# want to test:
+# drops under refill_below. Ammo is unlimited too (unlimited_ammo). A grapple point hangs above the platform for
+# trying the shield's grapple. No enemies are placed in the room; spawn what you want to test:
 #   Alt+1..Alt+9   spawn the matching entry of `spawnable` in front of you
 #   Alt+0          remove every enemy
 #   Alt+F          freeze / unfreeze the enemies' AI (they stay where they are, animations pause)

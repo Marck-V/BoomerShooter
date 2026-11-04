@@ -9,6 +9,7 @@
 [ext_resource type="Texture2D" uid="uid://dj1pa6dcqpfk0" path="res://trenchbroom/textures/world/texture_13_wall.png" id="7_wall_tex"]
 [ext_resource type="Texture2D" uid="uid://cgoabpqirkxkg" path="res://trenchbroom/textures/world/texture_10_stairs.png" id="8_stairs_tex"]
 [ext_resource type="Texture2D" uid="uid://cenyqk0lgbv81" path="res://trenchbroom/textures/world/texture_01.png" id="9_grid_tex"]
+[ext_resource type="Script" uid="uid://bfo2aykuwm4xa" path="res://scripts/levels/grapple_point.gd" id="10_grapple"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_room"]
 geometry_parsed_geometry_type = 1
@@ -202,6 +203,10 @@ crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="UpgradeStation" parent="." unique_id=1531118628 instance=ExtResource("4_station")]
 transform = Transform3D(1.0000002, 0, 0, 0, 1, 0, 0, 0, 1.0000002, -29.549393, 0.85676384, 23.694038)
+
+[node name="GrapplePoint" type="Area3D" parent="." unique_id=1627304915]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 6.5, -16)
+script = ExtResource("10_grapple")
 
 [node name="Help" type="CanvasLayer" parent="." unique_id=1814608667]
 

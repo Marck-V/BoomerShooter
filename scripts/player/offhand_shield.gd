@@ -774,11 +774,13 @@ func _nearest_enemy(from_position: Vector3, max_distance: float, need_line_of_si
 	return best
 
 
+# face_forward: held in the hand, the front (dome) facing away towards enemies and the back towards the player.
+# Otherwise (thrown) it lies flat with the dome up.
 func _make_disc(face_forward: bool) -> Node3D:
 	var root := ShieldModel.build()
 
 	if face_forward:
-		root.rotation_degrees.x = 90.0
+		root.rotation_degrees.x = -90.0
 		var holder := Node3D.new()
 		holder.add_child(root)
 		holder.set_meta("mats", root.get_meta("mats"))
