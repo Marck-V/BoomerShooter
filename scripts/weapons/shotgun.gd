@@ -39,11 +39,10 @@ func get_shield_multiplier() -> float:
 	return 1.0
 
 
-func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D):
+func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCast3D) -> bool:
 	# An empty click is not a shot: it must not advance the glitch shot counter
-	if GlobalVariables.get_ammo("shotgun") <= 0:
-		super.fire(origin, direction, camera, raycast)
-		return
+	if not GlobalVariables.can_spend_ammo("shotgun", 1):
+		return super.fire(origin, direction, camera, raycast)
 
 	# Glitch shot logic
 	if has_glitch_shot:
@@ -58,7 +57,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 	_update_glitch_glow()
 
 	# Base firing
-	super.fire(origin, direction, camera, raycast)
+	var fired := super.fire(origin, direction, camera, raycast)
 
 	# Recoil animation
 	if tween:
@@ -72,6 +71,7 @@ func fire(origin: Vector3, direction: Vector3, camera: Camera3D, raycast: RayCas
 
 	# Reset damage for next shot
 	data.damage = base_dmg
+	return fired
 
 
 func _reset_rotation():

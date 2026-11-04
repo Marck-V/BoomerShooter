@@ -34,12 +34,12 @@ func _ready() -> void:
 # ---------------------------
 # Firing
 # ---------------------------
-func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
+func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D) -> bool:
 	if !data or !raycast:
-		return
+		return false
 	if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, AMMO_PER_SHOT):
 		Audio.play("assets/sounds/empty_gun.mp3")
-		return
+		return false
 
 	Audio.play(data.sound)
 	play_muzzle_flash(true)
@@ -70,6 +70,7 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 					_run_chain(chain_target)
 
 			spawn_impact_particles(raycast, camera)
+	return true
 
 # ---------------------------
 # Chain Lightning
