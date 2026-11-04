@@ -90,7 +90,7 @@ data = ExtResource("6_smehm")
 [node name="Flamethrower" parent="Head/Camera/WeaponHolder" unique_id=816993645 instance=ExtResource("9_flame")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.17, -0.15, -0.35)
 
-[node name="LightningGun" parent="Head/Camera/WeaponHolder" instance=ExtResource("10_lightning")]
+[node name="LightningGun" parent="Head/Camera/WeaponHolder" unique_id=2028577586 instance=ExtResource("10_lightning")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.11, -0.1, -0.1)
 visible = false
 

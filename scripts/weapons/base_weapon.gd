@@ -111,12 +111,14 @@ func damage_hit(collider: Object, amount: float, point: Vector3) -> void:
 	collider.damage(amount)
 
 
-func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
+# Returns whether the shot went off (false for an empty click), so a weapon's own extras only follow a real shot.
+# (Don't tell that from the ammo count: in the test room ammo is unlimited and never goes down.)
+func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D) -> bool:
 	if !data or !raycast:
-		return
+		return false
 	if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, 1):
 		Audio.play("assets/sounds/empty_gun.mp3")
-		return
+		return false
 		
 	Audio.play(data.sound)
 	play_muzzle_flash()
@@ -145,7 +147,9 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 
 			# Multi-pellet weapons get lighter bursts per pellet
 			spawn_impact_particles(raycast, camera, 1.0 if data.shot_count <= 1 else 0.5)
-			
+	return true
+
+
 func spawn_impact_particles(raycast: RayCast3D, camera: Camera3D, amount_scale := 1.0) -> void:
 	var hit_point := raycast.get_collision_point()
 
