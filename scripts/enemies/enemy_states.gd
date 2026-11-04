@@ -80,6 +80,9 @@ class ChaseState:
 		# --- Distance-based speed reduction (stop jitter near waypoints) ---
 		var distance_to_waypoint = enemy.global_position.distance_to(next_pos)
 		var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
+		# Enemies that pace their own arrival (melee enemies walking to a waiting spot) opt out of the slowdown
+		if enemy.has_method("chase_eases_into_waypoints") and not enemy.chase_eases_into_waypoints():
+			speed_multiplier = 1.0
 		
 		enemy.should_move = true
 		enemy.velocity = dir * enemy.chase_speed() * speed_multiplier
