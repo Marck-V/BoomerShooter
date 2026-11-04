@@ -32,6 +32,10 @@ const REFLECT_DAMAGE_MULT := 2.0
 const REFLECT_MASK := 2 | 4          # environment + enemy bodies
 const REFLECT_HIT_STRENGTH := 3.0     # flinch strength on the enemy a reflected ball lands on
 const REFLECT_HIT_FLASH_RADIUS := 1.9 # hit flash radius multiplier
+# A boss's orb sent back (always_return_to_shooter) chases its shooter straight on and can't miss: it flies through
+# the level, and counts as a hit once it is this close to the point it aims at (on top of one frame's travel)
+const RETURN_SPEED_MULT := 4.0
+const RETURN_HIT_RADIUS := 1.5
 
 # Yellow always means "you can parry this"; a ball the player sent back turns cyan, like the shield
 const SHARD_COLOR := Color(1.4, 1.1, 0.1)
@@ -198,8 +202,9 @@ func reflect(new_target: Node3D, direction: Vector3) -> void:
 	if reflected:
 		return
 	reflected = true
-	collision_mask = REFLECT_MASK
-	SPEED *= REFLECT_SPEED_MULT
+	var returning := always_return_to_shooter and new_target == shooter and is_instance_valid(new_target)
+	collision_mask = 4 if returning else REFLECT_MASK   # enemy bodies only: the walls can't stop it on the way
+	SPEED *= RETURN_SPEED_MULT if returning else REFLECT_SPEED_MULT
 	damage *= REFLECT_DAMAGE_MULT
 	velocity = direction.normalized() * SPEED
 	target = new_target
@@ -277,9 +282,17 @@ func _physics_process(delta):
 		var scale_value = lerp(1.0, max_scale, scale_progress)
 		scale = Vector3.ONE * scale_value
 
-	if is_instance_valid(target):
+	if reflected and always_return_to_shooter and target == shooter and is_instance_valid(target):
+		# Straight at it every frame, wherever it moves
+		var to_aim := _aim_point() - global_position
+		if to_aim.length() <= SPEED * delta + RETURN_HIT_RADIUS:
+			global_position += to_aim
+			_hit_reflected(target)
+			return
+		velocity = to_aim.normalized() * SPEED
+	elif is_instance_valid(target):
 		# Homing calculation
-		var to_target = (target.global_position + target_offset - global_position).normalized()
+		var to_target = (_aim_point() - global_position).normalized()
 		var turn_strength = clamp(turn_rate * delta / velocity.length(), 0, 1)
 		velocity = velocity.slerp(to_target * SPEED, turn_strength)
 
@@ -292,33 +305,20 @@ func _physics_process(delta):
 		look_at(global_position + direction, Vector3.UP)
 
 
+# Where it homes to on its target: the target's own choice (the hand boss aims it at its palm), else above its origin
+func _aim_point() -> Vector3:
+	if reflected and target.has_method("reflect_aim_point"):
+		return target.reflect_aim_point()
+	return target.global_position + target_offset
+
+
 func set_target(t: Node3D) -> void:
 	target = t
 
 
 func _on_body_entered(body):
-	# The player already gets the damage flash or the shield's block sparks, right in front of the camera
-	if not body.is_in_group("Player"):
-		_spawn_flash(get_parent(), global_position, REFLECT_COLOR if reflected else INCOMING_COLOR, IMPACT_FLASH_SIZE * scale.x)
-		ImpactParticles.spawn(get_tree(), global_position, -velocity.normalized(), 0.8)
-
 	if reflected:
-		# The boss has its own response to a returned orb (it breaks the shield and staggers it)
-		if body.has_method("on_reflected_orb_hit"):
-			body.on_reflected_orb_hit(damage)
-			if body.has_method("hit_flash"):
-				body.hit_flash(global_position, REFLECT_HIT_STRENGTH, REFLECT_HIT_FLASH_RADIUS)
-			BloodParticles.spawn(get_tree(), global_position, velocity, 2.0, BloodParticles.thickness_for(body))
-			queue_free()
-			return
-		if body.is_in_group("Enemy") and body.has_method("damage"):
-			var shielded: bool = "shield" in body and body.shield != null and is_instance_valid(body.shield)
-			body.damage(damage)
-			if body.has_method("hit_flash"):
-				body.hit_flash(global_position, REFLECT_HIT_STRENGTH, REFLECT_HIT_FLASH_RADIUS)
-			if not shielded:
-				BloodParticles.spawn(get_tree(), global_position, velocity, 1.3, BloodParticles.thickness_for(body))
-		queue_free()
+		_hit_reflected(body)
 		return
 
 	if body.is_in_group("Player") and body.get("shield_blocking") == true and _is_in_front_of(body):
@@ -326,11 +326,41 @@ func _on_body_entered(body):
 		queue_free()
 		return
 
-	if body.is_in_group("Player") and body.has_method("damage"):
+	if not body.is_in_group("Player"):
+		_spawn_impact()
+	elif body.has_method("damage"):
 		# The shared player: this ball's own one is freed along with it before the sound could start
 		Audio.play("assets/audio/sfx/enemies/Enemy_ProjectileHit1.wav,
 				   assets/audio/sfx/enemies/Enemy_ProjectileHit2.wav")
 		body.damage(damage)
+	queue_free()
+
+
+# The player already gets the damage flash or the shield's block sparks, right in front of the camera, so this is
+# only for hits on anything else
+func _spawn_impact() -> void:
+	_spawn_flash(get_parent(), global_position, REFLECT_COLOR if reflected else INCOMING_COLOR, IMPACT_FLASH_SIZE * scale.x)
+	ImpactParticles.spawn(get_tree(), global_position, -velocity.normalized(), 0.8)
+
+
+# A ball the player sent back lands on something: an enemy, the level, or the boss that fired it
+func _hit_reflected(body: Node) -> void:
+	if is_queued_for_deletion():
+		return   # already landed this frame
+	_spawn_impact()
+	# The boss has its own response to a returned orb (it breaks the shield and staggers it)
+	if body.has_method("on_reflected_orb_hit"):
+		body.on_reflected_orb_hit(damage)
+		if body.has_method("hit_flash"):
+			body.hit_flash(global_position, REFLECT_HIT_STRENGTH, REFLECT_HIT_FLASH_RADIUS)
+		BloodParticles.spawn(get_tree(), global_position, velocity, 2.0, BloodParticles.thickness_for(body))
+	elif body.is_in_group("Enemy") and body.has_method("damage"):
+		var shielded: bool = "shield" in body and body.shield != null and is_instance_valid(body.shield)
+		body.damage(damage)
+		if body.has_method("hit_flash"):
+			body.hit_flash(global_position, REFLECT_HIT_STRENGTH, REFLECT_HIT_FLASH_RADIUS)
+		if not shielded:
+			BloodParticles.spawn(get_tree(), global_position, velocity, 1.3, BloodParticles.thickness_for(body))
 	queue_free()
 
 
