@@ -1,0 +1,219 @@
+[gd_scene format=3 uid="uid://bau51vi8cwqm5"]
+
+[ext_resource type="Script" uid="uid://ctnqgtsetvx0l" path="res://scripts/levels/test_room.gd" id="1_room"]
+[ext_resource type="PackedScene" uid="uid://bdi5vfh3p5wd4" path="res://scenes/player/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" uid="uid://cvsj2ocn18c6h" path="res://scenes/ui/hud.tscn" id="3_hud"]
+[ext_resource type="PackedScene" uid="uid://qrpq15dcfyie" path="res://scenes/ui/upgrade_station.tscn" id="4_station"]
+[ext_resource type="Environment" uid="uid://mt6ucwllbw2w" path="res://resources/environments/synthwave_environment.tres" id="5_env"]
+[ext_resource type="Texture2D" uid="uid://cf812tvbf7k51" path="res://trenchbroom/textures/world/texture_09.png" id="6_floor_tex"]
+[ext_resource type="Texture2D" uid="uid://dj1pa6dcqpfk0" path="res://trenchbroom/textures/world/texture_13_wall.png" id="7_wall_tex"]
+[ext_resource type="Texture2D" uid="uid://cgoabpqirkxkg" path="res://trenchbroom/textures/world/texture_10_stairs.png" id="8_stairs_tex"]
+[ext_resource type="Texture2D" uid="uid://cenyqk0lgbv81" path="res://trenchbroom/textures/world/texture_01.png" id="9_grid_tex"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_room"]
+geometry_parsed_geometry_type = 1
+agent_max_climb = 0.5
+
+[sub_resource type="BoxShape3D" id="Shape_floor"]
+size = Vector3(60, 1, 60)
+
+[sub_resource type="StandardMaterial3D" id="Material_floor"]
+albedo_texture = ExtResource("6_floor_tex")
+metallic_specular = 0.0
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="BoxMesh" id="Mesh_floor"]
+material = SubResource("Material_floor")
+size = Vector3(60, 1, 60)
+
+[sub_resource type="BoxShape3D" id="Shape_wall_x"]
+size = Vector3(62, 5, 1)
+
+[sub_resource type="StandardMaterial3D" id="Material_wall"]
+albedo_texture = ExtResource("7_wall_tex")
+metallic_specular = 0.0
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="BoxMesh" id="Mesh_wall_x"]
+material = SubResource("Material_wall")
+size = Vector3(62, 5, 1)
+
+[sub_resource type="BoxShape3D" id="Shape_wall_z"]
+size = Vector3(1, 5, 60)
+
+[sub_resource type="BoxMesh" id="Mesh_wall_z"]
+material = SubResource("Material_wall")
+size = Vector3(1, 5, 60)
+
+[sub_resource type="StandardMaterial3D" id="Material_grid"]
+albedo_texture = ExtResource("9_grid_tex")
+metallic_specular = 0.0
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="StandardMaterial3D" id="Material_ramp"]
+albedo_texture = ExtResource("8_stairs_tex")
+metallic_specular = 0.0
+uv1_scale = Vector3(0.5, 0.5, 0.5)
+uv1_triplanar = true
+uv1_world_triplanar = true
+texture_filter = 2
+
+[sub_resource type="BoxShape3D" id="Shape_platform"]
+size = Vector3(8, 2, 8)
+
+[sub_resource type="BoxMesh" id="Mesh_platform"]
+material = SubResource("Material_grid")
+size = Vector3(8, 2, 8)
+
+[sub_resource type="BoxShape3D" id="Shape_ramp"]
+size = Vector3(4, 0.5, 6.32)
+
+[sub_resource type="BoxMesh" id="Mesh_ramp"]
+material = SubResource("Material_ramp")
+size = Vector3(4, 0.5, 6.32)
+
+[sub_resource type="BoxShape3D" id="Shape_pillar"]
+size = Vector3(2, 4.5, 2)
+
+[sub_resource type="BoxMesh" id="Mesh_pillar"]
+material = SubResource("Material_grid")
+size = Vector3(2, 4.5, 2)
+
+[node name="TestRoom" type="Node3D" unique_id=816527963]
+script = ExtResource("1_room")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=308758486]
+environment = ExtResource("5_env")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=424202734]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 12, 0)
+light_energy = 1.2
+shadow_enabled = true
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="." unique_id=1739904402]
+navigation_mesh = SubResource("NavigationMesh_room")
+
+[node name="Floor" type="StaticBody3D" parent="NavigationRegion3D" unique_id=1235094628]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.5, 0)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Floor" unique_id=391480247]
+shape = SubResource("Shape_floor")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Floor" unique_id=1729864983]
+mesh = SubResource("Mesh_floor")
+
+[node name="WallNorth" type="StaticBody3D" parent="NavigationRegion3D" unique_id=1288141785]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, -30.5)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/WallNorth" unique_id=1989287613]
+shape = SubResource("Shape_wall_x")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/WallNorth" unique_id=694488559]
+mesh = SubResource("Mesh_wall_x")
+
+[node name="WallSouth" type="StaticBody3D" parent="NavigationRegion3D" unique_id=363560153]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 30.5)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/WallSouth" unique_id=1078793335]
+shape = SubResource("Shape_wall_x")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/WallSouth" unique_id=2102132591]
+mesh = SubResource("Mesh_wall_x")
+
+[node name="WallEast" type="StaticBody3D" parent="NavigationRegion3D" unique_id=90143391]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 30.5, 2, 0)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/WallEast" unique_id=1813713058]
+shape = SubResource("Shape_wall_z")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/WallEast" unique_id=245334583]
+mesh = SubResource("Mesh_wall_z")
+
+[node name="WallWest" type="StaticBody3D" parent="NavigationRegion3D" unique_id=1390646803]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30.5, 2, 0)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/WallWest" unique_id=671564006]
+shape = SubResource("Shape_wall_z")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/WallWest" unique_id=89933563]
+mesh = SubResource("Mesh_wall_z")
+
+[node name="Platform" type="StaticBody3D" parent="NavigationRegion3D" unique_id=1961530681]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 16, 1, -16)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Platform" unique_id=587358237]
+shape = SubResource("Shape_platform")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Platform" unique_id=486024748]
+mesh = SubResource("Mesh_platform")
+
+[node name="Ramp" type="StaticBody3D" parent="NavigationRegion3D" unique_id=1220263044]
+transform = Transform3D(1, 0, 0, 0, 0.948683, 0.316228, 0, -0.316228, 0.948683, 16, 0.763, -9.079)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/Ramp" unique_id=849253421]
+shape = SubResource("Shape_ramp")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/Ramp" unique_id=586394032]
+mesh = SubResource("Mesh_ramp")
+
+[node name="PillarWest" type="StaticBody3D" parent="NavigationRegion3D" unique_id=1409023477]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10, 1.75, -8)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/PillarWest" unique_id=408883065]
+shape = SubResource("Shape_pillar")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/PillarWest" unique_id=1580321638]
+mesh = SubResource("Mesh_pillar")
+
+[node name="PillarEast" type="StaticBody3D" parent="NavigationRegion3D" unique_id=113629159]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 10, 1.75, 6)
+collision_layer = 3
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="NavigationRegion3D/PillarEast" unique_id=551377125]
+shape = SubResource("Shape_pillar")
+
+[node name="Mesh" type="MeshInstance3D" parent="NavigationRegion3D/PillarEast" unique_id=461899241]
+mesh = SubResource("Mesh_pillar")
+
+[node name="Enemies" type="Node3D" parent="." unique_id=8888506]
+
+[node name="HUD" parent="." unique_id=1858418111 instance=ExtResource("3_hud")]
+
+[node name="Player" parent="." unique_id=1874416957 node_paths=PackedStringArray("crosshair") instance=ExtResource("2_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 8)
+crosshair = NodePath("../HUD/InGameHUD/Crosshair")
+
+[node name="UpgradeStation" parent="." unique_id=1531118628 instance=ExtResource("4_station")]
+transform = Transform3D(1.0000002, 0, 0, 0, 1, 0, 0, 0, 1.0000002, -29.549393, 0.85676384, 23.694038)
+
+[node name="Help" type="CanvasLayer" parent="." unique_id=1814608667]
+
+[node name="Label" type="Label" parent="Help" unique_id=1945004445]
+offset_left = 16.0
+offset_top = 16.0
+offset_right = 520.0
+offset_bottom = 150.0
+theme_override_colors/font_color = Color(1, 1, 1, 0.75)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 0.8)
+theme_override_constants/outline_size = 4
+text = "TEST ROOM  (god mode: you can't die)
+Alt+1 horde   Alt+2 melee dodger   Alt+3 swordsman   Alt+4 ranged
+Alt+5 dodger   Alt+6 flyer   Alt+7 bomber   Alt+8 brute
+Alt+0 clear enemies   Alt+F freeze / unfreeze AI"

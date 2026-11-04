@@ -2,14 +2,11 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dde2dfulowg0t"
+uid="uid://c67u113bu21ns"
 path.s3tc="res://.godot/imported/MISC_2025_Pizza_Slice_128.png-141574fbca258d856c28860a336979a5.s3tc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
-}
-generator_parameters={
-"md5": "3822ba97f546b774d88311b51c4874e8"
 }
 
 [deps]

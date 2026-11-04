@@ -49,8 +49,11 @@ const PLAYER_HIGH := 1.7                    # ...to this
 
 const PARRY_COLOR := Color(1.0, 0.8, 0.15)  # yellow: parryable
 const DANGER_COLOR := Color(1.0, 0.1, 0.04) # red: not parryable
+const STREAK_LEAD := 0.04                   # the red streak shows from this long before the hit window...
+const STREAK_TAIL := 0.04                   # ...to this long after it (seconds into the clip)
 
 var sword: Node3D
+var streak: SwordStreak                     # red motion streak behind the blade on the attacks that can't be parried
 var blade_material: StandardMaterial3D
 var blade_glow_tween: Tween
 var last_tip := Vector3.INF
@@ -63,6 +66,11 @@ func _ready():
 	attack_idle_animation = "Sword_Idle"
 	_build_sword()
 	_hold_grip()
+	streak = SwordStreak.new()
+	streak.name = "SwordStreak"
+	streak.color = Color(1.0, 0.05, 0.02)    # the blade's red, a touch deeper so the added glow stays red
+	streak.blade = func() -> Array: return [blade_points()[0], blade_points()[2]]
+	add_child(streak)
 	# The horde enemy's glow belongs on a fist: move it to the blade, without the arm heat
 	if glow_fist:
 		glow_fist.reparent(sword, false)
@@ -330,6 +338,8 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 			glow_strength = clampf(at / maxf(parry_from, 0.01), 0.0, 1.0)
 			if not parryable and at >= parry_from and at < hit_end:
 				_open_parry_window()
+		# The red strike leaves a red streak through its swing
+		streak.active = not can_be_parried and at >= hit_start - STREAK_LEAD and at < hit_end + STREAK_TAIL
 		if at >= hit_start and at < hit_end:
 			if not hitting:
 				hitting = true
@@ -346,6 +356,7 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 
 
 func _end_strike_fx() -> void:
+	streak.active = false
 	parryable = false
 	set_parry_glow(false)
 	set_blade_glow(blade_material.emission, 0.0, 0.15)
@@ -430,6 +441,7 @@ class SwordDashState:
 			enemy.move_and_slide()
 		else:
 			enemy.velocity = Vector3.ZERO
+		enemy.streak.active = at >= DASH["hit"][0] - STREAK_LEAD and at < DASH["hit"][1] + STREAK_TAIL
 		if at >= DASH["hit"][0] and at < DASH["hit"][1]:
 			if enemy.last_tip == Vector3.INF:
 				enemy._begin_hit()
@@ -442,6 +454,7 @@ class SwordDashState:
 			enemy.resume_after_move()
 
 	func exit():
+		enemy.streak.active = false
 		enemy.lunging = false
 		enemy.is_attacking = false
 		enemy.last_tip = Vector3.INF
