@@ -15,7 +15,7 @@ class_name HandBoss
 # or a crush, and the palm while it is open (volley, stuck finger, stagger).
 #
 # The map's hand_boss entity puts it on the arena floor in wave "boss": the wave trigger holds it out of the level
-# until the player walks in, then it comes down through the portal and touches the water.
+# until the player walks in, then it punches down through the portal as a fist and slams into the water.
 #
 # How it moves: the root is the wrist. Every attack is a coroutine of glide()/wait()/track() steps, and each of
 # those returns false as soon as action_token changes. interrupt() bumps the token and queues a reaction (stagger,
@@ -41,10 +41,11 @@ const SFX_HIT := "assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Bos
 const SFX_DEATH := "assets/audio/sfx/boss/Boss_Death1.wav"
 const SFX_SHOOT := "assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav, assets/audio/sfx/enemies/Enemy_Shoot2_PitchedUp.wav"
 
-const PARRY_GLOW := Color(1.0, 0.8, 0.15)       # yellow: "you can parry this"
-const CHARGE_GLOW := Color(1.0, 0.4, 0.1)
-const WEAK_GLOW := Color(1.0, 0.9, 0.4)          # open to critical hits
-const VOLLEY_GLOW := Color(1.0, 0.2, 0.7)
+# Yellow is kept for "you can parry this" (the last poke, the flick, the volley), red for "this can't be parried:
+# get out of the way", so the colour alone tells the player whether to raise the shield or move
+const PARRY_GLOW := Color(1.0, 0.8, 0.15)       # yellow: parryable
+const DANGER_GLOW := Color(1.0, 0.1, 0.04)       # red: not parryable
+const WEAK_GLOW := Color(0.55, 0.85, 1.0)        # pale blue: open to critical hits
 const WARN_COLOR := Color(1.0, 0.25, 0.1)
 
 const FINGERS := ["index", "middle", "ring", "pinky"]
@@ -60,12 +61,13 @@ enum Ease { SMOOTH, IN, OUT, LINEAR }
 
 @export_category("Entrance")
 @export var portal_height := 36.0           # meters above the floor that the portal opens
-@export var entrance_time := 2.2
+@export var entrance_windup := 0.35        # the portal tears open with the fist still out of sight
+@export var entrance_time := 0.5            # the punch from the portal down to the water
 
 @export_category("Fist Slam")
 @export var slam_track_time := 1.3
 @export var slam_damage := 45.0
-@export var slam_hold := 2.2                # planted, knuckles exposed
+@export var slam_hold := 1.2                # planted, knuckles exposed
 
 @export_category("Poke")
 @export var poke_damage := 30.0
@@ -76,6 +78,7 @@ enum Ease { SMOOTH, IN, OUT, LINEAR }
 @export_category("Flick")
 @export var flick_damage := 35.0
 @export var flick_charge := 1.3
+@export var flick_orb_speed := 20.0         # m/s on the way to the player (a parried one comes back 4x faster)
 @export var flick_reflect_fraction := 0.06  # share of its full health a parried orb takes off
 @export var stagger_time := 2.8
 
@@ -87,7 +90,7 @@ enum Ease { SMOOTH, IN, OUT, LINEAR }
 @export_category("Nail Volley")
 @export var volley_count := 3
 @export var shard_damage := 12.0
-@export var shard_speed := 18.0
+@export var shard_speed := 24.0
 
 @export_category("Drumroll")
 @export var drum_taps := 8
@@ -116,6 +119,7 @@ var action_token := 0
 var pending_reaction := ""
 var cooldown_until := {}
 var awake := false
+var frames_in_level := 0                    # frames (process, not physics) since it last entered the tree
 var home := Vector3.ZERO                    # the arena floor under where it was placed
 var floor_y := 0.0
 var hand_length := 13.5                     # wrist to middle fingertip, meters
@@ -133,6 +137,7 @@ var portal: Node3D
 var portal_disc: ShaderMaterial
 var portal_follows := false                 # false: it stays where it is; true: it rides on the end of the forearm
 var portal_size := 0.0
+var portal_tween: Tween
 
 
 func _find_model_root() -> Node3D:
@@ -191,15 +196,25 @@ func _ready() -> void:
 	_set_layers_enabled(false)
 
 
+# Wave triggers take their enemies out of the level a few frames after it loads, and a respawn can put the player
+# within wake_distance before that: so it settles in for a moment before it can wake (see also _go_dormant).
+const WAKE_SETTLE_FRAMES := 6   # process frames, like the wave trigger's wait: a loading hitch is one of them
+
+
+func _enter_tree() -> void:
+	frames_in_level = 0
+
+
 func _physics_process(delta: float) -> void:
 	super(delta)
-	if not awake and not destroyed and is_instance_valid(target):
+	if not awake and not destroyed and frames_in_level > WAKE_SETTLE_FRAMES and _target_here():
 		if flat_distance(target.global_position, global_position) <= wake_distance:
 			awake = true
 			_brain()
 
 
 func _process(_delta: float) -> void:
+	frames_in_level += 1
 	_update_portal()
 
 
@@ -262,8 +277,13 @@ func floor_point(point: Vector3) -> Vector3:
 	return Vector3(point.x, hit["position"].y, point.z)
 
 
+# The player exists and is still in the level (not mid-reload after dying)
+func _target_here() -> bool:
+	return is_instance_valid(target) and target.is_inside_tree()
+
+
 func target_floor() -> Vector3:
-	return Vector3(target.global_position.x, floor_y, target.global_position.z) if is_instance_valid(target) else home
+	return Vector3(target.global_position.x, floor_y, target.global_position.z) if _target_here() else home
 
 
 # A point kept inside the arena (a little in from its wall)
@@ -286,7 +306,7 @@ static func hand_basis(fingers: Vector3, palm: Vector3) -> Basis:
 
 # Hanging fingers-down with the back of the hand to the player, as in the reference picture
 func hanging_basis() -> Basis:
-	var away := flat(global_position - target.global_position) if is_instance_valid(target) else Vector3.FORWARD
+	var away := flat(global_position - target.global_position) if _target_here() else Vector3.FORWARD
 	if away.length() < 0.1:
 		away = Vector3.FORWARD
 	return hand_basis(Vector3.DOWN, away.normalized())
@@ -455,7 +475,10 @@ func _portal_smoke() -> GPUParticles3D:
 
 
 func set_portal_open(amount: float, seconds: float) -> Tween:
+	if portal_tween != null and portal_tween.is_valid():
+		portal_tween.kill()
 	var tween := create_tween()
+	portal_tween = tween
 	tween.tween_method(func(v: float): portal_disc.set_shader_parameter("open_amount", v),
 			float(portal_disc.get_shader_parameter("open_amount")), amount, seconds) \
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT if amount > 0.5 else Tween.EASE_IN)
@@ -482,7 +505,7 @@ static func _basis_with_up(up: Vector3) -> Basis:
 
 # ---------------------------------------------------------------------------------------------------- the look
 
-var glow_color := CHARGE_GLOW
+var glow_color := DANGER_GLOW
 var glow_amount := 0.0
 
 
@@ -563,6 +586,8 @@ func wait(seconds: float) -> bool:
 
 # Moves the wrist to `to` over `seconds`. Returns false if interrupted.
 func glide(to: Transform3D, seconds: float, curve := Ease.SMOOTH) -> bool:
+	if not is_inside_tree():
+		return false
 	var from := global_transform
 	seconds = maxf(seconds, 0.01)
 	return await track(seconds, func(t: float, _dt: float):
@@ -574,6 +599,8 @@ func track(seconds: float, step: Callable) -> bool:
 	var token := action_token
 	var elapsed := 0.0
 	while elapsed < seconds:
+		if not is_inside_tree():
+			return false   # the level is being reloaded (the player died): stop without touching the transform
 		await get_tree().physics_frame
 		if token != action_token or not is_inside_tree():
 			return false
@@ -601,6 +628,8 @@ func hover_transform() -> Transform3D:
 
 
 func hover(seconds: float) -> bool:
+	if not is_inside_tree():
+		return false
 	pose("Hover", 0.4)
 	return await track(seconds, func(_t: float, dt: float): steer(hover_transform(), dt, 2.0))
 
@@ -612,7 +641,7 @@ func speed() -> float:
 # ------------------------------------------------------------------------------------------------- hurting things
 
 func player_height() -> float:
-	return target.global_position.y - floor_y if is_instance_valid(target) else INF
+	return target.global_position.y - floor_y if _target_here() else INF
 
 
 func hurt_player(amount: float, push: Vector3) -> void:
@@ -640,6 +669,42 @@ func in_footprint(wrist: Vector3, along: Vector3, back: float, front: float, hal
 # ------------------------------------------------------------------------------------------------------- the brain
 
 func _brain() -> void:
+	var placed := transform
+	await _fight()
+	# Taken out of the level part-way through: a wave trigger holding the boss back caught it after it woke (on a
+	# respawn the player is put back within wake_distance before the trigger has collected its wave). Go back to
+	# sleep where it was placed, so it wakes and makes its entrance again once the trigger lets it back in.
+	if not destroyed and not is_inside_tree():
+		_go_dormant(placed)
+
+
+func _go_dormant(placed: Transform3D) -> void:
+	awake = false
+	action_token += 1   # anything still awaiting gives up
+	pending_reaction = ""
+	for warning in action_fx:
+		if is_instance_valid(warning):
+			warning.finish(0.15)
+	action_fx.clear()
+	parryable = false
+	invulnerable = true
+	set_weak_points(false, false)
+	if glow_tween != null and glow_tween.is_valid():
+		glow_tween.kill()
+	_apply_glow(0.0)
+	if portal_tween != null and portal_tween.is_valid():
+		portal_tween.kill()
+	portal_disc.set_shader_parameter("open_amount", 0.0)
+	transform = placed   # local: the global transform can't be set out of the tree
+	model_root.visible = false
+	portal.visible = false
+	portal_follows = false
+	_set_layers_enabled(false)
+	if health_bar and health_bar.has_method("hide_bar"):
+		health_bar.hide_bar()
+
+
+func _fight() -> void:
 	home = global_position
 	floor_y = global_position.y
 	floor_y = floor_point(global_position).y
@@ -657,7 +722,7 @@ func _brain() -> void:
 			await hover(0.4)
 			continue
 		await _run_attack(attack)
-		if destroyed:
+		if destroyed or not is_inside_tree():
 			return
 		if pending_reaction.is_empty():
 			_end_action()
@@ -737,23 +802,29 @@ func _entrance() -> void:
 	portal.global_transform = Transform3D(Basis.IDENTITY, portal_point)
 	portal.visible = true
 	portal_follows = false
-	set_portal_open(1.0, 0.8)   # the tear rips open
+	set_portal_open(1.0, 0.4)   # the tear rips open
 	play_sfx(SFX_ROAR)
-	rattle_player_camera(0.4)
+	rattle_player_camera(0.5)
 
-	# Starts fully above the portal (so none of it is drawn) and comes down through it, reaching for the water
-	pose("Entrance", 0.0)
+	# Starts fully above the portal (so none of it is drawn) as a clenched fist
+	pose("Fist", 0.0)
 	var basis := hanging_basis()
 	global_transform = Transform3D(basis, portal_point + Vector3.UP * (hand_length + 1.0))
 	model_root.visible = true
-	if not await wait(0.25):
+	if not await wait(entrance_windup):
 		return
-	var touch_local := local_point(bone_tip("index_3"))
-	var touch_point := home + flat(target_floor() - home).limit_length(arena_radius * 0.25)
-	var end := Transform3D(basis, wrist_for(touch_local, touch_point + Vector3.UP * 0.15, basis))
+	# Measured once the fist pose is on: where the knuckles are on the hand, and the wrist height that puts the
+	# lowest of them on the water (as in the slam)
+	var knuckles := local_point(bone_head("middle_2"))
+	var planted_y := floor_y + reach_below(basis) - 0.2
+	var impact := home + flat(target_floor() - home).limit_length(arena_radius * 0.25)
+	var end_origin := wrist_for(knuckles, impact, basis)
+	end_origin.y = planted_y
+	var end := Transform3D(basis, end_origin)
 	var start := global_position
+	# Punches down through the portal, gathering speed all the way to the water
 	var ok := await track(entrance_time, func(t: float, _dt: float):
-		var k := _ease(minf(t / entrance_time, 1.0), Ease.SMOOTH)   # pushes through slowly, then settles gently
+		var k := _ease(minf(t / entrance_time, 1.0), Ease.IN)
 		global_transform = Transform3D(basis, start.lerp(end.origin, k))
 		# The portal lets go of the sky once the forearm's end has come through it
 		if not portal_follows and bone_head("forearm").y <= portal.global_position.y:
@@ -763,21 +834,23 @@ func _entrance() -> void:
 	global_transform = end
 	portal_follows = true
 
-	# The touch: rings spread out across the water from the fingertip
-	var tip := bone_tip("index_3")
-	var touched := Vector3(tip.x, floor_y, tip.z)
-	WaterRipple.spawn(get_tree(), touched, 1.0, 5.5)
-	ImpactParticles.spawn(get_tree(), touched + Vector3.UP * 0.2, Vector3.UP, 1.2)
+	# The impact: a wave of water out from the fist that shoves the player back (no damage), and a big jolt
+	BossShockwave.spawn(get_tree(), impact, arena_radius * 0.7, 1.6 * hand_length, 0.0, true)
+	WaterRipple.spawn(get_tree(), impact, 1.5, 6.0)
+	BossDust.spawn(get_tree(), impact, 1.6)
+	ImpactParticles.spawn(get_tree(), impact + Vector3.UP * 0.3, Vector3.UP, 3.5)
 	play_sfx(SFX_HIT)
-	rattle_player_camera(0.3)
+	play_sfx(SFX_ROAR)
+	rattle_player_camera(0.9)
+	shake_player_camera(0.16, 0.05)
 	_set_layers_enabled(true)
 	invulnerable = false
 	if health_bar:
 		health_bar.show_bar()
-	if not await wait(0.45):
+	if not await wait(0.5):
 		return
-	pose("Release", 0.3)
-	await glide(hover_transform(), 0.8)
+	pose("Release", 0.2)
+	await glide(hover_transform(), 0.7)
 
 
 # ------------------------------------------------------------------------------------------------------- attacks
@@ -787,7 +860,7 @@ func _entrance() -> void:
 func _attack_slam() -> void:
 	pose("Clench", 0.15)
 	anim.queue("FistTremble")
-	set_glow(CHARGE_GLOW, 0.5, 0.6)
+	set_glow(DANGER_GLOW, 0.8, 0.4)
 	if not await wait(0.4):
 		return
 	var radius := 0.42 * hand_length
@@ -830,16 +903,20 @@ func _attack_slam() -> void:
 	if not await wait(slam_hold / speed()):
 		return
 	set_weak_points(false, false)
-	glow_off()
-	pose("Release", 0.2)
-	await glide(hover_transform(), 0.8)
+	glow_off(0.2)
+	pose("Release", 0.15)
+	await glide(hover_transform(), 0.45, Ease.OUT)   # wrenches itself back up out of the floor
+
+
+const POKE_PACE := 1.25   # the whole jab sequence runs this much faster than its timings below (20% less time)
 
 
 # Three jabs of the index finger at where the player is standing. The third glows yellow: parry it and the finger
 # sticks in the floor.
 func _attack_poke() -> void:
-	pose("Point", 0.25)
-	if not await wait(0.35):
+	var pace := speed() * POKE_PACE
+	pose("Point", 0.2)
+	if not await wait(0.35 / POKE_PACE):
 		return
 	var tip_local := local_point(bone_tip("index_3"))
 	for jab in 3:
@@ -848,36 +925,36 @@ func _attack_poke() -> void:
 		if is_instance_valid(target) and "velocity" in target:
 			spot = in_arena(spot + flat(target.velocity) * 0.25)
 		var basis := hanging_basis()
-		var warn_time := (poke_warn + (0.2 if last else 0.0)) / speed()
+		var warn_time := (poke_warn + (0.2 if last else 0.0)) / pace
 		var warning := warn_circle(spot, poke_radius, PARRY_GLOW if last else WARN_COLOR)
 		var above := Transform3D(basis, wrist_for(tip_local, spot + Vector3.UP * 7.0, basis))
-		if last:
-			set_glow(PARRY_GLOW, 0.9, warn_time)
+		set_glow(PARRY_GLOW if last else DANGER_GLOW, 0.9 if last else 0.7, warn_time)
 		var ok := await track(warn_time, func(t: float, dt: float):
 			warning.set_progress(t / warn_time)
-			steer(above, dt, 7.0))
+			steer(above, dt, 7.0 * POKE_PACE))
 		if not ok:
 			return
 		parryable = last
-		if not await glide(Transform3D(basis, wrist_for(tip_local, spot + Vector3.UP * 0.2, basis)), 0.13 / speed(), Ease.IN):
+		if not await glide(Transform3D(basis, wrist_for(tip_local, spot + Vector3.UP * 0.2, basis)), 0.13 / pace, Ease.IN):
 			return
 		warning.finish(0.1)
 		ImpactParticles.spawn(get_tree(), spot + Vector3.UP * 0.2, Vector3.UP, 1.6)
 		BossDust.spawn(get_tree(), spot, 0.5)
 		play_sfx(SFX_HIT)
-		rattle_player_camera(0.3)
+		# A jolt down as it lands, then a rattle that dies away: harder on the last jab
+		shake_player_camera(0.1 if last else 0.07, 0.03)
+		rattle_player_camera(0.6 if last else 0.45)
 		if is_instance_valid(target) and flat_distance(target.global_position, spot) <= poke_radius and player_height() < 2.0:
 			hurt_player(poke_damage, flat(target.global_position - spot).normalized() * 16.0)
-		if not await _press_into_floor(spot, basis, (0.5 if last else 0.28) / speed()):
+		if not await _press_into_floor(spot, basis, (0.5 if last else 0.28) / pace):
 			return
 		parryable = false
-		if last:
-			glow_off()
+		glow_off(0.15)
 		# Springs back off the floor
 		pose("Point", 0.08)
-		if not await glide(Transform3D(basis, wrist_for(tip_local, spot + Vector3.UP * 7.0, basis)), 0.3 / speed(), Ease.OUT):
+		if not await glide(Transform3D(basis, wrist_for(tip_local, spot + Vector3.UP * 7.0, basis)), 0.3 / pace, Ease.OUT):
 			return
-	await glide(hover_transform(), 0.6)
+	await glide(hover_transform(), 0.6 / POKE_PACE)
 
 
 # A jab meeting resistance: the fingertip stays pinned to the floor while the finger buckles (PokePress) and the
@@ -900,6 +977,11 @@ func _press_into_floor(spot: Vector3, basis: Basis, seconds: float) -> bool:
 		# Keep the tip where it is: the bending finger lets the hand come down onto it
 		var tip_now := local_point(bone_tip("index_3"))
 		global_transform = Transform3D(pressed, wrist_for(tip_now, pinned, pressed)))
+
+
+# Where a parried orb homes to (energy_ball.gd): the middle of the palm, wherever the hand has moved to
+func reflect_aim_point() -> Vector3:
+	return bone_head("hand").lerp(bone_head("middle_1"), 0.55)
 
 
 # Where the player's shield checks a parry from: the tip of the jabbing finger
@@ -927,7 +1009,8 @@ func _attack_flick() -> void:
 	pose("FlickRelease", 0.05)
 	if not await wait(0.1):
 		return
-	_fire_orb(bone_tip("index_3"), flick_damage, 11.0, 4.5, 0.8, 9.0)
+	# The orb's homing weakens with speed (energy_ball.gd), so the turn rate scales with it to curve the same
+	_fire_orb(bone_tip("index_3"), flick_damage, flick_orb_speed, 4.5, 0.8 * flick_orb_speed / 11.0, 9.0)
 	shake_player_camera(0.04, 0.02)
 	glow_off()
 	if not await wait(0.7):
@@ -985,6 +1068,7 @@ func on_reflected_orb_hit(orb_damage: float) -> void:
 # Lays flat at one side of the arena and wipes across it. The fingers drag lowest: jump them.
 func _attack_sweep() -> void:
 	pose("Flat", 0.3)
+	set_glow(DANGER_GLOW, 0.8, 0.5)
 	var player := target_floor()
 	var across := flat(player - home)
 	across = across.normalized() if across.length() > 1.0 else Vector3.RIGHT
@@ -1024,6 +1108,7 @@ func _attack_sweep() -> void:
 			hurt_player(sweep_damage, travel * 26.0 + Vector3.UP * 4.0))
 	if not ok:
 		return
+	glow_off()
 	if not await wait(0.4):
 		return
 	await glide(hover_transform(), 0.9)
@@ -1032,7 +1117,7 @@ func _attack_sweep() -> void:
 # Spreads its fingers with the palm to the player and fires a fan of shards from every fingertip, a few times
 func _attack_volley() -> void:
 	pose("Spread", 0.3)
-	set_glow(VOLLEY_GLOW, 0.6, 0.8)
+	set_glow(PARRY_GLOW, 0.6, 0.8)   # the shards can be parried
 	set_weak_points(false, true)
 	var ok := await track(0.9 / speed(), func(_t: float, dt: float): steer(_volley_transform(), dt, 3.0))
 	if not ok:
@@ -1061,43 +1146,72 @@ func _volley_transform() -> Transform3D:
 	return Transform3D(hand_basis(Vector3.UP, to_player), spot)
 
 
-# Fingers tapping down one after another in a line that rolls towards the player and past them
+# Fingers tapping down one after another in a line that rolls towards the player and past them. The hand hangs
+# low and bobs down onto the water at every tap, so each finger visibly strikes its warning circle.
 func _attack_drumroll() -> void:
 	pose("Drumroll", 0.25)
+	set_glow(DANGER_GLOW, 0.8, 0.4)
 	var player := target_floor()
 	var start := in_arena(player + flat(home - player).normalized() * 12.0 if flat(home - player).length() > 1.0 else player + Vector3.FORWARD * 12.0)
 	var direction := flat(player - start).normalized() if flat(player - start).length() > 0.5 else Vector3.FORWARD
 	var spacing := 3.4
 	var interval := 0.3 / speed()
 	var warn := 0.6
+	var hop := 1.6            # how high the fingertips lift between taps
+	var radius := 3.0
 	var taps: Array = []
 	for i in drum_taps:
 		taps.append(in_arena(start + direction * spacing * float(i)))
 	var basis := hand_basis(Vector3.DOWN, direction)
-	if not await glide(Transform3D(basis, start + Vector3.UP * (hand_length + 1.5)), 0.7 / speed()):
+	var approach := hand_length + 1.5
+	if not await glide(Transform3D(basis, start + Vector3.UP * approach), 0.6 / speed()):
+		return
+	# Measured once the Drumroll pose has blended in: how far below the wrist the fingertips reach, and how far
+	# off to the side of the wrist they hang, so the wrist can be placed to put them on the tap spots
+	var clear := reach_below(basis) - 0.35 * hand_scale + 0.1
+	var tip_offset := flat(basis * local_point(bone_tip("middle_3")))
+	if not await glide(Transform3D(basis, start - tip_offset + Vector3.UP * approach), 0.1):
 		return
 	var warnings := {}
 	var done := {}
-	var total := warn + interval * float(drum_taps) + 0.3
-	var ok := await track(total, func(t: float, dt: float):
+	var last_tap := warn + interval * float(drum_taps - 1)
+	var total := last_tap + 0.35
+	var ok := await track(total, func(t: float, _dt: float):
 		for i in drum_taps:
 			var tap_time := warn + interval * float(i)
 			if not warnings.has(i) and t >= tap_time - warn:
-				warnings[i] = warn_circle(taps[i], 2.8)
+				warnings[i] = warn_circle(taps[i], radius)
 			if warnings.has(i) and not done.has(i):
 				warnings[i].set_progress(clampf((t - (tap_time - warn)) / warn, 0.0, 1.0))
 				if t >= tap_time:
 					done[i] = true
 					warnings[i].finish(0.1)
-					ImpactParticles.spawn(get_tree(), taps[i] + Vector3.UP * 0.2, Vector3.UP, 1.2)
-					rattle_player_camera(0.15)
-					if is_instance_valid(target) and flat_distance(target.global_position, taps[i]) <= 2.8 and player_height() < 1.6:
+					WaterRipple.spawn(get_tree(), taps[i], 0.5, 3.0)
+					ImpactParticles.spawn(get_tree(), taps[i] + Vector3.UP * 0.2, Vector3.UP, 1.4)
+					BossDust.spawn(get_tree(), taps[i], 0.4)
+					if i % 2 == 0:
+						play_sfx(SFX_HIT)
+					rattle_player_camera(0.2)
+					if is_instance_valid(target) and flat_distance(target.global_position, taps[i]) <= radius and player_height() < 2.0:
 						hurt_player(drum_damage, direction * 14.0)
-		var progress := clampf((t - warn) / (interval * float(drum_taps)), 0.0, 1.0)
-		var over: Vector3 = start.lerp(taps[drum_taps - 1], progress)
-		steer(Transform3D(basis, over + Vector3.UP * (hand_length + 1.0)), dt, 8.0))
+		# Along the line: from tap to tap, arriving over each one as it lands
+		var segment := clampf((t - warn) / interval, 0.0, float(drum_taps - 1))
+		var index := mini(int(segment), drum_taps - 2)
+		var over: Vector3 = taps[index].lerp(taps[index + 1], segment - float(index)) if t >= warn else start
+		# Up and down: drops out of the approach onto the first tap, then bounces, touching the water at every tap
+		var lift: float
+		if t < warn:
+			lift = lerpf(approach - clear, 0.0, _ease(t / warn, Ease.IN))
+		elif t > last_tap:
+			lift = hop * _ease(minf((t - last_tap) / 0.35, 1.0), Ease.OUT)
+		else:
+			var phase_in_tap := fposmod(t - warn, interval) / interval      # 0 at a tap, rising to 1 before the next
+			var bounce := sin(phase_in_tap * PI)                            # up off the water and back down
+			lift = hop * bounce
+		global_transform = Transform3D(basis, over - tip_offset + Vector3.UP * (clear + lift)))
 	if not ok:
 		return
+	glow_off()
 	await glide(hover_transform(), 0.8)
 
 
@@ -1105,7 +1219,7 @@ func _attack_drumroll() -> void:
 func _attack_crush() -> void:
 	pose("Flat", 0.4)
 	play_sfx(SFX_ROAR)
-	set_glow(CHARGE_GLOW, 0.4, 1.0)
+	set_glow(DANGER_GLOW, 0.8, 0.8)
 	var along := flat(target_floor() - home)
 	along = along.normalized() if along.length() > 1.0 else Vector3.FORWARD
 	var basis := hand_basis(along, Vector3.DOWN)
@@ -1195,7 +1309,7 @@ func _transition() -> void:
 		invulnerable = false
 		return
 	pose("PhaseRoar", 0.1)
-	set_glow(Color(1.0, 0.9, 0.7), 1.0, 0.8)
+	set_glow(DANGER_GLOW, 1.0, 0.8)
 	if not await wait(1.25):
 		invulnerable = false
 		return
@@ -1266,6 +1380,8 @@ func _death() -> void:
 	var timer := 0.0
 	while timer < 2.0:
 		await tree.physics_frame
+		if not is_inside_tree():
+			return
 		if not can_process():
 			continue
 		timer += get_physics_process_delta_time()
@@ -1281,6 +1397,8 @@ func _death() -> void:
 	timer = 0.0
 	while timer < 2.6:
 		await tree.physics_frame
+		if not is_inside_tree():
+			return
 		if not can_process():
 			continue
 		timer += get_physics_process_delta_time()

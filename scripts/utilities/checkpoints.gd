@@ -65,7 +65,10 @@ func reach(checkpoint: Node3D, spawn_position: Vector3) -> bool:
 
 
 func is_reached(checkpoint: Node) -> bool:
-	return _reached.has(String(get_tree().current_scene.get_path_to(checkpoint)))
+	var level := get_tree().current_scene
+	if level == null or not level.is_ancestor_of(checkpoint):
+		return false   # a node the map build has already taken out of the level
+	return _reached.has(String(level.get_path_to(checkpoint)))
 
 
 # Back to the last checkpoint (or the level start)
