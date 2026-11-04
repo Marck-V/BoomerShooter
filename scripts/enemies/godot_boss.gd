@@ -418,6 +418,9 @@ func _on_vision_area_body_exited(_body: Node3D) -> void:
 func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 	# only damage the target and only once per attack
 	if body == target and not hit_done:
+		var player_shield = body.get("offhand_shield")
+		if player_shield != null and player_shield.has_method("on_melee_blocked"):
+			player_shield.on_melee_blocked(self)   # sounds off only while the shield is held up
 		if body.has_method("damage"):
 			body.damage(damage_to_player)
 		hit_done = true
