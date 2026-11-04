@@ -25,12 +25,10 @@ func _ready() -> void:
 	super._ready()
 	_refresh_upgrades()
 
-func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D):
-	var ammo_before = GlobalVariables.get_ammo("pistol")
-	super.fire(origin, _direction, camera, raycast)
+func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D) -> bool:
 	# An empty click is only the sound: no recoil or upgrades
-	if GlobalVariables.get_ammo("pistol") >= ammo_before:
-		return
+	if not super.fire(origin, _direction, camera, raycast):
+		return false
 
 	_play_recoil()
 
@@ -44,6 +42,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 	
 	if has_lifesteal and randf() < 0.20:
 		_spawn_lifesteal_orb(raycast)
+	return true
 
 func _spawn_lifesteal_orb(raycast: RayCast3D) -> void:
 	if not raycast.is_colliding():

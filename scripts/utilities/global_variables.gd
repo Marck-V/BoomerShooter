@@ -1,6 +1,7 @@
 extends Node
 
 var save_data: PlayerData
+var infinite_ammo := false   # set by the test room while it's open: spending ammo always succeeds and costs nothing
 var current_weapon
 var player
 var mouse_sensitivity: float = 20
@@ -159,7 +160,14 @@ func restore_progress(points: int, ammo: Dictionary, upgrades: Dictionary):
 func get_ammo(weapon: String):
 	return save_data.ammo.get(weapon)
 	
+# Whether a shot of `amount` would go off (without spending anything)
+func can_spend_ammo(weapon_id: String, amount: int) -> bool:
+	return infinite_ammo or get_ammo(weapon_id) >= amount
+
+
 func spend_ammo(weapon_id: String, amount: int) -> bool:
+	if infinite_ammo:
+		return true   # the test room: shots are free and the count stays where it is
 	var cur = get_ammo(weapon_id)
 	if cur >= amount:
 		save_data.ammo[weapon_id] = cur - amount
