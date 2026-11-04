@@ -34,6 +34,9 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 
 @export_category("Basic Attributes")
 @export var health_bar: Control
+# How fast the whole fight runs: wind-ups, swings, holds, recoveries, stuns, animations, cooldowns, the gaps between
+# attacks, its movement and its charge. 1.2 is everything 20% faster. (The brute uses this; the boss keeps 1.)
+@export var tempo := 1.0
 @export var damage_to_player: float = 50
 @export var attack_cooldown: float = 1.2
 @export var vulnerable_multiplier := 1.5    # damage multiplier while it is stunned or open after an attack
@@ -170,6 +173,7 @@ func get_state_definitions() -> Dictionary:
 func _ready() -> void:
 	super()
 	max_health = health
+	movement_speed *= tempo
 	base_speed = movement_speed
 	blood_scale = maxf(blood_scale, 0.75 * unit())   # a big enemy: fat streaks and big splats
 	original_material = original_materials[0] if original_materials.size() > 0 else null
@@ -199,7 +203,7 @@ func body_size() -> Vector2:
 
 
 func _physics_process(delta: float) -> void:
-	super(delta)
+	super(delta * tempo)   # the states' wind-ups, holds and recoveries all count this
 	_update_hazard()
 	if shake_amount > 0.0:
 		model_root.position = model_rest.origin + Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)) * shake_amount
@@ -250,7 +254,7 @@ func hold_rear_up_pose() -> void:
 
 
 func release_pose(speed := 2.2) -> void:
-	anim.speed_scale = speed
+	anim.speed_scale = speed * tempo
 
 
 func set_shake(amount: float) -> void:
@@ -304,7 +308,7 @@ func apply_charge_material() -> void:
 
 func remove_charge_material() -> void:
 	if model:
-		model.set_surface_override_material(0, shield_material if shield != null and is_instance_valid(shield) else original_material)
+		model.set_surface_override_material(0, shield_material if shield != null and is_instance_valid(shield) and not shield_cage else original_material)
 
 
 # Fades a coloured glow over the whole body, or out again. On the normal body it is an additive overlay on the
@@ -496,7 +500,7 @@ func choose_special(distance: float) -> bool:
 		return false
 	var pick: String = options.pick_random()
 	var cooldown := {"slam": slam_cooldown, "charge": charge_cooldown, "orbs": orb_cooldown, "summon": summon_cooldown}[pick] as float
-	cooldown_until[pick] = now + int(cooldown * randf_range(0.85, 1.15) * 1000.0)
+	cooldown_until[pick] = now + int(cooldown / tempo * randf_range(0.85, 1.15) * 1000.0)
 	change_state({"slam": "Slam", "charge": "Charge", "orbs": "Orbs", "summon": "Summon"}[pick])
 	return true
 
@@ -512,7 +516,7 @@ func _lane_is_clear() -> bool:
 
 
 func start_attack_gap() -> void:
-	next_attack_msec = Time.get_ticks_msec() + int(float(PHASES[phase - 1]["gap"]) * 1000.0)
+	next_attack_msec = Time.get_ticks_msec() + int(float(PHASES[phase - 1]["gap"]) / tempo * 1000.0)
 
 
 # ---------------------------
@@ -710,14 +714,14 @@ class BossState:
 
 class IdleState extends BossState:
 	func enter() -> void:
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.anim.play("idle")
 		enemy.velocity = Vector3.ZERO
 
 
 class ChaseState extends BossState:
 	func enter() -> void:
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.anim.play("run")
 
 	func update(_delta: float) -> void:
@@ -752,8 +756,8 @@ class MeleeState extends BossState:
 		enemy.hit_done = false
 		enemy.is_attacking = true
 		enemy.velocity = Vector3.ZERO
-		enemy.melee_ready_msec = Time.get_ticks_msec() + int(enemy.attack_cooldown * 1000.0)
-		enemy.anim.speed_scale = 1.0
+		enemy.melee_ready_msec = Time.get_ticks_msec() + int(enemy.attack_cooldown / enemy.tempo * 1000.0)
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.anim.play("attack")
 		var length := enemy.unit()
 		warning = BossTelegraph.circle(enemy.get_tree(), enemy.floor_point(enemy.global_position + enemy.forward() * 0.55 * length), 0.75 * length)
@@ -808,7 +812,7 @@ class ChargeState extends BossState:
 		enemy.apply_charge_material()
 		enemy.set_glow(true)
 		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav")
-		enemy.anim.speed_scale = 0.7
+		enemy.anim.speed_scale = 0.7 * enemy.tempo
 		enemy.anim.play("idle")
 		lane_length = enemy.charge_speed * enemy.charge_duration
 		var start := enemy.floor_point(enemy.global_position)
@@ -835,13 +839,13 @@ class ChargeState extends BossState:
 					phase = Phase.CHARGING
 					elapsed = 0.0
 					enemy.set_shake(0.0)
-					enemy.anim.speed_scale = 1.0
+					enemy.anim.speed_scale = 1.0 * enemy.tempo
 					enemy.anim.play("run")
 					lane.finish(0.15)
 			Phase.CHARGING:
 				if is_instance_valid(enemy.target):
 					direction = direction.slerp(_aim(), clampf(enemy.charge_steering * delta, 0.0, 1.0)).normalized()
-				enemy.velocity = direction * enemy.charge_speed
+				enemy.velocity = direction * enemy.charge_speed * enemy.tempo
 				enemy.face_point(enemy.global_position + direction)
 				enemy.move_and_slide()
 				enemy._update_footsteps()
@@ -924,7 +928,7 @@ class SlamState extends BossState:
 	func _impact() -> void:
 		var length := enemy.unit()
 		var centre := enemy.floor_point(enemy.global_position + enemy.forward() * 0.6 * length)
-		BossShockwave.spawn(enemy.get_tree(), centre, reach, enemy.slam_speed * length, enemy.slam_damage)
+		BossShockwave.spawn(enemy.get_tree(), centre, reach, enemy.slam_speed * length * enemy.tempo, enemy.slam_damage)
 		ImpactParticles.spawn(enemy.get_tree(), centre + Vector3.UP * 0.3, Vector3.UP, 2.5)
 		enemy.play_sfx("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav")
 		enemy.shake_player_camera(0.1, 0.03)
@@ -935,7 +939,7 @@ class SlamState extends BossState:
 	func exit() -> void:
 		enemy.is_attacking = false
 		enemy.set_shake(0.0)
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.settle_glow()
 		if is_instance_valid(warning):
 			warning.finish(0.1)
@@ -1011,7 +1015,7 @@ class OrbState extends BossState:
 	func exit() -> void:
 		enemy.is_attacking = false
 		enemy.set_shake(0.0)
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.settle_glow()
 
 
@@ -1057,7 +1061,7 @@ class SummonState extends BossState:
 	func exit() -> void:
 		enemy.is_attacking = false
 		enemy.set_shake(0.0)
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.settle_glow()
 
 
@@ -1143,7 +1147,7 @@ class EntranceState extends BossState:
 		enemy.invulnerable = false
 		enemy.is_attacking = false
 		enemy.model_root.scale = Vector3.ONE
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.settle_glow()
 		if is_instance_valid(warning):
 			warning.finish(0.1)
@@ -1160,7 +1164,7 @@ class RecoveryState extends BossState:
 		duration = enemy.charge_recovery_time
 		enemy.velocity = Vector3.ZERO
 		enemy.vulnerability = 1.0 + (enemy.vulnerable_multiplier - 1.0) * 0.5
-		enemy.anim.speed_scale = 0.6
+		enemy.anim.speed_scale = 0.6 * enemy.tempo
 		enemy.anim.play("idle")
 
 	func update(delta: float) -> void:
@@ -1170,7 +1174,7 @@ class RecoveryState extends BossState:
 
 	func exit() -> void:
 		enemy.vulnerability = 1.0
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.start_attack_gap()
 
 
@@ -1184,7 +1188,7 @@ class StunnedState extends BossState:
 		duration = enemy.pending_stun_time
 		enemy.velocity = Vector3.ZERO
 		enemy.vulnerability = enemy.vulnerable_multiplier
-		enemy.anim.speed_scale = 0.35
+		enemy.anim.speed_scale = 0.35 * enemy.tempo
 		enemy.anim.play("idle")
 		enemy.set_glow(true, Color(0.4, 0.75, 1.0), 2.0, 0.2)
 		enemy.shake_player_camera(0.06, 0.02)
@@ -1197,7 +1201,7 @@ class StunnedState extends BossState:
 
 	func exit() -> void:
 		enemy.vulnerability = 1.0
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.set_shake(0.0)
 		enemy.settle_glow()
 		enemy.start_attack_gap()
@@ -1255,7 +1259,7 @@ class TransitionState extends BossState:
 		enemy.invulnerable = false
 		enemy.is_attacking = false
 		enemy.set_shake(0.0)
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.settle_glow()
 		enemy.start_attack_gap()
 
@@ -1274,7 +1278,7 @@ class DeadState extends BossState:
 			area.set_deferred("monitoring", false)
 		enemy.collision_layer = 0
 		enemy.play_sfx("assets/audio/sfx/boss/Boss_Death1.wav")
-		enemy.anim.speed_scale = 1.0
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.anim.play("die")
 		if enemy.health_bar:
 			enemy.health_bar.hide_bar()

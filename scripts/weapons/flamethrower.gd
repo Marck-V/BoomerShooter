@@ -170,9 +170,9 @@ func _process(delta: float) -> void:
 	_update_sound(burning)
 
 
-func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, _raycast: RayCast3D) -> void:
+func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, _raycast: RayCast3D) -> bool:
 	if !data:
-		return
+		return false
 
 	# Fuel is drained every few ticks so a tank lasts a few seconds of continuous fire
 	if tick_count % TICKS_PER_AMMO == 0:
@@ -180,13 +180,14 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, _raycast: Ray
 			if not out_of_fuel:
 				Audio.play("assets/sounds/empty_gun.mp3")
 				out_of_fuel = true
-			return
+			return false
 	out_of_fuel = false
 	tick_count += 1
 	last_fire_msec = Time.get_ticks_msec()
 	trigger_recoil()
 
 	_burn_enemies_in_cone(camera)
+	return true
 
 
 # The flame is a cone, not a ray: everything in front of the nozzle and in line of sight takes damage
