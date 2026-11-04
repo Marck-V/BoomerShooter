@@ -1,30 +1,27 @@
-[gd_resource type="Resource" script_class="FuncGodotFGDFile" load_steps=20 format=3 uid="uid://cn2aexfo6x7pa"]
+[gd_resource type="Resource" script_class="FuncGodotFGDFile" format=3 uid="uid://cn2aexfo6x7pa"]
 
 [ext_resource type="Script" uid="uid://b77xkxr0m5nqw" path="res://addons/func_godot/src/fgd/func_godot_fgd_file.gd" id="1_qkuc6"]
 [ext_resource type="Resource" uid="uid://crgpdahjaj" path="res://addons/func_godot/fgd/func_godot_fgd.tres" id="1_rcank"]
-
-[ext_resource type="Resource" path="res://trenchbroom/entities/info_player_start.tres" id="e_info_player_start"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_horde.tres" id="e_enemy_horde"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_ranged.tres" id="e_enemy_ranged"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_dodger.tres" id="e_enemy_dodger"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_flyer.tres" id="e_enemy_flyer"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/pickup.tres" id="e_pickup"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/wave_trigger.tres" id="e_wave_trigger"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/locked_door.tres" id="e_locked_door"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/grapple_point.tres" id="e_grapple_point"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/key_door.tres" id="e_key_door"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/level_key.tres" id="e_level_key"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_melee_dodger.tres" id="e_enemy_melee_dodger"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/checkpoint.tres" id="e_checkpoint"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/enemy_bomber.tres" id="e_enemy_bomber"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/enemy_brute.tres" id="e_enemy_brute"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/checkpoint.tres" id="e_checkpoint"]
-[ext_resource type="Resource" path="res://trenchbroom/entities/hand_boss.tres" id="e_hand_boss"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_dodger.tres" id="e_enemy_dodger"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_flyer.tres" id="e_enemy_flyer"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_horde.tres" id="e_enemy_horde"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_melee_dodger.tres" id="e_enemy_melee_dodger"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/enemy_ranged.tres" id="e_enemy_ranged"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/enemy_swordsman.tres" id="e_enemy_swordsman"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/grapple_point.tres" id="e_grapple_point"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/hand_boss.tres" id="e_hand_boss"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/info_player_start.tres" id="e_info_player_start"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/key_door.tres" id="e_key_door"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/level_key.tres" id="e_level_key"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/locked_door.tres" id="e_locked_door"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/pickup.tres" id="e_pickup"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/wave_trigger.tres" id="e_wave_trigger"]
 
 [resource]
 script = ExtResource("1_qkuc6")
-export_file = false
-target_map_editor = 1
 fgd_name = "BoomerShooter"
 base_fgd_files = Array[Resource]([ExtResource("1_rcank")])
 entity_definitions = Array[Resource]([ExtResource("e_info_player_start"), ExtResource("e_enemy_horde"), ExtResource("e_enemy_ranged"), ExtResource("e_enemy_dodger"), ExtResource("e_enemy_flyer"), ExtResource("e_pickup"), ExtResource("e_wave_trigger"), ExtResource("e_locked_door"), ExtResource("e_grapple_point"), ExtResource("e_key_door"), ExtResource("e_level_key"), ExtResource("e_enemy_melee_dodger"), ExtResource("e_enemy_bomber"), ExtResource("e_enemy_brute"), ExtResource("e_checkpoint"), ExtResource("e_hand_boss"), ExtResource("e_enemy_swordsman")])
