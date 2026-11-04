@@ -37,6 +37,7 @@ var rotation_target: Vector3
 var input_mouse: Vector2
 
 var health:int = 100
+var cannot_die := false   # test room god mode: hits still land and lower health, but it stops at 1
 var gravity := 0.0
 var previously_floored := false
 
@@ -677,6 +678,8 @@ func damage(amount):
 	if shield_blocking:
 		amount *= BLOCK_DAMAGE_MULTIPLIER
 	health -= amount
+	if cannot_die:
+		health = maxi(health, 1)
 	_play_damage_flash(amount)
 	health_updated.emit(health)
 	if health <= 0:
