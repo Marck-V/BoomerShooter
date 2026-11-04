@@ -20,7 +20,6 @@
 [ext_resource type="Script" uid="uid://bfo2aykuwm4xa" path="res://scripts/levels/grapple_point.gd" id="17_qjlkt"]
 [ext_resource type="PackedScene" uid="uid://vbp1uai2kl1t" path="res://scenes/pickups/key.tscn" id="18_1jghb"]
 [ext_resource type="Shader" uid="uid://d72ev44thf13" path="res://shaders/bubble.gdshader" id="19_8tuvx"]
-[ext_resource type="PackedScene" path="res://scenes/enemies/enemy_swordsman.tscn" id="19_q1ikm"]
 [ext_resource type="AudioStream" uid="uid://dg76e6ktxc155" path="res://assets/audio/music/main_theme_master_body_loop.ogg" id="20_4pvi5"]
 [ext_resource type="Texture2D" uid="uid://jk6tfimci3sk" path="res://trenchbroom/textures/world/texture_14.png" id="21_ykkgl"]
 [ext_resource type="PackedScene" uid="uid://c1qi0hggy4jff" path="res://scenes/template_environment_components/launch_pad.tscn" id="22_3v478"]
@@ -1875,16 +1874,6 @@ script = ExtResource("17_qjlkt")
 [node name="entity_3_grapple_point" type="Area3D" parent="NavigationRegion3D/FuncGodotMap" unique_id=1247746815]
 transform = Transform3D(-1, 0, -8.742278e-08, 0, 1, 0, 8.742278e-08, 0, -1, 23.25, 5.25, 18.25)
 script = ExtResource("17_qjlkt")
-
-[node name="EnemySwordsman" parent="NavigationRegion3D" unique_id=1796701120 instance=ExtResource("19_q1ikm")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.632951, 5.0000005, 6.857257)
-parry_both_a_and_c = false
-parryable_windup_slowdown = 0.45
-parry_lead = 0.12
-dash_damage = 0.5
-dash_strike_distance = 1.5
-dash_windup_speed = 0.3
-hit_knockback = 6.0
 
 [node name="JumpLink_1_22_0" type="NavigationLink3D" parent="." unique_id=176548414]
 start_position = Vector3(2.59, 10.2, 43)
