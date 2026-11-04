@@ -19,7 +19,8 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 # --- Parry ---
 @export var parry_window := 0.3
 @export var parry_cooldown := 0.7          # after a missed parry
-@export var parry_success_cooldown := 0.15 # after reflecting something
+@export var parry_success_cooldown := 0.05 # after a successful parry
+@export var parry_input_buffer := 0.2      # a press during that recovery is kept this long and fires once it's ready
 @export var block_release_cooldown := 0.15 # after letting go of a block
 @export var parry_range := 4.0
 @export var melee_parry_range := 3.2       # how close a glowing punch has to be to be parried
@@ -80,6 +81,7 @@ var hand: Node3D
 var state := State.READY
 var state_timer := 0.0
 var parry_succeeded := false
+var buffered_parry_until := 0.0            # real seconds (ticks): a press made while recovering from a successful parry
 var hand_scale_kick := 0.0
 var hand_velocity := Vector3.ZERO
 
@@ -129,7 +131,9 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	match state:
 		State.READY:
-			if Input.is_action_just_pressed("parry"):
+			var buffered := Time.get_ticks_msec() / 1000.0 < buffered_parry_until
+			if Input.is_action_just_pressed("parry") or buffered:
+				buffered_parry_until = 0.0
 				_start_parry()
 			elif Input.is_action_just_pressed("throw_shield"):
 				_start_throw()
@@ -146,6 +150,9 @@ func _process(delta: float) -> void:
 			if not Input.is_action_pressed("parry"):
 				_set_state(State.RECOVER, block_release_cooldown)
 		State.RECOVER:
+			# Straight after a successful parry the next press isn't lost: it goes off as soon as the shield is ready
+			if parry_succeeded and Input.is_action_just_pressed("parry"):
+				buffered_parry_until = Time.get_ticks_msec() / 1000.0 + parry_input_buffer
 			state_timer -= delta
 			if state_timer <= 0.0:
 				_set_state(State.READY)

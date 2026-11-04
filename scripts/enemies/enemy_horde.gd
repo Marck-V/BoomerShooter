@@ -35,13 +35,19 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var parry_stun_damage_multiplier := 1.5
 
 @export_group("Crowd")
-# Melee enemies take turns: a few hold an attack slot and go for the player, while the rest fan out on their own
-# angle and circle at a distance until a slot is free.
+# Melee enemies take turns, but only when there is a crowd: a few hold an attack slot and go for the player, while
+# the rest wait on their own spot of a ring around them, standing on guard and shuffling a few steps now and then.
+# After an attack an enemy keeps its turn (and presses in, just out of reach, until it can strike again) unless
+# others are waiting for one; then it falls back to the ring and lets them in.
 @export var ring_radius_min := 4.5
 @export var ring_radius_max := 8.0
 @export var engage_distance := 9.0          # a free slot is only claimed this close
-@export var circle_speed_scale := 0.35      # share of its speed while circling
-@export var circle_turn_speed := 0.35       # radians per second around the player
+@export var waiting_walk_speed := 1.7       # m/s while shuffling round the ring or pressing in
+@export var reposition_speed := 3.5         # m/s (a jog) when its waiting spot is further than REPOSITION_GAP
+@export var shuffle_interval := Vector2(1.2, 3.0)   # seconds standing between shuffles
+@export var shuffle_angle := Vector2(0.2, 0.45)    # radians round the ring one shuffle covers
+@export var press_gap := 1.2                # how far outside its reach it waits while its attack cools down
+@export var crowd_rest := Vector2(1.0, 2.5) # in a crowd, seconds after its cooldown before it may take another turn
 
 @export_group("Gap jump")
 # Where the level has a NavigationLink3D across a small gap, the enemy jumps it: Jump_Start sped up across the
@@ -78,7 +84,16 @@ const FLANK_MAX_HEIGHT_GAP := 1.5           # above this the player is on anothe
 const FLANK_WALL_MARGIN := 1.0
 const SLOT_HOLD_TIME := 4.0                 # gives up a slot it has not used in this long
 const RUN_ANIMATION := "Sprint"
+# Moving while it waits is a walk for the short shuffles and a jog to get to a spot further off, each sped up or
+# slowed to the actual speed so the feet keep up with the ground (the walk's feet cover about 1 m/s, the jog's
+# about 2.5). StrafeTwist turns the legs the way it goes.
 const CIRCLE_ANIMATION := "Walk"
+const REPOSITION_ANIMATION := "Jog_Fwd"
+const WAITING_CLIP_SPEEDS := {"Walk": 1.0, "Jog_Fwd": 2.5}
+const CIRCLE_PLAYBACK_RANGE := Vector2(0.8, 1.9)
+const REPOSITION_GAP := 1.2                 # further than this from its spot, it jogs there
+const ARRIVED := 0.5                        # this close to its spot it stands still
+const STAND_SPEED := 0.35                   # moving slower than this, it stands on guard instead of walking
 
 static var attack_slot_holders: Array = []
 const ParryFx = preload("res://scripts/enemies/parry_fx.gd")
@@ -99,6 +114,9 @@ var flank_assigned := false
 var flank_angle := 0.0
 var flank_radius := 0.0
 var circle_direction := 1.0
+var shuffle_timer := 0.0
+var rejoin_ring := false                    # it just gave up its turn: pick a waiting spot on its own side
+var next_turn_msec := 0                     # in a crowd, no new turn before this, so the others get theirs
 var hit_damage_scale := 1.0                 # share of damage_to_player the current hit deals
 var left_hitbox: Area3D
 var attack_token := 0                       # bumped when an attack is cancelled, so a running attack stops
@@ -119,6 +137,10 @@ var glow_light: OmniLight3D
 var glow_time := 0.0
 var glow_strength := 0.0                    # 0..1, ramps up through the wind-up
 var recoil: HitRecoil                       # bends the upper body on hits and parries, over the animation
+var strafe: StrafeTwist                     # turns the legs towards where it walks while it faces elsewhere
+var walking_backward := false               # the circling walk is playing in reverse
+var last_position := Vector3.INF
+var circle_playback_set := false            # anim.speed_scale is matched to the circling speed right now
 
 @onready var attack_timer: Timer = $AttackTimer
 @onready var vision_area: Area3D = $VisionArea
@@ -136,6 +158,10 @@ func _ready():
 	attack_animation_action = "Sword_Attack"
 	attack_idle_animation = "Sword_Idle"
 	_build_parry_glow()
+	# Modifiers run in order: the strafe twist first, so hits still bend the body on top of it
+	strafe = StrafeTwist.new()
+	strafe.name = "StrafeTwist"
+	$Enemy_Model/Rig/Skeleton3D.add_child(strafe)
 	recoil = HitRecoil.new()
 	recoil.name = "HitRecoil"
 	$Enemy_Model/Rig/Skeleton3D.add_child(recoil)
@@ -172,6 +198,26 @@ func _physics_process(delta):
 	if state == states["Chase"] and not _within_leash():
 		change_state("Idle")
 	_update_attack_turn(delta)
+	_update_strafe(delta)
+
+
+# Tells the strafe twist how the enemy actually moved (avoidance included) and whether it is walking or running
+func _update_strafe(delta: float) -> void:
+	if strafe == null:
+		return
+	if last_position != Vector3.INF and delta > 0.0:
+		strafe.world_velocity = strafe.world_velocity.lerp((global_position - last_position) / delta, 0.5)
+	last_position = global_position
+	var current := anim.current_animation
+	strafe.walking = not destroyed and (current == RUN_ANIMATION or WAITING_CLIP_SPEEDS.has(current))
+	# The waiting walk and jog keep pace with the ground; anything else plays at its normal speed again
+	if WAITING_CLIP_SPEEDS.has(current):
+		var pace: float = strafe.world_velocity.length() / WAITING_CLIP_SPEEDS[current]
+		anim.speed_scale = clampf(pace, CIRCLE_PLAYBACK_RANGE.x, CIRCLE_PLAYBACK_RANGE.y)
+		circle_playback_set = true
+	elif circle_playback_set:
+		anim.speed_scale = 1.0
+		circle_playback_set = false
 
 
 func _exit_tree() -> void:
@@ -183,9 +229,12 @@ func can_start_attack() -> bool:
 	return can_attack() and _claim_attack_slot()
 
 
+# Every turn goes through here: walking into reach, the lunge, and taking one early on its own
 func _claim_attack_slot() -> bool:
 	if holds_attack_slot:
 		return true
+	if Time.get_ticks_msec() < next_turn_msec and _others_waiting():
+		return false   # resting after its last turn while others wait for one
 	attack_slot_holders = attack_slot_holders.filter(func(holder): return is_instance_valid(holder) and not holder.destroyed)
 	if attack_slot_holders.size() >= MAX_ATTACKERS:
 		return false
@@ -199,6 +248,11 @@ func release_attack_slot() -> void:
 	if holds_attack_slot:
 		attack_slot_holders.erase(self)
 		holds_attack_slot = false
+		rejoin_ring = true
+		if is_inside_tree() and _others_waiting():
+			# Rest on the ring a while before going again: the ones that have been waiting get in first
+			var rest := attack_cooldown + randf_range(crowd_rest.x, crowd_rest.y)
+			next_turn_msec = Time.get_ticks_msec() + int(rest * 1000.0)
 
 
 func _update_attack_turn(delta: float) -> void:
@@ -211,24 +265,78 @@ func _update_attack_turn(delta: float) -> void:
 			attack_timer.start(attack_cooldown)   # lets another enemy have a turn
 	if state != states["Chase"]:
 		return
-	if not holds_attack_slot and can_attack() and global_position.distance_to(target.global_position) <= engage_distance:
+	# Ready to strike, or nobody else wants a turn: take one (an enemy on its own never has to wait)
+	if not holds_attack_slot and global_position.distance_to(target.global_position) <= engage_distance \
+			and (can_attack() or not _others_waiting()):
 		_claim_attack_slot()
 	if _is_circling():
-		flank_angle += circle_direction * circle_turn_speed * delta
+		_update_shuffle(delta)
+	if _is_circling() or _is_pressing():
+		_step_to_spot()
 	_update_chase_animation()
 
 
+# Waiting on its spot of the ring for a turn
 func _is_circling() -> bool:
 	return state == states["Chase"] and not holds_attack_slot and flank_assigned \
 			and global_position.distance_to(target.global_position) <= flank_radius + 1.5
 
 
-# Walks while circling and runs otherwise. A hit reaction playing is left to finish.
+# Holds a turn but its attack is still cooling down: it waits just out of reach
+func _is_pressing() -> bool:
+	return state == states["Chase"] and holds_attack_slot and not can_attack() and not lunging
+
+
+# Another melee enemy close by is waiting for a turn, so this one should give its up between attacks
+func _others_waiting() -> bool:
+	for other in get_tree().get_nodes_in_group("Enemy"):
+		if other == self or not other is EnemyHorde or other.destroyed or other.holds_attack_slot:
+			continue
+		if other.state == other.states.get("Chase") and is_instance_valid(other.target) \
+				and other.global_position.distance_to(other.target.global_position) <= engage_distance:
+			return true
+	return false
+
+
+# Every so often a waiting enemy shuffles a few steps round the ring, sometimes turning back, sometimes stepping in
+# or out a little; in between it stands its ground (the wait only counts down once it has got to its spot)
+func _update_shuffle(delta: float) -> void:
+	if chase_speed() > 0.0:
+		return
+	shuffle_timer -= delta
+	if shuffle_timer > 0.0:
+		return
+	shuffle_timer = randf_range(shuffle_interval.x, shuffle_interval.y)
+	if randf() < 0.35:
+		circle_direction = -circle_direction
+	flank_angle += circle_direction * randf_range(shuffle_angle.x, shuffle_angle.y)
+	flank_radius = clampf(flank_radius + randf_range(-0.8, 0.8), ring_radius_min, ring_radius_max)
+
+
+# Runs to where it is going. Waiting for a turn it stands on guard, and walks when it shuffles or steps in (in
+# reverse while backing away; StrafeTwist turns the legs to match). A hit reaction playing is left to finish.
 func _update_chase_animation() -> void:
-	var wanted := CIRCLE_ANIMATION if _is_circling() else RUN_ANIMATION
+	var wanted := RUN_ANIMATION
+	if _is_circling() or _is_pressing():
+		var speed := chase_speed()
+		var still := speed == 0.0 and strafe != null and strafe.world_velocity.length() < STAND_SPEED
+		if still:
+			wanted = attack_idle_animation
+		else:
+			wanted = REPOSITION_ANIMATION if speed > waiting_walk_speed else CIRCLE_ANIMATION
+	var backward := WAITING_CLIP_SPEEDS.has(wanted) and strafe != null and strafe.backward
 	var current := anim.current_animation
-	if current != wanted and (current == RUN_ANIMATION or current == CIRCLE_ANIMATION) and anim.has_animation(wanted):
-		anim.play(wanted, 0.2)
+	# Nothing playing counts too (a reversed walk can run off its start and stop)
+	var on_foot := current == "" or current == RUN_ANIMATION or current == attack_idle_animation \
+			or WAITING_CLIP_SPEEDS.has(current)
+	if on_foot and anim.has_animation(wanted) and (current != wanted or backward != walking_backward):
+		if backward:
+			anim.play_backwards(wanted, 0.2)
+		else:
+			anim.play(wanted, 0.2)
+		walking_backward = backward
+	elif not WAITING_CLIP_SPEEDS.has(current):
+		walking_backward = false
 
 
 func _assign_flank() -> void:
@@ -242,9 +350,17 @@ func _assign_flank() -> void:
 func chase_destination() -> Vector3:
 	var goal := target.global_position
 	if holds_attack_slot:
-		return goal
+		return _press_point() if _is_pressing() else goal
 	if not flank_assigned:
 		_assign_flank()
+	elif rejoin_ring:
+		# Back from a turn: a spot on the ring on its own side, not wherever it was waiting before (which could
+		# be on the far side, through the player and the rest of the crowd)
+		var from_target := global_position - goal
+		flank_angle = atan2(from_target.x, from_target.z) + randf_range(-0.35, 0.35)
+		flank_radius = randf_range(ring_radius_min, ring_radius_min + 1.0)
+		shuffle_timer = randf_range(shuffle_interval.x, shuffle_interval.y)
+	rejoin_ring = false
 	if absf(goal.y - global_position.y) > FLANK_MAX_HEIGHT_GAP:
 		return goal
 	var point := goal + Vector3(sin(flank_angle), 0.0, cos(flank_angle)) * flank_radius
@@ -257,12 +373,46 @@ func chase_destination() -> Vector3:
 	return point
 
 
+# The navigation agent counts a destination as reached a metre short of it, which leaves a waiting enemy standing in
+# the wrong place (in the player's face, when pressing in): it walks the last bit straight there itself
+func _step_to_spot() -> void:
+	if not nav.is_navigation_finished():
+		return
+	var spot := chase_destination()
+	var to_spot := Vector3(spot.x - global_position.x, 0.0, spot.z - global_position.z)
+	if to_spot.length() < ARRIVED:
+		return
+	velocity = to_spot.normalized() * chase_speed()
+	move_and_slide()
+
+
+# Just outside its reach, on its own side of the player
+func _press_point() -> Vector3:
+	var goal := target.global_position
+	var away := global_position - goal
+	away.y = 0.0
+	away = away.normalized() if away.length() > 0.1 else -target.global_basis.z
+	return goal + away * (melee_range + press_gap)
+
+
 func chase_speed() -> float:
-	return movement_speed * (circle_speed_scale if _is_circling() else 1.0)
+	if not (_is_circling() or _is_pressing()):
+		return movement_speed
+	var spot := chase_destination()
+	var gap := Vector2(spot.x - global_position.x, spot.z - global_position.z).length()
+	if gap < ARRIVED:
+		return 0.0   # there: stand on guard
+	return reposition_speed if gap > REPOSITION_GAP else waiting_walk_speed
 
 
 func chase_faces_target() -> bool:
-	return _is_circling()
+	return _is_circling() or _is_pressing()
+
+
+# Waiting enemies set their own pace to their spot (and stop there), so the chase's slow-down near a waypoint, which
+# would have them creep the last two metres, is skipped
+func chase_eases_into_waypoints() -> bool:
+	return not (_is_circling() or _is_pressing())
 
 
 func _within_leash() -> bool:
