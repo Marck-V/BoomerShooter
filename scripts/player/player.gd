@@ -638,7 +638,7 @@ func _setup_heal_flash() -> void:
 	layer.add_child(rect)
 
 
-# Called when something heals the player visibly (the pizza pickup)
+# Called when something heals the player visibly (the medkit pickup)
 func play_heal_flash() -> void:
 	if heal_flash_material == null:
 		return

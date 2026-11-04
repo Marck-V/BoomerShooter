@@ -9,6 +9,8 @@ const ShieldModel = preload("res://scripts/player/shield_model.gd")
 const ShieldTrail = preload("res://scripts/player/shield_trail.gd")
 const CLANG_SOUND := "res://assets/sounds/bullet_hit_metal.mp3"
 const PARRY_SOUND: AudioStream = preload("res://assets/sounds/metal_axe_hit.mp3")
+const BLOCK_SOUND: AudioStream = preload("res://assets/sounds/shield_block.mp3")   # an attack hitting the raised shield
+const BLOCK_SOUND_GAP_MSEC := 100   # one attack can report its block twice (a lunge's shove, then its hit)
 const THROW_SOUND := "assets/sounds/simple_whoosh.mp3"
 
 enum State { READY, PARRY, RECOVER, THROWN, BLOCK }
@@ -285,9 +287,16 @@ func _check_parry() -> void:
 		return
 
 
-# A projectile reached the player while the shield was up: it is absorbed instead of hurting
+var last_block_msec := -BLOCK_SOUND_GAP_MSEC
+
+
+# An attack hit the raised shield: a projectile (absorbed) or a melee blow (taken at reduced damage)
 func on_block_hit(point: Vector3) -> void:
-	_clang(point, 1.0)
+	var now := Time.get_ticks_msec()
+	if now - last_block_msec < BLOCK_SOUND_GAP_MSEC:
+		return
+	last_block_msec = now
+	_clang(point, 1.0, BLOCK_SOUND)
 	_pop(point, PARRY_YELLOW, 0.9)
 	ImpactParticles.spawn(get_tree(), point, (camera.global_position - point).normalized(), 1.0)
 	hand_velocity += Vector3(0.0, 0.0, 1.6)
@@ -313,6 +322,16 @@ func _reflect(projectile: Node3D) -> void:
 		direction = (enemy.global_position + Vector3.UP * 1.2) - projectile.global_position
 	projectile.reflect(enemy, direction)
 	_parry_feedback(projectile.global_position)
+
+
+# A melee attack from `attacker` landed while the shield was held up: the same feedback as a blocked shot, at the
+# shield's side of the blow. Does nothing if the shield isn't up.
+func on_melee_blocked(attacker: Node3D) -> void:
+	var owner_player = GlobalVariables.player
+	if owner_player == null or not is_instance_valid(owner_player) or owner_player.get("shield_blocking") != true:
+		return
+	var chest := attacker.global_position + Vector3.UP * 1.2
+	on_block_hit(camera.global_position.lerp(chest, 0.35))
 
 
 # A glowing punch was caught: the enemy's attack is cancelled and it is stunned and knocked back

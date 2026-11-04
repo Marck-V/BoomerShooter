@@ -118,6 +118,7 @@ var glow_halo_material: StandardMaterial3D
 var glow_light: OmniLight3D
 var glow_time := 0.0
 var glow_strength := 0.0                    # 0..1, ramps up through the wind-up
+var recoil: HitRecoil                       # bends the upper body on hits and parries, over the animation
 
 @onready var attack_timer: Timer = $AttackTimer
 @onready var vision_area: Area3D = $VisionArea
@@ -135,6 +136,9 @@ func _ready():
 	attack_animation_action = "Sword_Attack"
 	attack_idle_animation = "Sword_Idle"
 	_build_parry_glow()
+	recoil = HitRecoil.new()
+	recoil.name = "HitRecoil"
+	$Enemy_Model/Rig/Skeleton3D.add_child(recoil)
 	_roll_lunge_cooldown(0.5)
 
 	#draw_debug_gizmos()
@@ -353,10 +357,18 @@ func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 		# A lunge is not stopped by a block: the player is shoved out of its way and takes the reduced damage
 		if lunging and body.get("shield_blocking") == true:
 			_shove_blocking_player(body)
+		_report_block(body)
 		if body.has_method("damage"):
 			body.damage(damage_to_player * hit_damage_scale)
 
 		hit_done = true
+
+
+# The player's shield sounds off when it takes a blow (only while it is held up)
+func _report_block(player: Node3D) -> void:
+	var player_shield = player.get("offhand_shield")
+	if player_shield != null and player_shield.has_method("on_melee_blocked"):
+		player_shield.on_melee_blocked(self)
 
 
 func _shove_blocking_player(player: Node3D) -> void:
@@ -543,6 +555,8 @@ func _on_shoved() -> void:
 
 # Called by the player's shield when a parry catches the punch: cancels the attack and stuns the enemy
 func on_parried() -> void:
+	if recoil and is_instance_valid(target):
+		recoil.parry(global_position - target.global_position, parry_stun_time)
 	attack_token += 1
 	parryable = false
 	hit_done = true
@@ -555,6 +569,20 @@ func on_parried() -> void:
 
 func damage(amount: float, multiplier: float = 1.0):
 	super(amount, multiplier * (parry_stun_damage_multiplier if is_stunned else 1.0))
+
+
+# Hits bend the body where they land (HitRecoil) instead of jolting the whole model. Mid-attack they still show,
+# a little less, without stopping the swing; the killing shot throws it too.
+func flinch(world_point: Vector3, strength := 1.0) -> void:
+	if recoil == null:
+		super(world_point, strength)
+		return
+	if strength <= 0.0:
+		return
+	var from_position := global_position + global_basis.z
+	if GlobalVariables.player and is_instance_valid(GlobalVariables.player):
+		from_position = GlobalVariables.player.global_position
+	recoil.hit(world_point, world_point - from_position, strength * (0.6 if is_attacking else 1.0))
 
 
 # ---------------------------

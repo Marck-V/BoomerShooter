@@ -58,6 +58,11 @@
 	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
 ]
 
+@PointClass color(191 204 230) size(-16 -16 0, 16 16 56) = enemy_swordsman : "Melee enemy with a sword. Opens with a dash from range, then a three-hit combo up close; A or C glows yellow and can be parried, B can't."
+[
+	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
+]
+
 @PointClass color(153 102 255) size(-16 -16 0, 16 16 56) = enemy_flyer : "Flying enemy that hovers, shoots and sidesteps in the air."
 [
 	wave(string) : "Wave name. Leave empty to spawn at level start; otherwise held until the matching wave_trigger fires" : ""
