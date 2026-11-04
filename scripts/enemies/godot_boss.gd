@@ -304,7 +304,7 @@ func apply_charge_material() -> void:
 
 func remove_charge_material() -> void:
 	if model:
-		model.set_surface_override_material(0, shield_material if shield != null and is_instance_valid(shield) else original_material)
+		model.set_surface_override_material(0, shield_material if shield != null and is_instance_valid(shield) and not shield_cage else original_material)
 
 
 # Fades a coloured glow over the whole body, or out again. On the normal body it is an additive overlay on the
