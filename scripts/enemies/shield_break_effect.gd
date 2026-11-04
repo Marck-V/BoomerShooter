@@ -3,6 +3,7 @@ extends Node3D
 # Shield shatter: a bright white pop, a spray of sparks, and metal shards that fly off and fall.
 # Built in code so there is no scene to maintain.
 # Use: ShieldBreakEffect.spawn(get_tree(), world_position)
+# Pass with_shards = false when the shield model shatters itself (the crystal cage), so only the pop and sparks play.
 
 const BREAK_SOUND := "assets/sounds/glass_breaking.mp3"
 const SPARK_COUNT := 28
@@ -19,18 +20,19 @@ var _pop_material: StandardMaterial3D
 var _light: OmniLight3D
 
 
-static func spawn(tree: SceneTree, point: Vector3) -> void:
+static func spawn(tree: SceneTree, point: Vector3, with_shards := true) -> void:
 	var effect: Node3D = new()
 	tree.root.add_child(effect)
 	effect.global_position = point
-	effect._start()
+	effect._start(with_shards)
 
 
-func _start() -> void:
+func _start(with_shards: bool) -> void:
 	Audio.play(BREAK_SOUND)
 	_add_pop()
 	_add_sparks()
-	_add_shards()
+	if with_shards:
+		_add_shards()
 	get_tree().create_timer(CLEANUP_TIME, false).timeout.connect(queue_free)
 
 

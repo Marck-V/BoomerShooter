@@ -6,6 +6,7 @@
 [node name="EnemyBrute" instance=ExtResource("1_base")]
 transform = Transform3D(1.8, 0, 0, 0, 1.8, 0, 0, 0, 1.8, 0, 0, 0)
 script = ExtResource("2_script")
+shield_cage = true
 movement_speed = 5.0
 health = 600.0
 damage_to_player = 30.0
