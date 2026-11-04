@@ -12,7 +12,7 @@ class_name BasePickup
 
 var model_scale = Vector3.ONE
 var gold_bar_scale_factor = 0.1
-var health_scale_factor = 0.5
+var health_scale_factor = 0.35   # the medkit is about 2 m across in its model: about 0.7 m here
 var ammo_scale = 2
 
 var base_y = 0.0
@@ -32,7 +32,7 @@ var ammo_tints = {
 }
 
 var model_paths = {
-	"Health": "res://models/meds_pizza.tscn",
+	"Health": "res://models/medkit.tscn",
 	"Points" : "res://models/psx_gold_bar.tscn"
 }
 
