@@ -684,4 +684,3 @@ func damage(amount):
 	health_updated.emit(health)
 	if health <= 0:
 		GameManager.player_died()
-
