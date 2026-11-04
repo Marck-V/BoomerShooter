@@ -78,7 +78,11 @@ const FLANK_MAX_HEIGHT_GAP := 1.5           # above this the player is on anothe
 const FLANK_WALL_MARGIN := 1.0
 const SLOT_HOLD_TIME := 4.0                 # gives up a slot it has not used in this long
 const RUN_ANIMATION := "Sprint"
-const CIRCLE_ANIMATION := "Walk"
+# Circling runs at 3-4 m/s: a jog (whose feet cover about 2.5 m/s), sped up or slowed to the actual speed so the
+# feet keep up with the ground. StrafeTwist turns the legs the way it goes.
+const CIRCLE_ANIMATION := "Jog_Fwd"
+const CIRCLE_ANIMATION_SPEED := 2.5
+const CIRCLE_PLAYBACK_RANGE := Vector2(0.7, 1.6)
 
 static var attack_slot_holders: Array = []
 const ParryFx = preload("res://scripts/enemies/parry_fx.gd")
@@ -119,6 +123,10 @@ var glow_light: OmniLight3D
 var glow_time := 0.0
 var glow_strength := 0.0                    # 0..1, ramps up through the wind-up
 var recoil: HitRecoil                       # bends the upper body on hits and parries, over the animation
+var strafe: StrafeTwist                     # turns the legs towards where it walks while it faces elsewhere
+var walking_backward := false               # the circling walk is playing in reverse
+var last_position := Vector3.INF
+var circle_playback_set := false            # anim.speed_scale is matched to the circling speed right now
 
 @onready var attack_timer: Timer = $AttackTimer
 @onready var vision_area: Area3D = $VisionArea
@@ -136,6 +144,10 @@ func _ready():
 	attack_animation_action = "Sword_Attack"
 	attack_idle_animation = "Sword_Idle"
 	_build_parry_glow()
+	# Modifiers run in order: the strafe twist first, so hits still bend the body on top of it
+	strafe = StrafeTwist.new()
+	strafe.name = "StrafeTwist"
+	$Enemy_Model/Rig/Skeleton3D.add_child(strafe)
 	recoil = HitRecoil.new()
 	recoil.name = "HitRecoil"
 	$Enemy_Model/Rig/Skeleton3D.add_child(recoil)
@@ -172,6 +184,25 @@ func _physics_process(delta):
 	if state == states["Chase"] and not _within_leash():
 		change_state("Idle")
 	_update_attack_turn(delta)
+	_update_strafe(delta)
+
+
+# Tells the strafe twist how the enemy actually moved (avoidance included) and whether it is walking or running
+func _update_strafe(delta: float) -> void:
+	if strafe == null:
+		return
+	if last_position != Vector3.INF and delta > 0.0:
+		strafe.world_velocity = strafe.world_velocity.lerp((global_position - last_position) / delta, 0.5)
+	last_position = global_position
+	strafe.walking = not destroyed and anim.current_animation in [RUN_ANIMATION, CIRCLE_ANIMATION]
+	# The circling jog keeps pace with the ground; anything else plays at its normal speed again
+	if anim.current_animation == CIRCLE_ANIMATION:
+		var pace := strafe.world_velocity.length() / CIRCLE_ANIMATION_SPEED
+		anim.speed_scale = clampf(pace, CIRCLE_PLAYBACK_RANGE.x, CIRCLE_PLAYBACK_RANGE.y)
+		circle_playback_set = true
+	elif circle_playback_set:
+		anim.speed_scale = 1.0
+		circle_playback_set = false
 
 
 func _exit_tree() -> void:
@@ -223,12 +254,21 @@ func _is_circling() -> bool:
 			and global_position.distance_to(target.global_position) <= flank_radius + 1.5
 
 
-# Walks while circling and runs otherwise. A hit reaction playing is left to finish.
+# Jogs while circling and runs otherwise, the jog in reverse while backing away (StrafeTwist turns the legs to
+# match). A hit reaction playing is left to finish.
 func _update_chase_animation() -> void:
 	var wanted := CIRCLE_ANIMATION if _is_circling() else RUN_ANIMATION
+	var backward := wanted == CIRCLE_ANIMATION and strafe != null and strafe.backward
 	var current := anim.current_animation
-	if current != wanted and (current == RUN_ANIMATION or current == CIRCLE_ANIMATION) and anim.has_animation(wanted):
-		anim.play(wanted, 0.2)
+	var on_foot := current == RUN_ANIMATION or current == CIRCLE_ANIMATION
+	if on_foot and anim.has_animation(wanted) and (current != wanted or backward != walking_backward):
+		if backward:
+			anim.play_backwards(wanted, 0.2)
+		else:
+			anim.play(wanted, 0.2)
+		walking_backward = backward
+	elif current != CIRCLE_ANIMATION:
+		walking_backward = false
 
 
 func _assign_flank() -> void:
