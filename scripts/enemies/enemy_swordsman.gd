@@ -3,8 +3,11 @@ class_name EnemySwordsman
 
 # A melee enemy with a sword. It shares the horde enemy's body, chase, crowd turns, gap jumps and parry stun.
 #
-# Up close it swings a three-hit combo, Sword_Regular A, B and C, each following only while the player is still in
-# reach; when it stops early it plays that strike's recovery. One strike of every combo, A or C picked at random,
+# Up close it swings a three-hit combo, Sword_Regular A, B and C. It tracks the player through each wind-up, then
+# commits to the swing, so stepping or dashing out of its path as it starts dodges it. A player who backs off between
+# strikes is chased (a short sprint) and the combo carries on; only getting clean away (out of combo_pursuit_range,
+# or outrunning the chase) ends it early, with that strike's recovery. A finisher (C) that cuts only air leaves it
+# off balance for whiff_recovery, an opening to hit back. One strike of every combo, A or C picked at random,
 # glows yellow and can be parried (A's quick wind-up slows down when it's that one, so there is time to read it). B is never parryable: the
 # blade flashes red before it. Closing in from range it opens with Sword_Dash: a red flash, then a dash and a slash
 # that can't be parried (a block gets the player shoved aside, as with the horde enemy's lunge).
@@ -18,11 +21,14 @@ const LIBRARY := "sword"
 @export_group("Sword")
 @export var parry_both_a_and_c := false     # false: one of A or C per combo is parryable; true: both are
 @export var parryable_windup_slowdown := 0.45   # speed of A's wind-up when it's the parryable one, so the glow can be read
-@export var parry_lead := 0.12              # the parry window opens this long (in the animation) before the hit
 @export var dash_damage := 0.5              # share of damage_to_player
 @export var dash_strike_distance := 1.5     # the dash stops this far from the player
 @export var dash_windup_speed := 0.3        # speed of the dash's first frames, the red-flash wind-up
 @export var hit_knockback := 6.0            # pushes the player back when a strike lands
+@export var combo_pursuit_range := 6.5      # backing off mid-combo: within this he runs after you and carries on
+@export var combo_pursuit_speed := 8.0      # (the player walks at 10, so a steady retreat still gets away)
+@export var combo_pursuit_time := 0.9       # gives up the chase after this long
+@export var whiff_recovery := 0.9           # a final strike that cuts only air leaves him off balance this long
 
 # Times are seconds into each clip, read from where the blade tip moves fastest in front of the body.
 # windup: the part before the swing; hit: when the blade can hurt; end: where it cuts to the next move.
@@ -224,6 +230,7 @@ func _check_blade_hit(damage_scale: float) -> bool:
 	if not swept:
 		return false
 	hit_done = true
+	parryable = false   # it has connected: too late to parry
 	if lunging and target.get("shield_blocking") == true:
 		_shove_blocking_player(target)
 	elif target.has_method("apply_push"):
@@ -232,7 +239,7 @@ func _check_blade_hit(damage_scale: float) -> bool:
 		target.apply_push(away.normalized() * hit_knockback)
 	_report_block(target)
 	if target.has_method("damage"):
-		target.damage(damage_to_player * damage_scale)
+		target.damage(damage_to_player * damage_scale, true)
 	if target.has_method("apply_camera_kick"):
 		target.apply_camera_kick(0.04, randf_range(-0.03, 0.03))
 	return true
@@ -283,12 +290,26 @@ func _perform_sword_combo() -> void:
 	var parryable_strikes: Array = ["A", "C"] if parry_both_a_and_c else [["A", "C"].pick_random()]
 	var last := ""
 	for key in COMBO_ORDER:
-		# The next strike only comes while the player is still in reach
-		if last != "" and (not is_instance_valid(target) or global_position.distance_to(target.global_position) > combo_chain_range):
-			break
+		if last != "":
+			# Backed off out of reach: he chases (a short sprint) and carries on rather than letting it drop. Only a
+			# player who gets clean away (out of pursuit range, or outrunning the chase) ends the combo early.
+			if not is_instance_valid(target) or _flat_distance_to_target() > combo_pursuit_range:
+				break
+			if _flat_distance_to_target() > combo_chain_range:
+				if not await _pursue(token):
+					return
+				if _flat_distance_to_target() > combo_chain_range:
+					break
 		if not await _strike(STRIKES[key], key in parryable_strikes, token):
 			return   # parried or cancelled: whoever cancelled it has moved it on
 		last = key
+		# The heavy finisher cut only air (dodged, not blocked): he overcommitted and is open for a moment
+		if key == "C" and not hit_done:
+			anim.play("Sword_Idle", 0.25)
+			anim.speed_scale = 0.6
+			if not await _hold_for(whiff_recovery, token):
+				return
+			anim.speed_scale = 1.0
 	# Stopped before the end: the recovery out of the last strike
 	var recovery: String = STRIKES[last]["recovery"] if last != "" else ""
 	if recovery != "":
@@ -301,7 +322,40 @@ func _perform_sword_combo() -> void:
 	release_attack_slot()
 
 
+func _flat_distance_to_target() -> float:
+	var offset := target.global_position - global_position
+	offset.y = 0.0
+	return offset.length()
+
+
+# Between strikes: sprints after a player who stepped out of reach, until close enough to swing again or the chase
+# runs out. Returns false if it was cancelled.
+func _pursue(token: int) -> bool:
+	anim.play("Sprint", 0.12)
+	anim.speed_scale = 1.0
+	var elapsed := 0.0
+	while elapsed < combo_pursuit_time:
+		await get_tree().physics_frame
+		if token != attack_token or not is_inside_tree():
+			return false
+		if not is_instance_valid(target):
+			break
+		var step := get_physics_process_delta_time()
+		elapsed += step
+		face_target(step, 3.0)
+		var to_target := target.global_position - global_position
+		to_target.y = 0.0
+		if to_target.length() <= combo_step_distance + 0.4:
+			break
+		velocity = to_target.normalized() * combo_pursuit_speed
+		move_and_slide()
+	velocity = Vector3.ZERO
+	return true
+
+
 # One swing: wind-up, the hit window, then on to its end. Returns false if it was cancelled.
+# He tracks the player through the wind-up, then commits: the swing barely turns, so stepping or dashing out of its
+# path as it starts makes it miss.
 func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 	anim.play(clip(strike["animation"]), 0.08)
 	anim.speed_scale = 1.0
@@ -309,7 +363,7 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 	var windup: float = strike["windup"]
 	var hit_start: float = strike["hit"][0]
 	var hit_end: float = strike["hit"][1]
-	var parry_from := maxf(hit_start - parry_lead, 0.0)
+	var parry_window_used := false
 	if can_be_parried:
 		glow_time = 0.0
 		glow_strength = 0.0
@@ -318,6 +372,7 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 	else:
 		set_blade_glow(DANGER_COLOR, 3.0, 0.08)
 	var hitting := false
+	hit_done = false   # stays false through the swing if it never connects (read for the finisher's whiff)
 	# Its own clock through the clip: right after play() the player can still report the previous clip's position
 	var at := 0.0
 	while true:
@@ -335,9 +390,16 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 		else:
 			velocity = Vector3.ZERO
 		if can_be_parried:
-			glow_strength = clampf(at / maxf(parry_from, 0.01), 0.0, 1.0)
-			if not parryable and at >= parry_from and at < hit_end:
+			# The parry window is short and sits right at the hit: it opens parry_lead real seconds before the swing
+			# reaches the player (counting the slowed wind-up at its slowed pace) and shuts as the blade connects,
+			# or parry_late after the hit window opens if it never does. The glow builds up to it.
+			var to_hit := _real_time_to(hit_start, at, windup, slow)
+			glow_strength = clampf(1.0 - (to_hit - parry_lead) / maxf(hit_start, 0.01), 0.0, 1.0)
+			if not parry_window_used and to_hit <= parry_lead:
+				parry_window_used = true
 				_open_parry_window()
+			if parryable and (hit_done or at >= hit_start + parry_late):
+				parryable = false
 		# The red strike leaves a red streak through its swing
 		streak.active = not can_be_parried and at >= hit_start - STREAK_LEAD and at < hit_end + STREAK_TAIL
 		if at >= hit_start and at < hit_end:
@@ -353,6 +415,15 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 	_end_strike_fx()
 	anim.speed_scale = 1.0
 	return true
+
+
+# Real seconds from `at` (seconds into the clip) until `moment`, with the wind-up played at its slowed pace if `slow`
+func _real_time_to(moment: float, at: float, windup: float, slow: bool) -> float:
+	if at >= moment:
+		return 0.0
+	if slow and at < windup:
+		return (minf(windup, moment) - at) / parryable_windup_slowdown + maxf(moment - windup, 0.0)
+	return moment - at
 
 
 func _end_strike_fx() -> void:

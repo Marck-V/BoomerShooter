@@ -87,7 +87,8 @@ const SHAKE_MAX_ROLL := 0.06
 # Set by the offhand shield: true while it is up (parry window or block), so projectiles can be absorbed
 var shield_blocking := false
 var push_impulse := Vector3.ZERO   # one-off shove from enemies, applied through the normal movement blend so it fades quickly
-const BLOCK_DAMAGE_MULTIPLIER := 0.9   # damage taken while the shield is up
+const BLOCK_DAMAGE_MULTIPLIER := 0.9         # damage taken while the shield is up (charges, blasts, shockwaves)
+const BLOCK_MELEE_DAMAGE_MULTIPLIER := 0.5   # a melee blow (punch, lunge, sword) into the raised shield
 var offhand_shield: Node
 
 # Shield grapple: while true the player is pulled toward grapple_target and gravity is ignored
@@ -674,9 +675,10 @@ func apply_push(impulse: Vector3) -> void:
 	push_impulse += impulse
 
 
-func damage(amount):
+# `melee`: a blow from an enemy's fist or blade, which the raised shield takes more of
+func damage(amount, melee := false):
 	if shield_blocking:
-		amount *= BLOCK_DAMAGE_MULTIPLIER
+		amount *= BLOCK_MELEE_DAMAGE_MULTIPLIER if melee else BLOCK_DAMAGE_MULTIPLIER
 	health -= amount
 	if cannot_die:
 		health = maxi(health, 1)

@@ -24,6 +24,9 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 @export var block_release_cooldown := 0.15 # after letting go of a block
 @export var parry_range := 4.0
 @export var melee_parry_range := 3.2       # how close a glowing punch has to be to be parried
+# A melee parry is about timing: it only counts if the blow's parry window (which each enemy opens just before it
+# connects) is open within this long of the press. Projectiles keep the whole parry_window.
+@export var melee_parry_early := 0.15
 
 # --- Throw ---
 @export var throw_damage := 45.0
@@ -90,6 +93,7 @@ var parry_succeeded := false
 var buffered_parry_until := 0.0            # real seconds (ticks): a press made while recovering from a successful parry
 var hand_scale_kick := 0.0
 var hand_velocity := Vector3.ZERO
+var parry_pressed_msec := 0   # real time of the last parry press (melee parries must land soon after it)
 var strike_hold := 0.0   # time left in the parry strike pose (keeps it there after an instant parry)
 var gun_tuck := 0.0   # 0 = gun where it belongs, 1 = tucked out of the raised shield's way
 
@@ -102,6 +106,8 @@ const FOV_PUNCH_TIME := 0.22
 const RING_TIME := 0.3
 const RING_SIZE := 3.2
 const CATCH_RING_COLOR := Color(0.45, 1.5, 1.7)
+const PARRY_RING_COLOR := Color(4.0, 3.4, 1.0)
+const PARRY_RING_GROWTH := 1.8     # the gold parry ring rolls out from the shield's rim to this many times its size
 const CATCH_RING_GROWTH := 1.3     # the catch ring rolls out from the rim to this many times its size
 const EDGE_FLASH_TIME := 0.35
 const EDGE_FLASH_INTENSITY := 0.85
@@ -295,6 +301,7 @@ func _tuck_gun(delta: float) -> void:
 # ---------------------------
 func _start_parry() -> void:
 	parry_succeeded = false
+	parry_pressed_msec = Time.get_ticks_msec()
 	_set_state(State.PARRY, parry_window)
 	strike_hold = PARRY_STRIKE_HOLD
 	# Swing over from wherever the shield is (no teleport), dipping low and punching forward into the parry pose
@@ -318,7 +325,10 @@ func _check_parry() -> void:
 	if reflected_any:
 		return
 
-	# Melee: a glowing punch (a lunge) can be parried once the enemy is close enough
+	# Melee: a yellow blow can be parried once the enemy is close enough, but only if the press was well timed: it has
+	# to come at most melee_parry_early before the blow's own (short) parry window, so pressing early whiffs
+	if Time.get_ticks_msec() - parry_pressed_msec > melee_parry_early * 1000.0:
+		return
 	for enemy in get_tree().get_nodes_in_group("Enemy"):
 		if not is_instance_valid(enemy) or enemy.get("parryable") != true:
 			continue
@@ -421,7 +431,14 @@ func _parry_impact_effects(point: Vector3) -> void:
 	GameManager.hit_stop(HIT_STOP_TIME, HIT_STOP_SCALE)
 	_fov_punch()
 	_edge_flash()
-	_shockwave_ring(point)
+	_parry_ring()
+
+
+# The gold parry ring rolls out from the shield's own rim (in its plane, riding on the hand), so every parry reads as
+# the shield doing it, wherever the parried attack was.
+func _parry_ring() -> void:
+	var rim_quad := _hand_disc_radius() / 0.41
+	_plane_effect(_ring_tex(), PARRY_RING_COLOR, rim_quad, rim_quad * PARRY_RING_GROWTH, RING_TIME)
 
 
 func _fov_punch() -> void:
