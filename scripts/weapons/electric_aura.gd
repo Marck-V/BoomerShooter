@@ -1,16 +1,18 @@
 extends Node3D
 
-# Purely visual lightning that crackles around an enemy hit by the rifle's chain lightning.
+# Purely visual lightning that crackles around an enemy hit by the lightning gun's chain lightning. Drawn with the
+# shared lightning look (lightning_bolt.gd): each arc follows a path round or up the body, roughened into fractal
+# kinks, with tapered ends.
 # Child of the enemy so it follows it; no collision and no effect on movement.
 # Use: ElectricAura.apply(enemy, duration)
 
-const LIGHTNING_SHADER: Shader = preload("res://shaders/lightning.gdshader")
+const LightningBolt = preload("res://scripts/weapons/lightning_bolt.gd")
 const ARC_COUNT := 7
 const REBUILD_INTERVAL := 0.05
 const BODY_HEIGHT := 1.8
 const BODY_RADIUS := 0.5
-const ARC_WIDTH := 0.03
-const BASE_GLOW := 14.0
+const ARC_WIDTH := 0.05     # half-width of an arc's glow
+const ARC_ENERGY := 4.0
 const FADE_TIME := 0.25
 
 var duration := 0.7
@@ -42,14 +44,13 @@ func refresh(aura_duration: float) -> void:
 func _ready() -> void:
 	for i in ARC_COUNT:
 		var mesh := ImmediateMesh.new()
-		var material := ShaderMaterial.new()
-		material.shader = LIGHTNING_SHADER
-		material.set_shader_parameter("glow_strength", BASE_GLOW)
+		var material := LightningBolt.new_material(ARC_ENERGY)
 
 		var instance := MeshInstance3D.new()
 		instance.mesh = mesh
 		instance.material_override = material
 		instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		instance.extra_cull_margin = 4.0   # rebuilt every few frames; keep it from being culled
 		add_child(instance)
 		arc_meshes.append(mesh)
 		arc_materials.append(material)
@@ -71,7 +72,7 @@ func _process(delta: float) -> void:
 
 	var fade := clampf(time_left / FADE_TIME, 0.0, 1.0)
 	for material in arc_materials:
-		material.set_shader_parameter("glow_strength", BASE_GLOW * fade)
+		material.set_shader_parameter("intensity", fade * randf_range(0.6, 1.1))
 	glow_light.light_energy = randf_range(1.5, 4.0) * fade
 
 	rebuild_timer -= delta
@@ -86,25 +87,15 @@ func _rebuild_arcs() -> void:
 
 	for mesh in arc_meshes:
 		mesh.clear_surfaces()
-		var points := _make_arc_points()
-		mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLE_STRIP)
+		var points := LightningBolt.roughen(_make_arc_points(), 0.3, 0.06)
+		var widths := PackedFloat32Array()
+		var alphas := PackedFloat32Array()
 		for i in points.size():
-			var direction: Vector3
-			if i == 0:
-				direction = points[1] - points[0]
-			elif i == points.size() - 1:
-				direction = points[i] - points[i - 1]
-			else:
-				direction = points[i + 1] - points[i - 1]
-			direction = direction.normalized()
-
-			var view_direction := (camera_local - points[i]).normalized()
-			var side := direction.cross(view_direction)
-			if side.length_squared() < 0.0001:
-				side = direction.cross(Vector3.UP)
-			side = side.normalized() * ARC_WIDTH
-			mesh.surface_add_vertex(points[i] - side)
-			mesh.surface_add_vertex(points[i] + side)
+			var t := float(i) / (points.size() - 1)
+			widths.append(ARC_WIDTH * lerpf(0.4, 1.0, sin(PI * t)))
+			alphas.append(sin(PI * t))
+		mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+		LightningBolt.add_ribbon(mesh, points, widths, alphas, camera_local)
 		mesh.surface_end()
 
 
