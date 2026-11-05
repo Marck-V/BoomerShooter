@@ -31,6 +31,8 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var lunge_cooldown_min := 3.0
 @export var lunge_cooldown_max := 6.0
 @export var lunge_windup_animation := "Crouch_Idle"
+@export var parry_lead := 0.1               # real seconds before a yellow blow connects that it can be parried
+@export var parry_late := 0.08              # ...and how long after it would have connected (if it missed)
 @export var parry_stun_time := 1.6
 @export var parry_stun_damage_multiplier := 1.5
 
@@ -461,13 +463,21 @@ func _perform_heavy_attack() -> void:
 					   assets/audio/sfx/enemies/Enemy_Hit2.wav, \
 					   assets/audio/sfx/enemies/Enemy_Hit3.wav")
 
-	# Wait until attack animation reaches "damage window start"
-	if not await _wait_attack(damage_window_start, token):
+	# Wait until attack animation reaches "damage window start". A lunge's punch can be parried only right as it is
+	# about to land: from parry_lead before the damage window until it connects (or parry_late after, if it misses).
+	var lead := minf(parry_lead, damage_window_start) if lunging else 0.0
+	if not await _wait_attack(damage_window_start - lead, token):
 		return  # parried (or otherwise cancelled) before the punch landed
+	if lunging:
+		_open_parry_window()
+		if not await _wait_attack(lead, token):
+			return
 
 	# Reset hit flag RIGHT before enabling hitbox (not at start of function)
 	hit_done = false
 	attack_hitbox.monitoring = true
+	if parryable:
+		_close_parry_window_after(parry_late, token)
 
 	# Calculate damage window duration
 	var damage_duration = max(0.0, damage_window_end - damage_window_start)
@@ -504,12 +514,13 @@ func _wait_attack(seconds: float, token: int) -> bool:
 
 func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 	if body == target and not hit_done:
+		parryable = false   # it has connected: too late to parry
 		# A lunge is not stopped by a block: the player is shoved out of its way and takes the reduced damage
 		if lunging and body.get("shield_blocking") == true:
 			_shove_blocking_player(body)
 		_report_block(body)
 		if body.has_method("damage"):
-			body.damage(damage_to_player * hit_damage_scale)
+			body.damage(damage_to_player * hit_damage_scale, true)
 
 		hit_done = true
 
@@ -830,6 +841,13 @@ func set_parry_glow(enabled: bool) -> void:
 
 
 # The punch can be parried from now on: the ring has landed, and the glint says so
+# Ends a parry window a moment after the blow should have landed, if it hasn't been parried or landed by then
+func _close_parry_window_after(seconds: float, token: int) -> void:
+	await get_tree().create_timer(seconds, false).timeout
+	if token == attack_token:
+		parryable = false
+
+
 func _open_parry_window() -> void:
 	parryable = true
 	glow_strength = 1.0
@@ -988,7 +1006,8 @@ class LungeState:
 				if timer <= 0.0:
 					phase = Phase.DASH
 					timer = enemy.lunge_dash_time
-					enemy._open_parry_window()
+					# Fully charged, but the parry window waits for the punch itself (_perform_heavy_attack)
+					enemy.glow_strength = 1.0
 					enemy.anim.play("Sprint")
 					enemy.anim.speed_scale = 1.4
 			Phase.DASH:
