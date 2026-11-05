@@ -7,8 +7,8 @@ class_name LaunchPadPortal
 # play_burst() gives the launch some punch (flash, expanding ring, sparks). Everything is built in code and
 # nothing is saved into the scene; as a @tool script it also shows up in the editor.
 
-const PORTAL_SHADER: Shader = preload("res://shaders/launch_portal.gdshader")
-const BEAM_SHADER: Shader = preload("res://shaders/launch_portal_beam.gdshader")
+const PORTAL_SHADER: Shader = preload("res://shaders/environment/launch_portal.gdshader")
+const BEAM_SHADER: Shader = preload("res://shaders/environment/launch_portal_beam.gdshader")
 
 @export var radius := 0.75
 @export var beam_height := 2.4

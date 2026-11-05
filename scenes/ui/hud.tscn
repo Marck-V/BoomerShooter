@@ -8,7 +8,7 @@
 [ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="4_oj5la"]
 [ext_resource type="Texture2D" uid="uid://cadd7w68s7j2s" path="res://assets/images/00.png" id="6_gss2c"]
 [ext_resource type="PackedScene" uid="uid://b28ujmdpvw234" path="res://scenes/ui/death_screen.tscn" id="7_gss2c"]
-[ext_resource type="Shader" uid="uid://dqa3rbb27pwid" path="res://shaders/speed_trails.gdshader" id="8_h022r"]
+[ext_resource type="Shader" uid="uid://dqa3rbb27pwid" path="res://shaders/player/speed_trails.gdshader" id="8_h022r"]
 [ext_resource type="PackedScene" uid="uid://b3oatfnhg7qnw" path="res://scenes/ui/win_screen.tscn" id="9_kicr4"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_nu0x4"]

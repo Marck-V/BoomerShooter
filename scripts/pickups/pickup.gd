@@ -90,7 +90,7 @@ func _build_glow() -> void:
 	if type == "Ammo" and ammo_tints.has(weapon_id):
 		color = ammo_tints[weapon_id]
 	var mat := ShaderMaterial.new()
-	mat.shader = load("res://shaders/pickup_glow.gdshader")
+	mat.shader = load("res://shaders/pickups/pickup_glow.gdshader")
 	mat.set_shader_parameter("glow_color", color)
 	mat.render_priority = -1
 	var quad := QuadMesh.new()

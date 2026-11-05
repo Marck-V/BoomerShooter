@@ -22,8 +22,8 @@ class_name HandBoss
 # stuck finger, phase change), so whatever the hand was doing stops cleanly and _brain() runs the reaction next.
 
 const ENERGY_BALL: PackedScene = preload("res://scenes/enemies/energy_ball.tscn")
-const HAND_SHADER: Shader = preload("res://shaders/hand_boss.gdshader")
-const PORTAL_SHADER: Shader = preload("res://shaders/dark_portal.gdshader")
+const HAND_SHADER: Shader = preload("res://shaders/boss/hand_boss.gdshader")
+const PORTAL_SHADER: Shader = preload("res://shaders/boss/dark_portal.gdshader")
 const HURTBOX_SCRIPT: Script = preload("res://scripts/enemies/body_hurtbox.gd")
 const BLOOD_PARTICLES = preload("res://scripts/weapons/blood_particles.gd")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
@@ -386,7 +386,7 @@ func _set_layers_enabled(enabled: bool) -> void:
 		area.collision_layer = 8 if enabled else 0
 
 
-# The portal the forearm comes out of: a ragged tear onto a dark dimension (shaders/dark_portal.gdshader), lying
+# The portal the forearm comes out of: a ragged tear onto a dark dimension (shaders/boss/dark_portal.gdshader), lying
 # across the forearm, with dark smoke curling out of its edge and only a dim violet light. Its local +Y points
 # into the dark side.
 func _build_portal() -> void:

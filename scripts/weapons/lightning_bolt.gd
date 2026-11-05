@@ -4,7 +4,7 @@ extends Node3D
 # arcs on the gun model.
 #
 # Shapes are fractal (bent at every scale, each smaller bend gentler than the one above it) with side branches that
-# thin out and fade. They are drawn as camera-facing ribbons with shaders/lightning_bolt.gdshader: a white core in a
+# thin out and fade. They are drawn as camera-facing ribbons with shaders/player/lightning_bolt.gdshader: a white core in a
 # blue-to-violet glow.
 #
 # A strike (LightningBolt.strike()) lives about a quarter of a second: it re-strikes a few times in a fresh shape,
@@ -13,7 +13,7 @@ extends Node3D
 # The static functions (fractal, roughen, add_ribbon, new_material) are for code that draws its own arcs, like the
 # electric aura and the gun's model.
 
-const SHADER: Shader = preload("res://shaders/lightning_bolt.gdshader")
+const SHADER: Shader = preload("res://shaders/player/lightning_bolt.gdshader")
 
 const DEFAULTS := {
 	"width": 0.12,            # half-width of the glow in metres; the white core is a fraction of it

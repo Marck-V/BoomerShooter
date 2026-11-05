@@ -98,7 +98,7 @@ var strike_hold := 0.0   # time left in the parry strike pose (keeps it there af
 var gun_tuck := 0.0   # 0 = gun where it belongs, 1 = tucked out of the raised shield's way
 
 # --- Parry impact feel ---
-const FlashShader: Shader = preload("res://shaders/damage_flash.gdshader")
+const FlashShader: Shader = preload("res://shaders/player/damage_flash.gdshader")
 const HIT_STOP_TIME := 0.06          # real seconds the game is frozen on a successful parry
 const HIT_STOP_SCALE := 0.04
 const FOV_PUNCH := 7.0               # degrees the FOV snaps out by

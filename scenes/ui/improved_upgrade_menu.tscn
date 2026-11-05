@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://ycncnuya220m"]
 
-[ext_resource type="Theme" uid="uid://csix15cdk72y3" path="res://Windows95.tres" id="1_1vi3u"]
+[ext_resource type="Theme" uid="uid://csix15cdk72y3" path="res://resources/themes/Windows95.tres" id="1_1vi3u"]
 [ext_resource type="Script" uid="uid://bntrg5xrnu32h" path="res://scripts/ui/improved_upgrade_menu.gd" id="1_h5iq6"]
 [ext_resource type="PackedScene" uid="uid://csk37a742b7o3" path="res://scenes/ui/reg_upgrade_button.tscn" id="2_0fsr2"]
 [ext_resource type="Texture2D" uid="uid://b6e0nj6t55mnb" path="res://assets/images/Godot-Windows-95-Theme-main/textures/window/close.png" id="3_7hta1"]

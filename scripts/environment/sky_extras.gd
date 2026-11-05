@@ -5,8 +5,8 @@ extends Node3D
 # the camera (so it never gets closer) and moves in stepped, low-framerate motion.
 # Each effect can be switched off with its flag before the node enters the tree.
 
-const PLANET_SHADER: Shader = preload("res://shaders/planet.gdshader")
-const AURORA_SHADER: Shader = preload("res://shaders/aurora.gdshader")
+const PLANET_SHADER: Shader = preload("res://shaders/environment/planet.gdshader")
+const AURORA_SHADER: Shader = preload("res://shaders/environment/aurora.gdshader")
 
 var ground_height := -90.0
 var sun_direction := Vector3(-0.3, 0.12, -1.0)
