@@ -42,15 +42,21 @@ const BLOCK_SCALE := 1.0
 const REFLECT_SHOOTER_RANGE := 40.0                 # beyond this the original shooter is "too far" and the nearest enemy is used
 const PARRY_SCALE := 1.0
 const HELD_POS := Vector3(-0.7, -0.42, -0.62)
-const HELD_ROT := Vector3(10.0, 52.0, -8.0)
-const PARRY_POS := Vector3(-0.06, -0.3, -0.72)    # parry and block: in front of you, low and near the center
-const PARRY_ROT := Vector3(-8.0, 0.0, 0.0)
+const HELD_ROT := Vector3(10.0, 42.0, -8.0)
+const PARRY_POS := Vector3(-0.04, -0.5, -0.66)    # parry and block: bottom center, low enough to keep the view clear
+const PARRY_ROT := Vector3(4.0, 0.0, 0.0)
+# While the shield is up the whole weapon holder tucks down and out to the right, so the gun makes room for it
+const GUN_TUCK_POS := Vector3(0.03, -0.028, 0.0)    # the guns sit ~6 cm from the camera, so centimetres go a long way (and never pull it closer: the near plane clips it)
+const GUN_TUCK_ROT := Vector3(0.0, 0.0, -10.0)
+const GUN_TUCK_SPEED := 16.0
 const RECOVER_POS := Vector3(-0.7, -0.52, -0.58)
 const HAND_OFFSET := Vector3(-0.55, -0.35, -0.6)
 const HAND_STIFFNESS := 700.0
 const HAND_DAMPING := 26.0
-const PARRY_PULLBACK := Vector3(0.0, -0.05, 0.3)   # where the shield starts before slamming forward
-const PARRY_SLAM_SPEED := 5.0
+const PARRY_SWING := 9.0                           # how hard the shield is flung toward the parry pose on a press
+const PARRY_SWING_KICK := Vector3(0.0, -0.6, -1.5) # plus a dip and a punch forward, so it reads as a strike
+const PARRY_STRIKE_HOLD := 0.16                    # the strike pose is held at least this long, even if a parry lands at once
+const PARRY_SUCCESS_HOLD := 0.2                    # and this long after a parry lands, so the hit reads before it goes back
 const PARRY_RECOIL := 3.2                          # shove back into the player on a successful parry
 
 const WORLD_MASK := 2       # Environment
@@ -84,6 +90,8 @@ var parry_succeeded := false
 var buffered_parry_until := 0.0            # real seconds (ticks): a press made while recovering from a successful parry
 var hand_scale_kick := 0.0
 var hand_velocity := Vector3.ZERO
+var strike_hold := 0.0   # time left in the parry strike pose (keeps it there after an instant parry)
+var gun_tuck := 0.0   # 0 = gun where it belongs, 1 = tucked out of the raised shield's way
 
 # --- Parry impact feel ---
 const FlashShader: Shader = preload("res://shaders/damage_flash.gdshader")
@@ -159,7 +167,8 @@ func _process(delta: float) -> void:
 		State.THROWN:
 			_update_thrown(delta)
 
-	_animate_hand(delta)
+	# The hand moves in real time: during a parry's hit-stop the world freezes but the shield still snaps into its strike
+	_animate_hand(delta / maxf(Engine.time_scale, 0.001))
 	_update_glow(delta)
 
 
@@ -199,6 +208,11 @@ func _update_glow(delta: float) -> void:
 			rim = _scaled(RIM_BASE, RECOVER_DIM)
 			gem = _scaled(GEM_BASE, RECOVER_DIM)
 			body = BODY_DIM
+	if parry_succeeded and strike_hold > 0.0 and state != State.PARRY and state != State.BLOCK:
+		# A parry that landed stays lit while the shield holds its strike
+		rim = RIM_PARRY
+		gem = GEM_PARRY
+		body = 1.0
 	_apply_glow(hand, rim.lerp(FLASH_COLOR, flash), gem.lerp(FLASH_COLOR, flash), body)
 
 	if is_instance_valid(thrown_spinner):
@@ -230,6 +244,7 @@ func _animate_hand(delta: float) -> void:
 	var target_pos := HELD_POS
 	var target_rot := HELD_ROT
 	var target_scale := HELD_SCALE
+	strike_hold = maxf(strike_hold - delta, 0.0)
 	match state:
 		State.READY:
 			target_pos += Vector3(0.0, sin(Time.get_ticks_msec() * 0.002) * 0.006, 0.0)
@@ -243,6 +258,11 @@ func _animate_hand(delta: float) -> void:
 			target_scale = BLOCK_SCALE
 		State.RECOVER:
 			target_pos = RECOVER_POS
+	if strike_hold > 0.0 and (state == State.READY or state == State.RECOVER):
+		# A parry that landed straight away still finishes its strike before the shield goes back
+		target_pos = PARRY_POS
+		target_rot = PARRY_ROT
+		target_scale = PARRY_SCALE
 
 	hand_scale_kick = lerpf(hand_scale_kick, 0.0, 1.0 - exp(-delta * 14.0))
 	var blend := 1.0 - exp(-delta * 20.0)
@@ -252,6 +272,20 @@ func _animate_hand(delta: float) -> void:
 	hand.position += hand_velocity * step
 	hand.rotation_degrees = hand.rotation_degrees.lerp(target_rot, blend)
 	hand.scale = hand.scale.lerp(Vector3.ONE * (target_scale + hand_scale_kick * 0.5), blend)
+	_tuck_gun(delta)
+
+
+# Moves the gun out of the shield's way while it is up in the middle of the screen, and back after
+func _tuck_gun(delta: float) -> void:
+	var player = GlobalVariables.player
+	if not (player and is_instance_valid(player)) or player.get("weapon_holder") == null:
+		return
+	var up := state == State.PARRY or state == State.BLOCK or strike_hold > 0.0
+	gun_tuck = lerpf(gun_tuck, 1.0 if up else 0.0, 1.0 - exp(-delta * GUN_TUCK_SPEED))
+	var t := ease(gun_tuck, -1.8)   # in-out, so it starts and settles softly
+	var holder: Node3D = player.weapon_holder
+	holder.position = GUN_TUCK_POS * t
+	holder.rotation_degrees = GUN_TUCK_ROT * t
 
 
 # ---------------------------
@@ -260,8 +294,9 @@ func _animate_hand(delta: float) -> void:
 func _start_parry() -> void:
 	parry_succeeded = false
 	_set_state(State.PARRY, parry_window)
-	hand.position = PARRY_POS + PARRY_PULLBACK
-	hand_velocity = Vector3(0.0, 0.0, -PARRY_SLAM_SPEED)
+	strike_hold = PARRY_STRIKE_HOLD
+	# Swing over from wherever the shield is (no teleport), dipping low and punching forward into the parry pose
+	hand_velocity = (PARRY_POS - hand.position) * PARRY_SWING + PARRY_SWING_KICK
 	hand.rotation_degrees.z = -14.0
 	hand_scale_kick = 0.2
 	Audio.play(THROW_SOUND)
@@ -367,6 +402,7 @@ func _parry_feedback(point: Vector3) -> void:
 	hand_scale_kick = 0.35
 	_parry_impact_effects(point)
 	parry_succeeded = true
+	strike_hold = maxf(strike_hold, PARRY_SUCCESS_HOLD)
 	_set_state(State.RECOVER, parry_success_cooldown)
 
 
