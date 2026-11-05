@@ -152,15 +152,15 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 	match type:
 		"Ammo":
 			GlobalVariables.add_ammo(weapon_id, ammo_amount)
-			Audio.play("assets/sounds/reload.mp3")
+			Audio.play("assets/audio/sfx/weapons/reload.mp3")
 		"Health":
 			GlobalVariables.add_health(healing_amount)
 			if body.has_method("play_heal_flash"):
 				body.play_heal_flash()
-			Audio.play("assets/sounds/health_pickup.mp3")
+			Audio.play("assets/audio/sfx/pickups/health_pickup.mp3")
 		"Points":
 			GlobalVariables.add_points(points_amount)
-			Audio.play("assets/sounds/money_pickup.mp3")
+			Audio.play("assets/audio/sfx/pickups/money_pickup.mp3")
 
 	Checkpoints.mark_gone(self)
 	queue_free()

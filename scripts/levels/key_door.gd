@@ -4,7 +4,7 @@ extends "res://scripts/levels/locked_door.gd"
 
 const LevelKey = preload("res://scripts/levels/level_key.gd")
 const SENSE_RADIUS := 4.5
-const LOCKED_SOUND := "assets/sounds/empty_gun.mp3"
+const LOCKED_SOUND := "assets/audio/sfx/weapons/empty_gun.mp3"
 
 @export var key := "red"
 

@@ -50,7 +50,7 @@ func open_now() -> void:
 
 
 func _move(target_y: float) -> void:
-	Audio.play_at(global_position, "assets/sounds/garage_door_open.wav")
+	Audio.play_at(global_position, "assets/audio/sfx/environment/garage_door_open.wav")
 	if tween:
 		tween.kill()
 	tween = create_tween().set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)

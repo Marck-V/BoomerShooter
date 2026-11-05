@@ -4,7 +4,7 @@ class_name BaseWeapon
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 
-const SHIELD_HIT_SOUND := "assets/sounds/bullet_hit_metal.mp3"
+const SHIELD_HIT_SOUND := "assets/audio/sfx/impacts/bullet_hit_metal.mp3"
 const SOUND_3D_MIN_GAP_MSEC := 40
 var last_sound_3d_msec := 0
 
@@ -117,7 +117,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 	if !data or !raycast:
 		return false
 	if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, 1):
-		Audio.play("assets/sounds/empty_gun.mp3")
+		Audio.play("assets/audio/sfx/weapons/empty_gun.mp3")
 		return false
 		
 	Audio.play(data.sound)

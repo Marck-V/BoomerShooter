@@ -37,7 +37,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 
 	if has_ammo_refund and randf() < refund_chance:
 		GlobalVariables.add_ammo("pistol", 10)
-		Audio.play("assets/sounds/reload.mp3")
+		Audio.play("assets/audio/sfx/weapons/reload.mp3")
 		print("Pistol Ammo Refunded")
 	
 	if has_lifesteal and randf() < 0.20:

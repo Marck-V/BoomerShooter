@@ -6,7 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://b6e0nj6t55mnb" path="res://assets/images/Godot-Windows-95-Theme-main/textures/window/close.png" id="3_7hta1"]
 [ext_resource type="Texture2D" uid="uid://cvlj3aij6gfag" path="res://assets/images/Godot-Windows-95-Theme-main/textures/window/close_hover.png" id="4_v8h47"]
 [ext_resource type="Texture2D" uid="uid://bmoxyiuenksx2" path="res://assets/images/Godot-Windows-95-Theme-main/textures/panel_container/panel.png" id="5_v8h47"]
-[ext_resource type="AudioStream" uid="uid://o5xg0q2gwl5p" path="res://assets/sounds/mouse_click_b.wav" id="7_ej5ck"]
+[ext_resource type="AudioStream" uid="uid://o5xg0q2gwl5p" path="res://assets/audio/sfx/ui/mouse_click_b.wav" id="7_ej5ck"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0fsr2"]
 bg_color = Color(0.12549, 0.54902, 0.443137, 1)
