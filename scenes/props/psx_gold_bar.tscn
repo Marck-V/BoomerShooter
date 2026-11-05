@@ -1,0 +1,5 @@
+[gd_scene load_steps=2 format=3 uid="uid://c4rylydd6qvtg"]
+
+[ext_resource type="PackedScene" uid="uid://iq68sg6rok4h" path="res://models/props/psx_gold_bar/PSXGoldBar.glb" id="1_1xxbl"]
+
+[node name="PSXGoldBar" instance=ExtResource("1_1xxbl")]

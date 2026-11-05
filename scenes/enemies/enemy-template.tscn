@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://d2g78tpqbyf5g"]
 
-[ext_resource type="PackedScene" uid="uid://dgupnfiwg2uyr" path="res://models/enemy-flying.glb" id="1_3v8nl"]
+[ext_resource type="PackedScene" uid="uid://dgupnfiwg2uyr" path="res://models/kenney/enemy-flying.glb" id="1_3v8nl"]
 [ext_resource type="Script" uid="uid://uqhdxbmbjod1" path="res://scripts/enemies/enemy_ranged.gd" id="1_jg24b"]
 [ext_resource type="SpriteFrames" uid="uid://dbv3sy5qjatnl" path="res://assets/images/burst_animation.tres" id="3_iblw5"]
 

@@ -1,7 +1,7 @@
 [gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemies/enemy_flyer.gd" id="1_script"]
-[ext_resource type="PackedScene" uid="uid://dgupnfiwg2uyr" path="res://models/enemy-flying.glb" id="2_model"]
+[ext_resource type="PackedScene" uid="uid://dgupnfiwg2uyr" path="res://models/kenney/enemy-flying.glb" id="2_model"]
 [ext_resource type="Script" path="res://scripts/enemies/body_hurtbox.gd" id="3_hurtbox"]
 [ext_resource type="Script" path="res://scripts/utilities/audio.gd" id="4_audio"]
 

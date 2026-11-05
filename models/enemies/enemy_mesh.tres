@@ -1,6 +1,6 @@
 [gd_resource type="ArrayMesh" load_steps=2 format=4 uid="uid://hssr1au35usr"]
 
-[ext_resource type="Material" uid="uid://brpn84awqb5q7" path="res://models/Textures/mat-enemy-humanoid.tres" id="1_wmtwk"]
+[ext_resource type="Material" uid="uid://brpn84awqb5q7" path="res://models/enemies/humanoid/textures/mat-enemy-humanoid.tres" id="1_wmtwk"]
 
 [resource]
 resource_name = "enemy-humanoid_HumanoidBase_NotOverlapping"
