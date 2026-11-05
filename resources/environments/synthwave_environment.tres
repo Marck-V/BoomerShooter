@@ -1,6 +1,6 @@
 [gd_resource type="Environment" format=3 uid="uid://mt6ucwllbw2w"]
 
-[ext_resource type="Shader" uid="uid://k8ygljicxbrw" path="res://shaders/synthwave_sky.gdshader" id="1_sky"]
+[ext_resource type="Shader" uid="uid://k8ygljicxbrw" path="res://shaders/environment/synthwave_sky.gdshader" id="1_sky"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_sunset"]
 shader = ExtResource("1_sky")

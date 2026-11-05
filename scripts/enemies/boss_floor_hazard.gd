@@ -5,8 +5,8 @@ class_name BossFloorHazard
 # burning tile takes damage over and over until it fades. Jumping clears a tick (feet above CLEARANCE).
 #   BossFloorHazard.spawn(tree, [Vector3 floor centre, ...], cell_size, damage, warn_time, burn_time)
 
-const SHADER: Shader = preload("res://shaders/boss_hazard_tile.gdshader")
-const BEAM_SHADER: Shader = preload("res://shaders/boss_hazard_beam.gdshader")
+const SHADER: Shader = preload("res://shaders/boss/boss_hazard_tile.gdshader")
+const BEAM_SHADER: Shader = preload("res://shaders/boss/boss_hazard_beam.gdshader")
 const BEAM_HEIGHT := 14.0
 const BEAM_GROW_TIME := 0.14
 const CLEARANCE := 0.8

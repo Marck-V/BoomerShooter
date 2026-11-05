@@ -8,7 +8,7 @@ Writes:
     models/enemy_shield/enemy_shield.glb   what Godot uses (scenes/enemies/shield.tscn), with the Cage and Gem meshes
     DIR/enemy_shield_*.png                 preview renders (default art/blender/previews)
 
-In Godot the cage is drawn by shaders/enemy_shield.gdshader (it replaces the glTF materials), which needs the
+In Godot the cage is drawn by shaders/enemies/enemy_shield.gdshader (it replaces the glTF materials), which needs the
 per-tile data described in build_cage(). The import keeps LODs and vertex compression off so that data survives.
 
 The cage sits around a grey stand-in capsule the size of the shield hitbox in scenes/enemies/shield.tscn

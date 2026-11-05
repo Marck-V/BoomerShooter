@@ -100,7 +100,7 @@ var grapple_time := 0.0
 var grapple_best_distance := INF
 var grapple_stuck_time := 0.0
 
-const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/damage_flash.gdshader")
+const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/player/damage_flash.gdshader")
 const OFFHAND_SHIELD = preload("res://scripts/player/offhand_shield.gd")
 var damage_flash_material: ShaderMaterial
 var damage_flash_tween: Tween

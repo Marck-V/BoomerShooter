@@ -7,7 +7,7 @@ class_name BossShockwave
 #   BossShockwave.spawn(tree, center, max_radius, speed, damage)               the slam: hurts
 #   BossShockwave.spawn(tree, center, max_radius, speed, 0.0, true)             a push only: a phase change
 
-const RING_SHADER: Shader = preload("res://shaders/boss_shockwave.gdshader")
+const RING_SHADER: Shader = preload("res://shaders/boss/boss_shockwave.gdshader")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 
 const START_RADIUS := 1.5

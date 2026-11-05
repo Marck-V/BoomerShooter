@@ -10,7 +10,7 @@ const SkyEffects = preload("res://scripts/environment/sky_effects.gd")
 const SkyExtras = preload("res://scripts/environment/sky_extras.gd")
 const FlameParticles = preload("res://scripts/weapons/flame_particles.gd")
 const AmbientParticles = preload("res://scripts/environment/ambient_particles.gd")
-const NEON_GRID: Shader = preload("res://shaders/neon_grid.gdshader")
+const NEON_GRID: Shader = preload("res://shaders/environment/neon_grid.gdshader")
 
 @export var ground_height := -90.0
 @export var sun_direction := Vector3(-0.3, 0.12, -1.0)

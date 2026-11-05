@@ -1,7 +1,7 @@
 extends Node3D
 
 const ShieldBreakEffect = preload("res://scripts/enemies/shield_break_effect.gd")
-const CAGE_MATERIAL: ShaderMaterial = preload("res://shaders/enemy_shield_material.tres")
+const CAGE_MATERIAL: ShaderMaterial = preload("res://shaders/enemies/enemy_shield_material.tres")
 
 signal shield_destroyed
 
