@@ -32,7 +32,7 @@
 [ext_resource type="Script" uid="uid://bfo2aykuwm4xa" path="res://scripts/levels/grapple_point.gd" id="26_lcydj"]
 [ext_resource type="Script" uid="uid://fxdfot0o7uek" path="res://scripts/levels/level_key.gd" id="27_qfl0r"]
 [ext_resource type="Script" uid="uid://b2tepdav4ay6r" path="res://scripts/levels/key_door.gd" id="28_r1j2e"]
-[ext_resource type="PackedScene" uid="uid://c1qi0hggy4jff" path="res://scenes/template_environment_components/launch_pad.tscn" id="31_fsjua"]
+[ext_resource type="PackedScene" uid="uid://c1qi0hggy4jff" path="res://scenes/props/launch_pad.tscn" id="31_fsjua"]
 [ext_resource type="Script" uid="uid://dydc2tucfx85g" path="res://scripts/levels/checkpoint.gd" id="31_lcydj"]
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_level"]
