@@ -32,8 +32,8 @@ var ammo_tints = {
 }
 
 var model_paths = {
-	"Health": "res://models/medkit.tscn",
-	"Points" : "res://models/psx_gold_bar.tscn"
+	"Health": "res://scenes/props/medkit.tscn",
+	"Points" : "res://scenes/props/psx_gold_bar.tscn"
 }
 
 var scale_map = {
