@@ -26,3 +26,13 @@ art/
 *.blend
 *.blend1
 *.blend2
+
+# macOS / editor junk
+.DS_Store
+*.tmp
+
+# Exported builds (publish these as GitHub releases instead)
+build/
+
+# TrenchBroom autosaves
+trenchbroom/maps/autosave/
