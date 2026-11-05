@@ -35,6 +35,7 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 @export_category("Basic Attributes")
 @export var health_bar: Control
 @export var boss_name := "Godot Man"   # shown under the health bar
+@export_file("*.tscn") var next_level := ""   # when set, killing the boss opens a portal to this level instead of ending the game
 # How fast the whole fight runs: wind-ups, swings, holds, recoveries, stuns, animations, cooldowns, the gaps between
 # attacks, its movement and its charge. 1.2 is everything 20% faster. (The brute uses this; the boss keeps 1.)
 @export var tempo := 1.0
@@ -234,6 +235,14 @@ func face_point(point: Vector3) -> void:
 
 # The point on the floor under/over `point`, so warnings and waves sit on the real floor (the boss's own origin
 # floats a little above it)
+# The boss is down: open the way to the next level, or end the game if there is none
+func finish_fight() -> void:
+	if next_level != "":
+		LevelPortal.open_at(get_tree(), floor_point(global_position), next_level, target.global_position if is_instance_valid(target) else Vector3.INF)
+	else:
+		GameManager.win()
+
+
 func floor_point(point: Vector3) -> Vector3:
 	var query := PhysicsRayQueryParameters3D.create(point + Vector3.UP * 3.0, point + Vector3.DOWN * 8.0)
 	query.collision_mask = 2
@@ -1296,4 +1305,4 @@ class DeadState extends BossState:
 		for offset in [Vector3.ZERO, Vector3(1, 0, 0.6), Vector3(-1, 0, -0.6)]:
 			BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), enemy.global_position + offset * length * 0.5 + Vector3.UP * 0.4 * length, 1.4, enemy.blood_scale)
 		await enemy.get_tree().create_timer(1.2, false).timeout
-		GameManager.win()
+		enemy.finish_fight()

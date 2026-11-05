@@ -2,8 +2,8 @@
 NavigationLink3D nodes that bridge them, so ground enemies can jump across.
 
 Usage:
-    python tools/generate_nav_jump_links.py scenes/test_scenes/enemy_room.tscn            # just list them
-    python tools/generate_nav_jump_links.py scenes/test_scenes/enemy_room.tscn --write    # add them to the scene
+    python tools/generate_nav_jump_links.py scenes/levels/level_01.tscn            # just list them
+    python tools/generate_nav_jump_links.py scenes/levels/level_01.tscn --write    # add them to the scene
 
 The links are ordinary NavigationLink3D nodes named JumpLink_*; re-running with --write replaces the old
 JumpLink_* nodes, so a re-bake of the navigation mesh can be followed by a regeneration. Nodes can also be

@@ -2,6 +2,7 @@ extends Node
 
 var save_data: PlayerData
 var infinite_ammo := false   # set by the test room while it's open: spending ammo always succeeds and costs nothing
+var carry_ammo_over := false   # set while travelling between levels: the weapons keep their ammo instead of refilling it
 var current_weapon
 var player
 var mouse_sensitivity: float = 20
