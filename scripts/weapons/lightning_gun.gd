@@ -239,6 +239,7 @@ func _spawn_shot_bolt(start: Vector3, end: Vector3, hit: bool) -> void:
 		"start_width": BOLT_WIDTH_NEAR,
 		"light": hit,
 		"sparks": hit,
+		"follow": muzzle_location,   # stays on the barrel while you move; the end stays where it landed
 	})
 
 
