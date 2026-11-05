@@ -104,10 +104,10 @@ const HIT_STOP_SCALE := 0.04
 const FOV_PUNCH := 7.0               # degrees the FOV snaps out by
 const FOV_PUNCH_TIME := 0.22
 const RING_TIME := 0.3
-const RING_SIZE := 3.2
 const CATCH_RING_COLOR := Color(0.45, 1.5, 1.7)
-const PARRY_RING_COLOR := Color(4.0, 3.4, 1.0)
-const PARRY_RING_GROWTH := 1.8     # the gold parry ring rolls out from the shield's rim to this many times its size
+const PARRY_SPARK_COUNT := 56
+const PARRY_EMBER_COUNT := 10
+const PARRY_FLASH_COLOR := Color(2.4, 1.8, 0.5)
 const CATCH_RING_GROWTH := 1.3     # the catch ring rolls out from the rim to this many times its size
 const EDGE_FLASH_TIME := 0.35
 const EDGE_FLASH_INTENSITY := 0.85
@@ -434,11 +434,79 @@ func _parry_impact_effects(point: Vector3) -> void:
 	_parry_ring()
 
 
-# The gold parry ring rolls out from the shield's own rim (in its plane, riding on the hand), so every parry reads as
-# the shield doing it, wherever the parried attack was.
+# A parry throws sparks off the shield like metal striking metal: hot streaks spraying from the whole rim out and
+# forward, a few heavier slow embers, and a quick bright flash on the face. Everything is parented to the hand so it
+# starts on the shield, while the sparks themselves fly free in the world.
 func _parry_ring() -> void:
-	var rim_quad := _hand_disc_radius() / 0.41
-	_plane_effect(_ring_tex(), PARRY_RING_COLOR, rim_quad, rim_quad * PARRY_RING_GROWTH, RING_TIME)
+	var centre := _hand_disc_centre()
+	var radius := _hand_disc_radius()
+	_spark_burst(centre, radius, PARRY_SPARK_COUNT, 1.2, 4.0, 0.012, 0.35)
+	_spark_burst(centre, radius * 0.6, PARRY_EMBER_COUNT, 0.5, 1.8, 0.02, 0.6)
+	_plane_effect(_glow_tex(), PARRY_FLASH_COLOR, radius * 1.4, radius * 2.4, 0.12)
+
+
+func _spark_burst(centre: Vector3, radius: float, count: int, speed_min: float, speed_max: float, size: float, life: float) -> void:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.vertex_color_use_as_albedo = true
+	material.use_particle_trails = true
+	material.albedo_color = Color(3.0, 2.3, 0.8)
+	var mesh := RibbonTrailMesh.new()
+	mesh.shape = RibbonTrailMesh.SHAPE_CROSS
+	mesh.size = size
+	mesh.sections = 4
+	mesh.section_length = 0.03
+	mesh.section_segments = 1
+	mesh.material = material
+
+	var gradient := Gradient.new()
+	gradient.offsets = PackedFloat32Array([0.0, 0.35, 1.0])
+	gradient.colors = PackedColorArray([
+		Color(1.0, 0.97, 0.75, 1.0),
+		Color(1.0, 0.72, 0.2, 0.95),
+		Color(1.0, 0.4, 0.05, 0.0),
+	])
+	var ramp := GradientTexture1D.new()
+	ramp.gradient = gradient
+
+	var process := ParticleProcessMaterial.new()
+	process.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_RING
+	process.emission_ring_axis = Vector3.BACK
+	process.emission_ring_radius = radius
+	process.emission_ring_inner_radius = radius * 0.5
+	process.emission_ring_height = 0.0
+	process.direction = Vector3.FORWARD
+	process.spread = 55.0
+	process.initial_velocity_min = speed_min * 0.4
+	process.initial_velocity_max = speed_max * 0.5
+	process.radial_velocity_min = speed_min * 0.6
+	process.radial_velocity_max = speed_max
+	process.gravity = Vector3(0.0, -9.8, 0.0)
+	process.damping_min = 1.5
+	process.damping_max = 4.0
+	process.scale_min = 0.6
+	process.scale_max = 1.3
+	process.color_ramp = ramp
+
+	var sparks := GPUParticles3D.new()
+	sparks.one_shot = true
+	sparks.explosiveness = 1.0
+	sparks.amount = count
+	sparks.lifetime = life
+	# The shield is still swinging into its parry pose when the parry lands, so sparks left in world space would
+	# stay behind at the resting (right-hand) spot. In local space they ride the hand and burst from the shield itself.
+	sparks.local_coords = true
+	sparks.trail_enabled = true
+	sparks.trail_lifetime = 0.08
+	sparks.process_material = process
+	sparks.draw_pass_1 = mesh
+	sparks.position = centre
+	sparks.visibility_aabb = AABB(Vector3(-4, -4, -6), Vector3(8, 8, 8))
+	hand.add_child(sparks)
+	sparks.emitting = true
+	get_tree().create_timer(life + 0.5, true, false, true).timeout.connect(sparks.queue_free)
 
 
 func _fov_punch() -> void:
@@ -481,32 +549,7 @@ func _set_edge_intensity(value: float) -> void:
 	edge_material.set_shader_parameter("intensity", value)
 
 
-func _shockwave_ring(point: Vector3, size := RING_SIZE, tint := Color(4.0, 3.4, 1.0)) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	material.billboard_keep_scale = true
-	material.no_depth_test = true
-	material.albedo_texture = _ring_tex()
-	material.albedo_color = tint
-
-	var ring := MeshInstance3D.new()
-	ring.mesh = QuadMesh.new()
-	ring.material_override = material
-	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	ring.scale = Vector3.ONE * 0.3
-	get_tree().root.add_child(ring)
-	ring.global_position = point
-
-	var tween := ring.create_tween().set_parallel(true).set_ignore_time_scale(true)
-	tween.tween_property(ring, "scale", Vector3.ONE * size, RING_TIME).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
-	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0), RING_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.chain().tween_callback(ring.queue_free)
-
-
-# Thin bright ring shared by the parry shockwave and the catch
+# Thin bright ring used by the catch
 func _ring_tex() -> GradientTexture2D:
 	if _ring_texture == null:
 		var gradient := Gradient.new()

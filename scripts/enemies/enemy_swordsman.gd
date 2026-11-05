@@ -55,6 +55,8 @@ const PLAYER_HIGH := 1.7                    # ...to this
 
 const PARRY_COLOR := Color(1.0, 0.8, 0.15)  # yellow: parryable
 const DANGER_COLOR := Color(1.0, 0.1, 0.04) # red: not parryable
+const SWING_SOUNDS := "assets/sounds/Blade Swing A.wav, assets/sounds/Blade Swing B.wav, assets/sounds/Blade Swing C.wav, assets/sounds/Blade Swing D.wav, assets/sounds/Blade Swing F.wav, assets/sounds/Blade Swing G.wav"
+const SWING_SOUND_LEAD := 0.06                # the whoosh starts this long before the hit window, as the blade picks up speed
 const STREAK_LEAD := 0.04                   # the red streak shows from this long before the hit window...
 const STREAK_TAIL := 0.04                   # ...to this long after it (seconds into the clip)
 
@@ -372,6 +374,7 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 	else:
 		set_blade_glow(DANGER_COLOR, 3.0, 0.08)
 	var hitting := false
+	var swing_sound_played := false
 	hit_done = false   # stays false through the swing if it never connects (read for the finisher's whiff)
 	# Its own clock through the clip: right after play() the player can still report the previous clip's position
 	var at := 0.0
@@ -400,6 +403,9 @@ func _strike(strike: Dictionary, can_be_parried: bool, token: int) -> bool:
 				_open_parry_window()
 			if parryable and (hit_done or at >= hit_start + parry_late):
 				parryable = false
+		if not swing_sound_played and at >= hit_start - SWING_SOUND_LEAD:
+			swing_sound_played = true
+			audio_player.play(SWING_SOUNDS)
 		# The red strike leaves a red streak through its swing
 		streak.active = not can_be_parried and at >= hit_start - STREAK_LEAD and at < hit_end + STREAK_TAIL
 		if at >= hit_start and at < hit_end:
@@ -479,6 +485,7 @@ class SwordDashState:
 	var enemy
 	var token := 0
 	var at := 0.0   # its own clock through the clip, as in _strike()
+	var swing_sound_played := false
 
 	func _init(e):
 		enemy = e
@@ -491,6 +498,7 @@ class SwordDashState:
 		enemy.last_tip = Vector3.INF   # the sweep starts fresh at the hit window
 		token = enemy.attack_token
 		at = 0.0
+		swing_sound_played = false
 		enemy.anim.play(enemy.clip(DASH["animation"]), 0.15)
 		enemy.anim.speed_scale = enemy.dash_windup_speed
 		enemy.set_blade_glow(DANGER_COLOR, 3.0, 0.2)
@@ -512,6 +520,9 @@ class SwordDashState:
 			enemy.move_and_slide()
 		else:
 			enemy.velocity = Vector3.ZERO
+		if not swing_sound_played and at >= DASH["hit"][0] - SWING_SOUND_LEAD:
+			swing_sound_played = true
+			enemy.audio_player.play(SWING_SOUNDS)
 		enemy.streak.active = at >= DASH["hit"][0] - STREAK_LEAD and at < DASH["hit"][1] + STREAK_TAIL
 		if at >= DASH["hit"][0] and at < DASH["hit"][1]:
 			if enemy.last_tip == Vector3.INF:
