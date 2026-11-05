@@ -101,6 +101,8 @@ const FOV_PUNCH := 7.0               # degrees the FOV snaps out by
 const FOV_PUNCH_TIME := 0.22
 const RING_TIME := 0.3
 const RING_SIZE := 3.2
+const CATCH_RING_COLOR := Color(0.45, 1.5, 1.7)
+const CATCH_RING_GROWTH := 1.3     # the catch ring rolls out from the rim to this many times its size
 const EDGE_FLASH_TIME := 0.35
 const EDGE_FLASH_INTENSITY := 0.85
 const PARRY_KICK_PITCH := 0.07
@@ -463,6 +465,32 @@ func _set_edge_intensity(value: float) -> void:
 
 
 func _shockwave_ring(point: Vector3, size := RING_SIZE, tint := Color(4.0, 3.4, 1.0)) -> void:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	material.billboard_keep_scale = true
+	material.no_depth_test = true
+	material.albedo_texture = _ring_tex()
+	material.albedo_color = tint
+
+	var ring := MeshInstance3D.new()
+	ring.mesh = QuadMesh.new()
+	ring.material_override = material
+	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	ring.scale = Vector3.ONE * 0.3
+	get_tree().root.add_child(ring)
+	ring.global_position = point
+
+	var tween := ring.create_tween().set_parallel(true).set_ignore_time_scale(true)
+	tween.tween_property(ring, "scale", Vector3.ONE * size, RING_TIME).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0), RING_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(ring.queue_free)
+
+
+# Thin bright ring shared by the parry shockwave and the catch
+func _ring_tex() -> GradientTexture2D:
 	if _ring_texture == null:
 		var gradient := Gradient.new()
 		gradient.offsets = PackedFloat32Array([0.0, 0.6, 0.82, 0.92, 1.0])
@@ -480,29 +508,7 @@ func _shockwave_ring(point: Vector3, size := RING_SIZE, tint := Color(4.0, 3.4, 
 		_ring_texture.fill_to = Vector2(1.0, 0.5)
 		_ring_texture.width = 256
 		_ring_texture.height = 256
-
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	material.billboard_keep_scale = true
-	material.no_depth_test = true
-	material.albedo_texture = _ring_texture
-	material.albedo_color = tint
-
-	var ring := MeshInstance3D.new()
-	ring.mesh = QuadMesh.new()
-	ring.material_override = material
-	ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	ring.scale = Vector3.ONE * 0.3
-	get_tree().root.add_child(ring)
-	ring.global_position = point
-
-	var tween := ring.create_tween().set_parallel(true).set_ignore_time_scale(true)
-	tween.tween_property(ring, "scale", Vector3.ONE * size, RING_TIME).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
-	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0), RING_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.chain().tween_callback(ring.queue_free)
+	return _ring_texture
 
 
 func _start_throw() -> void:
@@ -626,8 +632,7 @@ func _update_return(delta: float) -> void:
 func _catch() -> void:
 	_remove_rope()
 	var point := hand.global_position     # the burst happens at the hand, where the shield lands
-	_pop(point, FLASH_COLOR, 0.55)
-	_shockwave_ring(point, 0.65, Color(0.9, 3.0, 3.4))
+	_catch_burst()
 	ImpactParticles.spawn(get_tree(), point, (camera.global_position - point).normalized(), 0.9)
 	_clang(thrown.global_position, 1.2)
 	thrown.queue_free()
@@ -841,7 +846,96 @@ func _clang(position_in_world: Vector3, pitch: float, stream: AudioStream = null
 	player.play()
 
 
+# The catch flash: a glow over the face and a ring rolling out from the rim, both lying in the shield's own plane and
+# riding on the hand, so they match the tilted disc on screen instead of a flat circle floating over it.
+func _catch_burst() -> void:
+	var radius := _hand_disc_radius()
+	# The ring texture's bright band sits 0.41 of the quad's width from its centre
+	var rim_quad := radius / 0.41
+	_plane_effect(_glow_tex(), FLASH_COLOR * 0.22, radius * 1.6, radius * 2.0, 0.16)
+	_plane_effect(_ring_tex(), CATCH_RING_COLOR, rim_quad, rim_quad * CATCH_RING_GROWTH, RING_TIME)
+
+
+func _plane_effect(texture: Texture2D, color: Color, from_size: float, to_size: float, time: float) -> void:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	material.no_depth_test = true
+	material.albedo_texture = texture
+	material.albedo_color = color
+	var effect := MeshInstance3D.new()
+	effect.mesh = QuadMesh.new()   # faces +Z: the hand's disc lies in its local XY plane
+	effect.material_override = material
+	effect.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	effect.position = _hand_disc_centre()
+	effect.scale = Vector3.ONE * from_size
+	hand.add_child(effect)
+	var tween := effect.create_tween().set_parallel(true).set_ignore_time_scale(true)
+	tween.tween_property(effect, "scale", Vector3.ONE * to_size, time).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0), time).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(effect.queue_free)
+
+
+# The held disc's bounds in the hand's own space (unscaled), measured once from its meshes
+var _disc_bounds := AABB()
+
+
+func _hand_disc_bounds() -> AABB:
+	if _disc_bounds.size != Vector3.ZERO:
+		return _disc_bounds
+	var to_hand := hand.global_transform.affine_inverse()
+	var bounds := AABB()
+	var first := true
+	for mesh_instance in hand.find_children("*", "MeshInstance3D", true, false):
+		var box: AABB = (to_hand * (mesh_instance as MeshInstance3D).global_transform) * (mesh_instance as MeshInstance3D).get_aabb()
+		bounds = box if first else bounds.merge(box)
+		first = false
+	_disc_bounds = bounds
+	return bounds
+
+
+func _hand_disc_radius() -> float:
+	var size := _hand_disc_bounds().size
+	return maxf(size.x, size.y) * 0.5
+
+
+# Centre of the disc's face on the side the player sees (the back, +Z), so the burst sits on the shield, not inside it
+func _hand_disc_centre() -> Vector3:
+	var bounds := _hand_disc_bounds()
+	var centre := bounds.get_center()
+	centre.z = bounds.end.z
+	return centre
+
+
 func _pop(position_in_world: Vector3, color: Color, size: float) -> void:
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
+	material.billboard_keep_scale = true
+	material.no_depth_test = true
+	material.albedo_texture = _glow_tex()
+	material.albedo_color = color
+
+	var pop := MeshInstance3D.new()
+	pop.mesh = QuadMesh.new()
+	pop.material_override = material
+	pop.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	pop.scale = Vector3.ONE * 0.2
+	get_tree().root.add_child(pop)
+	pop.global_position = position_in_world
+
+	var tween := pop.create_tween().set_parallel(true)
+	tween.tween_property(pop, "scale", Vector3.ONE * size, 0.2).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
+	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0), 0.2)
+	tween.chain().tween_callback(pop.queue_free)
+
+
+# Soft round glow shared by every pop
+func _glow_tex() -> GradientTexture2D:
 	if _glow_texture == null:
 		var gradient := Gradient.new()
 		gradient.offsets = PackedFloat32Array([0.0, 0.4, 1.0])
@@ -857,26 +951,4 @@ func _pop(position_in_world: Vector3, color: Color, size: float) -> void:
 		_glow_texture.fill_to = Vector2(1.0, 0.5)
 		_glow_texture.width = 128
 		_glow_texture.height = 128
-
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
-	material.billboard_keep_scale = true
-	material.no_depth_test = true
-	material.albedo_texture = _glow_texture
-	material.albedo_color = color
-
-	var pop := MeshInstance3D.new()
-	pop.mesh = QuadMesh.new()
-	pop.material_override = material
-	pop.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	pop.scale = Vector3.ONE * 0.2
-	get_tree().root.add_child(pop)
-	pop.global_position = position_in_world
-
-	var tween := pop.create_tween().set_parallel(true)
-	tween.tween_property(pop, "scale", Vector3.ONE * size, 0.2).set_trans(Tween.TRANS_EXPO).set_ease(Tween.EASE_OUT)
-	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0), 0.2)
-	tween.chain().tween_callback(pop.queue_free)
+	return _glow_texture

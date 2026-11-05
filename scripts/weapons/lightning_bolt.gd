@@ -27,6 +27,7 @@ const DEFAULTS := {
 	"light": true,            # a flash of light where it lands (and halfway along a long bolt)
 	"sparks": true,           # a burst of sparks where it lands
 	"energy": 5.0,
+	"follow": null,           # a Node3D (the gun's muzzle) the bolt's start stays on while it lives; the end stays put
 }
 const LIGHT_COLOR := Color(0.45, 0.55, 1.0)
 const LIGHT_ENERGY := 5.0
@@ -42,6 +43,10 @@ var material: ShaderMaterial
 var lights: Array[OmniLight3D] = []
 var age := 0.0
 var strike_index := -1
+# The current shape, kept so it can be redrawn when the start moves: each path is
+# {points, widths, alphas, along} where `along` is how far each point is from start (0) to end (1)
+var _paths: Array[Dictionary] = []
+var _built_start := Vector3.ZERO
 
 
 # Fires a bolt from start to end (world positions). `options` overrides any of DEFAULTS. Returns the bolt's node.
@@ -89,12 +94,17 @@ func _process(delta: float) -> void:
 		return
 
 	# A fresh shape at every restrike; each one starts bright and fades fast, with the odd dark frame: a strobe
+	var follow = settings["follow"]   # untyped: it may have been freed (weapon swap, death)
+	if follow != null and is_instance_valid(follow):
+		start = (follow as Node3D).global_position
 	var restrikes: int = settings["restrikes"]
 	var slot := life / restrikes
 	var index := mini(int(age / slot), restrikes - 1)
 	if index != strike_index:
 		strike_index = index
 		_build()
+	elif follow != null:
+		_draw()   # same shape, pulled along to where the muzzle is now
 	var into_slot := (age - slot * index) / slot
 	var peak := 1.0 - 0.25 * index
 	var level := peak * lerpf(1.0, 0.3, into_slot)
@@ -106,8 +116,6 @@ func _process(delta: float) -> void:
 
 
 func _build() -> void:
-	var camera := get_viewport().get_camera_3d()
-	var eye := camera.global_position if camera else start + Vector3.UP * 5.0
 	var width: float = settings["width"]
 	var length := start.distance_to(end)
 
@@ -124,9 +132,9 @@ func _build() -> void:
 		widths.append(w)
 		alphas.append(1.0)
 
-	mesh.clear_surfaces()
-	mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
-	add_ribbon(mesh, main, widths, alphas, eye)
+	_built_start = start
+	_paths.clear()
+	_add_path(main, widths, alphas)
 
 	var branch_count: int = settings["branches"]
 	if branch_count < 0:
@@ -147,7 +155,34 @@ func _build() -> void:
 			var t := float(i) / (branch.size() - 1)
 			branch_widths.append(widths[at] * lerpf(0.55, 0.15, t))
 			branch_alphas.append(lerpf(0.8, 0.0, t))
-		add_ribbon(mesh, branch, branch_widths, branch_alphas, eye)
+		_add_path(branch, branch_widths, branch_alphas)
+	_draw()
+
+
+func _add_path(points: Array[Vector3], widths: PackedFloat32Array, alphas: PackedFloat32Array) -> void:
+	var line := end - start
+	var length_squared := maxf(line.length_squared(), 0.0001)
+	var along := PackedFloat32Array()
+	for point in points:
+		along.append(clampf((point - start).dot(line) / length_squared, 0.0, 1.0))
+	_paths.append({"points": points, "widths": widths, "alphas": alphas, "along": along})
+
+
+# Draws the current shape. If the start has moved since it was built (it follows the muzzle), every point shifts by
+# that much, fading to nothing at the far end, so the bolt stays on the barrel while the end stays where it landed.
+func _draw() -> void:
+	var camera := get_viewport().get_camera_3d()
+	var eye := camera.global_position if camera else start + Vector3.UP * 5.0
+	var moved := start - _built_start
+	mesh.clear_surfaces()
+	mesh.surface_begin(Mesh.PRIMITIVE_TRIANGLES)
+	for path in _paths:
+		var points: Array[Vector3] = path["points"]
+		var along: PackedFloat32Array = path["along"]
+		var shifted: Array[Vector3] = []
+		for i in points.size():
+			shifted.append(points[i] + moved * (1.0 - along[i]))
+		add_ribbon(mesh, shifted, path["widths"], path["alphas"], eye)
 	mesh.surface_end()
 
 
