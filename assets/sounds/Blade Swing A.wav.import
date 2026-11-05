@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cobeldshvr8np"
+path="res://.godot/imported/Blade Swing A.wav-ad0a4835972992a90db3e631182cb50a.sample"
+
+[deps]
+
+source_file="res://assets/sounds/Blade Swing A.wav"
+dest_files=["res://.godot/imported/Blade Swing A.wav-ad0a4835972992a90db3e631182cb50a.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2
