@@ -34,6 +34,7 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 
 @export_category("Basic Attributes")
 @export var health_bar: Control
+@export var boss_name := "Godot Man"   # shown under the health bar
 # How fast the whole fight runs: wind-ups, swings, holds, recoveries, stuns, animations, cooldowns, the gaps between
 # attacks, its movement and its charge. 1.2 is everything 20% faster. (The brute uses this; the boss keeps 1.)
 @export var tempo := 1.0
@@ -186,6 +187,8 @@ func _ready() -> void:
 	if health_bar:
 		health_bar.set_max_health(health)
 		health_bar.set_health(health)
+		if health_bar.has_method("set_boss_name"):
+			health_bar.set_boss_name(boss_name)
 	if debug_label:
 		debug_label.visible = debug
 	if entrance_enabled:

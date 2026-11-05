@@ -10,6 +10,8 @@ class_name EnemyBase
 @export var wave: String = ""   # set by map entities: held out of the level until the matching wave_trigger fires
 @export var blood_scale: float = 1.0 # how thick this enemy's blood is: bigger enemies bleed fatter streaks and bigger splats
 @export var dummy: bool = false # a training dummy: stands still and never attacks, but can be hit and killed like any enemy
+@export var kill_heal: int = 5 # health in the packs this enemy drops when killed (0 = none); close kills send them flying to the player, far ones drop on the floor
+var grants_kill_heal := true      # an enemy that dies on its own (the bomber's fuse running out) is not a kill and heals nothing
 
 var shield: Node = null
 var original_materials: Array[Material] = []

@@ -147,6 +147,7 @@ func floor_below() -> Vector3:
 func detonate() -> void:
 	if destroyed:
 		return
+	grants_kill_heal = false
 	GlobalVariables.enemy_died.emit(self)
 	change_state("Dead")
 

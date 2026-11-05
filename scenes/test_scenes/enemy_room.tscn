@@ -869,12 +869,6 @@ script = ExtResource("1_oqbgo")
 
 [node name="HUD" parent="." unique_id=2073241072 instance=ExtResource("2_uokx7")]
 
-[node name="BossHealthBar" parent="HUD/InGameHUD" index="8"]
-layout_mode = 0
-anchors_preset = 0
-anchor_right = 0.0
-grow_horizontal = 1
-
 [node name="Enemies" type="Node" parent="." unique_id=466075412 groups=["Enemy"]]
 
 [node name="GodotBoss" parent="Enemies" unique_id=1754559895 node_paths=PackedStringArray("health_bar", "target") instance=ExtResource("3_7li7f")]
