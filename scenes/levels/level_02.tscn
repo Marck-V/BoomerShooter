@@ -22,7 +22,7 @@
 [ext_resource type="Script" uid="uid://frv6krouymm1" path="res://scripts/levels/wave_trigger.gd" id="14_01hg1"]
 [ext_resource type="Material" uid="uid://cmlftix2s7yeq" path="res://trenchbroom/textures/world/texture_17.tres" id="14_x7wv7"]
 [ext_resource type="Material" uid="uid://dtsera8gdg8c1" path="res://trenchbroom/textures/world/texture_11_door.tres" id="15_4dr30"]
-[ext_resource type="Texture2D" uid="uid://jijndpji82nm" path="res://trenchbroom/textures/world/texture_06_base.png" id="15_8orqj"]
+[ext_resource type="Texture2D" uid="uid://0dx8nefg6sjf" path="res://trenchbroom/textures/world/texture_06.png" id="15_8orqj"]
 [ext_resource type="Script" uid="uid://bcjl5g00jufap" path="res://scripts/levels/locked_door.gd" id="15_v5pqk"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy_dodger.tscn" id="16_dodger"]
 [ext_resource type="PackedScene" path="res://scenes/enemies/enemy_flyer.tscn" id="17_flyer"]
@@ -151,7 +151,7 @@ _surfaces = [{
 "index_count": 36,
 "index_data": PackedByteArray("AAABAAIAAAACAAMABAAFAAYABAAGAAcACAAJAAoACAAKAAsADAANAA4ADAAOAA8AEAARABIAEAASABMAFAAVABYAFAAWABcA"),
 "material": SubResource("StandardMaterial3D_qfl0r"),
-"name": "world/texture_06_base",
+"name": "world/texture_06",
 "primitive": 3,
 "uv_scale": Vector4(0, 0, 0, 0),
 "vertex_count": 24,

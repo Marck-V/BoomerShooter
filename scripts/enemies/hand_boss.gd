@@ -944,6 +944,8 @@ func _attack_poke() -> void:
 		# A jolt down as it lands, then a rattle that dies away: harder on the last jab
 		shake_player_camera(0.1 if last else 0.07, 0.03)
 		rattle_player_camera(0.6 if last else 0.45)
+		# The jab has landed: from here on it is too late to parry it
+		parryable = false
 		if is_instance_valid(target) and flat_distance(target.global_position, spot) <= poke_radius and player_height() < 2.0:
 			hurt_player(poke_damage, flat(target.global_position - spot).normalized() * 16.0)
 		if not await _press_into_floor(spot, basis, (0.5 if last else 0.28) / pace):

@@ -19,6 +19,7 @@ extends Node3D
 
 const PLAYER_MAX_HEALTH := 100
 const HORDE_SCENE := preload("res://scenes/enemies/enemy_melee_dodger.tscn")
+const SPAWN_SPACING := 2.5                      # metres between enemies spawned from the menu
 const HORDE_SIZE := 8
 const HORDE_DISTANCES := [10.0, 13.0]           # metres to the front and back row
 const HORDE_SPREAD := 50.0                      # degrees each row fans across
@@ -96,7 +97,10 @@ func spawn(what, distance := -1.0, angle_degrees := 0.0, shielded := -1) -> Node
 	forward.y = 0.0
 	forward = forward.normalized() if forward.length() > 0.01 else Vector3.FORWARD
 	forward = forward.rotated(Vector3.UP, -deg_to_rad(angle_degrees))
-	enemy.global_position = player.global_position + forward * (spawn_distance if distance < 0.0 else distance)
+	var spot := player.global_position + forward * (spawn_distance if distance < 0.0 else distance)
+	if distance < 0.0:
+		spot = _free_spot(spot, forward.cross(Vector3.UP), enemy)
+	enemy.global_position = spot
 	var to_player := player.global_position - enemy.global_position
 	to_player.y = 0.0
 	if to_player.length() > 0.01:
@@ -104,6 +108,26 @@ func spawn(what, distance := -1.0, angle_degrees := 0.0, shielded := -1) -> Node
 	if frozen:
 		_freeze(enemy, true)
 	return enemy
+
+
+# Slides `spot` sideways (alternating right and left, further each time) until no other enemy is within
+# SPAWN_SPACING of it, so repeated spawns line up beside each other instead of stacking.
+func _free_spot(spot: Vector3, right: Vector3, ignore: Node3D) -> Vector3:
+	for i in 40:
+		var offset := ceili(i / 2.0) * (1 if i % 2 == 1 else -1)
+		var candidate := spot + right * offset * SPAWN_SPACING
+		var clear := true
+		for other in enemies.get_children():
+			if other == ignore or not other is Node3D or other.is_queued_for_deletion():
+				continue
+			var d: Vector3 = other.global_position - candidate
+			d.y = 0.0
+			if d.length() < SPAWN_SPACING:
+				clear = false
+				break
+		if clear:
+			return candidate
+	return spot
 
 
 # A horde of melee dodgers: `count` of them split between two rows ahead of you. The back row fans a little narrower
