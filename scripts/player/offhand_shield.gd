@@ -7,11 +7,11 @@ const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 const ShieldModel = preload("res://scripts/player/shield_model.gd")
 const ShieldTrail = preload("res://scripts/player/shield_trail.gd")
-const CLANG_SOUND := "res://assets/sounds/bullet_hit_metal.mp3"
-const PARRY_SOUND: AudioStream = preload("res://assets/sounds/metal_axe_hit.mp3")
-const BLOCK_SOUND: AudioStream = preload("res://assets/sounds/shield_block.mp3")   # an attack hitting the raised shield
+const CLANG_SOUND := "res://assets/audio/sfx/impacts/bullet_hit_metal.mp3"
+const PARRY_SOUND: AudioStream = preload("res://assets/audio/sfx/impacts/metal_axe_hit.mp3")
+const BLOCK_SOUND: AudioStream = preload("res://assets/audio/sfx/player/shield_block.mp3")   # an attack hitting the raised shield
 const BLOCK_SOUND_GAP_MSEC := 100   # one attack can report its block twice (a lunge's shove, then its hit)
-const THROW_SOUND := "assets/sounds/simple_whoosh.mp3"
+const THROW_SOUND := "assets/audio/sfx/player/simple_whoosh.mp3"
 
 enum State { READY, PARRY, RECOVER, THROWN, BLOCK }
 enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }

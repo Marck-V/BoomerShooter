@@ -187,7 +187,7 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 	if !data or !raycast:
 		return false
 	if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, AMMO_PER_SHOT):
-		Audio.play("assets/sounds/empty_gun.mp3")
+		Audio.play("assets/audio/sfx/weapons/empty_gun.mp3")
 		return false
 
 	Audio.play(data.sound)

@@ -12,6 +12,6 @@ recoil_strength = 2
 camera_kick = 0.04
 camera_shake = 0.12
 weapon_id = "lightning"
-sound = "assets/sounds/lightning_magic.mp3"
+sound = "assets/audio/sfx/weapons/lightning_magic.mp3"
 crosshair = ExtResource("1_cross")
 metadata/_custom_type_script = "uid://c6gxnumnbxeyb"

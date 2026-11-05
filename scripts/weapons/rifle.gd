@@ -60,7 +60,7 @@ func activate_quickness_boost():
 		return
 
 	print("Quickness boost activated!")
-	Audio.play("assets/sounds/zoom.mp3")
+	Audio.play("assets/audio/sfx/weapons/zoom.mp3")
 	GlobalVariables.quickness_active.emit()
 	quickness_active = true
 

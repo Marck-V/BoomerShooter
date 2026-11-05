@@ -229,7 +229,7 @@ func _physics_process(delta):
 
 	camera.position.y = lerp(camera.position.y, 0.0, delta * 5)
 	if is_on_floor() and gravity > 1 and !previously_floored:
-		Audio.play("assets/sounds/land.ogg")
+		Audio.play("assets/audio/sfx/player/land.ogg")
 		camera.position.y = -0.1
 
 	previously_floored = is_on_floor()
@@ -376,7 +376,7 @@ func handle_controls(_delta):
 			slide_speed -= 1
 
 		if jump_single or jump_double:
-			Audio.play("assets/sounds/jump_a.ogg, assets/sounds/jump_b.ogg, assets/sounds/jump_c.ogg")
+			Audio.play("assets/audio/sfx/player/jump_a.ogg, assets/audio/sfx/player/jump_b.ogg, assets/audio/sfx/player/jump_c.ogg")
 			
 
 		if jump_double:
@@ -468,7 +468,7 @@ func do_wall_jump() -> void:
 	wall_push_time_left = wall_jump_push_time
 	wall_jump_used = true
 	last_wall_jump_normal = normal
-	Audio.play("assets/sounds/jump_a.ogg, assets/sounds/jump_b.ogg, assets/sounds/jump_c.ogg")
+	Audio.play("assets/audio/sfx/player/jump_a.ogg, assets/audio/sfx/player/jump_b.ogg, assets/audio/sfx/player/jump_c.ogg")
 
 func action_jump():
 	gravity = -jump_strength
@@ -498,7 +498,7 @@ func action_dash():
 		dashing = true
 		dash_time_left = dash_duration
 		dash_cooldown_left = dash_cooldown
-		Audio.play("assets/sounds/simple_whoosh.mp3")
+		Audio.play("assets/audio/sfx/player/simple_whoosh.mp3")
 
 # ---------------------------
 # Shield grapple
@@ -596,7 +596,7 @@ func change_weapon(index, play_sound := true):
 	current_weapon.set_process(true)
 	crosshair.texture = current_weapon.data.crosshair
 	if play_sound:
-		Audio.play("assets/sounds/weapon_change.ogg")
+		Audio.play("assets/audio/sfx/weapons/weapon_change.ogg")
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	weapon_changed.emit(current_weapon)
 

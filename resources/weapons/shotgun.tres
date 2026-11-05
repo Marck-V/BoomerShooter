@@ -12,6 +12,6 @@ recoil_strength = 5
 camera_kick = 0.055
 camera_shake = 0.22
 weapon_id = "shotgun"
-sound = "assets/sounds/doom_shotgun.mp3"
+sound = "assets/audio/sfx/weapons/doom_shotgun.mp3"
 crosshair = ExtResource("1_4rfis")
 metadata/_custom_type_script = "uid://c6gxnumnbxeyb"

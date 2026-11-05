@@ -5,7 +5,7 @@ extends Node3D
 # Use: ShieldBreakEffect.spawn(get_tree(), world_position)
 # Pass with_shards = false when the shield model shatters itself (the crystal cage), so only the pop and sparks play.
 
-const BREAK_SOUND := "assets/sounds/glass_breaking.mp3"
+const BREAK_SOUND := "assets/audio/sfx/impacts/glass_breaking.mp3"
 const SPARK_COUNT := 28
 const SHARD_COUNT := 22
 const CLEANUP_TIME := 1.8

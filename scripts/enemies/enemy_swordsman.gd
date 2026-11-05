@@ -55,7 +55,7 @@ const PLAYER_HIGH := 1.7                    # ...to this
 
 const PARRY_COLOR := Color(1.0, 0.8, 0.15)  # yellow: parryable
 const DANGER_COLOR := Color(1.0, 0.1, 0.04) # red: not parryable
-const SWING_SOUNDS := "assets/sounds/Blade Swing A.wav, assets/sounds/Blade Swing B.wav, assets/sounds/Blade Swing C.wav, assets/sounds/Blade Swing D.wav, assets/sounds/Blade Swing F.wav, assets/sounds/Blade Swing G.wav"
+const SWING_SOUNDS := "assets/audio/sfx/enemies/Blade Swing A.wav, assets/audio/sfx/enemies/Blade Swing B.wav, assets/audio/sfx/enemies/Blade Swing C.wav, assets/audio/sfx/enemies/Blade Swing D.wav, assets/audio/sfx/enemies/Blade Swing F.wav, assets/audio/sfx/enemies/Blade Swing G.wav"
 const SWING_SOUND_LEAD := 0.06                # the whoosh starts this long before the hit window, as the blade picks up speed
 const STREAK_LEAD := 0.04                   # the red streak shows from this long before the hit window...
 const STREAK_TAIL := 0.04                   # ...to this long after it (seconds into the clip)

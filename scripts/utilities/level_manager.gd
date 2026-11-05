@@ -51,7 +51,7 @@ func _process(_delta):
 			print("Can't pick up key yet! Enemies remaining:", enemies_in_red_zone)
 		else:
 			has_red_key = true
-			Audio.play("assets/sounds/key_grab.mp3")
+			Audio.play("assets/audio/sfx/pickups/key_grab.mp3")
 			hud.get_node("InGameHUD/KeysContainer/RedKey").visible = true
 			if is_instance_valid(red_key):
 				red_key.queue_free() 
@@ -62,7 +62,7 @@ func _process(_delta):
 			print("Can't pick up key yet! Enemies remaining:", enemies_in_blue_zone)
 		else:
 			has_blue_key = true
-			Audio.play("assets/sounds/key_grab.mp3")
+			Audio.play("assets/audio/sfx/pickups/key_grab.mp3")
 			hud.get_node("InGameHUD/KeysContainer/BlueKey").visible = true
 			if is_instance_valid(blue_key):
 				blue_key.queue_free()
@@ -128,7 +128,7 @@ func unlock_door():
 		print("Boss doors unlocked!")
 		hud.get_node("InGameHUD/KeysContainer/RedKey").visible = false
 		hud.get_node("InGameHUD/KeysContainer/BlueKey").visible = false
-		Audio.play("assets/sounds/garage_door_open.wav")
+		Audio.play("assets/audio/sfx/environment/garage_door_open.wav")
 		audio_player.volume_db = -15.0
 		
 		raise_platforms()

@@ -15,7 +15,7 @@ const BURN_DPS := 6.0             # damage per second while burning
 # Flame audio. The clip is a quiet lead-in, an ignition swell, a steady burn, a second flare, more steady
 # burn and then the ending. Firing starts it just before the ignition, repeats a steady stretch of the burn
 # for as long as the trigger is held, and jumps to the ending when it is released. Times are in seconds.
-const FLAME_SOUND: AudioStream = preload("res://assets/sounds/flamethrower.mp3")
+const FLAME_SOUND: AudioStream = preload("res://assets/audio/sfx/weapons/flamethrower.mp3")
 const SOUND_INTRO_START := 0.72   # skips the silent lead-in so the sound answers the click straight away
 const SOUND_INTRO_MIN := 1.3      # a quick tap still plays the whole ignition swell before the ending
 const SOUND_LOOP_START := 1.55    # the steady burn that repeats while firing...
@@ -178,7 +178,7 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, _raycast: Ray
 	if tick_count % TICKS_PER_AMMO == 0:
 		if not GlobalVariables.spend_ammo(GlobalVariables.current_weapon, 1):
 			if not out_of_fuel:
-				Audio.play("assets/sounds/empty_gun.mp3")
+				Audio.play("assets/audio/sfx/weapons/empty_gun.mp3")
 				out_of_fuel = true
 			return false
 	out_of_fuel = false
