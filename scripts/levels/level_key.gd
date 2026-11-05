@@ -60,6 +60,6 @@ func _process(delta: float) -> void:
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("Player") and body.has_method("add_key"):
 		body.add_key(key)
-		Audio.play("assets/sounds/key_grab.mp3")
+		Audio.play("assets/audio/sfx/pickups/key_grab.mp3")
 		Checkpoints.mark_gone(self)
 		queue_free()

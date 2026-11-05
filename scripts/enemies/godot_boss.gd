@@ -54,7 +54,7 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 @export var charge_recovery_time: float = 2.1
 @export var charge_steering := 1.2           # how sharply the charge turns towards the player (radians per second)
 @export var crash_stun_time := 3.0           # stunned for this long after charging into a wall
-@export var charge_material: StandardMaterial3D = preload("res://shaders/boss_charge_shader.tres")
+@export var charge_material: StandardMaterial3D = preload("res://shaders/boss/boss_charge_shader.tres")
 
 @export_category("Shockwave Slam")
 # Distances are in "boss lengths" (the boss's scale), so the attack keeps its proportions on any size of boss

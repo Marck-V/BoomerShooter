@@ -7,11 +7,11 @@ const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 const ShieldModel = preload("res://scripts/player/shield_model.gd")
 const ShieldTrail = preload("res://scripts/player/shield_trail.gd")
-const CLANG_SOUND := "res://assets/sounds/bullet_hit_metal.mp3"
-const PARRY_SOUND: AudioStream = preload("res://assets/sounds/metal_axe_hit.mp3")
-const BLOCK_SOUND: AudioStream = preload("res://assets/sounds/shield_block.mp3")   # an attack hitting the raised shield
+const CLANG_SOUND := "res://assets/audio/sfx/impacts/bullet_hit_metal.mp3"
+const PARRY_SOUND: AudioStream = preload("res://assets/audio/sfx/impacts/metal_axe_hit.mp3")
+const BLOCK_SOUND: AudioStream = preload("res://assets/audio/sfx/player/shield_block.mp3")   # an attack hitting the raised shield
 const BLOCK_SOUND_GAP_MSEC := 100   # one attack can report its block twice (a lunge's shove, then its hit)
-const THROW_SOUND := "assets/sounds/simple_whoosh.mp3"
+const THROW_SOUND := "assets/audio/sfx/player/simple_whoosh.mp3"
 
 enum State { READY, PARRY, RECOVER, THROWN, BLOCK }
 enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
@@ -98,7 +98,7 @@ var strike_hold := 0.0   # time left in the parry strike pose (keeps it there af
 var gun_tuck := 0.0   # 0 = gun where it belongs, 1 = tucked out of the raised shield's way
 
 # --- Parry impact feel ---
-const FlashShader: Shader = preload("res://shaders/damage_flash.gdshader")
+const FlashShader: Shader = preload("res://shaders/player/damage_flash.gdshader")
 const HIT_STOP_TIME := 0.06          # real seconds the game is frozen on a successful parry
 const HIT_STOP_SCALE := 0.04
 const FOV_PUNCH := 7.0               # degrees the FOV snaps out by

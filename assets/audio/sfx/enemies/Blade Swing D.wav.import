@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://cboryse7omb4f"
+path="res://.godot/imported/Blade Swing D.wav-7fca13a98226cf48c728c63e3ac2e28e.sample"
+
+[deps]
+
+source_file="res://assets/audio/sfx/enemies/Blade Swing D.wav"
+dest_files=["res://.godot/imported/Blade Swing D.wav-7fca13a98226cf48c728c63e3ac2e28e.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

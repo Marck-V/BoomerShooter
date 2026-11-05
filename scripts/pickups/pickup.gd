@@ -32,8 +32,8 @@ var ammo_tints = {
 }
 
 var model_paths = {
-	"Health": "res://models/medkit.tscn",
-	"Points" : "res://models/psx_gold_bar.tscn"
+	"Health": "res://scenes/props/medkit.tscn",
+	"Points" : "res://scenes/props/psx_gold_bar.tscn"
 }
 
 var scale_map = {
@@ -90,7 +90,7 @@ func _build_glow() -> void:
 	if type == "Ammo" and ammo_tints.has(weapon_id):
 		color = ammo_tints[weapon_id]
 	var mat := ShaderMaterial.new()
-	mat.shader = load("res://shaders/pickup_glow.gdshader")
+	mat.shader = load("res://shaders/pickups/pickup_glow.gdshader")
 	mat.set_shader_parameter("glow_color", color)
 	mat.render_priority = -1
 	var quad := QuadMesh.new()
@@ -152,15 +152,15 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 	match type:
 		"Ammo":
 			GlobalVariables.add_ammo(weapon_id, ammo_amount)
-			Audio.play("assets/sounds/reload.mp3")
+			Audio.play("assets/audio/sfx/weapons/reload.mp3")
 		"Health":
 			GlobalVariables.add_health(healing_amount)
 			if body.has_method("play_heal_flash"):
 				body.play_heal_flash()
-			Audio.play("assets/sounds/health_pickup.mp3")
+			Audio.play("assets/audio/sfx/pickups/health_pickup.mp3")
 		"Points":
 			GlobalVariables.add_points(points_amount)
-			Audio.play("assets/sounds/money_pickup.mp3")
+			Audio.play("assets/audio/sfx/pickups/money_pickup.mp3")
 
 	Checkpoints.mark_gone(self)
 	queue_free()

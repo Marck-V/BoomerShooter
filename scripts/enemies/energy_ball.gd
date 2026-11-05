@@ -4,8 +4,8 @@ const BloodParticles = preload("res://scripts/weapons/blood_particles.gd")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 const ParryFx = preload("res://scripts/enemies/parry_fx.gd")
 const GlowTrail = preload("res://scripts/enemies/glow_trail.gd")
-const AURA_SHADER: Shader = preload("res://shaders/parry_aura.gdshader")
-const CORE_SHADER: Shader = preload("res://shaders/energy_ball_core.gdshader")
+const AURA_SHADER: Shader = preload("res://shaders/enemies/parry_aura.gdshader")
+const CORE_SHADER: Shader = preload("res://shaders/enemies/energy_ball_core.gdshader")
 
 @onready var mesh_instance_3d = $MeshInstance3D
 @onready var collision_shape_3d = $CollisionShape3D

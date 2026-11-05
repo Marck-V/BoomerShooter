@@ -9,6 +9,6 @@ cooldown = 0.2
 max_distance = 40
 camera_kick = 0.012
 weapon_id = "rifle"
-sound = "assets/sounds/ak47_single.ogg"
+sound = "assets/audio/sfx/weapons/ak47_single.ogg"
 crosshair = ExtResource("1_fwyd3")
 metadata/_custom_type_script = "uid://c6gxnumnbxeyb"

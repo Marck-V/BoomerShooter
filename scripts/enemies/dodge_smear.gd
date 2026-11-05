@@ -6,7 +6,7 @@ class_name DodgeSmear
 # front of the camera. The head of the smear follows the enemy as it really moves and the rows stretch back
 # towards where it started, so the streak always points from the start of the dodge to where the enemy is.
 
-const SMEAR_SHADER: Shader = preload("res://shaders/dodge_smear.gdshader")
+const SMEAR_SHADER: Shader = preload("res://shaders/enemies/dodge_smear.gdshader")
 const SNAPSHOT_LAYER := 1 << 19      # visual layer 20: only the dodging enemy is put on it, briefly
 const SNAPSHOT_SCALE := 0.5          # snapshot resolution relative to the game viewport
 const DURATION := 0.45

@@ -9,8 +9,8 @@ extends Area3D
 # The look, built in code from the volume's size: a curtain of neon scanlines across the corridor. Cyan until it's
 # reached, then it flashes, ripples out from where the player crossed and settles to a dim green.
 
-const CURTAIN_SHADER: Shader = preload("res://shaders/checkpoint_curtain.gdshader")
-const SOUND := "assets/sounds/accepter.mp3"
+const CURTAIN_SHADER: Shader = preload("res://shaders/environment/checkpoint_curtain.gdshader")
+const SOUND := "assets/audio/sfx/ui/accepter.mp3"
 
 const IDLE_COLOR := Color(0.2, 0.9, 1.0)
 const REACHED_COLOR := Color(0.3, 1.0, 0.4)

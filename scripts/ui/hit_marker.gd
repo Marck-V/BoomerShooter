@@ -4,11 +4,11 @@ extends Control
 # Added to the HUD in code. Hits landing together (shotgun pellets) share one tick and sound.
 
 const HIT_SOUNDS: Array[AudioStream] = [
-	preload("res://assets/sounds/Bullet Impact A.wav"),
-	preload("res://assets/sounds/Bullet Impact B.wav"),
-	preload("res://assets/sounds/Bullet Impact C.wav"),
-	preload("res://assets/sounds/Bullet Impact D.wav"),
-	preload("res://assets/sounds/Bullet Impact E.wav"),
+	preload("res://assets/audio/sfx/impacts/Bullet Impact A.wav"),
+	preload("res://assets/audio/sfx/impacts/Bullet Impact B.wav"),
+	preload("res://assets/audio/sfx/impacts/Bullet Impact C.wav"),
+	preload("res://assets/audio/sfx/impacts/Bullet Impact D.wav"),
+	preload("res://assets/audio/sfx/impacts/Bullet Impact E.wav"),
 ]
 const HIT_COLOR := Color(1.0, 1.0, 1.0)
 const HEADSHOT_COLOR := Color(1.0, 0.85, 0.15)

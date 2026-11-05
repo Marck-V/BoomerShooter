@@ -1,8 +1,8 @@
 extends RefCounted
 
-# Shared helpers for the neon wireframe scenery (see shaders/neon_wire.gdshader).
+# Shared helpers for the neon wireframe scenery (see shaders/environment/neon_wire.gdshader).
 
-const NEON_WIRE: Shader = preload("res://shaders/neon_wire.gdshader")
+const NEON_WIRE: Shader = preload("res://shaders/environment/neon_wire.gdshader")
 
 
 # Triangle whose vertex colors carry barycentric coordinates for the wireframe shader

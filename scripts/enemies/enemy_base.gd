@@ -13,8 +13,8 @@ class_name EnemyBase
 
 var shield: Node = null
 var original_materials: Array[Material] = []
-var shield_material: ShaderMaterial = preload("res://shaders/glass_shader.tres")
-const HIT_FLASH_SHADER: Shader = preload("res://shaders/hit_flash.gdshader")
+var shield_material: ShaderMaterial = preload("res://shaders/enemies/glass_shader.tres")
+const HIT_FLASH_SHADER: Shader = preload("res://shaders/enemies/hit_flash.gdshader")
 const HIT_FLASH_RADIUS := 0.55
 const HIT_FLASH_HOLD := 0.06     # seconds at full brightness, so it registers before it fades
 const HIT_FLASH_TIME := 0.18

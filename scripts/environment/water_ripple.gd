@@ -1,7 +1,7 @@
 extends Node
 class_name WaterRipple
 
-# Rings spreading out across the water floor (shaders/water_floor.gdshader) from a point, e.g. where the hand
+# Rings spreading out across the water floor (shaders/environment/water_floor.gdshader) from a point, e.g. where the hand
 # boss's finger touches it. The shader draws up to four at once; each ripple node ages its slot every frame and
 # frees it when it has faded. A fifth takes over the oldest.
 #   WaterRipple.spawn(get_tree(), point)                  a big ripple across the whole arena

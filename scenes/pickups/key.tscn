@@ -1,9 +1,9 @@
 [gd_scene load_steps=12 format=4 uid="uid://vbp1uai2kl1t"]
 
-[ext_resource type="Texture2D" uid="uid://bq1lhc67raan6" path="res://models/Misc_Key_1_150.png" id="1_eme2e"]
+[ext_resource type="Texture2D" uid="uid://bq1lhc67raan6" path="res://models/props/misc_2025/Misc_Key_1_150.png" id="1_eme2e"]
 [ext_resource type="Script" uid="uid://bds8a6fsxxl5k" path="res://scripts/pickups/key.gd" id="1_plpo6"]
-[ext_resource type="Shader" uid="uid://bvslej13aexl5" path="res://shaders/highlight.gdshader" id="2_hhk5j"]
-[ext_resource type="Shader" uid="uid://d72ev44thf13" path="res://shaders/bubble.gdshader" id="4_vncin"]
+[ext_resource type="Shader" uid="uid://bvslej13aexl5" path="res://shaders/pickups/highlight.gdshader" id="2_hhk5j"]
+[ext_resource type="Shader" uid="uid://d72ev44thf13" path="res://shaders/environment/bubble.gdshader" id="4_vncin"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_plpo6"]
 render_priority = 0

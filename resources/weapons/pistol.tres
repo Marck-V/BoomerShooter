@@ -9,6 +9,6 @@ cooldown = 0.3
 max_distance = 20
 camera_kick = 0.02
 weapon_id = "pistol"
-sound = "assets/sounds/single_pistol_shot.mp3"
+sound = "assets/audio/sfx/weapons/single_pistol_shot.mp3"
 crosshair = ExtResource("1_uny8x")
 metadata/_custom_type_script = "uid://c6gxnumnbxeyb"

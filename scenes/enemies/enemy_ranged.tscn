@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" uid="uid://uqhdxbmbjod1" path="res://scripts/enemies/enemy_ranged.gd" id="1_xbodr"]
 [ext_resource type="PackedScene" uid="uid://crq4rlg5k72xf" path="res://scenes/enemies/enemy_model.tscn" id="2_mt7bm"]
-[ext_resource type="Material" uid="uid://cnxhhb6kgdtfq" path="res://shaders/glass_shader.tres" id="3_w85hd"]
+[ext_resource type="Material" uid="uid://cnxhhb6kgdtfq" path="res://shaders/enemies/glass_shader.tres" id="3_w85hd"]
 [ext_resource type="Script" uid="uid://3rimacln7ilh" path="res://scripts/utilities/audio.gd" id="7_qhlw0"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_xbodr"]

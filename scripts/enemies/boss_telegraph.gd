@@ -7,7 +7,7 @@ class_name BossTelegraph
 #   var warning := BossTelegraph.circle(tree, center, radius)
 #   warning.set_progress(0.5)  ...  warning.finish()
 
-const SHADER: Shader = preload("res://shaders/boss_telegraph.gdshader")
+const SHADER: Shader = preload("res://shaders/boss/boss_telegraph.gdshader")
 const FLOOR_LIFT := 0.06     # just above the floor, so it never z-fights with it
 
 var material: ShaderMaterial
