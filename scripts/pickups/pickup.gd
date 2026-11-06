@@ -15,6 +15,7 @@ var gold_bar_scale_factor = 0.1
 var health_scale_factor = 0.35   # the medkit is about 2 m across in its model: about 0.7 m here
 var ammo_scale = 2
 
+var player_inside := false   # the player is standing in this pickup (only tracked for medkits)
 var base_y = 0.0
 var t = 0.0
 
@@ -53,6 +54,7 @@ var glow_instance: MeshInstance3D
 
 
 func _ready() -> void:
+	$Area3D.body_exited.connect(_on_area_3d_body_exited)
 	mesh_instance_3d.visible = false
 	base_y = position.y
 	_build_model()
@@ -140,6 +142,12 @@ func _tint(root: Node, color: Color) -> void:
 func _process(delta):
 	t += delta
 
+	# A medkit walked over at full health is left alone: only while the player is standing in it (tracked by the
+	# area's enter and exit signals) does it wait to be needed, so nothing runs for the medkits the player is not on
+	if type == "Health" and player_inside and GlobalVariables.player and GlobalVariables.player.health < 100:
+		_on_area_3d_body_entered(GlobalVariables.player)
+		return
+
 	rotate_y(0.5 * delta)
 	position.y = base_y + sin(t) * 0.1
 	rotation.x = sin(t * 1.3) * 0.05
@@ -148,12 +156,16 @@ func _process(delta):
 func _on_area_3d_body_entered(body: Node3D) -> void:
 	if not body.is_in_group("Player"):
 		return
+	player_inside = true
 		
 	match type:
 		"Ammo":
 			GlobalVariables.add_ammo(weapon_id, ammo_amount)
 			Audio.play("assets/audio/sfx/weapons/reload.mp3")
 		"Health":
+			# Already at full health: a medkit would be wasted, so it stays where it is for later
+			if body.health >= 100:
+				return
 			GlobalVariables.add_health(healing_amount)
 			if body.has_method("play_heal_flash"):
 				body.play_heal_flash()
@@ -164,3 +176,8 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 
 	Checkpoints.mark_gone(self)
 	queue_free()
+
+
+func _on_area_3d_body_exited(body: Node3D) -> void:
+	if body.is_in_group("Player"):
+		player_inside = false

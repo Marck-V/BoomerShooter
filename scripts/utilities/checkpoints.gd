@@ -40,6 +40,7 @@ func _on_scene_changed() -> void:
 
 # Starts a fresh run of the level, or carries on from the snapshot if it is for this level (after dying)
 func level_started(level: Node) -> void:
+	GlobalVariables.carry_ammo_over = false   # the weapons have loaded with the carried ammo; later loads refill as usual
 	if current and current.level_path == level.scene_file_path:
 		_restore(level)
 		return

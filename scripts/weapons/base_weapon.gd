@@ -39,7 +39,8 @@ var muzzle_flash_tween: Tween
 
 
 func _ready():
-	GlobalVariables.refill_all_ammo()
+	if not GlobalVariables.carry_ammo_over:
+		GlobalVariables.refill_all_ammo()
 	rest_position = position
 	muzzle.visible = false   # the flat 2D burst: the muzzle flash is only the soft glow and light
 	_setup_muzzle_flash()

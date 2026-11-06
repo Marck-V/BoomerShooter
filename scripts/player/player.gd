@@ -15,6 +15,7 @@ extends CharacterBody3D
 @export var kick_recovery = 14.0
 @export var damage_flash_time = 0.4
 @export var heal_flash_time = 0.6
+@export var kill_heal_range := 4.0   # killing an enemy this close (metres) sends its health packs flying to you; further away they drop on the floor to pick up
 @export var fall_reset_distance := 60.0   # falling this far below the last solid ground counts as falling off the map. Must be more than the level's deepest real drop.
 @export var fall_damage := 20
 @export var kill_height := -70.0      # falling below this before ever touching the ground restarts the level
@@ -148,6 +149,7 @@ func _ready():
 	current_weapon.set_process(true)
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	GlobalVariables.player = self
+	GlobalVariables.enemy_died.connect(_on_enemy_died_heal)
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
 	psx_material.set_shader_parameter("vignette_strength", GlobalVariables.vignette_strength)
 	_setup_damage_flash()
@@ -641,6 +643,20 @@ func _setup_heal_flash() -> void:
 
 
 # Called when something heals the player visibly (the medkit pickup)
+# Every kill drops health packs worth its kill_heal; the kill itself heals nothing. Killed from really close, the
+# packs fly straight to you and heal on arrival; killed from further away, they fall to the floor to be picked up.
+func _on_enemy_died_heal(enemy: Node3D) -> void:
+	if not is_instance_valid(enemy) or health <= 0 or enemy.get("grants_kill_heal") != true:
+		return
+	var amount: int = enemy.get("kill_heal") if enemy.get("kill_heal") != null else 0
+	if amount <= 0:
+		return
+	var point := enemy.global_position + Vector3.UP
+	# A player already at full health has nothing to heal, so the packs wait on the floor for later
+	var homing: bool = health < 100 and camera.global_position.distance_to(point) <= kill_heal_range
+	KillHealPack.spawn(get_tree(), point, self, amount, homing)
+
+
 func play_heal_flash() -> void:
 	if heal_flash_material == null:
 		return
