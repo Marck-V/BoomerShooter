@@ -25,10 +25,10 @@ import numpy as np
 # sRGB colours, as painted (the PNG stores them as they are)
 STEEL_DARK = (0.25, 0.28, 0.33)       # blued gunmetal
 STEEL_LIGHT = (0.48, 0.51, 0.56)
-COPPER = (0.80, 0.47, 0.26)
+COPPER = (0.88, 0.52, 0.28)
 WORN_STEEL = (0.82, 0.84, 0.88)        # bare metal showing through where the bluing has worn off
 WORN_COPPER = (0.93, 0.62, 0.40)
-ROUGH = (0.34, 0.27, 0.32)             # base roughness: dark steel, light steel, copper
+ROUGH = (0.34, 0.27, 0.40)             # base roughness: dark steel, light steel, copper
 
 OFF_ATLAS = 5.0                        # UVs of faces that must not bake: far outside the image
 
@@ -235,7 +235,9 @@ def _paint(ids, edge, ao, size, seed):
     roughness = np.clip(roughness, 0.12, 0.95)
     # blued steel is an oxide coat, not bare metal: partly metallic, so it keeps some diffuse light and reads as form;
     # worn edges are bare metal
-    metallic = np.clip(0.76 + wear * 0.24 - cavity * 0.30 + scratch * 0.1, 0.35, 1.0)
+    # copper is held lower so flat faces of it still read as copper when they mirror the dark room
+    base_metal = np.array([0.76, 0.85, 0.50], dtype=np.float32)[which]
+    metallic = np.clip(base_metal + wear * 0.30 - cavity * 0.30 + scratch * 0.1, 0.35, 1.0)
 
     orm = np.stack([ao, roughness, metallic], axis=2)
     return albedo, orm

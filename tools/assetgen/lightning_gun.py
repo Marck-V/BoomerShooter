@@ -277,9 +277,6 @@ def build_body(coll):
         tube(copper, end - out * 0.01, end + out * 0.01, TUBE_RADIUS + 0.004, TUBE_RADIUS + 0.004, 12)  # end cap
         ball(copper, end + out * 0.012, 0.007, 6)                         # terminal nub
     box(glowing, (-0.0765, 0.0, -0.072), (0.004, 0.3, 0.008))              # seam
-    path = [v(-0.06, -0.17, 0.0), v(-0.085, -0.1, 0.06), v(-0.075, ORB_CENTRE.y - 0.02, 0.07)]
-    for a, b in zip(path, path[1:]):
-        tube(metal, a, b, 0.011, 0.011, 8)
 
     # charge gauge on top at the back, right under your eye
     box(metal, (0, -0.125, 0.064), (0.06, 0.07, 0.01))
@@ -305,8 +302,8 @@ def build_claws(coll):
     for i, angle in enumerate(CLAW_ANGLES):
         m = Mesh()
         for j, (q0, q1) in enumerate(zip(pts, pts[1:])):
-            tube(m.bm("metal" if j < 3 else "copper"), q0, q1, 0.019 - j * 0.0022, 0.017 - j * 0.0022, 8)
-        box(m.bm("metal_light"), (0, 0.04, 0.02), (0.03, 0.05, 0.02))     # knuckle plate
+            tube(m.bm("copper"), q0, q1, 0.019 - j * 0.0022, 0.017 - j * 0.0022, 8)
+        box(m.bm("copper"), (0, 0.04, 0.02), (0.03, 0.05, 0.02))          # knuckle plate
         ball(m.bm("glow"), pts[-1], 0.02, 8)
         radial = claw_radial(angle)
         base = v(0, CLAW_BASE_Y, AXIS_Z) + radial * 0.055
