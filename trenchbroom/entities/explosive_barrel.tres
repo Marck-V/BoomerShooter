@@ -1,0 +1,28 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDPointClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_point_class.gd" id="1_point"]
+[ext_resource type="PackedScene" path="res://scenes/props/explosive_barrel.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_point")
+scene_file = ExtResource("2_scene")
+classname = "explosive_barrel"
+description = "Red barrel that explodes when shot, hurting enemies and the player in the blast and setting off nearby barrels and windows."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"health": 20.0,
+"blast_radius": 6.5,
+"player_damage": 40.0,
+"enemy_damage": 140.0
+}
+class_property_descriptions = {
+"health": "Damage it takes to set it off",
+"blast_radius": "Metres the explosion reaches",
+"player_damage": "Damage to the player at the centre of the blast (half at the edge)",
+"enemy_damage": "Damage to enemies at the centre of the blast (half at the edge)"
+}
+meta_properties = {
+"color": Color(0.9, 0.1, 0.1, 1),
+"size": AABB(-14, -14, 0, 14, 14, 34)
+}
+node_class = ""
