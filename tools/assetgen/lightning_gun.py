@@ -426,6 +426,46 @@ def previews(out_dir, coll):
     held_view(cam, os.path.join(out_dir, "lightning_gun_held.png"), coll, orb_light)
 
 
+# ---------------------------------------------------------------------------------------------------- ammo pickup
+
+AMMO_GLB_PATH = os.path.join(ROOT, "models", "weapons", "lightning_ammo.glb")
+AMMO_SCALE = 1.8                    # the pickup's vial is the gun's, this many times bigger (the pickup then scales it again)
+
+
+def export_ammo_vial(rng):
+    """The lightning ammo pickup: one of the glass vials from the gun's left flank, stood upright on +Z, with an arc
+    inside. Same proportions as the gun's (TUBE_RADIUS, the copper end cap and terminal nub); the pickup script
+    (scripts/pickups/pickup.gd, ammo_paths) loads the glb. Three surfaces: copper, glass and the glowing arc."""
+    k = AMMO_SCALE
+    radius = TUBE_RADIUS * k
+    half = 0.105 * k / 2                                   # the gun's glass runs about 0.105 m between its caps
+    cap_radius = (TUBE_RADIUS + 0.004) * k
+    cap = 0.02 * k
+    mats = {"copper": surface("AmmoCopper", COPPER, 0.5, 0.4), "glass": MATS["glass"], "arc": MATS["arc"]}
+    m = Mesh()
+    tube(m.bm("glass"), (0, 0, -half), (0, 0, half), radius, radius, 12)
+    for sign in (-1, 1):
+        tube(m.bm("copper"), (0, 0, sign * half), (0, 0, sign * (half + cap)), cap_radius, cap_radius, 12)   # end cap
+        ball(m.bm("copper"), (0, 0, sign * (half + cap + 0.012 * k)), 0.007 * k * 1.6, 6)                    # terminal nub
+    inner = half - 0.004
+    bolt(m.bm("arc"), (0, 0, -inner), (0, 0, inner), rng, 7, 0.22, 0.0045)
+    for _ in range(2):
+        z = rng.uniform(-half * 0.5, half * 0.5)
+        d = v(rng.uniform(-1, 1), rng.uniform(-1, 1), 0).normalized()
+        bolt(m.bm("arc"), (0, 0, z), v(0, 0, z) + d * (radius - 0.006), rng, 3, 0.3, 0.003)
+    coll = bpy.data.collections.new("AmmoPickup")
+    bpy.context.scene.collection.children.link(coll)
+    vial = m.make("LightningAmmo", mats, coll, (5, 0, 0))   # off to the side, clear of the gun
+    vial.location = (0, 0, 0)                                # ...but exported on its own, centred
+    bpy.ops.object.select_all(action="DESELECT")
+    vial.select_set(True)
+    bpy.context.view_layer.objects.active = vial
+    os.makedirs(os.path.dirname(AMMO_GLB_PATH), exist_ok=True)
+    bpy.ops.export_scene.gltf(filepath=AMMO_GLB_PATH, export_format="GLB", use_selection=True, export_yup=True,
+                              export_animations=False)
+    print("exported", AMMO_GLB_PATH)
+
+
 # ---------------------------------------------------------------------------------------------------------- export
 
 def export_glb(coll, arcs):
@@ -477,6 +517,7 @@ def main():
     bpy.ops.wm.save_as_mainfile(filepath=BLEND_PATH)
     print("saved", BLEND_PATH)
     export_glb(coll, arcs)
+    export_ammo_vial(rng)
 
 
 main()
