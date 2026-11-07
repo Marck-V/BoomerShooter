@@ -294,6 +294,8 @@ func _others_waiting() -> bool:
 	for other in get_tree().get_nodes_in_group("Enemy"):
 		if other == self or not other is EnemyHorde or other.destroyed or other.holds_attack_slot:
 			continue
+		if not other.is_inside_tree():   # already on its way out (the level is unloading)
+			continue
 		if other.state == other.states.get("Chase") and is_instance_valid(other.target) \
 				and other.global_position.distance_to(other.target.global_position) <= engage_distance:
 			return true
