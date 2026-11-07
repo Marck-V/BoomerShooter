@@ -10,6 +10,7 @@ extends Node3D
 #   spawn buttons    one for each entry of `spawnable`, in front of you
 #   Melee dodger horde   HORDE_SIZE melee dodgers in two staggered rows ahead of you
 #   Clear enemies    removes every enemy
+#   Reset props      rebuilds the windows and barrels in the north-west corner (reset_props())
 #   Freeze enemies   switch: stops the enemies' AI where they are (animations pause; they can still be hit)
 #   Shielded spawns  switch: while on, every enemy spawned comes with a shield
 #
@@ -21,6 +22,10 @@ const PLAYER_MAX_HEALTH := 100
 const HORDE_SCENE := preload("res://scenes/enemies/enemy_melee_dodger.tscn")
 const SPAWN_SPACING := 2.5                      # metres between enemies spawned from the menu
 const HORDE_SIZE := 8
+const BARREL_SCENE := preload("res://scenes/props/barrel.tscn")
+const EXPLOSIVE_BARREL_SCENE := preload("res://scenes/props/explosive_barrel.tscn")
+const WINDOW_SCRIPT := preload("res://scripts/props/destructible_window.gd")
+const PROPS_CORNER := Vector3(-18.0, 0.0, -22.0)  # the north-west corner holds the windows and barrels
 const HORDE_DISTANCES := [10.0, 13.0]           # metres to the front and back row
 const HORDE_SPREAD := 50.0                      # degrees each row fans across
 
@@ -49,6 +54,7 @@ var frozen := false
 var damage_log: Array[Dictionary] = []   # {time, amount, health} for every hit the player takes
 var menu: CanvasLayer                    # the F1 test menu
 var _last_health := PLAYER_MAX_HEALTH
+var props: Node3D                        # the windows and barrels in the corner (reset_props() rebuilds them)
 
 
 func _ready() -> void:
@@ -60,6 +66,7 @@ func _ready() -> void:
 	menu = preload("res://scripts/levels/test_room_menu.gd").new()
 	menu.room = self
 	add_child(menu)
+	reset_props()
 	_update_help()
 
 
@@ -161,6 +168,50 @@ func _update_help() -> void:
 		on.append("shielded spawns")
 	help_label.text = "TEST ROOM  (god mode: you can't die%s)\n" % (", unlimited ammo" if unlimited_ammo else "") \
 			+ "F1  test menu" + ("   |   " + ", ".join(on) if not on.is_empty() else "")
+
+
+# The corner for testing things that break: three windows (the right one takes several hits and cracks first),
+# a row of plain barrels, and a row of explosive barrels close enough to set each other off. Rebuilds the lot.
+func reset_props() -> void:
+	if is_instance_valid(props):
+		props.queue_free()
+	props = Node3D.new()
+	props.name = "Props"
+	add_child(props)
+	props.global_position = PROPS_CORNER
+	_add_window(Vector3(-5.0, 0.0, 0.0), Vector3(3.5, 2.5, 0.12), 20.0)
+	_add_window(Vector3(0.0, 0.0, 0.0), Vector3(3.5, 2.5, 0.12), 20.0)
+	_add_window(Vector3(5.0, 0.0, 0.0), Vector3(3.5, 2.5, 0.12), 90.0)
+	for i in 4:
+		_add_barrel(BARREL_SCENE, Vector3(-6.0 + i * 1.3, 0.0, 4.0))
+	for i in 4:
+		_add_barrel(EXPLOSIVE_BARREL_SCENE, Vector3(1.5 + i * 2.2, 0.0, 4.0))
+
+
+func _add_window(at: Vector3, size: Vector3, health: float) -> void:
+	var pane := StaticBody3D.new()
+	pane.set_script(WINDOW_SCRIPT)
+	pane.collision_layer = PhysicsLayers.ENVIRONMENT
+	pane.collision_mask = 0
+	pane.set("health", health)
+	var mesh := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = size
+	mesh.mesh = box
+	pane.add_child(mesh)
+	var collider := CollisionShape3D.new()
+	var shape := BoxShape3D.new()
+	shape.size = size
+	collider.shape = shape
+	pane.add_child(collider)
+	props.add_child(pane)
+	pane.position = at + Vector3(0.0, size.y * 0.5, 0.0)
+
+
+func _add_barrel(scene: PackedScene, at: Vector3) -> void:
+	var barrel := scene.instantiate() as Node3D
+	props.add_child(barrel)
+	barrel.position = at
 
 
 func clear_enemies() -> void:
