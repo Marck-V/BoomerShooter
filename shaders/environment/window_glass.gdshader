@@ -5,11 +5,11 @@ render_mode blend_mix, depth_draw_opaque, cull_disabled, specular_schlick_ggx;
 // slide across as you move, and faint grime. Once the pane is hit, a spider-web of cracks spreads from the impact
 // point (`damage` is 0 for an intact pane and 1 just before it shatters). Works on any flat pane in any orientation.
 
-uniform vec4 tint : source_color = vec4(0.3, 0.55, 0.65, 1.0);
-uniform float base_alpha : hint_range(0.0, 1.0) = 0.12;      // how much of the glass shows face-on
+uniform vec4 tint : source_color = vec4(0.12, 0.28, 0.36, 1.0);
+uniform float base_alpha : hint_range(0.0, 1.0) = 0.1;      // how much of the glass shows face-on
 uniform float fresnel_power : hint_range(0.5, 8.0) = 3.0;    // higher keeps the rim thinner
 uniform float fresnel_alpha : hint_range(0.0, 1.0) = 0.55;   // extra opacity at the rim
-uniform float glint_strength : hint_range(0.0, 2.0) = 0.45;
+uniform float glint_strength : hint_range(0.0, 2.0) = 0.35;
 uniform float grime_strength : hint_range(0.0, 1.0) = 0.25;
 uniform float emission_boost : hint_range(0.0, 4.0) = 0.5;   // over 1 so the glow picks up the glints
 

@@ -20,7 +20,7 @@ const SHARD_SPREAD := 2.2
 const SHARD_ALPHA := 0.42
 
 @export var health := 20.0           # a pistol shot does 25, so the default breaks with one hit
-@export var tint := Color(0.3, 0.55, 0.65)
+@export var tint := Color(0.12, 0.28, 0.36)
 @export var crack_first := true      # a hit that does not break the pane cracks it; false: it shatters or stays clear
 
 var max_health := 0.0
