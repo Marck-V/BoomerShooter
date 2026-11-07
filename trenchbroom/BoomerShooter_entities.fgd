@@ -98,3 +98,8 @@
 [
 	health(float) : "Damage it takes to shatter (a pistol shot does 25; a hit that does not break it cracks it)" : "20.0"
 ]
+
+@PointClass color(153 51 255) size(-64 -64 0, 64 64 256) = hand_boss : "The giant hand boss. Place it on the floor in the middle of a round, open-topped arena about 52 m across: it comes down through a portal above this spot and fights within arena_radius of it."
+[
+	wave(string) : "Wave name. The boss stays out of the level until the matching wave_trigger fires, then makes its entrance" : "boss"
+]
