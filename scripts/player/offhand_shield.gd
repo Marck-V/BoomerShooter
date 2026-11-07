@@ -649,6 +649,8 @@ func _update_out(delta: float) -> void:
 	var enemy := _enemy_from_collider(hit["collider"])
 	if enemy:
 		_hit_enemy(enemy, point)
+	elif _hit_breakable(hit["collider"], point):
+		pass   # it broke: the shield carries on through
 	else:
 		_clang(point, 0.8)
 		ImpactParticles.spawn(get_tree(), point, hit["normal"], 0.8)
@@ -807,6 +809,21 @@ func _remove_rope() -> void:
 	if is_instance_valid(rope):
 		rope.queue_free()
 	rope = null
+
+
+# Barrels and windows (the "Blastable" group) take the throw like an enemy would, minus the blood. Returns whether the
+# shield broke it and so flies on; a barrel that survives (or is only lit, like an explosive one) stops it as a wall does.
+func _hit_breakable(collider: Object, point: Vector3) -> bool:
+	if not (collider is Node and collider.is_in_group("Blastable") and collider.has_method("damage")):
+		return false
+	_clang(point, 0.9)
+	_pop(point, PARRY_COLOR, 1.0)
+	collider.damage(throw_damage)
+	if not is_instance_valid(collider) or collider.get("broken") == true:
+		return true
+	phase = Phase.RETURN
+	ImpactParticles.spawn(get_tree(), point, -fly_dir, 0.8)
+	return true
 
 
 func _hit_enemy(enemy: Node3D, point: Vector3) -> void:
