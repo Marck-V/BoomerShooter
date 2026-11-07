@@ -24,7 +24,7 @@ var ammo_paths = {
 	"shotgun": "res://models/weapons/shotgun_ammo_mesh.tscn",
 	"rifle": "res://models/weapons/rifle_ammo_mesh.tscn",
 	"flamethrower": "res://models/weapons/flamethrower_ammo.glb",   # the gas canister from the flamethrower's model
-	"lightning": "res://models/weapons/lightning_ammo.glb"   # one of the gun's glass vials (tools/assetgen/lightning_ammo.py)
+	"lightning": ""   # built in code: one of the gun's glass vials, see _make_vial()
 }
 
 # Weapons that borrow another weapon's ammo model get it tinted in their colour (none do at the moment)
@@ -74,17 +74,141 @@ func _build_model() -> void:
 	if model_instance:
 		model_instance.queue_free()
 		model_instance = null
-	var model_scene
-	if type == "Ammo":
-		model_scene = load(ammo_paths[weapon_id]) if ammo_paths.has(weapon_id) else load(ammo_paths["shotgun"])
+	if type == "Ammo" and weapon_id == "lightning":
+		model_instance = _make_vial()
 	else:
-		model_scene = load(model_paths[type]) if model_paths.has(type) else load(model_paths["Points"])
-	model_instance = model_scene.instantiate()
+		var model_scene
+		if type == "Ammo":
+			model_scene = load(ammo_paths[weapon_id]) if ammo_paths.has(weapon_id) else load(ammo_paths["shotgun"])
+		else:
+			model_scene = load(model_paths[type]) if model_paths.has(type) else load(model_paths["Points"])
+		model_instance = model_scene.instantiate()
 	model_instance.scale = scale_map.get(type, scale_map["Points"])
 	if type == "Ammo" and ammo_tints.has(weapon_id):
 		_tint(model_instance, ammo_tints[weapon_id])
 	add_child(model_instance)
 	_build_glow()
+
+
+# ---------------------------
+# Lightning ammo: one of the glass vials from the side of the lightning gun
+# ---------------------------
+# A glass tube between two copper caps, a nub on each end and a jagged arc inside, standing upright. The proportions
+# are the gun's vial's, scaled up. One mesh with three surfaces (copper, glass, arc) is built once and shared by every
+# lightning pickup, so each one costs three draw calls and no extra memory.
+const VIAL_RADIUS := 0.038
+const VIAL_HALF := 0.095            # half the length of the glass
+const VIAL_CAP_RADIUS := 0.0455
+const VIAL_CAP_LENGTH := 0.036
+const VIAL_NUB_RADIUS := 0.02
+const VIAL_ARC_SEED := 11
+
+static var vial_mesh: ArrayMesh
+
+
+func _make_vial() -> Node3D:
+	if vial_mesh == null:
+		vial_mesh = _build_vial_mesh()
+	var root := Node3D.new()
+	var instance := MeshInstance3D.new()
+	instance.mesh = vial_mesh
+	instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(instance)
+	return root
+
+
+static func _build_vial_mesh() -> ArrayMesh:
+	var mesh := ArrayMesh.new()
+
+	var copper := SurfaceTool.new()
+	copper.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var cap := CylinderMesh.new()
+	cap.top_radius = VIAL_CAP_RADIUS
+	cap.bottom_radius = VIAL_CAP_RADIUS
+	cap.height = VIAL_CAP_LENGTH
+	cap.radial_segments = 12
+	cap.rings = 1
+	var nub := SphereMesh.new()
+	nub.radius = VIAL_NUB_RADIUS
+	nub.height = VIAL_NUB_RADIUS * 2.0
+	nub.radial_segments = 6
+	nub.rings = 3
+	for end in [-1.0, 1.0]:
+		copper.append_from(cap, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, end * (VIAL_HALF + VIAL_CAP_LENGTH * 0.5), 0.0)))
+		copper.append_from(nub, 0, Transform3D(Basis.IDENTITY, Vector3(0.0, end * (VIAL_HALF + VIAL_CAP_LENGTH + VIAL_NUB_RADIUS * 0.6), 0.0)))
+	copper.commit(mesh)
+	var copper_material := StandardMaterial3D.new()
+	copper_material.albedo_color = Color(0.93, 0.55, 0.30)
+	copper_material.metallic = 0.5
+	copper_material.roughness = 0.4
+	mesh.surface_set_material(0, copper_material)
+
+	var glass := CylinderMesh.new()
+	glass.top_radius = VIAL_RADIUS
+	glass.bottom_radius = VIAL_RADIUS
+	glass.height = VIAL_HALF * 2.0
+	glass.radial_segments = 12
+	glass.rings = 1
+	glass.cap_top = true
+	glass.cap_bottom = true
+	var glass_arrays := glass.get_mesh_arrays()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, glass_arrays)
+	var glass_material := StandardMaterial3D.new()
+	glass_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	glass_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	glass_material.albedo_color = Color(0.5, 0.75, 1.0, 0.2)
+	glass_material.roughness = 0.05
+	glass_material.emission_enabled = true
+	glass_material.emission = Color(0.5, 0.75, 1.0)
+	glass_material.emission_energy_multiplier = 0.3
+	mesh.surface_set_material(1, glass_material)
+
+	var arc := SurfaceTool.new()
+	arc.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var rng := RandomNumberGenerator.new()
+	rng.seed = VIAL_ARC_SEED
+	var inner := VIAL_HALF - 0.004
+	_add_bolt(arc, Vector3(0.0, -inner, 0.0), Vector3(0.0, inner, 0.0), rng, 7, 0.22, 0.0045)
+	for i in 2:
+		var y := rng.randf_range(-VIAL_HALF * 0.5, VIAL_HALF * 0.5)
+		var side := Vector3(rng.randf_range(-1.0, 1.0), 0.0, rng.randf_range(-1.0, 1.0)).normalized()
+		_add_bolt(arc, Vector3(0.0, y, 0.0), Vector3(0.0, y, 0.0) + side * (VIAL_RADIUS - 0.006), rng, 3, 0.3, 0.003)
+	arc.generate_normals()
+	arc.commit(mesh)
+	var arc_material := StandardMaterial3D.new()
+	arc_material.albedo_color = Color(0.2, 0.5, 1.0)
+	arc_material.emission_enabled = true
+	arc_material.emission = Color(0.2, 0.5, 1.0)
+	arc_material.emission_energy_multiplier = 1.6
+	mesh.surface_set_material(2, arc_material)
+	return mesh
+
+
+# A jagged arc from `from` to `to`: thin square rods end to end, kinked sideways between the two
+static func _add_bolt(tool: SurfaceTool, from: Vector3, to: Vector3, rng: RandomNumberGenerator, kinks: int, jitter: float, radius: float) -> void:
+	var span := to - from
+	var side := span.cross(Vector3.RIGHT if absf(span.normalized().x) < 0.9 else Vector3.UP).normalized()
+	var up := span.cross(side).normalized()
+	var points: Array[Vector3] = [from]
+	for k in range(1, kinks):
+		var t := float(k) / kinks
+		var wiggle := span.length() * jitter * sin(PI * t)
+		points.append(from + span * t + side * rng.randf_range(-1.0, 1.0) * wiggle + up * rng.randf_range(-1.0, 1.0) * wiggle)
+	points.append(to)
+	for i in points.size() - 1:
+		_add_rod(tool, points[i], points[i + 1], radius)
+
+
+static func _add_rod(tool: SurfaceTool, a: Vector3, b: Vector3, radius: float) -> void:
+	var axis := (b - a).normalized()
+	var u := axis.cross(Vector3.UP if absf(axis.y) < 0.9 else Vector3.RIGHT).normalized() * radius
+	var w := axis.cross(u).normalized() * radius
+	var ring_a: Array[Vector3] = [a + u + w, a - u + w, a - u - w, a + u - w]
+	var ring_b: Array[Vector3] = [b + u + w, b - u + w, b - u - w, b + u - w]
+	for i in 4:
+		var j := (i + 1) % 4
+		for vertex in [ring_a[i], ring_b[i], ring_b[j], ring_a[i], ring_b[j], ring_a[j]]:
+			tool.add_vertex(vertex)
 
 
 # Soft camera-facing halo behind the model, tinted by pickup type
