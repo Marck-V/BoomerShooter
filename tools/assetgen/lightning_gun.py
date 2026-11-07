@@ -221,6 +221,19 @@ def claw_profile():
     return pts
 
 
+def rib_drop(r, y):
+    """How far (radians) below the dome's equator a rib's hoop of radius `r`, at height `y` along the barrel, runs
+    before it meets the body box or the top deck, plus a little so its ends sink in instead of just touching."""
+    for deg in range(0, 80):
+        a = math.radians(deg)
+        x, z = r * math.cos(a), ORB_CENTRE.z - r * math.sin(a)
+        in_body = abs(x) <= 0.075 and abs(y) <= 0.17 and -0.085 <= z <= 0.045    # the main body box in build_body
+        in_deck = abs(x) <= 0.06 and abs(y) <= 0.15 and 0.04 <= z <= 0.06        # the top deck
+        if in_body or in_deck:
+            return a + math.radians(4)
+    return math.radians(40)
+
+
 def build_body(coll):
     m = Mesh()
     metal, light, copper, glowing = m.bm("metal"), m.bm("metal_light"), m.bm("copper"), m.bm("glow")
@@ -240,7 +253,9 @@ def build_body(coll):
         y = ORB_CENTRE.y + (k - 1) * 0.055
         r = math.sqrt(max(ORB_RADIUS ** 2 - (y - ORB_CENTRE.y) ** 2, 0.0)) + 0.012
         start = len(metal.verts)
-        torus(metal, v(0, y, ORB_CENTRE.z), (0, 1, 0), r, 0.008, 12, 5, 0.5, 0.0)
+        drop = rib_drop(r, y)       # the rib carries on below the dome's equator until it is sunk into the body
+        torus(metal, v(0, y, ORB_CENTRE.z), (0, 1, 0), r, 0.008, round(12 * (math.pi + 2 * drop) / math.pi), 5,
+              (math.pi + 2 * drop) / math.tau, -drop)
         metal.verts.ensure_lookup_table()
         rib = metal.verts[start:]
         if sum(vert.co.x for vert in rib) < 0:     # keep the ribs on the right: the left stays open towards you

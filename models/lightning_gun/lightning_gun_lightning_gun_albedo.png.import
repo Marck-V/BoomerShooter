@@ -3,19 +3,19 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b3hjioeh5lhis"
-path.s3tc="res://.godot/imported/lightning_gun_lightning_gun_albedo.png-17a7a504e01f2da5890cc3046e8c017d.s3tc.ctex"
+path.bptc="res://.godot/imported/lightning_gun_lightning_gun_albedo.png-17a7a504e01f2da5890cc3046e8c017d.bptc.ctex"
 metadata={
 "imported_formats": ["s3tc_bptc"],
 "vram_texture": true
 }
 generator_parameters={
-"md5": "785bdee8d03351b488b5680a7ff6719f"
+"md5": "955672c480920f39cfb45d85bcac408f"
 }
 
 [deps]
 
 source_file="res://models/lightning_gun/lightning_gun_lightning_gun_albedo.png"
-dest_files=["res://.godot/imported/lightning_gun_lightning_gun_albedo.png-17a7a504e01f2da5890cc3046e8c017d.s3tc.ctex"]
+dest_files=["res://.godot/imported/lightning_gun_lightning_gun_albedo.png-17a7a504e01f2da5890cc3046e8c017d.bptc.ctex"]
 
 [params]
 
