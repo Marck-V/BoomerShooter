@@ -129,7 +129,7 @@ func _check_players() -> void:
 		if player.has_method("apply_camera_kick"):
 			player.apply_camera_kick(0.06, randf_range(-0.03, 0.03))
 		if not push_only and player.has_method("damage"):
-			player.damage(damage)
+			player.damage(damage, false, global_position)
 		ImpactParticles.spawn(get_tree(), player.global_position + Vector3.UP * 0.2, Vector3.UP, 1.4)
 
 

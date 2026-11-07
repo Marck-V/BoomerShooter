@@ -11,6 +11,7 @@ extends CanvasLayer
 @export var speed_effect : ColorRect
 
 const HitMarker = preload("res://scripts/ui/hit_marker.gd")
+const DamageIndicator = preload("res://scripts/ui/damage_indicator.gd")
 
 var current_weapon: Node3D
 
@@ -18,6 +19,9 @@ func _ready() -> void:
     # Connect to the signal emitted from the Player node
     interact_label.visible = false
     $InGameHUD.add_child(HitMarker.new())
+    var damage_indicator := DamageIndicator.new()
+    $InGameHUD.add_child(damage_indicator)
+    player.damage_source.connect(damage_indicator.add_source)
     player.weapon_changed.connect(_on_weapon_changed)
     player.health_updated.connect(_on_health_updated)
     player.key_collected.connect(_on_key_collected)

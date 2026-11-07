@@ -113,6 +113,7 @@ const HEAL_FLASH_COLOR := Color(0.2, 1.0, 0.35, 1.0)
 var tween:Tween
 
 signal health_updated
+signal damage_source(source)   # who or what just hurt the player: a Node3D or a world position
 signal weapon_changed
 signal key_collected(key: String)
 
@@ -692,7 +693,9 @@ func apply_push(impulse: Vector3) -> void:
 
 
 # `melee`: a blow from an enemy's fist or blade, which the raised shield takes more of
-func damage(amount, melee := false):
+# `source`: what hit you, a Node3D (followed while it lives) or a world position (an explosion's centre), for the
+# damage direction indicator. Left out, no indicator shows.
+func damage(amount, melee := false, source = null):
 	if shield_blocking:
 		amount *= BLOCK_MELEE_DAMAGE_MULTIPLIER if melee else BLOCK_DAMAGE_MULTIPLIER
 	health -= amount
@@ -700,5 +703,7 @@ func damage(amount, melee := false):
 		health = maxi(health, 1)
 	_play_damage_flash(amount)
 	health_updated.emit(health)
+	if source != null:
+		damage_source.emit(source)
 	if health <= 0:
 		GameManager.player_died()

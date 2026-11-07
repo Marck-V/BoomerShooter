@@ -438,7 +438,7 @@ func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 		if player_shield != null and player_shield.has_method("on_melee_blocked"):
 			player_shield.on_melee_blocked(self)   # sounds off only while the shield is held up
 		if body.has_method("damage"):
-			body.damage(damage_to_player, true)
+			body.damage(damage_to_player, true, self)
 		hit_done = true
 
 
@@ -865,7 +865,7 @@ class ChargeState extends BossState:
 				if not hit_player and is_instance_valid(enemy.target) and enemy.flat_distance_to_target() <= 0.6 * enemy.unit():
 					hit_player = true
 					if enemy.target.has_method("damage"):
-						enemy.target.damage(enemy.charge_damage)
+						enemy.target.damage(enemy.charge_damage, false, enemy)
 					if enemy.target.has_method("apply_push"):
 						enemy.target.apply_push(direction * 25.0)
 					enemy.shake_player_camera(0.08, 0.03)
@@ -1143,7 +1143,7 @@ class EntranceState extends BossState:
 		# Standing right under it hurts
 		if is_instance_valid(enemy.target) and enemy.flat_distance_to_target() <= reach and enemy.target.global_position.y - floor_spot.y < 1.0:
 			if enemy.target.has_method("damage"):
-				enemy.target.damage(enemy.landing_damage)
+				enemy.target.damage(enemy.landing_damage, false, floor_spot)
 		enemy.shake_player_camera(0.16, 0.05)
 		enemy.rattle_player_camera(1.0)
 		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar2.wav")

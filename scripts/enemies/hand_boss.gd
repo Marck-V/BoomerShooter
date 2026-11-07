@@ -648,7 +648,7 @@ func hurt_player(amount: float, push: Vector3) -> void:
 	if not is_instance_valid(target):
 		return
 	if target.has_method("damage"):
-		target.damage(amount)
+		target.damage(amount, false, self)
 	if target.has_method("apply_push") and push.length() > 0.01:
 		target.apply_push(push)
 	shake_player_camera(0.08, 0.03)

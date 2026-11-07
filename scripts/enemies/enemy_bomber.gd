@@ -187,7 +187,7 @@ func _blast_player(center: Vector3) -> void:
 	if target.has_method("add_camera_shake"):
 		target.add_camera_shake(MAX_CAMERA_SHAKE * (1.0 - distance / (blast_radius * 2.0)))
 	if distance <= blast_radius and _has_clear_line(target.global_position) and target.has_method("damage"):
-		target.damage(player_damage * _falloff(distance))
+		target.damage(player_damage * _falloff(distance), false, center)
 
 
 func _falloff(distance: float) -> float:

@@ -135,7 +135,7 @@ func _hurt_players(delta: float) -> void:
 			continue
 		tick_left[player] = TICK_TIME
 		if player.has_method("damage"):
-			player.damage(damage)
+			player.damage(damage, false, Vector3(player.global_position.x, float(cell.y), player.global_position.z))
 		if player.has_method("apply_camera_kick"):
 			player.apply_camera_kick(0.03, randf_range(-0.015, 0.015))
 

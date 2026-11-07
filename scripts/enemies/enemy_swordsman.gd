@@ -241,7 +241,7 @@ func _check_blade_hit(damage_scale: float) -> bool:
 		target.apply_push(away.normalized() * hit_knockback)
 	_report_block(target)
 	if target.has_method("damage"):
-		target.damage(damage_to_player * damage_scale, true)
+		target.damage(damage_to_player * damage_scale, true, self)
 	if target.has_method("apply_camera_kick"):
 		target.apply_camera_kick(0.04, randf_range(-0.03, 0.03))
 	return true

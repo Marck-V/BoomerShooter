@@ -332,7 +332,9 @@ func _on_body_entered(body):
 		# The shared player: this ball's own one is freed along with it before the sound could start
 		Audio.play("assets/audio/sfx/enemies/Enemy_ProjectileHit1.wav,
 				   assets/audio/sfx/enemies/Enemy_ProjectileHit2.wav")
-		body.damage(damage)
+		# Whoever fired it, or else back along the way it came
+		var from = shooter if is_instance_valid(shooter) else global_position - velocity.normalized() * 10.0
+		body.damage(damage, false, from)
 	queue_free()
 
 

@@ -522,7 +522,7 @@ func _on_attack_hitbox_body_entered(body: Node3D) -> void:
 			_shove_blocking_player(body)
 		_report_block(body)
 		if body.has_method("damage"):
-			body.damage(damage_to_player * hit_damage_scale, true)
+			body.damage(damage_to_player * hit_damage_scale, true, self)
 
 		hit_done = true
 

@@ -35,7 +35,7 @@ static func explode(tree: SceneTree, center: Vector3, radius: float, player_dama
 		if distance <= radius * 2.0 and player.has_method("add_camera_shake"):
 			player.add_camera_shake(MAX_CAMERA_SHAKE * (1.0 - distance / (radius * 2.0)))
 		if distance <= radius and player.has_method("damage") and _has_clear_line(tree, center, chest, skip):
-			player.damage(player_damage * falloff(distance, radius))
+			player.damage(player_damage * falloff(distance, radius), false, center)
 
 	for node in tree.get_nodes_in_group("Blastable"):
 		if node != source and node.has_method("on_blast"):
