@@ -35,6 +35,9 @@ import bmesh
 import bpy
 from mathutils import Matrix, Vector
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import gun_metal  # noqa: E402
+
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 BLEND_PATH = os.path.join(ROOT, "art", "blender", "lightning_gun.blend")
 GLB_PATH = os.path.join(ROOT, "models", "lightning_gun", "lightning_gun.glb")
@@ -451,6 +454,10 @@ def main():
     build_orb(coll)
     claws = build_claws(coll)
     build_markers(coll)
+    # Brushed, worn gunmetal in place of the flat colours: one atlas, one material (see gun_metal.py)
+    metal_objects = [coll.objects[n] for n in ("Body", "Claw0", "Claw1", "Claw2")]
+    gun_metal.texture_metal(metal_objects, [MATS["metal"], MATS["metal_light"], MATS["copper"]],
+                            os.path.join(ROOT, "art", "blender", "textures"), "lightning_gun")
     arcs = build_preview_arcs(coll, claws, rng)
 
     if "--no-preview" not in argv:
