@@ -18,6 +18,7 @@ const SHARD_THICKNESS := 0.03
 const SHARD_SPEED := 4.5             # how hard the impact throws the shards
 const SHARD_SPREAD := 2.2
 const SHARD_ALPHA := 0.42
+const PANE_INSET := 0.008            # the pane's faces sit this far inside its brush, off the frame's surfaces
 
 @export var health := 20.0           # a pistol shot does 25, so the default breaks with one hit
 @export var tint := Color(0.12, 0.28, 0.36)
@@ -55,8 +56,14 @@ func _setup() -> void:
 	glass.set_shader_parameter("tint", tint)
 	glass.set_shader_parameter("damage", 0.0)
 	glass.set_shader_parameter("shatter_flash", 0.0)
+	glass.set_shader_parameter("inset", PANE_INSET)
 	shard_material = glass.duplicate()
 	shard_material.set_shader_parameter("base_alpha", SHARD_ALPHA)
+	# The pane's narrow sliding glints and world-space grime strobe on small shards that tumble and then lie still
+	shard_material.set_shader_parameter("inset", 0.0)
+	shard_material.set_shader_parameter("glint_strength", 0.0)
+	shard_material.set_shader_parameter("grime_strength", 0.0)
+	shard_material.set_shader_parameter("fresnel_alpha", 0.2)
 	for mesh in meshes:
 		mesh.material_override = glass
 		mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -204,7 +211,8 @@ func _spawn_shard(mesh: Mesh, basis_world: Basis, origin: Vector3, p0: Vector2, 
 	var e1 := p1 - p0
 	var e2 := p2 - p0
 	# The prism spans (0,0)-(1,0)-(0,1); this maps it onto the triangle around its own centroid
-	var skew := Basis(Vector3(e1.x, e1.y, 0.0), Vector3(e2.x, e2.y, 0.0), Vector3(0.0, 0.0, SHARD_THICKNESS))
+	# Each shard gets its own thickness so shards piled flat on the floor don't sit in the same plane and z-fight
+	var skew := Basis(Vector3(e1.x, e1.y, 0.0), Vector3(e2.x, e2.y, 0.0), Vector3(0.0, 0.0, SHARD_THICKNESS * randf_range(0.7, 1.8)))
 	var offset := skew * Vector3(-1.0 / 3.0, -1.0 / 3.0, 0.0)
 	var at := origin + basis_world.x * centroid.x + basis_world.y * centroid.y
 
@@ -214,7 +222,7 @@ func _spawn_shard(mesh: Mesh, basis_world: Basis, origin: Vector3, p0: Vector2, 
 	var velocity := forward * SHARD_SPEED * (0.35 + closeness) + outward * SHARD_SPREAD * (0.4 + closeness) + Vector3(randf_range(-0.5, 0.5), randf_range(0.2, 1.2), randf_range(-0.5, 0.5))
 	var spin := Vector3(randf_range(-9, 9), randf_range(-9, 9), randf_range(-9, 9))
 	var span := maxf(maxf(e1.length(), e2.length()), 0.1)
-	Debris.spawn(get_tree(), mesh, shard_material, Transform3D(skew, offset), at, basis_world, velocity, spin, Vector3(span * 0.6, span * 0.6, SHARD_THICKNESS * 2.0))
+	Debris.spawn(get_tree(), mesh, shard_material, Transform3D(skew, offset), at, basis_world, velocity, spin, Vector3(span * 0.6, span * 0.6, SHARD_THICKNESS * 2.0), true)
 
 
 static var prism_mesh: ArrayMesh

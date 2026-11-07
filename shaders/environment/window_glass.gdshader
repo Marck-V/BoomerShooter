@@ -19,6 +19,8 @@ uniform vec3 pane_right = vec3(1.0, 0.0, 0.0);               // world directions
 uniform vec3 pane_up = vec3(0.0, 1.0, 0.0);
 uniform float shatter_flash : hint_range(0.0, 1.0) = 0.0;    // brief white-out when hit
 
+uniform float inset = 0.0;                                   // pulls every face in along its normal, so a pane fitted flush into a frame doesn't share surfaces with it
+
 varying vec3 world_pos;
 
 float hash21(vec2 p) {
@@ -59,6 +61,7 @@ float cracks(vec3 pos) {
 }
 
 void vertex() {
+	VERTEX -= NORMAL * inset;
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 }
 
