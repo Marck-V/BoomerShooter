@@ -24,11 +24,14 @@ var ammo_paths = {
 	"shotgun": "res://models/weapons/shotgun_ammo_mesh.tscn",
 	"rifle": "res://models/weapons/rifle_ammo_mesh.tscn",
 	"flamethrower": "res://models/weapons/flamethrower_ammo.glb",   # the gas canister from the flamethrower's model
-	"lightning": "res://models/weapons/rifle_ammo_mesh.tscn"
+	"lightning": "res://models/weapons/lightning_ammo.glb"   # one of the gun's glass vials (tools/assetgen/lightning_ammo.py)
 }
 
-# Weapons without their own ammo model borrow the rifle one with a glow in their color
-var ammo_tints = {
+# Weapons that borrow another weapon's ammo model get it tinted in their colour (none do at the moment)
+var ammo_tints = {}
+
+# The halo behind an ammo pickup, where it should not be the usual orange
+var ammo_halos = {
 	"lightning": Color(0.2, 0.5, 1.0, 0.55)
 }
 
@@ -89,8 +92,8 @@ func _build_glow() -> void:
 	if glow_instance:
 		glow_instance.queue_free()
 	var color: Color = glow_colors.get(type, glow_colors["Points"])
-	if type == "Ammo" and ammo_tints.has(weapon_id):
-		color = ammo_tints[weapon_id]
+	if type == "Ammo" and ammo_halos.has(weapon_id):
+		color = ammo_halos[weapon_id]
 	var mat := ShaderMaterial.new()
 	mat.shader = load("res://shaders/pickups/pickup_glow.gdshader")
 	mat.set_shader_parameter("glow_color", color)
