@@ -1,0 +1,10 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/props/destructible_barrel.gd" id="1_script"]
+
+[node name="ExplosiveBarrel" type="StaticBody3D"]
+collision_layer = 2
+collision_mask = 0
+script = ExtResource("1_script")
+explosive = true
+health = 20.0

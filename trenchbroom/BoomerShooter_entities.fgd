@@ -80,3 +80,21 @@
 
 @SolidClass color(51 255 230) = checkpoint : "Neon curtain across a corridor. The first time the player walks through it, their progress is saved and dying brings them back here. Stretch it across a path they must take, thinner along the way they walk than across: its curtain spans the long side."
 []
+
+@PointClass color(102 128 115) size(-14 -14 0, 14 14 34) = barrel : "Steel barrel that bursts into pieces when shot."
+[
+	health(float) : "Damage it takes to break (a pistol shot does 25)" : "30.0"
+]
+
+@PointClass color(230 26 26) size(-14 -14 0, 14 14 34) = explosive_barrel : "Red barrel that explodes when shot, hurting enemies and the player in the blast and setting off nearby barrels and windows."
+[
+	health(float) : "Damage it takes to set it off" : "20.0"
+	blast_radius(float) : "Metres the explosion reaches" : "6.5"
+	player_damage(float) : "Damage to the player at the centre of the blast (half at the edge)" : "40.0"
+	enemy_damage(float) : "Damage to enemies at the centre of the blast (half at the edge)" : "140.0"
+]
+
+@SolidClass color(128 217 255) = window : "Glass pane. Draw a thin brush (any texture, it is covered with the glass shader). Cracks when hit and shatters when it takes enough damage or is caught in an explosion."
+[
+	health(float) : "Damage it takes to shatter (a pistol shot does 25; a hit that does not break it cracks it)" : "20.0"
+]

@@ -2,6 +2,9 @@
 
 [ext_resource type="Script" uid="uid://b77xkxr0m5nqw" path="res://addons/func_godot/src/fgd/func_godot_fgd_file.gd" id="1_qkuc6"]
 [ext_resource type="Resource" uid="uid://crgpdahjaj" path="res://addons/func_godot/fgd/func_godot_fgd.tres" id="1_rcank"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/barrel.tres" id="e_barrel"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/explosive_barrel.tres" id="e_explosive_barrel"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/window.tres" id="e_window"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/checkpoint.tres" id="e_checkpoint"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/enemy_bomber.tres" id="e_enemy_bomber"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/enemy_brute.tres" id="e_enemy_brute"]
@@ -24,5 +27,5 @@
 script = ExtResource("1_qkuc6")
 fgd_name = "BoomerShooter"
 base_fgd_files = Array[Resource]([ExtResource("1_rcank")])
-entity_definitions = Array[Resource]([ExtResource("e_info_player_start"), ExtResource("e_enemy_horde"), ExtResource("e_enemy_ranged"), ExtResource("e_enemy_dodger"), ExtResource("e_enemy_flyer"), ExtResource("e_pickup"), ExtResource("e_wave_trigger"), ExtResource("e_locked_door"), ExtResource("e_grapple_point"), ExtResource("e_key_door"), ExtResource("e_level_key"), ExtResource("e_enemy_melee_dodger"), ExtResource("e_enemy_bomber"), ExtResource("e_enemy_brute"), ExtResource("e_checkpoint"), ExtResource("e_hand_boss"), ExtResource("e_enemy_swordsman")])
+entity_definitions = Array[Resource]([ExtResource("e_info_player_start"), ExtResource("e_enemy_horde"), ExtResource("e_enemy_ranged"), ExtResource("e_enemy_dodger"), ExtResource("e_enemy_flyer"), ExtResource("e_pickup"), ExtResource("e_wave_trigger"), ExtResource("e_locked_door"), ExtResource("e_grapple_point"), ExtResource("e_key_door"), ExtResource("e_level_key"), ExtResource("e_enemy_melee_dodger"), ExtResource("e_enemy_bomber"), ExtResource("e_enemy_brute"), ExtResource("e_checkpoint"), ExtResource("e_hand_boss"), ExtResource("e_enemy_swordsman"), ExtResource("e_barrel"), ExtResource("e_explosive_barrel"), ExtResource("e_window")])
 metadata/_custom_type_script = "uid://b77xkxr0m5nqw"

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDPointClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_point_class.gd" id="1_point"]
+[ext_resource type="PackedScene" path="res://scenes/props/barrel.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_point")
+scene_file = ExtResource("2_scene")
+classname = "barrel"
+description = "Steel barrel that bursts into pieces when shot."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"health": 30.0
+}
+class_property_descriptions = {
+"health": "Damage it takes to break (a pistol shot does 25)"
+}
+meta_properties = {
+"color": Color(0.4, 0.5, 0.45, 1),
+"size": AABB(-14, -14, 0, 14, 14, 34)
+}
+node_class = ""
