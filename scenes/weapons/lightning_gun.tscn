@@ -13,4 +13,4 @@ data = ExtResource("3_data")
 visible = false
 
 [node name="Model" parent="." instance=ExtResource("4_model")]
-transform = Transform3D(-0.34, 0, 0, 0, 0.34, 0, 0, 0, -0.34, -0.004, 0.0, 0.012)
+transform = Transform3D(-0.34, 0, 0, 0, 0.34, 0, 0, 0, -0.34, -0.004, 0.0204, 0.012)

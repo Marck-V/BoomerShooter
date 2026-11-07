@@ -49,7 +49,7 @@ COPPER = (0.85, 0.42, 0.18)
 
 ORB_CENTRE = Vector((0.0, 0.05, 0.1))
 ORB_RADIUS = 0.085
-AXIS_Z = 0.04                       # height of the claws' axis
+AXIS_Z = -0.02                      # height of the barrel's and claws' axis: the body's centreline, so they line up with it
 CLAW_BASE_Y = 0.3
 CLAW_LENGTH = 0.36
 CLAW_ANGLES = (35.0, 145.0, 270.0)  # round the barrel, seen from behind: upper right, upper left, bottom
@@ -266,7 +266,7 @@ def build_body(coll):
     # front collar the claws grow from, round the barrel axis
     box(light, (0, CLAW_BASE_Y - 0.02, AXIS_Z), (0.13, 0.05, 0.13))
     tube(metal, (0, CLAW_BASE_Y, AXIS_Z), (0, CLAW_BASE_Y + 0.05, AXIS_Z), 0.03, 0.022, 10)   # emitter nose
-    box(metal, (0, 0.22, AXIS_Z - 0.01), (0.1, 0.14, 0.09))                # neck between body and collar, sunk into the body
+    box(metal, (0, 0.215, AXIS_Z), (0.1, 0.11, 0.09))                      # neck: from just inside the body's front face to the collar
 
     # left flank, the side that faces the middle of the screen: glass tubes sticking out sideways (the game fills
     # them with rattling arcs), a glowing seam under them, a cable
