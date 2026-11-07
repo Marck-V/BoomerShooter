@@ -58,7 +58,7 @@ MUZZLE = Vector((0.0, CLAW_BASE_Y + CLAW_LENGTH + 0.02, AXIS_Z))
 # The glass tubes on the left flank: three in a row along the gun, each lying flat and sticking straight out
 # sideways from a socket in the body. (start, end): start at the body, end at the tube's outer tip.
 TUBE_RADIUS = 0.021
-TUBES = [(Vector((-0.075, y, 0.03)), Vector((-0.19, y, 0.03))) for y in (-0.11, -0.04, 0.03)]
+TUBES = [(Vector((-0.075, y, -0.02)), Vector((-0.19, y, -0.02))) for y in (-0.07, 0.0, 0.07)]   # centred on the flank
 
 
 def v(*a):
@@ -245,28 +245,28 @@ def build_body(coll):
     box(metal, (0, 0.02, -0.095), (0.012, 0.08, 0.01))                     # trigger guard
     box(light, (0, 0.012, -0.08), (0.008, 0.012, 0.03))                    # trigger
     tube(copper, (0, -0.21, -0.01), (0, -0.16, -0.01), 0.058, 0.058, 14)   # coil pack
-    tube(metal, (0, -0.225, -0.01), (0, -0.208, -0.01), 0.062, 0.062, 14)
+    tube(copper, (0, -0.225, -0.01), (0, -0.208, -0.01), 0.062, 0.062, 14)   # the butt is all copper
 
     # the orb sits high: a ring mount under it and three ribs over its right side, open on the left
     torus(light, ORB_CENTRE - v(0, 0, ORB_RADIUS * 0.55), (0, 0, 1), ORB_RADIUS * 0.85, 0.012, 18, 6)
     for k in range(3):
         y = ORB_CENTRE.y + (k - 1) * 0.055
         r = math.sqrt(max(ORB_RADIUS ** 2 - (y - ORB_CENTRE.y) ** 2, 0.0)) + 0.012
-        start = len(metal.verts)
+        start = len(copper.verts)
         drop = rib_drop(r, y)       # the rib carries on below the dome's equator until it is sunk into the body
-        torus(metal, v(0, y, ORB_CENTRE.z), (0, 1, 0), r, 0.008, round(12 * (math.pi + 2 * drop) / math.pi), 5,
+        torus(copper, v(0, y, ORB_CENTRE.z), (0, 1, 0), r, 0.008, round(12 * (math.pi + 2 * drop) / math.pi), 5,
               (math.pi + 2 * drop) / math.tau, -drop)
-        metal.verts.ensure_lookup_table()
-        rib = metal.verts[start:]
+        copper.verts.ensure_lookup_table()
+        rib = copper.verts[start:]
         if sum(vert.co.x for vert in rib) < 0:     # keep the ribs on the right: the left stays open towards you
             for vert in rib:
                 vert.co.x = -vert.co.x
-            bmesh.ops.reverse_faces(metal, faces=list({f for vert in rib for f in vert.link_faces}))
+            bmesh.ops.reverse_faces(copper, faces=list({f for vert in rib for f in vert.link_faces}))
 
     # front collar the claws grow from, round the barrel axis
     box(light, (0, CLAW_BASE_Y - 0.02, AXIS_Z), (0.13, 0.05, 0.13))
     tube(metal, (0, CLAW_BASE_Y, AXIS_Z), (0, CLAW_BASE_Y + 0.05, AXIS_Z), 0.03, 0.022, 10)   # emitter nose
-    box(metal, (0, 0.24, AXIS_Z - 0.01), (0.1, 0.1, 0.09))                 # neck between body and collar
+    box(metal, (0, 0.22, AXIS_Z - 0.01), (0.1, 0.14, 0.09))                # neck between body and collar, sunk into the body
 
     # left flank, the side that faces the middle of the screen: glass tubes sticking out sideways (the game fills
     # them with rattling arcs), a glowing seam under them, a cable
