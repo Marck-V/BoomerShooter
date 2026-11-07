@@ -12,6 +12,7 @@ extends CanvasLayer
 
 const HitMarker = preload("res://scripts/ui/hit_marker.gd")
 const DamageIndicator = preload("res://scripts/ui/damage_indicator.gd")
+const DashBar = preload("res://scripts/ui/dash_bar.gd")
 
 var current_weapon: Node3D
 
@@ -22,6 +23,9 @@ func _ready() -> void:
     var damage_indicator := DamageIndicator.new()
     $InGameHUD.add_child(damage_indicator)
     player.damage_source.connect(damage_indicator.add_source)
+    var dash_bar := DashBar.new()
+    dash_bar.player = player
+    $InGameHUD.add_child(dash_bar)
     player.weapon_changed.connect(_on_weapon_changed)
     player.health_updated.connect(_on_health_updated)
     player.key_collected.connect(_on_key_collected)

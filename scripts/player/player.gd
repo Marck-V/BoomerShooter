@@ -8,7 +8,7 @@ extends CharacterBody3D
 @export var mouse_sensitivity = 20
 @export var dash_speed = 25
 @export var dash_duration = 0.2
-@export var dash_cooldown = 0.75
+@export var dash_cooldown = 0.75   # seconds for one spent dash to come back once the player has touched the ground or a wall; each of the DASH_CHARGES recharges on its own
 @export var wall_jump_strength = 8
 @export var wall_jump_push = 10.0
 @export var wall_jump_push_time = 0.2
@@ -69,7 +69,9 @@ var play_slide_animation = false
 var dashing = false
 var dash_direction = Vector3.ZERO
 var dash_time_left = 0.0
-var dash_cooldown_left = 0.0
+const DASH_CHARGES := 3
+var dash_cooldowns: Array[float] = [0.0, 0.0, 0.0]   # seconds left until each dash is back (0 = ready)
+var dash_recharging: Array[bool] = [false, false, false]   # a spent dash only starts coming back once the player touches the ground or a wall
 
 var wall_jump_used := false
 var last_wall_jump_normal := Vector3.ZERO
@@ -178,8 +180,14 @@ func _physics_process(delta):
 		slide_speed += fall_distance / 10.0
 	fall_distance = -gravity
 
-	if dash_cooldown_left > 0.0:
-		dash_cooldown_left -= delta
+	var touching := is_on_floor() or is_on_wall()
+	for i in DASH_CHARGES:
+		if dash_cooldowns[i] <= 0.0:
+			continue
+		if touching:
+			dash_recharging[i] = true   # touching down starts it, and it carries on in the air
+		if dash_recharging[i]:
+			dash_cooldowns[i] = maxf(dash_cooldowns[i] - delta, 0.0)
 
 	if dashing:
 		dash_time_left -= delta
@@ -489,7 +497,8 @@ func action_dash():
 	if grappling and Input.is_action_just_pressed("dash"):
 		end_grapple(false)
 
-	if Input.is_action_just_pressed("dash") and dash_cooldown_left <= 0.0:
+	var ready_dash := dash_cooldowns.find_custom(func(left: float): return left <= 0.0)
+	if Input.is_action_just_pressed("dash") and ready_dash != -1:
 		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 		var local_direction: Vector3
 		if input.length() > 0.1:
@@ -500,7 +509,8 @@ func action_dash():
 		dash_direction = (transform.basis * local_direction).normalized()
 		dashing = true
 		dash_time_left = dash_duration
-		dash_cooldown_left = dash_cooldown
+		dash_cooldowns[ready_dash] = dash_cooldown
+		dash_recharging[ready_dash] = false
 		Audio.play("assets/audio/sfx/player/simple_whoosh.mp3")
 
 # ---------------------------
@@ -511,7 +521,8 @@ func refresh_air_moves() -> void:
 	jump_single = true
 	jump_double = true
 	wall_jump_used = false
-	dash_cooldown_left = 0.0
+	dash_cooldowns.fill(0.0)
+	dash_recharging.fill(false)
 
 
 func start_grapple(point: Vector3) -> void:
