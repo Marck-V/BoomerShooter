@@ -9,6 +9,7 @@ extends CharacterBody3D
 @export var dash_speed = 25
 @export var dash_duration = 0.2
 @export var dash_cooldown = 0.75   # seconds for one spent dash to come back once the player has touched the ground or a wall; each of the DASH_CHARGES recharges on its own
+@export var slam_speed := 55.0      # how fast the ground slam (Ctrl in the air) drops the player
 @export var wall_jump_strength = 8
 @export var wall_jump_push = 10.0
 @export var wall_jump_push_time = 0.2
@@ -72,6 +73,7 @@ var dash_time_left = 0.0
 const DASH_CHARGES := 3
 var dash_cooldowns: Array[float] = [0.0, 0.0, 0.0]   # seconds left until each dash is back (0 = ready)
 var dash_recharging: Array[bool] = [false, false, false]   # a spent dash only starts coming back once the player touches the ground or a wall
+var slamming := false
 
 var wall_jump_used := false
 var last_wall_jump_normal := Vector3.ZERO
@@ -105,6 +107,7 @@ var grapple_stuck_time := 0.0
 
 const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/player/damage_flash.gdshader")
 const OFFHAND_SHIELD = preload("res://scripts/player/offhand_shield.gd")
+const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 var damage_flash_material: ShaderMaterial
 var damage_flash_tween: Tween
 var heal_flash_material: ShaderMaterial
@@ -204,6 +207,8 @@ func _physics_process(delta):
 	var applied_velocity: Vector3
 	if grappling:
 		applied_velocity = grapple_velocity
+	elif slamming:
+		applied_velocity = Vector3.ZERO   # straight down: no sideways drift
 	elif dashing:
 		applied_velocity = dash_direction * dash_speed
 	elif wall_push_time_left > 0.0:
@@ -214,6 +219,8 @@ func _physics_process(delta):
 	applied_velocity.y = -gravity
 	velocity = applied_velocity
 	move_and_slide()
+	if slamming and is_on_floor():
+		_land_slam()
 
 	camera_kick = camera_kick.lerp(Vector2.ZERO, clampf(delta * kick_recovery, 0.0, 1.0))
 	var shake := Vector3.ZERO
@@ -282,6 +289,7 @@ func _is_solid_ground_below(point: Vector3) -> bool:
 
 # Back to the last safe spot with a quick fade, minus some health, and straight back into the fight
 func _recover_from_fall() -> void:
+	slamming = false
 	grappling = false
 	dashing = false
 	wall_push_time_left = 0.0
@@ -353,6 +361,10 @@ func handle_controls(_delta):
 	var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 	movement_velocity = Vector3(input.x, 0, input.y).normalized() * current_movement_speed * speed_multiplier
 
+	# Ctrl in the air: slam straight down from wherever the player is
+	if Input.is_action_just_pressed("slide") and not is_on_floor() and not grappling and not slamming:
+		_start_slam()
+
 	if Input.is_action_just_pressed("slide"):
 		can_slide = true
 
@@ -380,7 +392,9 @@ func handle_controls(_delta):
 	if grappling and Input.is_action_just_pressed("jump"):
 		end_grapple(false)   # letting go with a jump; the jumps were refreshed when the shield latched on
 
-	if Input.is_action_just_pressed("jump") and can_wall_jump():
+	if slamming:
+		pass   # no jumping out of a slam
+	elif Input.is_action_just_pressed("jump") and can_wall_jump():
 		do_wall_jump()
 	elif Input.is_action_just_pressed("jump"):
 		if sliding:
@@ -403,6 +417,8 @@ func handle_controls(_delta):
 func handle_gravity(delta):
 	gravity += 20 * delta
 	falling = true
+	if slamming:
+		gravity = slam_speed
 
 	if gravity > 0 and is_on_floor():
 		jump_single = true
@@ -481,6 +497,24 @@ func do_wall_jump() -> void:
 	last_wall_jump_normal = normal
 	Audio.play("assets/audio/sfx/player/jump_a.ogg, assets/audio/sfx/player/jump_b.ogg, assets/audio/sfx/player/jump_c.ogg")
 
+# Ground slam: cancels everything and drops the player straight down at slam_speed until they hit something solid
+func _start_slam() -> void:
+	slamming = true
+	dashing = false
+	wall_push_time_left = 0.0
+	push_impulse = Vector3.ZERO
+	sliding = false
+	gravity = slam_speed
+	Audio.play("assets/audio/sfx/player/simple_whoosh.mp3")
+
+
+func _land_slam() -> void:
+	slamming = false
+	add_camera_shake(0.35)
+	apply_camera_kick(0.08, 0.0)
+	ImpactParticles.spawn(get_tree(), global_position, Vector3.UP, 2.0)
+
+
 func action_jump():
 	gravity = -jump_strength
 	jump_single = false
@@ -498,7 +532,7 @@ func action_dash():
 		end_grapple(false)
 
 	var ready_dash := dash_cooldowns.find_custom(func(left: float): return left <= 0.0)
-	if Input.is_action_just_pressed("dash") and ready_dash != -1:
+	if Input.is_action_just_pressed("dash") and ready_dash != -1 and not slamming:
 		var input := Input.get_vector("move_left", "move_right", "move_forward", "move_back")
 		var local_direction: Vector3
 		if input.length() > 0.1:
@@ -526,6 +560,7 @@ func refresh_air_moves() -> void:
 
 
 func start_grapple(point: Vector3) -> void:
+	slamming = false
 	grappling = true
 	grapple_target = point
 	grapple_time = 0.0
