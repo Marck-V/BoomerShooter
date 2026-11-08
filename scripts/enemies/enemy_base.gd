@@ -67,7 +67,7 @@ var states = {}
 
 # --- Shield ---
 @export var has_shield: bool = false
-# true: the shield shows as the crystal cage around the enemy (models/enemy_shield). false: the enemy's body turns to
+# true: the shield shows as a heat aura just outside the enemy's body (shield.gd). false: the enemy's body turns to
 # glass instead (the Godot boss, whose phases tint that glass).
 @export var shield_cage: bool = true
 const SHIELD_SCENE: PackedScene = preload("res://scenes/enemies/shield.tscn")
@@ -472,7 +472,7 @@ func hit_flash(world_point: Vector3, strength := 1.0, radius_scale := 1.0, color
 		hit_flash_material = ShaderMaterial.new()
 		hit_flash_material.shader = HIT_FLASH_SHADER
 
-	# While shielded, the shield draws the flash instead of the overlay: the cage lights the panes around the hit,
+	# While shielded, the shield draws the flash instead of the overlay: the aura flares when it is hit,
 	# the glass body lights up where it was hit.
 	var shielded := shield != null and is_instance_valid(shield)
 	flinch(world_point, strength * (0.3 if shielded else 1.0))
@@ -544,27 +544,10 @@ func initialize_shield():
 	if shield.has_signal("shield_destroyed") and not shield.is_connected("shield_destroyed", Callable(self, "_on_shield_destroyed")):
 		shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
 
-	if shield_cage and shield.has_method("fit_to"):
-		shield.fit_to(_body_bounds_in(shield))
+	if shield_cage and shield.has_method("attach_aura"):
+		shield.attach_aura(model)
 	apply_shield_material()
 
-
-# The enemy's body in another node's space, for sizing the shield cage around it. Uses the body collider, which
-# matches how the enemy stands; the mesh's own bounds are its rest pose (a T-pose for the humanoids, far too wide).
-func _body_bounds_in(node: Node3D) -> AABB:
-	for child in get_children():
-		var collider := child as CollisionShape3D
-		if collider and collider.shape and not collider.disabled:
-			var to_node: Transform3D = node.global_transform.affine_inverse() * collider.global_transform
-			return to_node * collider.shape.get_debug_mesh().get_aabb()
-	return _model_bounds_in(node)
-
-
-func _model_bounds_in(node: Node3D) -> AABB:
-	if model == null:
-		return AABB()
-	var to_node: Transform3D = node.global_transform.affine_inverse() * model.global_transform
-	return to_node * model.get_aabb()
 
 func _on_shield_destroyed():
 	remove_shield_material()
@@ -576,7 +559,7 @@ func _on_shield_destroyed():
 # ---------------------------
 func apply_shield_material():
 	if shield_cage:
-		return  # the cage is the shield's look; the body keeps its own materials
+		return  # the aura is the shield's look; the body keeps its own materials
 	#if has_node("ShieldShader"):
 		#$ShieldShader.visible = true
 	var mesh := model.mesh

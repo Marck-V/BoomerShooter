@@ -1,7 +1,7 @@
 extends Node3D
 
 const ShieldBreakEffect = preload("res://scripts/enemies/shield_break_effect.gd")
-const CAGE_MATERIAL: ShaderMaterial = preload("res://shaders/enemies/enemy_shield_material.tres")
+const AURA_SHADER: Shader = preload("res://shaders/enemies/enemy_shield_aura.gdshader")
 
 signal shield_destroyed
 
@@ -12,99 +12,62 @@ signal shield_destroyed
 # true: the share the shield doesn't take goes through to the enemy.
 @export var passes_damage_through := false
 
-# The crystal cage model is an egg centred 1 m up, 0.78 m across its middle and 1.18 m from middle to top (half sizes);
-# fit_to() stretches it to wrap the enemy's body with CAGE_CLEARANCE to spare on every side.
-const CAGE_HALF_WIDTH := 0.78
-const CAGE_HALF_HEIGHT := 1.18
-const CAGE_CENTRE_Y := 1.0
-const CAGE_CLEARANCE := 0.15
-const MAX_HITS := 8
-const HIT_FADE_TIME := 0.35
-const GEM_SPIN := 1.6 # radians per second
-const SHATTER_TIME := 0.9
+# The shield's look is a heat aura: a thin flickering shell just outside the enemy's body, drawn by
+# shaders/enemies/enemy_shield_aura.gdshader on a second copy of the body's mesh. It heats up (cyan to white-hot) as the
+# shield takes damage, flares when it is hit, and blows outward when it breaks. The enemy calls attach_aura() once its
+# model exists; enemies that show their shield another way (the Godot boss tints glass over its body) never do.
+const HEAT_SMOOTHING := 6.0   # how quickly the shown heat follows the shield's real health
+const HIT_FADE_TIME := 0.3
+const BURST_TIME := 0.3
 
 var hp := max_hp
-var _cage: MeshInstance3D
-var _gem: Node3D
-var _cage_material: ShaderMaterial
-var _hit_points := PackedVector3Array()
-var _hit_strengths := PackedFloat32Array()
-var _last_hit_local := Vector3(0, 1, -1)
+var _aura: MeshInstance3D
+var _aura_material: ShaderMaterial
+var _heat := 0.0
+var _hit := 0.0
 
 
 func _ready() -> void:
+	hp = max_hp
 	# Shots hit the hitbox; it hands the damage to the enemy this shield belongs to
 	var hitbox = get_node_or_null("ShieldHitbox")
 	if hitbox:
 		hitbox.owner_enemy = get_parent()
-
-	var enemy := get_parent()
-	if enemy and "shield_cage" in enemy and not enemy.shield_cage:
-		set_cage_visible(false)
-
-	_cage = get_node_or_null("Model/Cage") as MeshInstance3D
-	_gem = get_node_or_null("Model/Gem")
-	if _cage:
-		# Each shield needs its own copy so a hit on one doesn't light up every shield
-		_cage_material = CAGE_MATERIAL.duplicate()
-		_cage.material_override = _cage_material
-		_cage.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	_hit_points.resize(MAX_HITS)
-	_hit_strengths.resize(MAX_HITS)
-	set_process(_gem != null)
+	set_process(false)
 
 
-# Hides the cage for enemies that show their shield another way (the Godot boss tints glass over its body).
-func set_cage_visible(value: bool) -> void:
-	var model := get_node_or_null("Model") as Node3D
-	if model:
-		model.visible = value
-
-
-# Sizes and centres the cage around the enemy's body. `bounds` is in this shield's space.
-func fit_to(bounds: AABB) -> void:
-	var model := get_node_or_null("Model") as Node3D
-	if model == null or bounds.size == Vector3.ZERO:
+# Draws the aura round `model`, the enemy's body mesh. A copy of the mesh with its own material, next to the body, so
+# the body's own flashes and overlays keep working.
+func attach_aura(model: MeshInstance3D) -> void:
+	if model == null or model.mesh == null:
 		return
-	var half_width := maxf(bounds.size.x, bounds.size.z) * 0.5 + CAGE_CLEARANCE
-	var half_height := bounds.size.y * 0.5 + CAGE_CLEARANCE
-	var sx := half_width / CAGE_HALF_WIDTH
-	var sy := half_height / CAGE_HALF_HEIGHT
-	model.scale = Vector3(sx, sy, sx)
-	var centre := bounds.get_center()
-	model.position = Vector3(centre.x, centre.y - CAGE_CENTRE_Y * sy, centre.z)
-	if _gem:
-		_gem.scale = Vector3(1.0, sx / sy, 1.0)  # keep the gem's own shape when the cage is stretched
+	_aura_material = ShaderMaterial.new()
+	_aura_material.shader = AURA_SHADER
+	_aura = MeshInstance3D.new()
+	_aura.mesh = model.mesh
+	_aura.skin = model.skin
+	_aura.skeleton = model.skeleton   # same parent as the body, so the same path: it follows the body's pose
+	_aura.material_override = _aura_material
+	_aura.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	model.get_parent().add_child(_aura)
+	_aura.transform = model.transform
+	set_process(true)
 
 
-# Lights up the panes around a hit. Hits stack while earlier ones are still fading.
-func flash(world_point: Vector3, color: Color) -> void:
-	if _cage_material == null:
-		return
-	_last_hit_local = _cage.to_local(world_point)
-	var slot := 0
-	for i in MAX_HITS:  # reuse the faintest slot
-		if _hit_strengths[i] < _hit_strengths[slot]:
-			slot = i
-	_hit_points[slot] = _last_hit_local
-	_hit_strengths[slot] = 1.0
-	_cage_material.set_shader_parameter("flash_color", color)
-	_cage_material.set_shader_parameter("hit_points", _hit_points)
-	_cage_material.set_shader_parameter("hit_strengths", _hit_strengths)
+# A hit flares the aura. (Where on the body doesn't matter: it is one shell.)
+func flash(_world_point: Vector3, _color: Color) -> void:
+	_hit = 1.0
 	set_process(true)
 
 
 func _process(delta: float) -> void:
-	if _gem:
-		_gem.rotate_y(GEM_SPIN * delta)
-	var any := false
-	for i in MAX_HITS:
-		if _hit_strengths[i] > 0.0:
-			_hit_strengths[i] = maxf(_hit_strengths[i] - delta / HIT_FADE_TIME, 0.0)
-			any = any or _hit_strengths[i] > 0.0
-	if _cage_material:
-		_cage_material.set_shader_parameter("hit_strengths", _hit_strengths)
-	set_process(any or _gem != null)
+	if _aura_material == null:
+		set_process(false)
+		return
+	_heat = lerpf(_heat, 1.0 - clampf(hp / max_hp, 0.0, 1.0), 1.0 - exp(-HEAT_SMOOTHING * delta))
+	_hit = maxf(_hit - delta / HIT_FADE_TIME, 0.0)
+	_aura_material.set_shader_parameter("heat", _heat)
+	_aura_material.set_shader_parameter("hit", _hit)
 
 
 func absorb_damage(amount: float) -> float:
@@ -112,8 +75,8 @@ func absorb_damage(amount: float) -> float:
 	var reduced_damage = amount * damage_reduction
 	hp -= reduced_damage
 	if hp <= 0:
-		ShieldBreakEffect.spawn(get_tree(), global_position + Vector3(0, 1.0, 0), _cage == null or not _cage.is_visible_in_tree())
-		_shatter_cage()
+		ShieldBreakEffect.spawn(get_tree(), global_position + Vector3(0, 1.0, 0), true)
+		_burst_aura()
 		shield_destroyed.emit()
 		queue_free()
 		return 0 # Leave uncommented if we want the shield to absorb all extra damage
@@ -126,22 +89,15 @@ func absorb_damage(amount: float) -> float:
 	return amount - reduced_damage
 
 
-# Moves the cage out into the world, where it flies apart pane by pane and frees itself.
-func _shatter_cage() -> void:
-	if _cage == null or not _cage.is_visible_in_tree() or not is_inside_tree():
+# The aura goes white-hot and blows outward, then goes. Its own tween: the shield is about to free itself.
+func _burst_aura() -> void:
+	if _aura == null or not is_instance_valid(_aura):
 		return
-	var model := get_node("Model") as Node3D
-	var world_transform := model.global_transform
-	model.get_parent().remove_child(model)
-	get_tree().current_scene.add_child(model)
-	model.global_transform = world_transform
-	if _gem:
-		_gem.queue_free()  # the gem is spent: the pop and sparks cover it
-	_hit_strengths.fill(0.0)
-	_cage_material.set_shader_parameter("hit_strengths", _hit_strengths)
-	_cage_material.set_shader_parameter("shatter_hit", _last_hit_local)
-	_cage_material.set_shader_parameter("shatter_length", SHATTER_TIME)
-	# The tween belongs to the model, which outlives this shield
-	var tween := model.create_tween()
-	tween.tween_property(_cage_material, "shader_parameter/shatter_time", SHATTER_TIME, SHATTER_TIME).from(0.0)
-	tween.tween_callback(model.queue_free)
+	var aura := _aura
+	var material := _aura_material
+	_aura = null
+	material.set_shader_parameter("heat", 1.0)
+	material.set_shader_parameter("hit", 0.0)
+	var tween := aura.create_tween()
+	tween.tween_method(func(value: float): material.set_shader_parameter("burst", value), 0.0, 1.0, BURST_TIME)
+	tween.tween_callback(aura.queue_free)
