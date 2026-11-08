@@ -171,8 +171,11 @@ func _ready():
 	_setup_damage_flash()
 	_setup_heal_flash()
 	_setup_fall_fade()
-	offhand_shield = OFFHAND_SHIELD.new()
-	camera.add_child(offhand_shield)
+	# The shield is a node in the player scene (Head/Camera/OffhandShield) so its held pose can be edited there
+	offhand_shield = camera.get_node_or_null("OffhandShield")
+	if offhand_shield == null:
+		offhand_shield = OFFHAND_SHIELD.new()
+		camera.add_child(offhand_shield)
 	crosshair.texture = current_weapon.data.crosshair
 	weapon_changed.emit(current_weapon)
 

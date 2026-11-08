@@ -43,8 +43,9 @@ func _process(_delta: float) -> void:
 	var pos = item.pos if typeof(item) == TYPE_DICTIONARY and item.has("pos") else null
 
 
+	var pitch: float = item.pitch if typeof(item) == TYPE_DICTIONARY and item.has("pitch") else 1.0
 	player.stream = load(stream_path)
-	player.pitch_scale = randf_range(0.9, 1.1)
+	player.pitch_scale = randf_range(0.9, 1.1) * pitch
 
 	if use_3d and pos != null:
 		player.global_position = pos
@@ -52,10 +53,14 @@ func _process(_delta: float) -> void:
 	player.play()
 
 
-func play(sound_paths: String) -> void:
+# pitch multiplies the usual random variation: below 1.0 is deeper, above is higher
+func play(sound_paths: String, pitch := 1.0) -> void:
 	var list := sound_paths.split(",")
 	var chosen := list[randi() % list.size()].strip_edges()
-	queue.append("res://" + chosen)
+	if is_equal_approx(pitch, 1.0):
+		queue.append("res://" + chosen)
+	else:
+		queue.append({"path": "res://" + chosen, "pitch": pitch})
 
 
 func play_at(position: Vector3, sound_paths: String) -> void:

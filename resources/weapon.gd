@@ -17,6 +17,7 @@ class_name Weapon
 
 @export_subgroup("Sounds")
 @export var sound: String
+@export_range(0.25, 2.0) var sound_pitch: float = 1.0  # below 1.0 sounds deeper
 
 @export_subgroup("Crosshair")
 @export var crosshair: Texture2D  # Image of crosshair on-screen

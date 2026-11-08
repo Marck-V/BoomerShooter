@@ -40,6 +40,7 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 @export var max_flight_time := 6.0
 @export var grapple_aim_assist_degrees := 3.0   # a grapple point this close to the crosshair is aimed at for you
 
+const WALK_BOB_SCALE := 1.0                        # the gun's walking bob, times this, for the shield
 const HELD_SCALE := 1.15
 const BLOCK_SCALE := 1.0
 const REFLECT_SHOOTER_RANGE := 40.0                 # beyond this the original shooter is "too far" and the nearest enemy is used
@@ -87,6 +88,9 @@ static var _clang_stream: AudioStream
 
 var camera: Camera3D
 var hand: Node3D
+var held_pos := HELD_POS      # the held pose: taken from the Hand node in the player scene when there is one
+var held_rot := HELD_ROT
+var held_scale := HELD_SCALE
 var state := State.READY
 var state_timer := 0.0
 var parry_succeeded := false
@@ -139,9 +143,28 @@ func _ready() -> void:
 	camera = get_parent() as Camera3D
 	base_fov = camera.fov
 	_setup_edge_flash()
-	hand = _make_disc(true)
-	hand.position = HELD_POS
-	add_child(hand)
+	var scene_hand := get_node_or_null("Hand") as Node3D
+	if scene_hand:
+		# Built in the player scene: the Hand node's transform is the held pose, so move/rotate/scale it in the editor.
+		# Its Model child is only a stand-in so the shield shows in the editor; the real (recolourable) model replaces it.
+		hand = scene_hand
+		held_pos = hand.position
+		held_rot = hand.rotation_degrees
+		held_scale = hand.scale.x
+		var placeholder := hand.get_node_or_null("Model")
+		if placeholder:
+			hand.remove_child(placeholder)
+			placeholder.queue_free()
+		var disc := _make_disc(true)
+		var model := disc.get_child(0)
+		disc.remove_child(model)
+		hand.add_child(model)
+		hand.set_meta("mats", disc.get_meta("mats"))
+		disc.free()
+	else:
+		hand = _make_disc(true)
+		hand.position = HELD_POS
+		add_child(hand)
 
 
 func _process(delta: float) -> void:
@@ -249,9 +272,9 @@ func _apply_glow(model: Node, rim: Color, gem: Color, body: float) -> void:
 func _animate_hand(delta: float) -> void:
 	hand.visible = state != State.THROWN
 
-	var target_pos := HELD_POS
-	var target_rot := HELD_ROT
-	var target_scale := HELD_SCALE
+	var target_pos := held_pos
+	var target_rot := held_rot
+	var target_scale := held_scale
 	strike_hold = maxf(strike_hold - delta, 0.0)
 	match state:
 		State.READY:
@@ -271,6 +294,14 @@ func _animate_hand(delta: float) -> void:
 		target_pos = PARRY_POS
 		target_rot = PARRY_ROT
 		target_scale = PARRY_SCALE
+
+	# Walking bob: the shield rides the same bob as the gun in hand (so the two move together); raised in a parry or
+	# block it stays steady
+	if state == State.READY or state == State.RECOVER:
+		var player = GlobalVariables.player
+		var weapon = player.get("current_weapon") if player and is_instance_valid(player) else null
+		if weapon and "bob_offset" in weapon:
+			target_pos += weapon.bob_offset * WALK_BOB_SCALE
 
 	hand_scale_kick = lerpf(hand_scale_kick, 0.0, 1.0 - exp(-delta * 14.0))
 	var blend := 1.0 - exp(-delta * 20.0)

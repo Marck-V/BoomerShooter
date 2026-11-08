@@ -9,7 +9,7 @@ class_name Blast
 
 const SHOCKWAVE_SPEED := 26.0
 const MAX_CAMERA_SHAKE := 0.8
-const SOUNDS := "assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav"
+const SOUNDS := "assets/audio/sfx/impacts/Balloon Explosion B.wav"
 
 
 static func explode(tree: SceneTree, center: Vector3, radius: float, player_damage: float, enemy_damage: float, source: CollisionObject3D = null) -> void:

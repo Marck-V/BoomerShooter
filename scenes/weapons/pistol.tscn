@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=4 uid="uid://cvdmduky3pnmi"]
+[gd_scene format=4 uid="uid://cvdmduky3pnmi"]
 
 [ext_resource type="PackedScene" uid="uid://qts30miglt2c" path="res://scenes/weapons/base_weapon.tscn" id="1_buff3"]
 [ext_resource type="Texture2D" uid="uid://cfs0y0dk57yu0" path="res://models/weapons/Handcannon_untitled.png" id="2_1e3ry"]
@@ -45,12 +45,13 @@ _surfaces = [{
 blend_shape_mode = 0
 shadow_mesh = SubResource("ArrayMesh_x87pf")
 
-[node name="Pistol" instance=ExtResource("1_buff3")]
+[node name="Pistol" unique_id=290332332 instance=ExtResource("1_buff3")]
 script = ExtResource("2_t6oaa")
 data = ExtResource("3_t6oaa")
 
 [node name="MuzzleLocation" parent="." index="0"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00203377, 0.0106153, 0.0762429)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.00203377, 0.022833884, 0.14837992)
 
 [node name="WeaponMesh" parent="." index="1"]
+transform = Transform3D(0.1, 0, 0, 0, 0.1, 0, 0, 0, 0.1, 0, 0, 0)
 mesh = SubResource("ArrayMesh_t6oaa")

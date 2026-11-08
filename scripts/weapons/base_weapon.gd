@@ -121,7 +121,7 @@ func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCa
 		Audio.play("assets/audio/sfx/weapons/empty_gun.mp3")
 		return false
 		
-	Audio.play(data.sound)
+	Audio.play(data.sound, data.sound_pitch)
 	play_muzzle_flash()
 	trigger_recoil()
 

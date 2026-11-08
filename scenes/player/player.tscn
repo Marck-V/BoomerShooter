@@ -10,6 +10,8 @@
 [ext_resource type="Material" uid="uid://0mxnekxrkyw0" path="res://shaders/post/psx_post_material.tres" id="8_qek5x"]
 [ext_resource type="PackedScene" path="res://scenes/weapons/flamethrower.tscn" id="9_flame"]
 [ext_resource type="PackedScene" path="res://scenes/weapons/lightning_gun.tscn" id="10_lightning"]
+[ext_resource type="Script" uid="uid://dw1rc5jkerr46" path="res://scripts/player/offhand_shield.gd" id="20_shield"]
+[ext_resource type="PackedScene" uid="uid://cciqt2qxnixc5" path="res://models/player_shield/player_shield.glb" id="21_shieldmodel"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gdq8c"]
 radius = 0.3
@@ -76,7 +78,6 @@ collide_with_areas = true
 
 [node name="Pistol" parent="Head/Camera/WeaponHolder" unique_id=63107281 instance=ExtResource("3_smehm")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.095, -0.065, -0.06)
-visible = false
 
 [node name="Shotgun" parent="Head/Camera/WeaponHolder" unique_id=1944769732 instance=ExtResource("8_4vq5b")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0.14, -0.099, -0.092)
@@ -93,6 +94,16 @@ visible = false
 
 [node name="LightningGun" parent="Head/Camera/WeaponHolder" unique_id=2028577586 instance=ExtResource("10_lightning")]
 transform = Transform3D(-1, 0, 8.742278e-08, 0, 1, 0, -8.742278e-08, 0, -1, 0.175, -0.075, -0.1)
+visible = false
+
+[node name="OffhandShield" type="Node3D" parent="Head/Camera" unique_id=1346146392]
+script = ExtResource("20_shield")
+
+[node name="Hand" type="Node3D" parent="Head/Camera/OffhandShield" unique_id=569547880]
+transform = Transform3D(1.143241, 0.3236938, 0.9155447, -0.20558813, 1.4628356, -0.26047227, -0.9490698, 0.07303832, 1.1592808, -0.85, -0.57, -0.62)
+
+[node name="Model" parent="Head/Camera/OffhandShield/Hand" unique_id=98178894 instance=ExtResource("21_shieldmodel")]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 0, 0)
 
 [node name="SlideCheck" type="RayCast3D" parent="." unique_id=701430582]
 transform = Transform3D(2, 0, 0, 0, 2, 0, 0, 0, 2, 0, 0.075, 0.18)

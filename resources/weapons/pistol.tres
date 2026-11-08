@@ -5,10 +5,13 @@
 
 [resource]
 script = ExtResource("1_1vsk4")
-cooldown = 0.3
+cooldown = 0.38
 max_distance = 20
-camera_kick = 0.02
+recoil_strength = 3
+camera_kick = 0.04
+camera_shake = 0.14
 weapon_id = "pistol"
 sound = "assets/audio/sfx/weapons/single_pistol_shot.mp3"
+sound_pitch = 0.72
 crosshair = ExtResource("1_uny8x")
 metadata/_custom_type_script = "uid://c6gxnumnbxeyb"

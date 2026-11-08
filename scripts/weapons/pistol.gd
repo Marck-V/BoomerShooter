@@ -17,9 +17,10 @@ var max_pierces = 3
 var max_distance = 300.0
 
 # --- Recoil Animation Parameters ---
-var recoil_angle := -45.0     # How far up the pistol tilts
-var recoil_time := 0.1        # How long the kick lasts
-var return_time := 0.01       # How long to return to normal
+var recoil_angle := -32.0     # How far up the pistol tilts
+var recoil_time := 0.07       # How long the kick up lasts
+var return_time := 0.3        # How long it takes to settle back (slow and smooth so it doesn't snap)
+var recoil_tween: Tween
 
 func _ready() -> void:
 	super._ready()
@@ -67,16 +68,15 @@ func _refresh_upgrades() -> void:
 
 # Recoil Animation
 func _play_recoil():
-	if has_node("RecoilTween"):
-		get_node("RecoilTween").kill()
+	if recoil_tween and recoil_tween.is_valid():
+		recoil_tween.kill()
 
-	var t := create_tween()
-
-	t.tween_property(self, "rotation_degrees:x", recoil_angle, recoil_time) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-
-	t.tween_property(self, "rotation_degrees:x", 0.0, return_time) \
-		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	# Kicks up fast from wherever it currently is, then eases back down in one smooth motion
+	recoil_tween = create_tween()
+	recoil_tween.tween_property(self, "rotation_degrees:x", recoil_angle, recoil_time) \
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	recoil_tween.tween_property(self, "rotation_degrees:x", 0.0, return_time) \
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:

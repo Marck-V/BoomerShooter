@@ -503,7 +503,14 @@ func _update_portal() -> void:
 		var elbow := bone_head("forearm")
 		var wrist := bone_head("hand")
 		var out := (elbow - wrist).normalized()
-		portal.global_transform = Transform3D(_basis_with_up(out), elbow - out * 0.35 * hand_scale)
+		var portal_basis := _basis_with_up(out)
+		var portal_origin := elbow - out * 0.35 * hand_scale
+		# The arm comes up from below the water (the hand held up for the mortars): the portal would be under the
+		# floor, so lay it flat on the water where the forearm goes through it; the water cuts off the rest
+		if portal_origin.y < floor_y + 0.05 and out.y < -0.1:
+			portal_origin = elbow + out * ((floor_y + 0.05 - elbow.y) / out.y)
+			portal_basis = _basis_with_up(Vector3.DOWN)
+		portal.global_transform = Transform3D(portal_basis, portal_origin)
 	var normal := portal.global_basis.y.normalized()
 	skin.set_shader_parameter("clip_plane", Vector4(normal.x, normal.y, normal.z, normal.dot(portal.global_position)))
 
@@ -846,7 +853,7 @@ func _entrance() -> void:
 
 	# The impact: a wave of water out from the fist that shoves the player back (no damage), and a big jolt
 	BossShockwave.spawn(get_tree(), impact, arena_radius * 0.7, 1.6 * hand_length, 0.0, true)
-	WaterRipple.spawn(get_tree(), impact, 1.5, 6.0)
+	WaterRipple.spawn(get_tree(), impact, 1.5, 8.0)
 	BossDust.spawn(get_tree(), impact, 1.6)
 	ImpactParticles.spawn(get_tree(), impact + Vector3.UP * 0.3, Vector3.UP, 3.5)
 	play_sfx(SFX_HIT)
@@ -898,6 +905,7 @@ func _attack_slam() -> void:
 		return
 	var impact: Vector3 = aim[0]
 	BossShockwave.spawn(get_tree(), impact, 0.95 * hand_length, 1.6 * hand_length, slam_damage)
+	WaterRipple.spawn(get_tree(), impact, 1.6, 8.0)    # the fist hits the water: rings run out across the arena
 	BossDust.spawn(get_tree(), impact, 1.2)
 	ImpactParticles.spawn(get_tree(), impact + Vector3.UP * 0.3, Vector3.UP, 3.0)
 	play_sfx(SFX_HIT)
@@ -1303,7 +1311,7 @@ func _attack_spokes() -> void:
 					set_data.teles[i].finish(0.12)
 					var angle: float = set_data.angles[i]
 					BossBeamSector.spawn(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half, spoke_damage, spoke_burn, spoke_surge_speed)
-				WaterRipple.spawn(get_tree(), center, 0.8, 4.0)
+				WaterRipple.spawn(get_tree(), center, 0.9, 6.0)
 				BossDust.spawn(get_tree(), center, 1.0)
 				ImpactParticles.spawn(get_tree(), center + Vector3.UP * 0.3, Vector3.UP, 2.4)
 				play_sfx(SFX_HIT)
@@ -1431,6 +1439,7 @@ func _attack_crush() -> void:
 		return
 	lane.finish(0.1)
 	BossShockwave.spawn(get_tree(), Vector3(aim[0].x, floor_y, aim[0].z), arena_radius * 0.9, 16.0, 0.0, true)
+	WaterRipple.spawn(get_tree(), Vector3(aim[0].x, floor_y, aim[0].z), 1.6, 8.0)
 	BossDust.spawn(get_tree(), Vector3(aim[0].x, floor_y, aim[0].z), 1.6)
 	play_sfx(SFX_HIT)
 	rattle_player_camera(1.0)

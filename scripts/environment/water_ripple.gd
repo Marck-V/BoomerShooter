@@ -55,7 +55,7 @@ func _exit_tree() -> void:
 
 func _write() -> void:
 	var fading := 1.0 - age / life
-	values[slot] = Vector4(point.x, point.z, age, strength * fading * fading)
+	values[slot] = Vector4(point.x, point.z, age, strength * fading)
 	WATER.set_shader_parameter("touch_ripples", values)
 
 

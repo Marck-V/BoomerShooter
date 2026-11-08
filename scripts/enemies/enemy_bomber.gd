@@ -165,7 +165,7 @@ func explode() -> void:
 	BossShockwave.spawn(tree, ground, blast_radius, SHOCKWAVE_SPEED, 0.0)   # it does no damage, but throws the player back
 	BomberExplosion.spawn(tree, center + Vector3.UP * CHEST_HEIGHT, blast_radius)
 	BLOOD_PARTICLES.spawn_burst(tree, center + Vector3.UP * CHEST_HEIGHT, 0.6, BLOOD_PARTICLES.thickness_for(self))
-	Audio.play_at(center, "assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav")
+	Audio.play_at(center, "assets/audio/sfx/impacts/Balloon Explosion B.wav")
 
 
 # Nearer means harder, and walls stop it. Other bombers caught in it go off too.
