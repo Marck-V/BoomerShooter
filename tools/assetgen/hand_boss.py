@@ -466,12 +466,20 @@ SNAP_READY = {
 SNAP_DONE = {**SNAP_READY, **curl(-85, -98, -58, ("middle",)), **curl(-18, -18, -8, ("index",)),
              "thumb_0": (-30, 0, -12), "thumb_1": (2, 0, 0), "thumb_2": (6, 0, 0)}
 LIMP = {**curl(-22, -34, -22), "thumb_1": (-12, 0, 0), "thumb_2": (-18, 0, 0), "hand": (-38, 0, 0)}
-
+# Spoke burst: the hand hangs palm-down over the arena. Fan is the held pose, fingers spread wide and bent slightly
+# back; FanLifted is the same with every finger cocked up, and FanSlap the fingers pressed flat and together
+FAN = {
+    **curl(5, 3, 1, ("index",), 15), **curl(5, 3, 1, ("middle",), 5),
+    **curl(5, 3, 1, ("ring",), -6), **curl(5, 3, 1, ("pinky",), -17),
+    "thumb_0": (0, 0, 20), "thumb_1": (2, 0, 0), "hand": (8, 0, 0),
+}
+FAN_LIFTED = offset(FAN, curl(16, 10, 6))
+FAN_SLAP = {**curl(-8, -5, -2), "thumb_0": (0, 0, 6), "thumb_1": (-6, 0, 0), "hand": (-8, 0, 0)}
 POSES = {"Open": OPEN, "Fist": FIST, "Point": POINT, "PokePress": POKE_PRESS, "Touch": TOUCH, "Claw": CLAW, "Flat": FLAT, "Spread": SPREAD,
-         "FlickHook": FLICK_HOOK, "FlickOut": FLICK_OUT, "SnapReady": SNAP_READY, "SnapDone": SNAP_DONE, "Limp": LIMP}
+         "FlickHook": FLICK_HOOK, "FlickOut": FLICK_OUT, "SnapReady": SNAP_READY, "SnapDone": SNAP_DONE, "Limp": LIMP, "Fan": FAN}
 
 # Clips that loop in Godot (hand_boss.glb.import sets their loop mode)
-LOOPING = ("Idle", "Hover", "FistTremble", "PokeStuck", "FlickHold", "Drumroll")
+LOOPING = ("Idle", "Hover", "FistTremble", "PokeStuck", "FlickHold", "FanWave")
 
 
 def set_pose(rig, pose):
@@ -518,18 +526,23 @@ def hover_keys():
     return keys
 
 
-def drumroll_keys():
-    """Fingers tap down one after another, pinky first, every 16 frames."""
-    base = {**curl(-12, -10, -5), "thumb_1": (-8, 0, 0), "hand": (8, 0, 0)}
+def fan_wave_keys():
+    """A ripple through the fanned fingers, thumb first and then index to pinky, looping every 24 frames: each
+    one cocks up and settles. Played while a set of spokes charges."""
+    order = ("thumb", "index", "middle", "ring", "pinky")
     keys = []
-    for f in range(1, 18):
+    for f in range(1, 26):
         extra = {}
-        for i, name in enumerate(reversed(FINGER_NAMES)):
-            centre = 3 + i * 3
-            d = min(abs(f - centre), abs(f - centre - 16), abs(f - centre + 16))
-            tap = max(0.0, 1 - d / 2.5)
-            extra |= {f"{name}_1": (-38 * tap, 0, 0), f"{name}_2": (-12 * tap, 0, 0)}
-        keys.append((f, offset(base, extra)))
+        for i, name in enumerate(order):
+            centre = 3 + i * 3.5
+            d = min(abs(f - centre), abs(f - centre - 24), abs(f - centre + 24))
+            bump = max(0.0, 1 - d / 4.0)
+            if name == "thumb":
+                extra["thumb_1"] = (16 * bump, 0, 0)
+                extra["thumb_2"] = (10 * bump, 0, 0)
+            else:
+                extra |= {f"{name}_1": (18 * bump, 0, 0), f"{name}_2": (10 * bump, 0, 0), f"{name}_3": (6 * bump, 0, 0)}
+        keys.append((f, offset(FAN, extra)))
     return keys
 
 
@@ -568,7 +581,12 @@ def build_actions(rig):
     make_action(rig, "VolleyRecoil", [(1, SPREAD), (3, offset(SPREAD, {**curl(14, 6, 0), "hand": (12, 0, 0)})),
                                       (10, SPREAD)])
 
-    make_action(rig, "Drumroll", drumroll_keys())
+    # Spoke burst: FanBloom snaps the clenched hand open into the fan, FanWave ripples through it while a set of
+    # spokes charges, FanStrike slaps the fingers flat as the fire ignites, FanClose curls it shut at the end
+    make_action(rig, "FanBloom", [(1, FIST), (4, offset(FAN, curl(16, 8, 4))), (9, FAN)])
+    make_action(rig, "FanWave", fan_wave_keys())
+    make_action(rig, "FanStrike", [(1, FAN_LIFTED), (3, FAN_SLAP), (7, FAN_SLAP), (16, FAN)])
+    make_action(rig, "FanClose", [(1, FAN), (8, mix(FAN, FIST, 0.7)), (18, RELAXED)])
 
     make_action(rig, "Stagger", [
         (1, RELAXED),

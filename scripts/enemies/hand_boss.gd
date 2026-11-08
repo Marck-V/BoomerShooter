@@ -8,11 +8,12 @@ class_name HandBoss
 # The fight has three phases, changing at set fractions of its health:
 #   1 The Touch    fist slam, three pokes (parry the third and its finger sticks in the floor), flick (parry the
 #                  orb back into it to stagger it)
-#   2 Puppeteer    adds the palm sweep and the nail volley
-#   3 Fury         adds the drumroll and the crush; faster, with shorter gaps
+#   2 Puppeteer    adds the palm sweep and the mortar barrage
+#   3 Fury         adds the spoke burst and the crush, and the palm sweep comes back the way it went; faster, with
+#                  shorter gaps
 # On each change it clenches, shakes and bursts open, throwing the player back, and can't be hurt for a moment.
 # Weak points, where hits count as critical: the knuckles while the fist or the flat hand is planted after a slam
-# or a crush, and the palm while it is open (volley, stuck finger, stagger).
+# or a crush, and the palm while it is open (mortar barrage, stuck finger, stagger).
 #
 # The map's hand_boss entity puts it on the arena floor in wave "boss": the wave trigger holds it out of the level
 # until the player walks in, then it punches down through the portal as a fist and slams into the water.
@@ -30,18 +31,18 @@ const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 
 const PHASES := [
 	{"name": "The Touch", "speed": 1.0, "gap": 1.4, "attacks": ["slam", "poke", "flick"]},
-	{"name": "Puppeteer", "speed": 1.12, "gap": 1.1, "attacks": ["slam", "poke", "flick", "sweep", "volley"]},
-	{"name": "Fury", "speed": 1.3, "gap": 0.7, "attacks": ["slam", "poke", "flick", "sweep", "volley", "drumroll", "crush"]},
+	{"name": "Puppeteer", "speed": 1.12, "gap": 1.1, "attacks": ["slam", "poke", "flick", "sweep", "mortar"]},
+	{"name": "Fury", "speed": 1.3, "gap": 0.7, "attacks": ["slam", "poke", "flick", "sweep", "mortar", "spokes", "crush"]},
 ]
-const COOLDOWNS := {"slam": 7.0, "poke": 8.0, "flick": 9.0, "sweep": 12.0, "volley": 11.0,
-		"drumroll": 10.0, "crush": 20.0}
+const COOLDOWNS := {"slam": 7.0, "poke": 8.0, "flick": 9.0, "sweep": 12.0, "mortar": 11.0,
+		"spokes": 12.0, "crush": 20.0}
 
 const SFX_ROAR := "assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav"
 const SFX_HIT := "assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav"
 const SFX_DEATH := "assets/audio/sfx/boss/Boss_Death1.wav"
 const SFX_SHOOT := "assets/audio/sfx/enemies/Enemy_Shoot1_PitchedUp.wav, assets/audio/sfx/enemies/Enemy_Shoot2_PitchedUp.wav"
 
-# Yellow is kept for "you can parry this" (the last poke, the flick, the volley), red for "this can't be parried:
+# Yellow is kept for "you can parry this" (the last poke, the flick), red for "this can't be parried:
 # get out of the way", so the colour alone tells the player whether to raise the shield or move
 const PARRY_GLOW := Color(1.0, 0.8, 0.15)       # yellow: parryable
 const DANGER_GLOW := Color(1.0, 0.1, 0.04)       # red: not parryable
@@ -87,14 +88,23 @@ enum Ease { SMOOTH, IN, OUT, LINEAR }
 @export var sweep_time := 1.5
 @export var sweep_clearance := 2.2          # feet higher than this above the floor clear the sweep
 
-@export_category("Nail Volley")
-@export var volley_count := 3
-@export var shard_damage := 12.0
-@export var shard_speed := 24.0
+@export_category("Mortar Barrage")
+@export var mortar_waves := 3               # one more in the last phase
+@export var mortar_damage := 30.0           # at the centre of a shell's splash; half at its edge
+@export var mortar_radius := 3.6
+@export var mortar_rise := 0.5              # seconds from the fingertip up out of sight
+@export var mortar_fall := 1.4              # seconds from the sky down to the floor: the time the player has to move
+@export var mortar_scatter := 9.0           # how far round the player the other shells of a wave land
 
-@export_category("Drumroll")
-@export var drum_taps := 8
-@export var drum_damage := 25.0
+@export_category("Spoke Burst")
+@export var spoke_damage := 14.0            # per tick while standing in a burning spoke (jumping clears a tick)
+@export var spoke_beats := 5                # sets of spokes in a row
+@export var spoke_warn := 1.0               # a set of spokes fills this long before it ignites
+@export var spoke_beat := 1.4               # seconds from one set's ignition to the next
+@export var spoke_burn := 1.0               # how long a set burns
+@export var spoke_half_angle := 18.0        # degrees: each spoke is twice this wide, with a quarter turn between them
+@export var spoke_surge_speed := 60.0       # m/s the fire surges out along a spoke
+@export var spoke_height := 9.0             # metres above the water the wrist hangs
 
 @export_category("Crush")
 @export var crush_damage := 65.0
@@ -776,10 +786,10 @@ func _run_attack(attack: String) -> void:
 			await _attack_flick()
 		"sweep":
 			await _attack_sweep()
-		"volley":
-			await _attack_volley()
-		"drumroll":
-			await _attack_drumroll()
+		"mortar":
+			await _attack_mortar()
+		"spokes":
+			await _attack_spokes()
 		"crush":
 			await _attack_crush()
 
@@ -1053,7 +1063,7 @@ func _fire_orb(origin: Vector3, damage_amount: float, speed_value: float, max_si
 	Audio.play_at(origin, SFX_SHOOT)
 
 
-# A parried orb came back. The flick's big orb staggers it; the volley's shards only sting.
+# A parried orb came back. The flick's big orb staggers it.
 func on_reflected_orb_hit(orb_damage: float) -> void:
 	if destroyed or invulnerable:
 		return
@@ -1097,48 +1107,93 @@ func _attack_sweep() -> void:
 	global_transform = Transform3D(basis, Vector3(start.x, low, start.z))
 	lane.finish(0.2)
 	play_sfx(SFX_ROAR)
-	var hit := [false]
-	var time := sweep_time / speed()
-	ok = await track(time, func(t: float, _dt: float):
-		var k := _ease(minf(t / time, 1.0), Ease.SMOOTH)
-		var wrist := start.lerp(finish, k)
-		global_transform = Transform3D(basis, Vector3(wrist.x, low, wrist.z))
-		if int(t * 30.0) % 3 == 0:
-			ImpactParticles.spawn(get_tree(), Vector3(wrist.x, floor_y + 0.2, wrist.z) + across * hand_length * 0.6, -travel, 0.8)
-		if not hit[0] and player_height() < sweep_clearance and in_footprint(wrist, across, forearm_length, hand_length, palm_half_width):
-			hit[0] = true
-			hurt_player(sweep_damage, travel * 26.0 + Vector3.UP * 4.0))
-	if not ok:
-		return
+	# In the last phase the hand turns round at the far side and wipes back the way it came: two passes to dodge
+	var legs: Array = [[start, finish]]
+	if phase >= 3:
+		legs.append([finish, start])
+	for leg_index in legs.size():
+		var from_point: Vector3 = legs[leg_index][0]
+		var to_point: Vector3 = legs[leg_index][1]
+		if leg_index > 0:
+			var back_lane := warn_lane(from_point + across * footprint_mid, to_point + across * footprint_mid, hand_length + forearm_length)
+			var turn := 0.7 / speed()
+			if not await track(turn, func(t: float, _dt: float): back_lane.set_progress(t / turn)):
+				return
+			back_lane.finish(0.2)
+			play_sfx(SFX_ROAR)
+		var hit := [false]
+		var time := sweep_time / speed()
+		var pass_direction := flat(to_point - from_point).normalized()
+		ok = await track(time, func(t: float, _dt: float):
+			var k := _ease(minf(t / time, 1.0), Ease.SMOOTH)
+			var wrist := from_point.lerp(to_point, k)
+			global_transform = Transform3D(basis, Vector3(wrist.x, low, wrist.z))
+			if int(t * 30.0) % 3 == 0:
+				ImpactParticles.spawn(get_tree(), Vector3(wrist.x, floor_y + 0.2, wrist.z) + across * hand_length * 0.6, -pass_direction, 0.8)
+			if not hit[0] and player_height() < sweep_clearance and in_footprint(wrist, across, forearm_length, hand_length, palm_half_width):
+				hit[0] = true
+				hurt_player(sweep_damage, pass_direction * 26.0 + Vector3.UP * 4.0))
+		if not ok:
+			return
 	glow_off()
 	if not await wait(0.4):
 		return
 	await glide(hover_transform(), 0.9)
 
 
-# Spreads its fingers with the palm to the player and fires a fan of shards from every fingertip, a few times
-func _attack_volley() -> void:
+# Holds the hand up with its fingers spread and lobs a mortar shell from every fingertip, in waves. Each shell goes
+# straight up out of sight and comes down a moment later on a spot marked on the floor, splashing everyone in the red
+# circle. The first shell of a wave lands on the player; the rest land scattered round them. They can't be parried.
+func _attack_mortar() -> void:
 	pose("Spread", 0.3)
-	set_glow(PARRY_GLOW, 0.6, 0.8)   # the shards can be parried
+	set_glow(DANGER_GLOW, 0.6, 0.8)
 	set_weak_points(false, true)
-	var ok := await track(0.9 / speed(), func(_t: float, dt: float): steer(_volley_transform(), dt, 3.0))
+	var ok := await track(0.9 / speed(), func(_t: float, dt: float): steer(_mortar_transform(), dt, 3.0))
 	if not ok:
 		return
-	for volley in volley_count:
+	var waves := mortar_waves + (1 if phase >= 3 else 0)
+	for wave in waves:
 		pose("VolleyRecoil", 0.05)
+		var tips: Array[Vector3] = []
 		for finger in FINGERS + ["thumb"]:
-			var tip := bone_tip("thumb_2" if finger == "thumb" else "%s_3" % finger)
-			_fire_orb(tip, shard_damage, shard_speed, 1.3, 0.0, 4.0)
+			tips.append(bone_tip("thumb_2" if finger == "thumb" else "%s_3" % finger))
+		var player := target_floor()
+		for i in tips.size():
+			var spot := player
+			if i > 0:
+				var angle := randf() * TAU
+				spot = player + Vector3(cos(angle), 0.0, sin(angle)) * randf_range(mortar_scatter * 0.35, mortar_scatter)
+			spot = in_arena(spot, 1.0)
+			spot.y = floor_y
+			HandMortar.launch(self, tips[i], spot, mortar_radius, mortar_rise, mortar_fall)
+			if i == 0:
+				play_sfx(SFX_SHOOT)
 		shake_player_camera(0.02, 0.01)
-		ok = await track(0.6 / speed(), func(_t: float, dt: float): steer(_volley_transform(), dt, 3.0))
+		ok = await track((mortar_fall * 0.6 + 0.4) / speed(), func(_t: float, dt: float): steer(_mortar_transform(), dt, 3.0))
 		if not ok:
 			return
+	# The last wave is still in the air: hold on until it has come down
+	if not await track(mortar_rise + mortar_fall, func(_t: float, dt: float): steer(_mortar_transform(), dt, 3.0)):
+		return
 	set_weak_points(false, false)
 	glow_off()
 	await glide(hover_transform(), 0.8)
 
 
-func _volley_transform() -> Transform3D:
+# A shell landed: hurts the player if they are inside its circle, harder nearer the middle
+func splash(center: Vector3, radius: float) -> void:
+	play_sfx(SFX_HIT)
+	rattle_player_camera(0.3)
+	if not is_instance_valid(target) or player_height() > 2.5:
+		return
+	var distance := flat_distance(target.global_position, center)
+	if distance > radius:
+		return
+	var push := flat(target.global_position - center).normalized() * 12.0 + Vector3.UP * 3.0
+	hurt_player(mortar_damage * Blast.falloff(distance, radius), push)
+
+
+func _mortar_transform() -> Transform3D:
 	var player := target_floor()
 	var from_player := flat(global_position - player)
 	from_player = from_player.normalized() if from_player.length() > 0.5 else Vector3.FORWARD
@@ -1148,73 +1203,139 @@ func _volley_transform() -> Transform3D:
 	return Transform3D(hand_basis(Vector3.UP, to_player), spot)
 
 
-# Fingers tapping down one after another in a line that rolls towards the player and past them. The hand hangs
-# low and bobs down onto the water at every tap, so each finger visibly strikes its warning circle.
-func _attack_drumroll() -> void:
-	pose("Drumroll", 0.25)
-	set_glow(DANGER_GLOW, 0.8, 0.4)
-	var player := target_floor()
-	var start := in_arena(player + flat(home - player).normalized() * 12.0 if flat(home - player).length() > 1.0 else player + Vector3.FORWARD * 12.0)
-	var direction := flat(player - start).normalized() if flat(player - start).length() > 0.5 else Vector3.FORWARD
-	var spacing := 3.4
-	var interval := 0.3 / speed()
-	var warn := 0.6
-	var hop := 1.6            # how high the fingertips lift between taps
-	var radius := 3.0
-	var taps: Array = []
-	for i in drum_taps:
-		taps.append(in_arena(start + direction * spacing * float(i)))
-	var basis := hand_basis(Vector3.DOWN, direction)
-	var approach := hand_length + 1.5
-	if not await glide(Transform3D(basis, start + Vector3.UP * approach), 0.6 / speed()):
+# The hand hangs palm-down over the middle of the arena and lights up wedges of the floor that fan out from under it
+# like spokes: four at a time, a quarter turn apart. Each wedge fills red, then ignites into a wall of fire (the same
+# columns the robot boss's floor hazard raises) that surges out along it and burns for a moment, hurting anyone on the
+# ground inside it; jumping clears a tick. Then the hand turns and lights a different four. Every other set is aimed
+# so that one wedge lands on wherever the player is standing, so there is no spot to camp in and no edge to retreat
+# to: the safe ground is always between the spokes, and it moves.
+#
+# How the hand moves (clips from tools/assetgen/hand_boss.py): it rises clenched and trembling, then FanBloom snaps it
+# open into a fan. While a set charges, FanWave ripples through the fingers and the hand glows brighter; when the
+# fire ignites FanStrike slaps the fingers flat, the hand dips and flashes white-hot, and it turns to the next set
+# with its wrist rolling into the turn. FanClose curls it shut at the end.
+const SPOKE_DIP := 1.4                      # how far the hand bobs down as a set ignites
+const SPOKE_ROLL := 0.08                    # radians of wrist roll for each radian a second the hand turns
+const SPOKE_MAX_ROLL := 0.45
+const SPOKE_FLASH := Color(1.0, 0.95, 0.8)
+const SPOKE_GLOW_LOW := 0.45
+const SPOKE_GLOW_HIGH := 1.1
+
+
+func _attack_spokes() -> void:
+	anim.get_animation("FanWave").loop_mode = Animation.LOOP_LINEAR
+	pose("Clench", 0.15)
+	anim.queue("FistTremble")
+	set_glow(DANGER_GLOW, SPOKE_GLOW_LOW, 0.6)
+	var center := home + flat(target_floor() - home).limit_length(arena_radius * 0.12)
+	center.y = floor_y
+	var radius := arena_radius + flat_distance(center, home)
+	var k := 1.0 / speed()
+	var warn := spoke_warn * k
+	var beat := spoke_beat * k
+	var half := deg_to_rad(spoke_half_angle)
+	var height := floor_y + spoke_height
+	var angle_of_player := _spoke_angle(center, target_floor())
+	var hand_angle := [angle_of_player]
+	if not await glide(_spoke_transform(center, angle_of_player, height + 4.0), 0.9 / speed()):
 		return
-	# Measured once the Drumroll pose has blended in: how far below the wrist the fingertips reach, and how far
-	# off to the side of the wrist they hang, so the wrist can be placed to put them on the tap spots
-	var clear := reach_below(basis) - 0.35 * hand_scale + 0.1
-	var tip_offset := flat(basis * local_point(bone_tip("middle_3")))
-	if not await glide(Transform3D(basis, start - tip_offset + Vector3.UP * approach), 0.1):
+	if not await glide(_spoke_transform(center, angle_of_player, height), 0.4 / speed()):
 		return
-	var warnings := {}
-	var done := {}
-	var last_tap := warn + interval * float(drum_taps - 1)
-	var total := last_tap + 0.35
-	var ok := await track(total, func(t: float, _dt: float):
-		for i in drum_taps:
-			var tap_time := warn + interval * float(i)
-			if not warnings.has(i) and t >= tap_time - warn:
-				warnings[i] = warn_circle(taps[i], radius)
-			if warnings.has(i) and not done.has(i):
-				warnings[i].set_progress(clampf((t - (tap_time - warn)) / warn, 0.0, 1.0))
-				if t >= tap_time:
-					done[i] = true
-					warnings[i].finish(0.1)
-					WaterRipple.spawn(get_tree(), taps[i], 0.5, 3.0)
-					ImpactParticles.spawn(get_tree(), taps[i] + Vector3.UP * 0.2, Vector3.UP, 1.4)
-					BossDust.spawn(get_tree(), taps[i], 0.4)
-					if i % 2 == 0:
-						play_sfx(SFX_HIT)
-					rattle_player_camera(0.2)
-					if is_instance_valid(target) and flat_distance(target.global_position, taps[i]) <= radius and player_height() < 2.0:
-						hurt_player(drum_damage, direction * 14.0)
-		# Along the line: from tap to tap, arriving over each one as it lands
-		var segment := clampf((t - warn) / interval, 0.0, float(drum_taps - 1))
-		var index := mini(int(segment), drum_taps - 2)
-		var over: Vector3 = taps[index].lerp(taps[index + 1], segment - float(index)) if t >= warn else start
-		# Up and down: drops out of the approach onto the first tap, then bounces, touching the water at every tap
-		var lift: float
-		if t < warn:
-			lift = lerpf(approach - clear, 0.0, _ease(t / warn, Ease.IN))
-		elif t > last_tap:
-			lift = hop * _ease(minf((t - last_tap) / 0.35, 1.0), Ease.OUT)
-		else:
-			var phase_in_tap := fposmod(t - warn, interval) / interval      # 0 at a tap, rising to 1 before the next
-			var bounce := sin(phase_in_tap * PI)                            # up off the water and back down
-			lift = hop * bounce
-		global_transform = Transform3D(basis, over - tip_offset + Vector3.UP * (clear + lift)))
+	# Bloom: the fist snaps open into the fan with a white flash
+	pose("FanBloom", 0.05)
+	set_glow(SPOKE_FLASH, SPOKE_GLOW_HIGH, 0.05)
+	play_sfx(SFX_ROAR)
+	if not await wait(0.3):
+		return
+	set_glow(DANGER_GLOW, SPOKE_GLOW_LOW, 0.4)
+	pose("FanWave", 0.2)
+	var sets: Array[Dictionary] = []
+	for i in spoke_beats:
+		sets.append({"time": warn + beat * float(i), "state": 0, "aimed": i % 2 == 0, "angles": [], "teles": []})
+	var last_offset := [angle_of_player]
+	var roll := [0.0]
+	var total: float = sets[sets.size() - 1].time + 0.8
+	var ok := await track(total, func(t: float, dt: float):
+		var dip := 0.0
+		for set_data in sets:
+			var strike: float = set_data.time
+			if set_data.state == 0 and t >= strike - warn:
+				set_data.state = 1
+				pose("FanWave", 0.15)
+				glow_color = DANGER_GLOW
+				skin.set_shader_parameter("glow_color", DANGER_GLOW)
+				var offset: float = _spoke_angle(center, target_floor()) if set_data.aimed else last_offset[0] + deg_to_rad(randf_range(30.0, 60.0))
+				last_offset[0] = offset
+				for quarter in 4:
+					var angle := offset + float(quarter) * PI * 0.5
+					set_data.angles.append(angle)
+					set_data.teles.append(BossTelegraph.sector(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half))
+					action_fx.append(set_data.teles[quarter])
+			if set_data.state == 1:
+				for tele in set_data.teles:
+					tele.set_progress(clampf((t - (strike - warn)) / warn, 0.0, 1.0))
+				var before: float = hand_angle[0]
+				hand_angle[0] = lerp_angle(hand_angle[0], _nearest_spoke(set_data.angles, hand_angle[0]), 1.0 - exp(-4.0 * dt))
+				roll[0] = lerpf(roll[0], clampf(angle_difference(before, hand_angle[0]) / dt * SPOKE_ROLL, -SPOKE_MAX_ROLL, SPOKE_MAX_ROLL), 1.0 - exp(-8.0 * dt))
+				_apply_glow(lerpf(SPOKE_GLOW_LOW, SPOKE_GLOW_HIGH, clampf((t - (strike - warn)) / warn, 0.0, 1.0)))
+				if t >= strike:
+					set_data.state = 2
+					pose("FanStrike", 0.04)
+					for i in 4:
+						set_data.teles[i].finish(0.12)
+						var angle: float = set_data.angles[i]
+						BossBeamSector.spawn(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half, spoke_damage, spoke_burn, spoke_surge_speed)
+					WaterRipple.spawn(get_tree(), center, 0.8, 4.0)
+					BossDust.spawn(get_tree(), center, 1.0)
+					play_sfx(SFX_HIT)
+					rattle_player_camera(0.45)
+			if set_data.state == 2:
+				var since: float = t - strike
+				dip = maxf(dip, SPOKE_DIP * sin(clampf(since / 0.3, 0.0, 1.0) * PI))
+				# White-hot as the fire goes off, cooling back to red
+				var cool := clampf(since / 0.5, 0.0, 1.0)
+				if set_data.time >= sets[sets.size() - 1].time or since < 0.4:
+					skin.set_shader_parameter("glow_color", SPOKE_FLASH.lerp(DANGER_GLOW, cool))
+					_apply_glow(lerpf(1.6, SPOKE_GLOW_LOW, cool))
+		roll[0] = lerpf(roll[0], 0.0, 1.0 - exp(-3.0 * dt)) if not _any_charging(sets) else roll[0]
+		global_transform = _spoke_transform(center, hand_angle[0], height - dip, roll[0]))
 	if not ok:
 		return
-	glow_off()
+	pose("FanClose", 0.1)
+	glow_off(0.5)
+	if not await wait(0.5):
+		return
 	await glide(hover_transform(), 0.8)
+
+
+func _any_charging(sets: Array[Dictionary]) -> bool:
+	for set_data in sets:
+		if set_data.state == 1:
+			return true
+	return false
+
+
+# The compass angle (0 along +Z, turning towards +X) of a point as seen from the middle of the spokes
+func _spoke_angle(center: Vector3, point: Vector3) -> float:
+	var offset := flat(point - center)
+	return atan2(offset.x, offset.z) if offset.length() > 0.5 else randf() * TAU
+
+
+# Of a set's four spoke angles, the one the hand has to turn the least to point along
+func _nearest_spoke(angles: Array, from: float) -> float:
+	var best: float = angles[0]
+	for angle in angles:
+		if absf(angle_difference(from, angle)) < absf(angle_difference(from, best)):
+			best = angle
+	return from + angle_difference(from, best)
+
+
+# The hand flat, palm down and fingers along `angle`, with the middle of the palm over `center` at wrist height `y`
+func _spoke_transform(center: Vector3, angle: float, y: float, roll := 0.0) -> Transform3D:
+	var along := Vector3(sin(angle), 0.0, cos(angle))
+	var wrist := center - along * hand_length * 0.4
+	# `roll` tips the hand about its fingers, like a wrist leaning into a turn
+	return Transform3D(hand_basis(along, Vector3.DOWN) * Basis(Vector3.BACK, roll), Vector3(wrist.x, y, wrist.z))
 
 
 # Rises high, follows the player with its shadow, then presses down flat. Get out from under it, or grapple up.

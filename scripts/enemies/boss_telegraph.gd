@@ -35,6 +35,18 @@ static func lane(tree: SceneTree, from: Vector3, to: Vector3, width: float, colo
 	return warning
 
 
+# A wedge of floor fanning out from `center` along `direction`, `radius` long and `half_angle` (radians) either side
+static func sector(tree: SceneTree, center: Vector3, direction: Vector3, radius: float, half_angle: float, color := Color(1.0, 0.25, 0.1)) -> BossTelegraph:
+	var warning := BossTelegraph.new()
+	tree.current_scene.add_child(warning)
+	warning._build(2, color)
+	warning.material.set_shader_parameter("half_angle", half_angle)
+	warning.plane.mesh = _plane(Vector2.ONE * 2.0 * radius)
+	warning.global_position = center + Vector3.UP * FLOOR_LIFT
+	warning.global_rotation = Vector3(0.0, atan2(direction.x, direction.z), 0.0)
+	return warning
+
+
 static func _plane(size: Vector2) -> PlaneMesh:
 	var mesh := PlaneMesh.new()
 	mesh.size = size

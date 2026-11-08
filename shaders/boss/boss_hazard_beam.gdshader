@@ -12,6 +12,7 @@ uniform float intensity : hint_range(0.0, 4.0) = 0.55;
 uniform float radius = 1.6;                                 // of the cylinder, so the beam can fade out around the camera
 uniform float flash : hint_range(0.0, 4.0) = 0.0;           // a brief extra glow as it ignites
 uniform float fade : hint_range(0.0, 1.0) = 1.0;
+uniform float inside : hint_range(0.0, 1.0) = 0.0;           // 1 while the camera is inside a beam that is not a round column (BossBeamSector)
 uniform float streaks = 9.0;
 uniform float rise_speed = 2.4;
 
@@ -36,5 +37,5 @@ void fragment() {
 	vec2 to_camera = (CAMERA_POSITION_WORLD - NODE_POSITION_WORLD).xz;
 	float clearance = smoothstep(radius * 0.7, radius * 1.8, length(to_camera));
 	ALBEDO = col * 1.8;
-	ALPHA = clamp(amount * intensity * fade * mix(0.05, 1.0, clearance), 0.0, 1.0);
+	ALPHA = clamp(amount * intensity * fade * mix(0.05, 1.0, clearance) * mix(1.0, 0.05, inside), 0.0, 1.0);
 }
