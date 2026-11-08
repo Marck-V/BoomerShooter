@@ -56,10 +56,9 @@ func _ready() -> void:
 	core.material_override = core_material
 	core.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	add_child(core)
-	# The halo is drawn over everything, so the ball's light leaks out through the fingers round it
+	# The halo is depth tested like everything else here, so the hand hides all of it: the charge reads as being inside
+	# the clenched fist, with only the glow showing round the outside
 	shell_material = _glow_material(CORE_COLOR, 0.25)
-	shell_material.no_depth_test = true
-	shell_material.render_priority = 5
 	shell = MeshInstance3D.new()
 	shell.mesh = sphere
 	shell.material_override = shell_material
@@ -93,8 +92,6 @@ func _build_streaks() -> void:
 	streak_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	streak_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	streak_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	streak_material.no_depth_test = true
-	streak_material.render_priority = 4
 	streak_material.albedo_color = Color(2.0, 1.4, 0.8, 0.9)
 	for i in STREAKS:
 		var node := MeshInstance3D.new()
@@ -118,8 +115,6 @@ func _build_rings() -> void:
 	torus.ring_segments = 6
 	for i in RINGS:
 		var material := _glow_material(CORE_COLOR, 0.0)
-		material.no_depth_test = true
-		material.render_priority = 4
 		var node := MeshInstance3D.new()
 		node.mesh = torus
 		node.material_override = material
