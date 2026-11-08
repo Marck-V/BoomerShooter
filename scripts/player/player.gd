@@ -10,6 +10,13 @@ extends CharacterBody3D
 @export var dash_duration = 0.2
 @export var dash_cooldown = 0.75   # seconds for one spent dash to come back once the player has touched the ground or a wall; each of the DASH_CHARGES recharges on its own
 @export var slam_speed := 55.0      # how fast the ground slam (Ctrl in the air) drops the player
+# What the slam does when it lands: a shockwave that hurts and throws back every enemy in reach, a bigger one the
+# further the player fell (slam_full_height metres or more is the biggest)
+@export var slam_min_damage := 20.0
+@export var slam_max_damage := 70.0
+@export var slam_min_radius := 4.5
+@export var slam_max_radius := 10.0
+@export var slam_full_height := 14.0
 @export var wall_jump_strength = 8
 @export var wall_jump_push = 10.0
 @export var wall_jump_push_time = 0.2
@@ -51,6 +58,8 @@ const FALL_FADE_TIME := 0.4
 const LANDING_CLEAR_RADIUS := 4.0     # enemies this close to the landing spot are shoved out to this distance
 const LANDING_CLEAR_HEIGHT := 2.5
 const LANDING_WAVE_SPEED := 30.0
+const SLAM_HEIGHT_REACH := 3.0        # enemies this far above or below the landing point are out of the slam's reach
+const SLAM_WAVE_SPEED := 26.0
 var has_safe_ground := false
 var safe_ground := Vector3.ZERO
 var safe_ground_timer := 0.0
@@ -74,6 +83,7 @@ const DASH_CHARGES := 3
 var dash_cooldowns: Array[float] = [0.0, 0.0, 0.0]   # seconds left until each dash is back (0 = ready)
 var dash_recharging: Array[bool] = [false, false, false]   # a spent dash only starts coming back once the player touches the ground or a wall
 var slamming := false
+var slam_start_y := 0.0
 
 var wall_jump_used := false
 var last_wall_jump_normal := Vector3.ZERO
@@ -500,6 +510,7 @@ func do_wall_jump() -> void:
 # Ground slam: cancels everything and drops the player straight down at slam_speed until they hit something solid
 func _start_slam() -> void:
 	slamming = true
+	slam_start_y = global_position.y
 	dashing = false
 	wall_push_time_left = 0.0
 	push_impulse = Vector3.ZERO
@@ -510,9 +521,34 @@ func _start_slam() -> void:
 
 func _land_slam() -> void:
 	slamming = false
-	add_camera_shake(0.35)
-	apply_camera_kick(0.08, 0.0)
-	ImpactParticles.spawn(get_tree(), global_position, Vector3.UP, 2.0)
+	var power := clampf((slam_start_y - global_position.y) / slam_full_height, 0.0, 1.0)
+	add_camera_shake(0.35 + 0.35 * power)
+	apply_camera_kick(0.08 + 0.06 * power, 0.0)
+	ImpactParticles.spawn(get_tree(), global_position, Vector3.UP, 2.0 + 2.0 * power)
+	_slam_shockwave(power)
+
+
+# The landing: every enemy near enough takes damage (more at the middle) and is thrown out to the edge of the wave,
+# and barrels and windows nearby get the same nudge a blast gives them
+func _slam_shockwave(power: float) -> void:
+	var radius := lerpf(slam_min_radius, slam_max_radius, power)
+	var amount := lerpf(slam_min_damage, slam_max_damage, power)
+	var centre := global_position
+	for enemy in get_tree().get_nodes_in_group("Enemy"):
+		if not enemy is Node3D or enemy.get("destroyed"):
+			continue
+		var offset: Vector3 = enemy.global_position - centre
+		if Vector2(offset.x, offset.z).length() > radius or absf(offset.y) > SLAM_HEIGHT_REACH:
+			continue
+		if enemy.has_method("damage"):
+			enemy.damage(amount * Blast.falloff(Vector2(offset.x, offset.z).length(), radius))
+		if is_instance_valid(enemy) and not enemy.get("destroyed") and enemy.has_method("shove_from"):
+			enemy.shove_from(centre, radius)
+	for node in get_tree().get_nodes_in_group("Blastable"):
+		if node.has_method("on_blast"):
+			node.on_blast(centre, radius)
+	BossShockwave.spawn(get_tree(), centre, radius * 1.1, SLAM_WAVE_SPEED, 0.0, true, false)
+	Audio.play("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav, assets/audio/sfx/boss/Boss_Hit3.wav")
 
 
 func action_jump():

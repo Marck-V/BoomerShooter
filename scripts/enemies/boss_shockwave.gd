@@ -6,6 +6,7 @@ class_name BossShockwave
 # from the front and a ring of heat marks it on the floor. Built in code and added to the level.
 #   BossShockwave.spawn(tree, center, max_radius, speed, damage)               the slam: hurts
 #   BossShockwave.spawn(tree, center, max_radius, speed, 0.0, true)             a push only: a phase change
+#   BossShockwave.spawn(tree, center, max_radius, speed, 0.0, true, false)      just the look: the player's own ground slam
 
 const RING_SHADER: Shader = preload("res://shaders/boss/boss_shockwave.gdshader")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
@@ -21,6 +22,7 @@ var speed := 14.0
 var damage := 40.0
 var push_speed := 20.0
 var push_only := false
+var hits_players := true             # false: only the look (the player's own shockwave)
 var floor_y := 0.0
 var radius := START_RADIUS
 var struck := {}                   # players already hit by this wave
@@ -31,12 +33,13 @@ var light: OmniLight3D
 var finishing := false
 
 
-static func spawn(tree: SceneTree, center: Vector3, max_radius: float, speed: float, damage: float, push_only := false) -> BossShockwave:
+static func spawn(tree: SceneTree, center: Vector3, max_radius: float, speed: float, damage: float, push_only := false, hits_players := true) -> BossShockwave:
 	var wave := BossShockwave.new()
 	wave.max_radius = max_radius
 	wave.speed = speed
 	wave.damage = damage
 	wave.push_only = push_only
+	wave.hits_players = hits_players
 	tree.current_scene.add_child(wave)
 	wave.global_position = center
 	wave.floor_y = center.y
@@ -45,6 +48,8 @@ static func spawn(tree: SceneTree, center: Vector3, max_radius: float, speed: fl
 
 func _ready() -> void:
 	var color := Color(0.55, 0.75, 1.0) if push_only else Color(1.0, 0.4, 0.1)
+	if not hits_players:
+		color = Color(0.3, 0.95, 1.0)   # the player's slam: the shield and dash cyan, not a boss attack
 
 	# The ring on the floor
 	ring_material = ShaderMaterial.new()
@@ -112,6 +117,8 @@ func _update_visuals() -> void:
 
 
 func _check_players() -> void:
+	if not hits_players:
+		return
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as Node3D
 		if player == null or struck.has(player):
