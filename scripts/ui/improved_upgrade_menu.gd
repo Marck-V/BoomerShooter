@@ -6,6 +6,7 @@ extends Control
 	"rifle": $Panel/TabContainer/Rifle,
 	"flamethrower": $Panel/TabContainer/Flamethrower,
 	"lightning": $"Panel/TabContainer/Lightning Gun",
+	"shield": $Panel/TabContainer/Shield,
 }
 
 @onready var tab_container: TabContainer = $Panel/TabContainer

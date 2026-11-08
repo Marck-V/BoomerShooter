@@ -849,6 +849,9 @@ func apply_push(impulse: Vector3) -> void:
 # `source`: what hit you, a Node3D (followed while it lives) or a world position (an explosion's centre), for the
 # damage direction indicator. Left out, no indicator shows.
 func damage(amount, melee := false, source = null):
+	# Any hit ends the shield's parry streak (Retaliation)
+	if amount > 0 and offhand_shield != null and offhand_shield.has_method("on_player_hurt"):
+		offhand_shield.on_player_hurt()
 	if shield_blocking:
 		amount *= BLOCK_MELEE_DAMAGE_MULTIPLIER if melee else BLOCK_DAMAGE_MULTIPLIER
 	# The overshield takes the hit first

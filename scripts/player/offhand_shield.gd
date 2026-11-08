@@ -83,8 +83,28 @@ const RECOVER_DIM := 0.3                        # rim and gem brightness while t
 const BODY_DIM := 0.55
 const FLASH_DECAY := 4.0
 
+# --- Retaliation (shield upgrade) ---
+# Each successful parry in a row builds a streak, shown by the shield's glow (hotter with every stack). Taking damage
+# ends it, and so does going STREAK_LIFETIME seconds without a parry; a parry that catches nothing (a misclick, or one
+# with nothing coming) costs nothing, and one that misses an attack is covered by the damage it lets through. The stacks empower the next
+# throw: its first hit on an enemy does more damage for each stack. A throw that never reaches an enemy hands the
+# streak back when the shield is caught.
+const RETALIATION_ID := "shield_retaliation"
+const STREAK_MAX := 6
+const STREAK_LIFETIME := 8.0
+const STREAK_DAMAGE_PER_STACK := 0.25
+const RIM_STREAK := Color(1.2, 3.4, 4.2)  # a streak charges the shield cyan-white, like the throw and the dash
+const GEM_STREAK := Color(1.4, 3.6, 4.4)
+
 static var _glow_texture: GradientTexture2D
 static var _clang_stream: AudioStream
+
+var has_retaliation := false
+var parry_streak := 0
+var streak_time_left := 0.0
+var carried_streak := 0                   # the streak the thrown shield is carrying
+var thrown_trail: ShieldTrail             # the trail behind the thrown shield: blue while it carries a streak
+var streak_counted := false               # one parry counts once, however many things it catches
 
 var camera: Camera3D
 var hand: Node3D
@@ -165,9 +185,24 @@ func _ready() -> void:
 		hand = _make_disc(true)
 		hand.position = HELD_POS
 		add_child(hand)
+	GlobalVariables.upgrade_purchased.connect(func(_id := ""): _refresh_upgrades())
+	GlobalVariables.upgrades_reset.connect(_refresh_upgrades)
+	_refresh_upgrades()
+
+
+func _refresh_upgrades() -> void:
+	has_retaliation = GlobalVariables.has_upgrade(RETALIATION_ID)
+	if not has_retaliation:
+		parry_streak = 0
+		carried_streak = 0
 
 
 func _process(delta: float) -> void:
+	# The streak fades if no parry lands for a while (not while the shield is out carrying it)
+	if parry_streak > 0:
+		streak_time_left -= delta
+		if streak_time_left <= 0.0:
+			_lose_streak()
 	match state:
 		State.READY:
 			var buffered := Time.get_ticks_msec() / 1000.0 < buffered_parry_until
@@ -244,11 +279,20 @@ func _update_glow(delta: float) -> void:
 		rim = RIM_PARRY
 		gem = GEM_PARRY
 		body = 1.0
+	elif parry_streak > 0 and state != State.PARRY and state != State.BLOCK:
+		# A streak charges the shield cyan-white, hotter and throbbing faster with every stack
+		var level := float(parry_streak) / float(STREAK_MAX)
+		var throb := 1.0 + 0.18 * sin(Time.get_ticks_msec() * 0.001 * (6.0 + 10.0 * level))
+		rim = _scaled(rim.lerp(RIM_STREAK, 0.35 + 0.65 * level), throb)
+		gem = _scaled(gem.lerp(GEM_STREAK, 0.35 + 0.65 * level), throb)
 	_apply_glow(hand, rim.lerp(FLASH_COLOR, flash), gem.lerp(FLASH_COLOR, flash), body)
 
 	if is_instance_valid(thrown_spinner):
 		if phase == Phase.GRAPPLE:
 			_apply_glow(thrown_spinner, RIM_GRAPPLE, GEM_GRAPPLE, 1.0)
+		elif carried_streak > 0:
+			var carried_level := float(carried_streak) / float(STREAK_MAX)
+			_apply_glow(thrown_spinner, RIM_BASE.lerp(RIM_STREAK, 0.35 + 0.65 * carried_level), GEM_BASE.lerp(GEM_STREAK, 0.35 + 0.65 * carried_level), 1.0)
 		else:
 			_apply_glow(thrown_spinner, RIM_BASE, GEM_BASE, 1.0)
 
@@ -332,6 +376,7 @@ func _tuck_gun(delta: float) -> void:
 # ---------------------------
 func _start_parry() -> void:
 	parry_succeeded = false
+	streak_counted = false
 	parry_pressed_msec = Time.get_ticks_msec()
 	_set_state(State.PARRY, parry_window)
 	strike_hold = PARRY_STRIKE_HOLD
@@ -446,8 +491,46 @@ func _parry_feedback(point: Vector3) -> void:
 	_parry_impact_effects(point)
 	parry_succeeded = true
 	GlobalVariables.parry_landed.emit()
+	_gain_streak()
 	strike_hold = maxf(strike_hold, PARRY_SUCCESS_HOLD)
 	_set_state(State.RECOVER, parry_success_cooldown)
+
+
+# ---------------------------
+# Retaliation: the parry streak
+# ---------------------------
+func _gain_streak() -> void:
+	if not has_retaliation or streak_counted:
+		return
+	streak_counted = true
+	parry_streak = mini(parry_streak + 1, STREAK_MAX)
+	streak_time_left = STREAK_LIFETIME
+	flash = 1.0
+
+
+# How empowered the thrown shield's trail looks: 0 for a normal throw, more with a bigger streak
+func _trail_empower() -> float:
+	return (0.35 + 0.65 * float(carried_streak) / float(STREAK_MAX)) if carried_streak > 0 else 0.0
+
+
+func _lose_streak() -> void:
+	if parry_streak == 0 and carried_streak == 0:
+		return
+	parry_streak = 0
+	carried_streak = 0       # a hit also takes the streak the thrown shield is carrying
+
+
+# Called by the player whenever they take damage: it ends the streak
+func on_player_hurt() -> void:
+	_lose_streak()
+
+
+# The empowered hit: a flash where the shield lands, and a little camera shake that grows with the stacks
+func _retaliate(point: Vector3, stacks: int) -> void:
+	_pop(point, RIM_STREAK, 1.2 + 0.25 * float(stacks))
+	var owner_player = GlobalVariables.player
+	if owner_player and is_instance_valid(owner_player):
+		owner_player.add_camera_shake(0.08 + 0.04 * float(stacks))
 
 
 # ---------------------------
@@ -629,6 +712,7 @@ func _start_throw() -> void:
 	var trail := ShieldTrail.new()
 	trail.target = thrown
 	thrown.add_child(trail)
+	thrown_trail = trail
 
 	phase = Phase.OUT
 	traveled = 0.0
@@ -636,6 +720,10 @@ func _start_throw() -> void:
 	bounces = 0
 	bounce_target = null
 	visited_ids.clear()
+	# The streak goes out with the shield; it is cashed in on the first enemy hit, or handed back if none is reached
+	carried_streak = parry_streak if has_retaliation else 0
+	parry_streak = 0
+	thrown_trail.empower = _trail_empower()
 	_set_state(State.THROWN)
 	Audio.play(THROW_SOUND)
 
@@ -647,6 +735,9 @@ func _update_thrown(delta: float) -> void:
 
 	flight_time += delta
 	thrown_spinner.rotate_y(delta * 22.0)
+	# The trail turns blue while the shield carries a streak, a little more so for a bigger one
+	if is_instance_valid(thrown_trail):
+		thrown_trail.empower = _trail_empower()
 	if flight_time > max_flight_time and phase != Phase.RETURN and phase != Phase.GRAPPLE:
 		phase = Phase.RETURN
 
@@ -733,6 +824,11 @@ func _catch() -> void:
 	thrown = null
 	bounce_target = null
 	visited_ids.clear()
+	# A throw that never reached an enemy gives the streak back (with a fresh clock)
+	if carried_streak > 0:
+		parry_streak = carried_streak
+		carried_streak = 0
+		streak_time_left = STREAK_LIFETIME
 
 	# The shield slaps back into the hand: the rim flashes, it bumps and the camera gives a little
 	flash = 1.0
@@ -862,10 +958,19 @@ func _hit_enemy(enemy: Node3D, point: Vector3) -> void:
 	var shielded := "shield" in enemy and enemy.shield != null and is_instance_valid(enemy.shield)
 	var direction := fly_dir
 
+	# Retaliation: the first enemy this throw reaches takes the streak's extra damage and the shockwave
+	var cashed := carried_streak
+	var amount := throw_damage
+	if cashed > 0:
+		carried_streak = 0
+		amount *= 1.0 + STREAK_DAMAGE_PER_STACK * float(cashed)
+
 	if enemy.has_method("hit_flash"):
-		enemy.hit_flash(point, 1.5)
+		enemy.hit_flash(point, 1.5 + 0.3 * float(cashed))
 	if enemy.has_method("damage"):
-		enemy.damage(throw_damage)
+		enemy.damage(amount)
+	if cashed > 0:
+		_retaliate(point, cashed)
 
 	_clang(point, 0.9 + 0.12 * bounces)
 	_pop(point, PARRY_COLOR, 1.0)

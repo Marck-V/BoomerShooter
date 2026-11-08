@@ -192,6 +192,21 @@ offset_right = 560.0
 offset_bottom = 78.0
 text = "No upgrades for the lightning gun yet."
 
+[node name="Shield" type="Control" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 5
+
+[node name="ShieldButton1" parent="Panel/TabContainer/Shield" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_left = 164.0
+offset_top = 52.0
+offset_right = 284.0
+offset_bottom = 80.0
+text = "Retaliation"
+upgrade_id = "shield_retaliation"
+description = "Each successful parry in a row builds a streak, up to 6, and the shield glows hotter with each stack. Taking damage resets it, and so does going 8 seconds without a parry. Your next throw's first hit does 25% more damage for each stack."
+
 [node name="PurchaseButton" type="Button" parent="Panel"]
 layout_mode = 2
 offset_left = 508.0
