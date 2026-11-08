@@ -3,7 +3,13 @@ extends BaseWeapon
 @onready var glitch_glow: OmniLight3D = $GlitchGlow
 @onready var weapon_mesh: MeshInstance3D = $WeaponMesh
 @onready var detach_mesh: MeshInstance3D = $"WeaponMesh/Shotgun-Detach"
-var glow_material: StandardMaterial3D
+const GLITCH_SHADER: Shader = preload("res://shaders/player/glitch_shot_overheat.gdshader")
+const GLITCH_RAMP_TIME := 0.3
+const GLITCH_LIGHT_ENERGY := 6.0
+var glow_material: ShaderMaterial          # on the gun's body
+var detach_glow_material: ShaderMaterial   # on the pump, which sits offset from the body
+var glow_intensity := 0.0
+var glow_tween: Tween
 
 var tween: Tween
 
@@ -24,12 +30,11 @@ func _ready():
 	muzzle_flash_size = 0.1
 	muzzle_flash_time = 0.12
 	muzzle_light_energy = 14.0
-	glow_material = StandardMaterial3D.new()
-	glow_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	glow_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	glow_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	glow_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	glow_material.albedo_color = Color(1.0, 0.1, 0.1, 0.6)
+	glow_material = ShaderMaterial.new()
+	glow_material.shader = GLITCH_SHADER
+	detach_glow_material = ShaderMaterial.new()
+	detach_glow_material.shader = GLITCH_SHADER
+	detach_glow_material.set_shader_parameter("local_offset", detach_mesh.position)   # the pump's place in the body's space
 	_refresh_upgrades()
 
 
@@ -93,6 +98,26 @@ func _update_glitch_glow() -> void:
 	# glow clears) on the next shot, when shot_tracker rolls back to 0.
 	var armed = has_glitch_shot and shot_tracker == 2
 	glitch_glow.visible = armed
-	var overlay = glow_material if armed else null
-	weapon_mesh.material_overlay = overlay
-	detach_mesh.material_overlay = overlay
+	weapon_mesh.material_overlay = glow_material if armed else null
+	detach_mesh.material_overlay = detach_glow_material if armed else null
+	if armed:
+		# Charges up fast: the heat surges in over a third of a second
+		if glow_tween:
+			glow_tween.kill()
+		glow_tween = create_tween()
+		glow_tween.tween_method(_set_glow_intensity, 0.0, 1.0, GLITCH_RAMP_TIME)
+
+
+func _set_glow_intensity(value: float) -> void:
+	glow_intensity = value
+	glow_material.set_shader_parameter("intensity", value)
+	detach_glow_material.set_shader_parameter("intensity", value)
+
+
+# The light on the gun throbs with the heartbeat the shader draws
+func _process(delta) -> void:
+	super(delta)
+	if not glitch_glow.visible:
+		return
+	var beat := fmod(Time.get_ticks_msec() / 1000.0 * 0.7, 1.0)
+	glitch_glow.light_energy = GLITCH_LIGHT_ENERGY * glow_intensity * (0.55 + 0.9 * pow(1.0 - beat, 4.0))
