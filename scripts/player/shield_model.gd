@@ -6,20 +6,18 @@ extends RefCounted
 # build() returns a Node3D whose front points along +Y (the same orientation the old disc had).
 # The root carries the meta "mats" = {body, rim, gem}: the materials the shield script recolours for its states.
 #
-# The body is drawn unshaded with flat shading baked into its vertex colours, in a few steps (PSX style), so the shield
-# looks the same in a dark corridor as in the open. Both faces are lit as if from the side you look at.
+# The body is lit like the guns, so it picks up the level's light and reflections: a colour map plus a packed
+# occlusion/roughness/metallic map (red/green/blue), the same way the gun models are done. The rim and gem are unshaded
+# glows, so the state colours always read.
 
 const MODEL: PackedScene = preload("res://models/player_shield/player_shield.glb")
-const SHADE_STEPS := 3.0
-const LIGHT_DIRECTION := Vector3(0.45, 0.8, 0.4)
+# The body's pictures: battle-scarred black steel. Each is three pictures side by side: the front plate, the back plate
+# (no circle lines, never damaged) and the smooth, slightly lighter trim for the ribs, hub, studs and walls
+# (tools/assetgen/shield_concepts.py --bake paints them; player_shield.py maps the body's faces onto them)
+const BODY_TEXTURE: Texture2D = preload("res://models/player_shield/shield_body_albedo.png")
+const BODY_ORM: Texture2D = preload("res://models/player_shield/shield_body_orm.png")
 
-# Screen colours for the body materials in the model, by glTF material name
-const BODY_COLORS := {
-	"Body": Color(0.2, 0.25, 0.42),
-	"BodyLight": Color(0.3, 0.36, 0.55),
-}
-
-static var _mesh: ArrayMesh                 # the model's mesh with the body shading baked in, shared by every build
+static var _mesh: ArrayMesh                 # the model's mesh, shared by every build
 static var _surface_kinds: Array[String] = []   # "body", "rim" or "gem" for each surface of _mesh
 
 
@@ -29,9 +27,18 @@ static func build() -> Node3D:
 	root.set_meta("mats", mats)
 
 	var body := StandardMaterial3D.new()
-	body.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	body.vertex_color_use_as_albedo = true
-	body.vertex_color_is_srgb = true     # the body colours are picked as screen colours
+	body.albedo_texture = BODY_TEXTURE
+	body.ao_enabled = true
+	body.ao_texture = BODY_ORM
+	body.ao_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_RED
+	body.roughness = 1.0                 # the maps set these; the values scale them
+	body.roughness_texture = BODY_ORM
+	body.roughness_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_GREEN
+	body.metallic = 1.0
+	body.metallic_texture = BODY_ORM
+	body.metallic_texture_channel = BaseMaterial3D.TEXTURE_CHANNEL_BLUE
+	# Smooth and mipmapped: the retro look comes from the screen filter, so the texture can keep its detail
+	body.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	mats["body"] = body
 
 	var rim := StandardMaterial3D.new()
@@ -53,7 +60,7 @@ static func build() -> Node3D:
 	return root
 
 
-# Copies the model's mesh once, baking the stepped flat shading into the body surfaces' vertex colours
+# Copies the model's mesh once and sorts its surfaces into body, rim and gem by their glTF material names
 static func _get_mesh() -> ArrayMesh:
 	if _mesh:
 		return _mesh
@@ -68,8 +75,6 @@ static func _get_mesh() -> ArrayMesh:
 			kind = "rim"
 		elif material_name == "Gem":
 			kind = "gem"
-		if kind == "body":
-			arrays[Mesh.ARRAY_COLOR] = _shade(arrays[Mesh.ARRAY_NORMAL], BODY_COLORS.get(material_name, BODY_COLORS["Body"]))
 		_mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
 		_surface_kinds.append(kind)
 	return _mesh
@@ -82,20 +87,3 @@ static func _find_mesh(scene_root: Node) -> Mesh:
 		break
 	scene_root.free()
 	return found
-
-
-# One brightness per face (the model is flat shaded, so each vertex carries its face's normal), snapped to a few steps.
-# Faces on the back are lit from the back, so the side the player looks at is never left in the dark.
-static func _shade(normals: PackedVector3Array, color: Color) -> PackedColorArray:
-	var colors := PackedColorArray()
-	colors.resize(normals.size())
-	var light := LIGHT_DIRECTION.normalized()
-	for i in normals.size():
-		var n := normals[i]
-		var l := light if n.y >= 0.0 else Vector3(light.x, -light.y, light.z)
-		var lit := clampf(n.dot(l) * 0.5 + 0.5, 0.0, 1.0)
-		lit = floorf(lit * SHADE_STEPS + 0.5) / SHADE_STEPS
-		var shaded := color * (0.45 + 0.75 * lit)
-		shaded.a = 1.0
-		colors[i] = shaded
-	return colors

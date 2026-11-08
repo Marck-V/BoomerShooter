@@ -321,6 +321,42 @@ def previews(out_dir):
     render(cam, os.path.join(out_dir, "player_shield_front.png"), v(0.9, -1.2, 0.6), v(0, 0, 0), 50, (900, 900))
 
 
+# -------------------------------------------------------------------------------------------------------------- UVs
+
+TILES = 3        # the body texture: front plate | back plate | trim, side by side (shield_concepts.py --bake)
+
+
+def add_body_uvs(coll):
+    """Maps the body faces (materials Body and BodyLight) onto the body texture, three pictures side by side:
+        0 the front plate   faces of the Body material that look along the front (-Y): the steps and the dome
+        1 the back plate    faces of the Body material that look along the back (+Y)
+        2 the trim          everything else: all of the BodyLight material (ribs, hub, studs) and the thin walls
+                            between the steps, lighter worn steel so those parts stand out from the dark plates
+    Each picture is the shield seen from straight on, so the map is a flat projection: u = x, v = z, scaled so the edge
+    of the shield is the edge of the picture (the trim picture is plain noise, so how it is stretched over a wall does
+    not show). The rim and gem faces are not mapped."""
+    scale = 0.5 / RADIUS
+    for ob in coll.objects:
+        if ob.type != "MESH":
+            continue
+        me = ob.data
+        uv = me.uv_layers.new(name="UVMap") if "UVMap" not in me.uv_layers else me.uv_layers["UVMap"]
+        for poly in me.polygons:
+            material = me.materials[poly.material_index].name
+            if material not in ("Body", "BodyLight"):
+                continue
+            ny = poly.normal.y
+            if material == "BodyLight" or abs(ny) <= 0.3:
+                tile = 2
+            else:
+                tile = 1 if ny > 0.0 else 0
+            for li in poly.loop_indices:
+                co = me.vertices[me.loops[li].vertex_index].co
+                u = co.x * scale + 0.5
+                w = co.z * scale + 0.5
+                uv.data[li].uv = ((tile + u) / TILES, w)
+
+
 # ---------------------------------------------------------------------------------------------------------- export
 
 def export_glb(coll):
@@ -360,6 +396,7 @@ def main():
     coll = new_collection("Shield")
     build_boss(0.0, m, coll, "Front_")
     back_ribs(0.0, m, coll, "Back_")
+    add_body_uvs(coll)
 
     if "--no-preview" not in argv:
         previews(preview_dir)

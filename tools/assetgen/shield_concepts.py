@@ -41,7 +41,12 @@ def smooth(a, b, x):
     return gun_metal._smoothstep(a, b, x)
 
 
+BACK_VIEW = False        # while painting the back face's picture: no circle lines at all (they belong to the front's steps)
+
+
 def ring(r, centre, half):
+    if BACK_VIEW:
+        return np.zeros_like(r)
     return 1.0 - smooth(half * 0.6, half, np.abs(r - centre))
 
 
@@ -84,6 +89,10 @@ def noises(seed):
 
 
 def rings_grain(r, rng, density=200.0):
+    if BACK_VIEW:
+        # the back plate is brushed in straight lines, not circles
+        x, _, _, _ = grid()
+        return np.interp((x * 0.5 + 0.5) * density * 0.5, np.arange(0, int(density) + 20), rng.random(int(density) + 20))
     return np.interp(r * density, np.arange(0, int(density) + 20), rng.random(int(density) + 20))
 
 
@@ -274,6 +283,143 @@ CONCEPTS = [
 ]
 
 
+# ============================================================================== the darker set (--set dark)
+# Five metals that all sit on the dark side, each with a different character.
+
+# D1 ----------------------------------------------------------------------------------------------- blackened gunmetal
+def paint_gunmetal():
+    rng, fbm, fine, scratch = noises(21)
+    x, z, r, th = grid()
+    grain = rings_grain(r, rng, 380.0)
+    img = col(0.075, 0.08, 0.095) * (0.78 + grain[..., None] * 0.5) * (0.88 + fbm[..., None] * 0.22)
+    img = steps(img, r, col(0.20, 0.21, 0.24), 0.6) + scratch[..., None] * 0.10
+    # bare steel showing through where the blackening has worn off the edges of the steps
+    edges = np.maximum.reduce([ring(r, e, 0.017) for e in (STEP_OUTER, STEP_MID, STEP_DOME)] + [ring(r, 0.985, 0.03)])
+    wear = np.clip(edges * smooth(0.25, 0.6, fine + fbm * 0.3 + 0.2), 0, 1)
+    img = mix(img, col(0.58, 0.60, 0.65), wear * 0.85)
+    return finish(img, 0.30 + grain * 0.2 - wear * 0.12, 0.96 + 0 * r, r, col(0.06, 0.065, 0.08))
+
+
+# D2 ----------------------------------------------------------------------------------------------- oil-slick anodised
+def paint_oilslick():
+    rng, fbm, fine, scratch = noises(22)
+    x, z, r, th = grid()
+    grain = rings_grain(r, rng, 420.0)
+    base = col(0.055, 0.06, 0.085) * (0.8 + grain[..., None] * 0.4)
+    # bands of heat-tint colour that drift across the plate: purple, teal and magenta, as on titanium that has been heated
+    t = 0.5 + 0.5 * np.sin(r * 17.0 + fbm * 3.5 + np.sin(th * 3.0) * 0.6)
+    ramp = col(0.30, 0.09, 0.55) * (1.0 - smooth(0.0, 0.5, t))[..., None] \
+        + col(0.05, 0.45, 0.50) * (smooth(0.0, 0.5, t) * (1.0 - smooth(0.5, 1.0, t)))[..., None] \
+        + col(0.62, 0.10, 0.38) * smooth(0.5, 1.0, t)[..., None]
+    sheen = smooth(0.30, 0.75, fbm + (np.sin(r * 5.0) * 0.15))
+    img = base + ramp * sheen[..., None] * 0.55
+    img = steps(img, r, col(0.20, 0.18, 0.28), 0.6) + scratch[..., None] * 0.09
+    return finish(img, 0.22 + grain * 0.15, 1.0 + 0 * r, r, col(0.05, 0.05, 0.09))
+
+
+# D3 ----------------------------------------------------------------------------------------------- forge-scale cast iron
+def paint_cast_iron():
+    rng, fbm, fine, scratch = noises(23)
+    x, z, r, th = grid()
+    img = col(0.115, 0.108, 0.10) * (0.65 + fbm[..., None] * 0.6)
+    pits = (fine < 0.22).astype(np.float32)
+    img = img * (1.0 - pits[..., None] * 0.55) + blobs(rng, 60, 0.02, 0.05, r)[..., None] * 0.04
+    # cooled-lava veins: glowing orange only in the seams between the steps and in a few hairline cracks
+    crack_noise = gun_metal._noise(SIZE, 24, rng)
+    cracks = (1.0 - smooth(0.0, 0.035, np.abs(crack_noise - 0.5))) * smooth(0.2, 0.7, fbm)
+    seams = np.maximum.reduce([ring(r, e - 0.03, 0.02) for e in (STEP_OUTER, STEP_MID, STEP_DOME)])
+    ember = np.clip(np.maximum(cracks * 0.9, seams * 0.8), 0, 1)
+    img = steps(img, r, col(0.22, 0.21, 0.20), 0.6) + scratch[..., None] * 0.05
+    img = mix(img, col(1.0, 0.42, 0.09) * (0.8 + fine[..., None] * 0.4), ember * 0.85)
+    return finish(img, 0.68 - ember * 0.35, 0.55 - ember * 0.5, r, col(0.08, 0.075, 0.07))
+
+
+# D4 ----------------------------------------------------------------------------------------------- obsidian mirror, cyan circuit etching
+def paint_obsidian():
+    rng, fbm, fine, scratch = noises(24)
+    x, z, r, th = grid()
+    img = col(0.022, 0.025, 0.034) * (0.9 + fbm[..., None] * 0.25)
+    lines = np.maximum.reduce([ring(r, e - 0.02, 0.008) for e in (STEP_OUTER, STEP_MID, STEP_DOME, 0.93)])
+    local = ((th + math.pi) / math.tau * 12) % 1.0
+    spokes = (1.0 - smooth(0.006, 0.014, np.minimum(local, 1 - local) * (r + 0.1))) \
+        * smooth(STEP_DOME + 0.03, STEP_DOME + 0.06, r) * (1 - smooth(0.9, 0.92, r))
+    lines = np.maximum(lines, spokes)
+    for k in range(12):
+        a = (k + 0.5) / 12 * math.tau - math.pi
+        for rad in (0.58, 0.8):
+            node = np.hypot(x - math.cos(a) * rad, z - math.sin(a) * rad)
+            lines = np.maximum(lines, 1.0 - smooth(0.012, 0.022, node))
+    img = steps(img, r, col(0.07, 0.08, 0.10), 0.0) + scratch[..., None] * 0.05
+    img = mix(img, col(0.10, 0.80, 1.0), lines * 0.9)
+    return finish(img, 0.08 + scratch * 0.2 + lines * 0.25, 1.0 - lines * 0.45, r, col(0.02, 0.022, 0.03))
+
+
+GAME_BAKE = False        # painting the texture for the game (drawn unshaded) rather than for a lit concept render
+
+
+def paint_battle():
+    rng, fbm, fine, scratch = noises(25)
+    x, z, r, th = grid()
+    if GAME_BAKE and BACK_VIEW:
+        # The back never sees a hit: clean dark steel, only the faintest brushing and mottling, no scratches, dents, chips
+        # or scorching
+        grain = rings_grain(r, rng, 380.0)
+        img = col(0.105, 0.11, 0.135) * (0.92 + fbm[..., None] * 0.12) * (0.97 + grain[..., None] * 0.06)
+        return finish(img, 0.36 + fbm * 0.06, 0.60 + 0 * r, r, col(0.07, 0.07, 0.09))
+    img = col(0.125, 0.135, 0.165) * (0.75 + fbm[..., None] * 0.45)
+    dents = blobs(rng, 40 if GAME_BAKE else 70, 0.03, 0.09, r)
+    lip = np.roll(np.roll(dents, 4, axis=0), 4, axis=1) - dents
+    # In a lit render a dent reads as a dent. Drawn unshaded in the game a dark disc is just a black blotch, so there
+    # the front has only a few faint ones with a brighter lip on one side (which still reads as a bevel), and the back,
+    # which is seen close up all the time, has none.
+    dent_dark, dent_lip = (0.05, 0.0) if GAME_BAKE else (0.32, 0.14)     # no light crescents in the game: light marks are the rivets
+    img = img * (1.0 - dents[..., None] * dent_dark) + lip[..., None] * dent_lip
+    heavy = gun_metal._scratches(SIZE, rng, 650)
+    img = steps(img, r, col(0.24, 0.25, 0.28), 0.6) + (scratch * 0.3 + heavy * (0.2 if GAME_BAKE else 0.28))[..., None]
+    # scorching: soot, then the blue-purple a steel plate turns when it has been heated, round the edge
+    heat = smooth(0.52, 0.80, gun_metal._fbm(SIZE, rng) + (r - 0.55) * 0.7) * smooth(0.45, 1.0, r)
+    soot, soot_colour = (0.35, col(0.07, 0.07, 0.08)) if GAME_BAKE else (0.8, col(0.035, 0.035, 0.04))
+    img = mix(img, soot_colour, heat * soot)
+    temper = smooth(0.25, 0.55, heat) * (1.0 - smooth(0.55, 0.9, heat))
+    img = mix(img, col(0.22, 0.17, 0.42), temper * (0.45 if GAME_BAKE else 0.65))
+    if GAME_BAKE:
+        # Rivets at equal angles along the edge of each step (no scattered chips: light marks are all rivets, in order)
+        rivets = np.zeros_like(r)
+        shade = np.zeros_like(r)
+        for edge, count in ((STEP_OUTER, 28), (STEP_MID, 20), (STEP_DOME, 12)):
+            for k in range(count):
+                a = (k + 0.5) / count * math.tau
+                d = np.hypot(x - math.cos(a) * edge, z - math.sin(a) * edge)
+                rivets = np.maximum(rivets, 1.0 - smooth(0.011, 0.015, d))
+                shade = np.maximum(shade, 1.0 - smooth(0.015, 0.024, d))
+        img = img * (1.0 - (shade - rivets).clip(0, 1)[..., None] * 0.55)       # a dark seat round each, so it stands proud
+        img = mix(img, col(0.50, 0.52, 0.56), rivets * 0.9)
+        metal = (0.62 - heat * 0.25) * (1.0 - rivets) + 0.8 * rivets            # lit in the game, where full metal only mirrors the sky
+        return finish(img, 0.42 + heat * 0.25 - rivets * 0.12, metal, r, col(0.1, 0.1, 0.12))
+    # chips in the dark finish near the rim, down to bare steel
+    chips = blobs(rng, 40, 0.012, 0.03, r) * smooth(0.6, 0.85, r)
+    img = mix(img, col(0.72, 0.74, 0.78), chips * 0.9)
+    return finish(img, 0.42 + heat * 0.25 - chips * 0.2, 0.92 - heat * 0.35, r, col(0.1, 0.1, 0.12))
+
+
+def paint_trim():
+    """The game's picture for the parts that are not the big front and back plates: the ribs, hub and studs on the back
+    and front, and the thin walls between the steps. Smooth brushed steel, a step lighter than the plates so those parts
+    stand out. Very flat, so it does not matter how it is stretched over a wall. Returns (albedo, roughness, metallic)."""
+    rng, fbm, fine, scratch = noises(26)
+    x, z, r, th = grid()
+    grain = np.interp((x * 0.5 + 0.5) * 520.0, np.arange(0, 540), rng.random(540))      # brushed in straight lines
+    img = col(0.175, 0.185, 0.215) * (0.95 + grain[..., None] * 0.07) * (0.97 + fbm[..., None] * 0.06)
+    return np.clip(img, 0, 1), np.clip(0.28 + grain * 0.05, 0, 1), np.full_like(r, 0.68)
+
+
+DARK_CONCEPTS = [
+    ("Blackened Gunmetal", paint_gunmetal), ("Oil-Slick Anodised", paint_oilslick),
+    ("Forge-Scale Cast Iron", paint_cast_iron), ("Obsidian Mirror, Cyan Etching", paint_obsidian),
+    ("Battle-Scarred Black Steel", paint_battle),
+]
+
+
 # --------------------------------------------------------------------------------------------------- materials
 
 def make_image(name, array, colour=True):
@@ -286,7 +432,9 @@ def make_image(name, array, colour=True):
     return img
 
 
-def textured_material(name, image, rough_image, metal_image, tint=1.0):
+def textured_material(name, image, rough_image, metal_image, tint=1.0, back=None):
+    """`back`: optional (albedo, roughness, metallic) images used on the faces that look the way the back plate does
+    (object-space normal pointing along +Y, away from the front), so the back can differ from the front."""
     mat = bpy.data.materials.new(name)
     try:
         mat.use_nodes = True
@@ -319,19 +467,40 @@ def textured_material(name, image, rough_image, metal_image, tint=1.0):
         links.new(comb.outputs["Vector"], t.inputs["Vector"])
         return t
 
-    colour = tex(image)
-    links.new(tex(rough_image).outputs["Color"], shader.inputs["Roughness"])
-    links.new(tex(metal_image).outputs["Color"], shader.inputs["Metallic"])
+    # 1 on the faces that face down the back of the shield, 0 elsewhere
+    normal_y = nodes.new("ShaderNodeSeparateXYZ")
+    links.new(coord.outputs["Normal"], normal_y.inputs["Vector"])
+    is_back = nodes.new("ShaderNodeMath")
+    is_back.operation = "GREATER_THAN"       # the front looks along -Y (the camera for the front shot is at -Y)
+    is_back.inputs[1].default_value = 0.3
+    links.new(normal_y.outputs["Y"], is_back.inputs[0])
+
+    def pick(front_img, back_img):
+        front_tex = tex(front_img)
+        if back_img is None:
+            return front_tex.outputs["Color"]
+        back_tex = tex(back_img)
+        chooser = nodes.new("ShaderNodeMix")
+        chooser.data_type = "RGBA"
+        links.new(is_back.outputs[0], chooser.inputs["Factor"])
+        links.new(front_tex.outputs["Color"], chooser.inputs["A"])
+        links.new(back_tex.outputs["Color"], chooser.inputs["B"])
+        return chooser.outputs["Result"]
+
+    back_a, back_r, back_m = back if back else (None, None, None)
+    colour = pick(image, back_a)
+    links.new(pick(rough_image, back_r), shader.inputs["Roughness"])
+    links.new(pick(metal_image, back_m), shader.inputs["Metallic"])
     if tint != 1.0:
         mixer = nodes.new("ShaderNodeMix")
         mixer.data_type = "RGBA"
         mixer.blend_type = "MULTIPLY"
         mixer.inputs["Factor"].default_value = 1.0
         mixer.inputs["B"].default_value = (tint, tint, tint, 1.0)
-        links.new(colour.outputs["Color"], mixer.inputs["A"])
+        links.new(colour, mixer.inputs["A"])
         links.new(mixer.outputs["Result"], shader.inputs["Base Color"])
     else:
-        links.new(colour.outputs["Color"], shader.inputs["Base Color"])
+        links.new(colour, shader.inputs["Base Color"])
     return mat
 
 
@@ -371,12 +540,56 @@ def studio_world(scene):
 
 # --------------------------------------------------------------------------------------------------------- main
 
+def bake_final(painter, out_path, size=1024, gain=1.0):
+    """Writes the chosen concept as the game's body texture: one atlas of three pictures side by side, `size` px each:
+    the front's picture, the back's (no circle lines) and the trim (ribs, hub, studs and the thin walls: lighter worn
+    steel). tools/assetgen/player_shield.py maps the body's faces onto the matching picture. It is painted at `size`
+    px, with the dents and soot toned down for the game, the back left clean and the trim smooth. Writes the colour
+    atlas and, beside it, the packed roughness/metallic atlas (the body is lit like the guns). `gain` scales the colour."""
+    global BACK_VIEW, GAME_BAKE, SIZE
+    SIZE, GAME_BAKE = size, True
+    front = painter()
+    BACK_VIEW = True
+    back = painter()
+    BACK_VIEW = False
+    trim = paint_trim()
+    albedo = np.clip(np.concatenate([front[0], back[0], trim[0]], axis=1) * gain, 0.0, 1.0).astype(np.float32)
+    rough = np.concatenate([front[1], back[1], trim[1]], axis=1)
+    metal = np.concatenate([front[2], back[2], trim[2]], axis=1)
+    # glTF-style packed map, as the guns use: red = occlusion (none painted), green = roughness, blue = metallic
+    orm = np.stack([np.ones_like(rough), rough, metal], axis=-1).astype(np.float32)
+
+    def save(path, array, colour):
+        h, w = array.shape[:2]
+        image = bpy.data.images.new(os.path.basename(path), w, h, alpha=False)
+        image.colorspace_settings.name = "sRGB" if colour else "Non-Color"
+        rgba = np.concatenate([array, np.ones((h, w, 1), dtype=np.float32)], axis=2)
+        image.pixels.foreach_set(rgba.reshape(-1))
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        image.filepath_raw = path
+        image.file_format = "PNG"
+        image.save()
+        print("baked", path, w, "x", h)
+
+    save(out_path, albedo, True)
+    save(out_path.replace("_albedo", "_orm"), orm, False)
+
+
 def main():
     argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    if "--bake" in argv:
+        # --bake [--size N] [--gain G]: the final body texture (the battle-scarred black steel) for the game
+        size = int(argv[argv.index("--size") + 1]) if "--size" in argv else 1024
+        gain = float(argv[argv.index("--gain") + 1]) if "--gain" in argv else 1.8
+        bake_final(paint_battle, os.path.join(ps["ROOT"], "models", "player_shield", "shield_body_albedo.png"), size, gain)
+        return
     out_dir = os.path.join(ps["ROOT"], "art", "blender", "previews")
     if "--out" in argv:
         out_dir = argv[argv.index("--out") + 1]
     os.makedirs(out_dir, exist_ok=True)
+    dark = "--set" in argv and argv[argv.index("--set") + 1] == "dark"
+    concepts = DARK_CONCEPTS if dark else CONCEPTS
+    prefix = "shield_dark" if dark else "shield"
 
     bpy.ops.wm.read_factory_settings(use_empty=True)
     m = {
@@ -394,11 +607,16 @@ def main():
     meshes = [o for o in bpy.data.objects if o.type == "MESH"]
 
     shots = []
-    for n, (title, painter) in enumerate(CONCEPTS, 1):
+    for n, (title, painter) in enumerate(concepts, 1):
+        global BACK_VIEW
         albedo, rough, metal = painter()
+        BACK_VIEW = True                     # the back plate is flat: the same metal, painted without the circle lines
+        back_albedo, back_rough, back_metal = painter()
+        BACK_VIEW = False
         ia, ir, im = make_image(f"c{n}a", albedo), make_image(f"c{n}r", rough, False), make_image(f"c{n}m", metal, False)
-        body = textured_material(f"Body{n}", ia, ir, im)
-        light = textured_material(f"BodyLight{n}", ia, ir, im, 1.2)
+        ba, br, bm = make_image(f"c{n}ba", back_albedo), make_image(f"c{n}br", back_rough, False), make_image(f"c{n}bm", back_metal, False)
+        body = textured_material(f"Body{n}", ia, ir, im, back=(ba, br, bm))
+        light = textured_material(f"BodyLight{n}", ia, ir, im, 1.2, back=(ba, br, bm))
         for ob in meshes:
             for slot in ob.material_slots:
                 if slot.material.name.startswith("BodyLight"):
@@ -408,7 +626,7 @@ def main():
         for side, lz, loc in (("front", 0.0, (0.9, -1.2, 0.6)), ("back", math.pi, (-0.9, 1.2, 0.6))):
             for lt in lights:
                 lt.rotation_euler.z += lz
-            path = os.path.join(out_dir, f"shield_concept_{n}_{side}.png")
+            path = os.path.join(out_dir, f"{prefix}_concept_{n}_{side}.png")
             ps["render"](cam, path, ps["v"](*loc), ps["v"](0, 0, 0), 50, (700, 700))
             for lt in lights:
                 lt.rotation_euler.z -= lz
@@ -421,12 +639,14 @@ def main():
         px = np.empty(700 * 700 * 4, dtype=np.float32)
         img.pixels.foreach_get(px)
         tiles.append(px.reshape(700, 700, 4)[130:570, 130:570])          # crop the empty margin
+    while len(tiles) % 4:
+        tiles.append(np.broadcast_to(tiles[0][0, 0], tiles[0].shape).copy())   # backdrop-coloured tiles pad the last row
     rows = [np.concatenate(tiles[i:i + 4], axis=1) for i in range(0, len(tiles), 4)]
     sheet = np.concatenate(rows[::-1], axis=0)                           # image rows run bottom to top
     h, w = sheet.shape[:2]
     out = bpy.data.images.new("sheet", w, h, alpha=False)
     out.pixels.foreach_set(sheet.reshape(-1))
-    out.filepath_raw = os.path.join(out_dir, "shield_concepts_sheet.png")
+    out.filepath_raw = os.path.join(out_dir, f"{prefix}_concepts_sheet.png")
     out.file_format = "PNG"
     out.save()
     print("sheet", out.filepath_raw)
