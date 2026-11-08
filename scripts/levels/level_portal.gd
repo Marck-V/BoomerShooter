@@ -2,7 +2,8 @@ extends Area3D
 class_name LevelPortal
 
 # The exit of a level: a big door frame that rises out of the floor, with a doorway of streaming coloured light
-# in it. Walking through takes the player to the next level.
+# in it. Walking through takes the player to the next level, or, with no level given, to the "Game Over" screen with
+# its main menu button: the way out of the last level.
 # Use: LevelPortal.open_at(get_tree(), floor_position, "res://scenes/levels/level_02.tscn", face_point)
 #
 # Travelling fades to black, loads the level and fades back in. The ammo for every weapon carries over (see
@@ -176,6 +177,14 @@ static func travel(tree: SceneTree, level_path: String) -> void:
 	var out := layer.create_tween().set_ignore_time_scale(true)
 	out.tween_property(fade, "color:a", 1.0, FADE_TIME)
 	await out.finished
+
+	if level_path.is_empty():
+		# No next level: this was the way out of the game
+		GameManager.win("GAME OVER", "")
+		var shown := layer.create_tween().set_ignore_time_scale(true)
+		shown.tween_property(fade, "color:a", 0.0, FADE_TIME)
+		shown.tween_callback(layer.queue_free)
+		return
 
 	GlobalVariables.carry_ammo_over = true
 	tree.change_scene_to_file(level_path)

@@ -40,9 +40,10 @@ func player_died():
 		printerr("ERROR: No reference to HUD")
 
 
-func win():
+# Shows the end screen with a button back to the main menu. The title and subtitle can be changed ("" hides the subtitle)
+func win(title := "You Win!", subtitle := "Thank you for \nplaying our demo :)"):
 	hud = get_tree().current_scene.get_node_or_null("HUD")
 	if hud:
-		hud.show_win_screen()
+		hud.show_win_screen(title, subtitle)
 	else:
 		printerr("ERROR: No reference to HUD.")

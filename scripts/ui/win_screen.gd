@@ -3,7 +3,11 @@ extends Control
 @onready var hud: Control = $"../InGameHUD"
 
 
-func show_win_screen():
+func show_win_screen(title := "You Win!", subtitle := "Thank you for \nplaying our demo :)"):
+	$MarginContainer/VBoxContainer/Label.text = title
+	var sub_label: Label = $MarginContainer/VBoxContainer/SubLabel
+	sub_label.text = subtitle
+	sub_label.visible = not subtitle.is_empty()
 	hud.visible = false
 	visible = true
 	modulate.a = 0.0  # Start fully transparent

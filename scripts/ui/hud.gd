@@ -88,8 +88,8 @@ func show_death_screen():
     $DeathScreen.show_death_screen()
 
 
-func show_win_screen():
-    $WinScreen.show_win_screen()
+func show_win_screen(title := "You Win!", subtitle := "Thank you for \nplaying our demo :)"):
+    $WinScreen.show_win_screen(title, subtitle)
 
     
 func _on_quickness_active():

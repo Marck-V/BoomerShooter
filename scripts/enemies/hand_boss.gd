@@ -1494,7 +1494,7 @@ func _die() -> void:
 	_death()
 
 
-# Spasms, goes limp, and is pulled back up into the portal, which closes behind it
+# Spasms, goes limp, and is pulled back up into the portal, which closes behind it. Then the exit portal opens.
 func _death() -> void:
 	pose("Death", 0.1)
 	set_glow(Color(1.0, 1.0, 1.0), 1.2, 0.4)
@@ -1531,4 +1531,6 @@ func _death() -> void:
 	await set_portal_open(0.0, 0.9).finished   # the tear seals itself
 	portal.visible = false
 	await tree.create_timer(1.0, false).timeout
-	GameManager.win()
+	# The way out opens in the middle of the arena. Walking in ends the game (no next level to go to).
+	var player = GlobalVariables.player
+	LevelPortal.open_at(tree, Vector3(home.x, floor_y, home.z), "", player.global_position if is_instance_valid(player) else Vector3.INF)
