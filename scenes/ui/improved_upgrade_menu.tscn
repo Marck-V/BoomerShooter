@@ -55,7 +55,7 @@ offset_right = 1171.0
 offset_bottom = 597.735
 theme = ExtResource("1_1vi3u")
 theme_override_colors/font_selected_color = Color(0, 0, 0, 1)
-current_tab = 2
+current_tab = 0
 
 [node name="Pistol" type="Control" parent="Panel/TabContainer"]
 visible = false
@@ -146,6 +146,32 @@ text = "Quickness"
 upgrade_id = "rifle_quickness"
 description = "Killing 3 enemies with the rifle, each within 5 seconds of the last, doubles your movement speed for 3 seconds."
 
+[node name="Flamethrower" type="Control" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="NoUpgradesLabel" type="Label" parent="Panel/TabContainer/Flamethrower"]
+layout_mode = 0
+offset_left = 164.0
+offset_top = 52.0
+offset_right = 560.0
+offset_bottom = 78.0
+text = "No upgrades for the flamethrower yet."
+
+[node name="Lightning Gun" type="Control" parent="Panel/TabContainer"]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 4
+
+[node name="NoUpgradesLabel" type="Label" parent="Panel/TabContainer/Lightning Gun"]
+layout_mode = 0
+offset_left = 164.0
+offset_top = 52.0
+offset_right = 560.0
+offset_bottom = 78.0
+text = "No upgrades for the lightning gun yet."
+
 [node name="PurchaseButton" type="Button" parent="Panel"]
 layout_mode = 2
 offset_left = 508.0
@@ -157,9 +183,9 @@ text = "Purchase"
 
 [node name="ResetButton" type="Button" parent="Panel"]
 layout_mode = 2
-offset_left = 643.41
+offset_left = 975.0
 offset_top = 614.0
-offset_right = 731.41
+offset_right = 1131.0
 offset_bottom = 642.0
 text = "Reset"
 
@@ -196,6 +222,15 @@ offset_right = 414.0
 offset_bottom = 81.0
 autowrap_mode = 3
 text = "Select an Upgrade to view its description."
+
+[node name="StatusLabel" type="Label" parent="Panel/DescriptionPanel"]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 236.0
+offset_right = 414.0
+offset_bottom = 272.0
+autowrap_mode = 3
+vertical_alignment = 2
 
 [node name="PointsLabel" type="Label" parent="Panel"]
 layout_mode = 0

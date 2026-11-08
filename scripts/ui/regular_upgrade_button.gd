@@ -7,6 +7,17 @@ class_name RegUpgradeButton
 @export var cost : int = 5
 @export_multiline var description : String = ""
 
+# An upgrade is available (can be selected and bought), owned (bought: green), or locked (the one before it in its
+# chain is not owned yet: grey). Owned and locked buttons are disabled, but the menu still shows their details on hover.
+enum State { AVAILABLE, OWNED, LOCKED }
+var state := State.AVAILABLE
+
+const OWNED_FILL := Color(0.55, 0.82, 0.55)
+const OWNED_EDGE := Color(0.08, 0.32, 0.08)
+const OWNED_TEXT := Color(0.05, 0.25, 0.05)
+const LOCKED_FILL := Color(0.58, 0.58, 0.58)
+const LOCKED_EDGE := Color(0.3, 0.3, 0.3)
+const LOCKED_TEXT := Color(0.38, 0.38, 0.38)
 
 var level: int = 0:
     set(value):
@@ -25,10 +36,42 @@ func _ready() -> void:
     if GlobalVariables.has_upgrade(upgrade_id):
         apply_visual_upgrade()
     else:
-        if get_parent() is RegUpgradeButton:
-            var parent_btn := get_parent() as RegUpgradeButton
-            if not GlobalVariables.has_upgrade(parent_btn.upgrade_id):
-                disabled = true
+        refresh_state()
+
+
+# Works out whether this upgrade is owned, locked behind the one before it, or available, and styles the button to match
+func refresh_state() -> void:
+    if GlobalVariables.has_upgrade(upgrade_id):
+        state = State.OWNED
+    elif get_parent() is RegUpgradeButton and not GlobalVariables.has_upgrade((get_parent() as RegUpgradeButton).upgrade_id):
+        state = State.LOCKED
+    else:
+        state = State.AVAILABLE
+    disabled = state != State.AVAILABLE
+    match state:
+        State.OWNED:
+            _set_disabled_look(OWNED_FILL, OWNED_EDGE, OWNED_TEXT)
+        State.LOCKED:
+            _set_disabled_look(LOCKED_FILL, LOCKED_EDGE, LOCKED_TEXT)
+        State.AVAILABLE:
+            remove_theme_stylebox_override("disabled")
+            remove_theme_color_override("font_disabled_color")
+
+
+func _set_disabled_look(fill: Color, edge: Color, text_color: Color) -> void:
+    var box := StyleBoxFlat.new()
+    box.bg_color = fill
+    box.set_border_width_all(2)
+    box.border_color = edge
+    add_theme_stylebox_override("disabled", box)
+    add_theme_color_override("font_disabled_color", text_color)
+
+
+# The name of the upgrade that has to be bought before this one ("" if nothing does)
+func requirement_name() -> String:
+    if get_parent() is RegUpgradeButton:
+        return (get_parent() as RegUpgradeButton).text
+    return ""
 
 
 func _update_line() -> void:
@@ -57,15 +100,16 @@ func _update_line() -> void:
 
 func apply_visual_upgrade() -> void:
     level = 1
-    disabled = true
     line_2d.default_color = Color(1.0, 1.0, 0.184)
+    refresh_state()
 
+    # Buying this unlocks the next upgrade in the chain
     for child in get_children():
         if child is RegUpgradeButton:
-            child.disabled = false
+            child.refresh_state()
 
 
 func reset() -> void:
     level = 0
-    disabled = get_parent() is RegUpgradeButton  # the first upgrade of each tree can be bought straight away
     line_2d.default_color = Color(0.18, 0.18, 0.18)
+    refresh_state()   # the first upgrade of each tree can be bought straight away; the rest are locked
