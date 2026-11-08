@@ -244,8 +244,8 @@ def build_body(coll):
     box(metal, (0, -0.04, -0.13), (0.045, 0.065, 0.14), Matrix.Rotation(math.radians(-18), 3, "X"))  # grip
     box(metal, (0, 0.02, -0.095), (0.012, 0.08, 0.01))                     # trigger guard
     box(light, (0, 0.012, -0.08), (0.008, 0.012, 0.03))                    # trigger
-    tube(copper, (0, -0.21, -0.01), (0, -0.16, -0.01), 0.058, 0.058, 14)   # coil pack
-    tube(copper, (0, -0.225, -0.01), (0, -0.208, -0.01), 0.062, 0.062, 14)   # the butt is all copper
+    tube(copper, (0, -0.21, AXIS_Z), (0, -0.16, AXIS_Z), 0.058, 0.058, 14)   # coil pack
+    tube(copper, (0, -0.225, AXIS_Z), (0, -0.208, AXIS_Z), 0.062, 0.062, 14)   # the butt is all copper
 
     # the orb sits high: a ring mount under it and three ribs over its right side, open on the left
     torus(light, ORB_CENTRE - v(0, 0, ORB_RADIUS * 0.55), (0, 0, 1), ORB_RADIUS * 0.85, 0.012, 18, 6)
