@@ -374,8 +374,12 @@ def paint_battle():
     # which is seen close up all the time, has none.
     dent_dark, dent_lip = (0.05, 0.0) if GAME_BAKE else (0.32, 0.14)     # no light crescents in the game: light marks are the rivets
     img = img * (1.0 - dents[..., None] * dent_dark) + lip[..., None] * dent_lip
-    heavy = gun_metal._scratches(SIZE, rng, 650)
-    img = steps(img, r, col(0.24, 0.25, 0.28), 0.6) + (scratch * 0.3 + heavy * (0.2 if GAME_BAKE else 0.28))[..., None]
+    if GAME_BAKE:
+        # As on the Doom shield this is modelled on: a handful of short, faint scuffs and nothing like a covering of scratches
+        marks = gun_metal._scratches(SIZE, rng, 16) * 0.16
+    else:
+        marks = scratch * 0.3 + gun_metal._scratches(SIZE, rng, 650) * 0.28
+    img = steps(img, r, col(0.24, 0.25, 0.28), 0.6) + marks[..., None]
     # scorching: soot, then the blue-purple a steel plate turns when it has been heated, round the edge
     heat = smooth(0.52, 0.80, gun_metal._fbm(SIZE, rng) + (r - 0.55) * 0.7) * smooth(0.45, 1.0, r)
     soot, soot_colour = (0.35, col(0.07, 0.07, 0.08)) if GAME_BAKE else (0.8, col(0.035, 0.035, 0.04))
