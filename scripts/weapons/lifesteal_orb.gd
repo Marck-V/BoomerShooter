@@ -2,11 +2,23 @@ extends Area3D
 
 @export var overshield_amount := 8    # overshield the orb gives when it is shot (above full health, it decays)
 @export var lifespan := 3.0
-@export var rise_speed := 2.0
 @export var fade_time := 0.5
+@export var burst_time := 0.4          # seconds it takes to fly out to its spot
+@export var min_distance := 1.2        # its spot is somewhere in a sphere round the enemy, between these distances
+@export var max_distance := 2.3
+@export var clearance := 0.5           # how far it keeps off walls and the floor
+@export var bob_height := 0.07
+
+const WORLD_MASK := 2   # Environment: walls, floors and ceilings
+
+var anchor := Vector3.ZERO        # the middle of the sphere (the enemy's chest); left unset, where the orb appears
+var has_anchor := false
 
 var age := 0.0
 var collected := false
+var start_point := Vector3.ZERO
+var rest_point := Vector3.ZERO
+var started := false
 
 
 # The orb is the same blue as the enemies' blood: it uses the blood's own colours
@@ -82,14 +94,57 @@ func _add_drips() -> void:
 
 
 func _process(delta: float) -> void:
+	# Its position is only set after it enters the tree, so the spot is picked on the first frame
+	if not started:
+		started = true
+		start_point = global_position
+		rest_point = _pick_spot(anchor if has_anchor else start_point)
 	age += delta
-	global_position.y += rise_speed * delta
+	if age < burst_time:
+		# Bursts out from the enemy, fast at first and settling into its spot
+		var k := 1.0 - pow(1.0 - age / burst_time, 3.0)
+		global_position = start_point.lerp(rest_point, k)
+	else:
+		# Then hangs there, bobbing gently
+		global_position = rest_point + Vector3(0.0, sin(age * 5.0) * bob_height, 0.0)
 
 	var remaining := lifespan - age
 	if remaining <= 0.0:
 		queue_free()
 	elif remaining <= fade_time:
 		scale = Vector3.ONE * (remaining / fade_time)
+
+
+# A random spot in a sphere round `center` that is clear of walls and the floor: each try is a random direction and
+# distance, the line out from the centre is cut short where it meets the level (keeping `clearance` off the surface), and
+# a spot that ends up too close to the centre, or with the floor right under it, is dropped for another try
+func _pick_spot(center: Vector3) -> Vector3:
+	var space := get_world_3d().direct_space_state
+	for attempt in 10:
+		var direction := Vector3(randfn(0.0, 1.0), randfn(0.0, 1.0), randfn(0.0, 1.0)).normalized()
+		var spot := center + direction * randf_range(min_distance, max_distance)
+		var out := PhysicsRayQueryParameters3D.create(center, spot, WORLD_MASK)
+		var hit := space.intersect_ray(out)
+		if not hit.is_empty():
+			spot = hit["position"] + hit["normal"] * clearance
+			if spot.distance_to(center) < min_distance * 0.6:
+				continue
+		# Keep off the floor and the ceiling at the spot itself
+		var down := space.intersect_ray(PhysicsRayQueryParameters3D.create(spot, spot + Vector3.DOWN * clearance, WORLD_MASK))
+		if not down.is_empty():
+			spot.y = down["position"].y + clearance
+		var up := space.intersect_ray(PhysicsRayQueryParameters3D.create(spot, spot + Vector3.UP * clearance, WORLD_MASK))
+		if not up.is_empty():
+			continue
+		# The way from the orb's start to the spot must be clear too (the lift above can have moved it)
+		if not space.intersect_ray(PhysicsRayQueryParameters3D.create(center, spot, WORLD_MASK)).is_empty():
+			continue
+		return spot
+	# Nowhere good found (a tight corner): float just above the enemy if that is clear, otherwise stay put
+	var above := center + Vector3.UP * min_distance
+	if space.intersect_ray(PhysicsRayQueryParameters3D.create(center, above + Vector3.UP * clearance, WORLD_MASK)).is_empty():
+		return above
+	return start_point
 
 
 func damage(_amount = 0, _multiplier = 1.0) -> void:

@@ -27,6 +27,7 @@ const CHARGE_GLOW_RAMP := 0.12        # seconds for the glow to come up when a P
 const CHARGE_GLOW_BLINK_TIME := 0.9   # the glow blinks for this long before the window runs out
 @onready var weapon_mesh: MeshInstance3D = $WeaponMesh
 var charge_glow_material: ShaderMaterial
+var charge_fx: PistolChargeFx
 var charge_glow_on := false
 var charge_glow_tween: Tween
 
@@ -49,6 +50,10 @@ func _ready() -> void:
 	charge_glow_material = ShaderMaterial.new()
 	charge_glow_material.shader = CHARGE_GLOW_SHADER
 	charge_glow_material.set_shader_parameter("intensity", 0.0)
+	# The energy inside the muzzle (core, sparks, light), a little way back inside the barrel
+	charge_fx = PistolChargeFx.new()
+	charge_fx.position = Vector3(0.0, 0.0, -0.012)
+	$MuzzleLocation.add_child(charge_fx)
 
 
 # While a Parry Round is ready the top of the barrel glows white, blinking as the window runs out
@@ -73,6 +78,7 @@ func _process(delta: float) -> void:
 
 func _set_charge_glow(value: float) -> void:
 	charge_glow_material.set_shader_parameter("intensity", value)
+	charge_fx.set_strength(value)
 
 
 func _on_parry_landed() -> void:
@@ -139,6 +145,10 @@ func _spawn_malware_orb(raycast: RayCast3D) -> void:
 
 	var orb = malware_orb_scene.instantiate()
 	orb.overshield_amount = overshield_amount
+	var enemy = get_hit_enemy(collider)
+	if enemy is Node3D:
+		orb.anchor = enemy.global_position + Vector3.UP * 1.0     # it flies out to a spot round the enemy's chest
+		orb.has_anchor = true
 	get_tree().current_scene.add_child(orb)
 	orb.global_position = raycast.get_collision_point() + Vector3.UP * 0.5
 
