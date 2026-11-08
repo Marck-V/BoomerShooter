@@ -1,17 +1,37 @@
 extends BaseWeapon
 
 # --- Upgrades ---
-var refund = "pistol_ammo_refund"
+# 1 Dead Eye:      critical hits (heads, exposed weak points) do extra damage and refund ammo
+# 2 Piercing Shot: shots pierce through enemies; after a successful parry the next shot is a Parry Round: double damage
+# 3 Malware:       hits sometimes drop an orb; shooting it gives a decaying overshield above full health
+var dead_eye = "pistol_dead_eye"
 var piercing = "pistol_piercing"
-var lifesteal = "pistol_lifesteal"
+var malware = "pistol_lifesteal"      # (the id predates the rework; kept so saves still match)
 
-var has_ammo_refund = false
+var has_dead_eye = false
 var has_piercing = false
-var has_lifesteal = false
+var has_malware = false
 
-var refund_chance = 0.10
-var health_amount = 5
-var lifesteal_orb_scene = preload("res://scenes/weapons/lifesteal_orb.tscn")
+const DEAD_EYE_DAMAGE := 1.5           # extra on top of the hurtbox's own critical multiplier
+const DEAD_EYE_REFUND := 2             # ammo back per critical hit
+const DEAD_EYE_SOUND := "assets/audio/sfx/weapons/reload.mp3"
+const PARRY_ROUND_WINDOW := 4.0        # seconds after a parry that the next shot is a Parry Round
+const PARRY_ROUND_DAMAGE := 2.0
+const PARRY_ROUND_SOUND := "assets/audio/sfx/impacts/metal_axe_hit.mp3"
+const MALWARE_CHANCE := 0.20
+var overshield_amount := 8
+var malware_orb_scene = preload("res://scenes/weapons/lifesteal_orb.tscn")
+
+const CHARGE_GLOW_SHADER: Shader = preload("res://shaders/player/pistol_charge_glow.gdshader")
+const CHARGE_GLOW_RAMP := 0.12        # seconds for the glow to come up when a Parry Round becomes ready
+const CHARGE_GLOW_BLINK_TIME := 0.9   # the glow blinks for this long before the window runs out
+@onready var weapon_mesh: MeshInstance3D = $WeaponMesh
+var charge_glow_material: ShaderMaterial
+var charge_glow_on := false
+var charge_glow_tween: Tween
+
+var parry_round_until := 0           # ticks (msec) until which the next shot is a Parry Round
+var shot_scale := 1.0                # damage scale of the shot being fired (the Parry Round's double)
 
 var max_pierces = 3
 var max_distance = 300.0
@@ -25,27 +45,90 @@ var recoil_tween: Tween
 func _ready() -> void:
 	super._ready()
 	_refresh_upgrades()
+	GlobalVariables.parry_landed.connect(_on_parry_landed)
+	charge_glow_material = ShaderMaterial.new()
+	charge_glow_material.shader = CHARGE_GLOW_SHADER
+	charge_glow_material.set_shader_parameter("intensity", 0.0)
+
+
+# While a Parry Round is ready the top of the barrel glows white, blinking as the window runs out
+func _process(delta: float) -> void:
+	super(delta)
+	var msec_left := parry_round_until - Time.get_ticks_msec()
+	var ready := has_piercing and msec_left > 0
+	if ready != charge_glow_on:
+		charge_glow_on = ready
+		if charge_glow_tween:
+			charge_glow_tween.kill()
+		if ready:
+			weapon_mesh.material_overlay = charge_glow_material
+			charge_glow_tween = create_tween()
+			charge_glow_tween.tween_method(_set_charge_glow, 0.0, 1.0, CHARGE_GLOW_RAMP)
+		else:
+			weapon_mesh.material_overlay = null
+			_set_charge_glow(0.0)
+	if ready and msec_left < CHARGE_GLOW_BLINK_TIME * 1000.0:
+		_set_charge_glow(0.35 + 0.65 * (0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.03)))
+
+
+func _set_charge_glow(value: float) -> void:
+	charge_glow_material.set_shader_parameter("intensity", value)
+
+
+func _on_parry_landed() -> void:
+	if has_piercing:
+		parry_round_until = Time.get_ticks_msec() + int(PARRY_ROUND_WINDOW * 1000.0)
+
 
 func fire(origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayCast3D) -> bool:
+	var parry_round := has_piercing and Time.get_ticks_msec() < parry_round_until
+	shot_scale = PARRY_ROUND_DAMAGE if parry_round else 1.0
 	# An empty click is only the sound: no recoil or upgrades
-	if not super.fire(origin, _direction, camera, raycast):
+	var went_off := super.fire(origin, _direction, camera, raycast)
+	if not went_off:
+		shot_scale = 1.0
 		return false
 
 	_play_recoil()
 
+	if parry_round:
+		parry_round_until = 0
+		Audio.play(PARRY_ROUND_SOUND, 1.4)
+		var player = GlobalVariables.player
+		if player and is_instance_valid(player):
+			player.add_camera_shake(0.1)
+
 	if has_piercing:
 		_do_piercing_hits(camera, raycast)
+	shot_scale = 1.0
 
-	if has_ammo_refund and randf() < refund_chance:
-		GlobalVariables.add_ammo("pistol", 10)
-		Audio.play("assets/audio/sfx/weapons/reload.mp3")
-		print("Pistol Ammo Refunded")
-	
-	if has_lifesteal and randf() < 0.20:
-		_spawn_lifesteal_orb(raycast)
+	if has_malware and randf() < MALWARE_CHANCE:
+		_spawn_malware_orb(raycast)
 	return true
 
-func _spawn_lifesteal_orb(raycast: RayCast3D) -> void:
+
+# Every hit of a shot goes through here for its damage: the Parry Round's double, and Dead Eye's bonus on critical hits
+func damage_hit(collider: Object, amount: float, point: Vector3) -> void:
+	super.damage_hit(collider, _shot_damage(collider, amount), point)
+
+
+func _shot_damage(collider: Object, amount: float) -> float:
+	amount *= shot_scale
+	if has_dead_eye and _is_critical(collider):
+		amount *= DEAD_EYE_DAMAGE
+		GlobalVariables.add_ammo("pistol", DEAD_EYE_REFUND)
+		Audio.play(DEAD_EYE_SOUND, 1.5)
+	return amount
+
+
+# Heads, necks and exposed weak points are hurtboxes with a damage multiplier above 1; a shield in the way is not one
+func _is_critical(collider: Object) -> bool:
+	if not collider is Node or is_shield_hit(collider):
+		return false
+	return "multiplier" in collider and collider.multiplier > 1.0
+
+
+func _spawn_malware_orb(raycast: RayCast3D) -> void:
 	if not raycast.is_colliding():
 		return
 
@@ -54,16 +137,16 @@ func _spawn_lifesteal_orb(raycast: RayCast3D) -> void:
 	if not hit_enemy:
 		return
 
-	var orb = lifesteal_orb_scene.instantiate()
-	orb.heal_amount = health_amount
+	var orb = malware_orb_scene.instantiate()
+	orb.overshield_amount = overshield_amount
 	get_tree().current_scene.add_child(orb)
 	orb.global_position = raycast.get_collision_point() + Vector3.UP * 0.5
 
 
 func _refresh_upgrades() -> void:
-	has_ammo_refund = GlobalVariables.has_upgrade(refund)
+	has_dead_eye = GlobalVariables.has_upgrade(dead_eye)
 	has_piercing = GlobalVariables.has_upgrade(piercing)
-	has_lifesteal = GlobalVariables.has_upgrade(lifesteal)
+	has_malware = GlobalVariables.has_upgrade(malware)
 
 
 # Recoil Animation
@@ -140,7 +223,7 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 		var hit_key = hit_enemy if hit_enemy else target
 		if not damaged.has(hit_key):
 			flash_hit_enemy(target, result["position"])
-			target.damage(data.damage)
+			target.damage(_shot_damage(collider, data.damage))
 			damaged.append(hit_key)
 			hits += 1
 

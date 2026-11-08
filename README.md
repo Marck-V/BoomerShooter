@@ -13,7 +13,7 @@ movement-first combat in levels built with TrenchBroom.
   balls, flyers, dodgers that vanish and sidestep, and shielded variants. Wave triggers spawn enemies when you
   enter a room.
 - **Boss:** a boss fight in an arena, with shockwaves, floor hazards and a charge attack.
-- **Feedback:** hit flashes, flinches, blood and impact particles, lifesteal orbs, and glowing pickups.
+- **Feedback:** hit flashes, flinches, blood and impact particles, overshield orbs, and glowing pickups.
 
 ## Status
 

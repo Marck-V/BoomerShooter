@@ -5,7 +5,7 @@ class_name PlayerData
 @export var points: int = 0
 
 @export var upgrades: Dictionary = {
-	"pistol_ammo_refund": false,
+	"pistol_dead_eye": false,
 	"pistol_piercing": false,
 	"pistol_lifesteal": false,
 

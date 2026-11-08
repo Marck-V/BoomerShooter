@@ -68,9 +68,9 @@ offset_left = 164.0
 offset_top = 52.0
 offset_right = 284.0
 offset_bottom = 80.0
-text = "Ammo Refund"
-upgrade_id = "pistol_ammo_refund"
-description = "Each pistol shot has a 10% chance to refund 10 ammo."
+text = "Dead Eye"
+upgrade_id = "pistol_dead_eye"
+description = "Critical hits (headshots and exposed weak points) deal 50% more damage and refund 2 ammo."
 
 [node name="PistolButton2" parent="Panel/TabContainer/Pistol/PistolButton1" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
@@ -79,7 +79,7 @@ offset_right = 120.0
 offset_bottom = 196.66
 text = "Piercing Shot"
 upgrade_id = "pistol_piercing"
-description = "Pistol shots pierce through enemies, hitting up to 3 more targets in line for full damage."
+description = "Pistol shots pierce through enemies, hitting up to 3 more targets in line for full damage. After a successful parry, your next shot within 4 seconds is a Parry Round that deals double damage."
 
 [node name="PistolButton3" parent="Panel/TabContainer/Pistol/PistolButton1/PistolButton2" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
@@ -88,7 +88,7 @@ offset_right = 120.0
 offset_bottom = 219.34
 text = "Malware"
 upgrade_id = "pistol_lifesteal"
-description = "Hitting an enemy has a 20% chance to drop a health orb. Shoot the orb within 3 seconds to heal 5 health."
+description = "Hitting an enemy has a 20% chance to drop an orb. Shoot the orb within 3 seconds to gain an 8 point overshield on top of your health (max 30). It soaks damage first and fades after 4 seconds."
 
 [node name="Shotgun" type="Control" parent="Panel/TabContainer"]
 visible = false

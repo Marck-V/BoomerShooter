@@ -31,6 +31,7 @@ signal upgrades_reset
 signal quickness_active
 signal quickness_ended
 signal exit_upgrade_menu
+signal parry_landed                 # the shield caught a projectile or a blow: the pistol's Parry Round listens
 
 signal enemy_died(enemy: Node3D)
 signal enemy_hit(enemy: Node3D, headshot: bool, killed: bool)   # damage the player should feel: drives the hit marker

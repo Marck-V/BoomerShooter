@@ -46,6 +46,12 @@ var rotation_target: Vector3
 var input_mouse: Vector2
 
 var health:int = 100
+# Overshield (the pistol's Malware): extra points on top of health that soak damage first, then fade away
+const OVERSHIELD_MAX := 30.0
+const OVERSHIELD_HOLD := 4.0      # seconds it lasts at full strength after the last gain
+const OVERSHIELD_DECAY := 3.0     # per second after that
+var overshield := 0.0
+var overshield_hold_left := 0.0
 var cannot_die := false   # test room god mode: hits still land and lower health, but it stops at 1
 var gravity := 0.0
 var previously_floored := false
@@ -180,6 +186,7 @@ func _ready():
 	weapon_changed.emit(current_weapon)
 
 func _physics_process(delta):
+	_decay_overshield(delta)
 	handle_controls(delta)
 	handle_gravity(delta)
 
@@ -743,6 +750,24 @@ func _on_enemy_died_heal(enemy: Node3D) -> void:
 	KillHealPack.spawn(get_tree(), point, self, amount, homing)
 
 
+func add_overshield(amount: float) -> void:
+	overshield = minf(overshield + amount, OVERSHIELD_MAX)
+	overshield_hold_left = OVERSHIELD_HOLD
+	health_updated.emit(health)
+
+
+func _decay_overshield(delta: float) -> void:
+	if overshield <= 0.0:
+		return
+	if overshield_hold_left > 0.0:
+		overshield_hold_left -= delta
+		return
+	var before := ceili(overshield)
+	overshield = maxf(overshield - OVERSHIELD_DECAY * delta, 0.0)
+	if ceili(overshield) != before:
+		health_updated.emit(health)
+
+
 func play_heal_flash() -> void:
 	if heal_flash_material == null:
 		return
@@ -783,6 +808,11 @@ func apply_push(impulse: Vector3) -> void:
 func damage(amount, melee := false, source = null):
 	if shield_blocking:
 		amount *= BLOCK_MELEE_DAMAGE_MULTIPLIER if melee else BLOCK_DAMAGE_MULTIPLIER
+	# The overshield takes the hit first
+	if overshield > 0.0:
+		var absorbed := minf(overshield, float(amount))
+		overshield -= absorbed
+		amount -= absorbed
 	health -= amount
 	if cannot_die:
 		health = maxi(health, 1)

@@ -445,6 +445,7 @@ func _parry_feedback(point: Vector3) -> void:
 	hand_scale_kick = 0.35
 	_parry_impact_effects(point)
 	parry_succeeded = true
+	GlobalVariables.parry_landed.emit()
 	strike_hold = maxf(strike_hold, PARRY_SUCCESS_HOLD)
 	_set_state(State.RECOVER, parry_success_cooldown)
 

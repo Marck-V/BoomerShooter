@@ -1,6 +1,6 @@
 extends Area3D
 
-@export var heal_amount := 5
+@export var overshield_amount := 8    # overshield the orb gives when it is shot (above full health, it decays)
 @export var lifespan := 3.0
 @export var rise_speed := 2.0
 @export var fade_time := 0.5
@@ -96,8 +96,8 @@ func damage(_amount = 0, _multiplier = 1.0) -> void:
 	if collected:
 		return
 	collected = true
-	GlobalVariables.add_health(heal_amount)
 	var player := get_tree().get_first_node_in_group("Player")
-	if player and player.has_method("play_heal_flash"):
+	if player and player.has_method("add_overshield"):
+		player.add_overshield(overshield_amount)
 		player.play_heal_flash()
 	queue_free()

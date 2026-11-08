@@ -76,8 +76,8 @@ offset_left = 576.0
 offset_top = 139.0
 offset_right = 704.0
 offset_bottom = 267.0
-tooltip_text = "Ammo Refund"
-upgrade_id = "pistol_ammo_refund"
+tooltip_text = "Dead Eye"
+upgrade_id = "pistol_dead_eye"
 
 [node name="PistolButton2" parent="Pistol/PistolButton1" instance=ExtResource("1_e3qxy")]
 layout_mode = 0
@@ -90,7 +90,7 @@ upgrade_id = "pistol_piercing"
 layout_mode = 0
 offset_top = 210.175
 offset_bottom = 338.175
-tooltip_text = "Lifesteal on kills"
+tooltip_text = "Malware"
 upgrade_id = "pistol_lifesteal"
 
 [node name="Shotgun" type="Control" parent="."]
