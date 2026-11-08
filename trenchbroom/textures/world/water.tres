@@ -1,7 +1,41 @@
-[gd_resource type="ShaderMaterial" load_steps=2 format=3]
+[gd_resource type="ShaderMaterial" format=4 uid="uid://d1ixag2tf1bad"]
 
-[ext_resource type="Shader" path="res://shaders/environment/water_floor.gdshader" id="1_water"]
+[ext_resource type="Shader" uid="uid://ce62j5oldd1a6" path="res://shaders/environment/water_floor.gdshader" id="1_water"]
+[ext_resource type="Texture2D" uid="uid://hnhm13ltepy4" path="res://trenchbroom/textures/world/water_caustics.png" id="2_water"]
+
+[sub_resource type="FastNoiseLite" id="FastNoiseLite_waves"]
+frequency = 0.02
+
+[sub_resource type="NoiseTexture2D" id="NoiseTexture2D_waves"]
+noise = SubResource("FastNoiseLite_waves")
+seamless = true
 
 [resource]
 render_priority = 0
 shader = ExtResource("1_water")
+shader_parameter/albedo = Color(0.5, 0.65, 0.95, 1)
+shader_parameter/water_texture1 = ExtResource("2_water")
+shader_parameter/water_texture2 = ExtResource("2_water")
+shader_parameter/noise_texture = SubResource("NoiseTexture2D_waves")
+shader_parameter/scroll_speed1 = Vector2(0.015, 0.001)
+shader_parameter/scroll_speed2 = Vector2(-0.015, -0.02)
+shader_parameter/blend_factor = 0.27
+shader_parameter/scale1 = Vector2(0.12, 0.12)
+shader_parameter/scale2 = Vector2(0.2, 0.2)
+shader_parameter/wave_strength = 0.2
+shader_parameter/wave_scale = 0.02
+shader_parameter/pixelation_level = 256
+shader_parameter/FoamSize = 0.1
+shader_parameter/WaterOpacity = 1.0
+shader_parameter/FoamGlowIntensity = 1.0
+shader_parameter/touch_ripples = PackedVector4Array(0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+shader_parameter/ripple_speed = 9.0
+shader_parameter/ripple_wavelength = 2.4
+shader_parameter/ripple_train = 14.0
+shader_parameter/ripple_color = Color(0.55, 1, 1, 1)
+shader_parameter/ripple_bend = 1.1
+shader_parameter/ripple_push = 0.03
+shader_parameter/ripple_glow = 0.35
+shader_parameter/swell_strength = 0.0
+shader_parameter/line_color = Color(0.25, 0.9, 1, 1)
+shader_parameter/line_glow = 0.0
