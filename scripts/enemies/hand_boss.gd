@@ -101,9 +101,9 @@ enum Ease { SMOOTH, IN, OUT, LINEAR }
 @export var spoke_beats := 5                # sets of spokes in a row
 @export var spoke_warn := 1.0               # a set of spokes fills this long before it ignites
 @export var spoke_beat := 1.4               # seconds from one set's ignition to the next
-@export var spoke_burn := 1.0               # how long a set burns
+@export var spoke_burn := 0.25              # the longest the fire stays dangerous: it is a flash, not a lingering fire, and it is out before the next warning shows
 @export var spoke_half_angle := 18.0        # degrees: each spoke is twice this wide, with a quarter turn between them
-@export var spoke_surge_speed := 60.0       # m/s the fire surges out along a spoke
+@export var spoke_surge_speed := 60.0       # m/s the fire surges out along a spoke (at least; it is raised so the flash reaches the edge of the arena inside its burn time)
 @export var spoke_height := 9.0             # metres above the water the wrist hangs
 
 @export_category("Crush")
@@ -1215,8 +1215,8 @@ func _mortar_transform() -> Transform3D:
 # of energy under it (sparks stream in, the floor under it and the four wedges that are about to burn fill up in red);
 # then the hand springs open, a beam of energy shoots down from the palm onto the floor, and the fire spreads out from
 # where it lands along the four wedges, a quarter turn apart. Each wedge is a wall of fire (the same columns the robot
-# boss's floor hazard raises) that surges out and burns for a moment, hurting anyone on the ground inside it; jumping
-# clears a tick. Then the hand turns and clenches again for a different four. Every other set is aimed so that one
+# boss's floor hazard raises) that flashes out along the red slice in an instant and hits anyone on the ground inside it
+# once; jumping clears it. It does not linger. Then the hand turns and clenches again for a different four. Every other set is aimed so that one
 # wedge lands on wherever the player is standing, so there is no spot to camp in and no edge to retreat to: the safe
 # ground is always between the spokes, and it moves.
 #
@@ -1231,6 +1231,8 @@ const SPOKE_GLOW_LOW := 0.45
 const SPOKE_GLOW_HIGH := 1.1
 const SPOKE_BEAM_RADIUS := 1.5
 const SPOKE_BEAM_TIME := 0.12               # the beam reaches the floor this long after the hand opens, then the fire spreads
+const SPOKE_CLEAR_GAP := 0.05               # a set's fire is out this long before the next set's warning shows
+const SPOKE_MIN_BURN := 0.1
 const BEAM_SHADER: Shader = preload("res://shaders/boss/boss_hazard_beam.gdshader")
 
 
@@ -1255,7 +1257,11 @@ func _attack_spokes() -> void:
 		return
 	var sets: Array[Dictionary] = []
 	for i in spoke_beats:
-		sets.append({"time": warn + beat * float(i), "state": 0, "aimed": i % 2 == 0, "angles": [], "teles": []})
+		sets.append({"time": warn + beat * float(i), "state": 0, "aimed": i % 2 == 0, "angles": [], "teles": [], "burn": spoke_burn})
+	# The red slices are the only danger: standing on one when it fires costs a hit, and the fire is gone before the next
+	# set's warning shows, so nothing unmarked ever hurts (the next warning shows `warn` before its strike)
+	for i in sets.size() - 1:
+		sets[i].burn = clampf(beat - warn - SPOKE_BEAM_TIME - SPOKE_CLEAR_GAP, SPOKE_MIN_BURN, spoke_burn)
 	var last_offset := [angle_of_player]
 	var roll := [0.0]
 	var total: float = sets[sets.size() - 1].time + SPOKE_BEAM_TIME + 0.8
@@ -1310,7 +1316,9 @@ func _attack_spokes() -> void:
 				for i in 4:
 					set_data.teles[i].finish(0.12)
 					var angle: float = set_data.angles[i]
-					BossBeamSector.spawn(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half, spoke_damage, spoke_burn, spoke_surge_speed)
+					# The flash has to reach the edge of the arena well inside its burn time, so it is a sudden hit along the whole slice
+					var surge := maxf(spoke_surge_speed, radius / (set_data.burn * 0.8))
+					BossBeamSector.spawn(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half, spoke_damage, set_data.burn, surge)
 				WaterRipple.spawn(get_tree(), center, 0.9, 6.0)
 				BossDust.spawn(get_tree(), center, 1.0)
 				ImpactParticles.spawn(get_tree(), center + Vector3.UP * 0.3, Vector3.UP, 2.4)

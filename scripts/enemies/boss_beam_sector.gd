@@ -2,16 +2,16 @@ extends Node3D
 class_name BossBeamSector
 
 # A wedge of fire that shoots up out of the floor, like the columns the robot boss's floor hazard raises
-# (boss_floor_hazard.gd, same shader): it surges outward from the point it fans out from, burns for a moment, then
-# fades. Anyone on the ground inside the part that has reached them takes damage again and again while it burns;
-# jumping clears a tick (feet higher than CLEARANCE).
+# (boss_floor_hazard.gd, same shader): it flashes outward from the point it fans out from, then fades. It is a hit,
+# not a lingering fire: anyone on the ground inside the part that has reached them takes the damage once. Standing
+# on the marked slice when it fires is what costs health, so a player who is in the air (feet higher than CLEARANCE)
+# as the flash passes is missed, but still hit on landing if the flash is still burning and they are inside.
 #   BossBeamSector.spawn(tree, center, direction, radius, half_angle, tick_damage, burn_time, surge_speed)
 
 const BEAM_SHADER: Shader = preload("res://shaders/boss/boss_hazard_beam.gdshader")
 const HEIGHT := 14.0
 const CLEARANCE := 0.8
-const TICK_TIME := 0.4
-const FADE_TIME := 0.3
+const FADE_TIME := 0.18
 const ARC_STEPS := 8
 
 var center := Vector3.ZERO
@@ -22,7 +22,7 @@ var damage := 14.0
 var burn_time := 1.0
 var surge_speed := 60.0
 var elapsed := 0.0
-var tick_left := 0.0
+var hit_players := {}        # instance ids of the players this wedge has already hit: once each
 var finishing := false
 var material: ShaderMaterial
 
@@ -45,7 +45,10 @@ func _ready() -> void:
 	material.shader = BEAM_SHADER
 	material.set_shader_parameter("height", HEIGHT)
 	material.set_shader_parameter("radius", 0.01)      # the camera fade is done by `inside` instead (see _update_inside)
-	material.set_shader_parameter("flash", 0.8)
+	material.set_shader_parameter("flash", 0.4)
+	# A deeper red than the shader's orange: the bright version washes out against the floor, and the wedge has to read
+	material.set_shader_parameter("beam_color", Color(0.72, 0.05, 0.02))
+	material.set_shader_parameter("core_color", Color(1.0, 0.4, 0.16))
 	material.set_shader_parameter("streaks", 5.0)
 	material.set_shader_parameter("intensity", 0.22)   # a wedge is much bigger than a tile, so its walls stack up on screen: keep them thin
 	var mesh_instance := MeshInstance3D.new()
@@ -93,17 +96,14 @@ func _is_inside(point: Vector3, front: float, margin := 0.0) -> bool:
 	return absf(angle_difference(angle, atan2(direction.x, direction.z))) <= half_angle + margin / maxf(distance, 1.0)
 
 
-func _hurt_players(delta: float, front: float) -> void:
-	tick_left -= delta
-	if tick_left > 0.0:
-		return
+func _hurt_players(_delta: float, front: float) -> void:
 	for node in get_tree().get_nodes_in_group("Player"):
 		var player := node as Node3D
-		if player == null or player.global_position.y - center.y > CLEARANCE:
+		if player == null or hit_players.has(player.get_instance_id()) or player.global_position.y - center.y > CLEARANCE:
 			continue
 		if not _is_inside(player.global_position, front):
 			continue
-		tick_left = TICK_TIME
+		hit_players[player.get_instance_id()] = true
 		if player.has_method("damage"):
 			player.damage(damage, false, center)
 		if player.has_method("apply_camera_kick"):
