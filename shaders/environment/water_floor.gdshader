@@ -2,11 +2,11 @@ shader_type spatial;
 render_mode specular_schlick_ggx;
 
 // The hand boss arena's floor: glossy water that mirrors the sky, with cyan streaks drifting across it and
-// slow magenta glints. Patterns come from world position, so it lines up across brushes whatever their UVs.
+// slow violet glints. Kept cool on purpose: the hand boss's attacks are drawn in red and orange on top of it. Patterns come from world position, so it lines up across brushes whatever their UVs.
 
 uniform vec3 deep_color : source_color = vec3(0.01, 0.10, 0.16);
 uniform vec3 streak_color : source_color = vec3(0.25, 0.95, 1.0);
-uniform vec3 glint_color : source_color = vec3(1.0, 0.35, 0.65);
+uniform vec3 glint_color : source_color = vec3(0.35, 0.45, 1.0);
 uniform float pattern_scale = 0.06;   // patterns per meter
 uniform float streak_stretch = 5.0;   // streaks are this much longer than they are wide
 uniform float flow_speed = 0.04;
@@ -63,8 +63,11 @@ void fragment() {
 	color = mix(color, glint_color, glint_mask * 0.5);
 	ALBEDO = color;
 	EMISSION = color * glow * (0.4 + streak_mask);
-	METALLIC = 0.55;
-	ROUGHNESS = mix(0.04, 0.22, streak_mask);
+	// Barely reflective: the sky here is a sunset, and mirrored in the ripples it turned the whole floor into noisy
+	// red and orange that hid the hand boss's warnings. The streaks and ripple rings carry the look instead.
+	METALLIC = 0.0;
+	SPECULAR = 0.08;
+	ROUGHNESS = mix(0.5, 0.7, streak_mask);
 
 	// Bumps from the ripple pattern's slope
 	float e = 0.02;
