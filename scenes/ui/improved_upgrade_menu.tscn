@@ -151,13 +151,33 @@ visible = false
 layout_mode = 2
 metadata/_tab_index = 3
 
-[node name="NoUpgradesLabel" type="Label" parent="Panel/TabContainer/Flamethrower"]
+[node name="FlamethrowerButton1" parent="Panel/TabContainer/Flamethrower" instance=ExtResource("2_0fsr2")]
 layout_mode = 0
 offset_left = 164.0
 offset_top = 52.0
-offset_right = 560.0
-offset_bottom = 78.0
-text = "No upgrades for the flamethrower yet."
+offset_right = 284.0
+offset_bottom = 80.0
+text = "Pressure"
+upgrade_id = "flamethrower_pressure"
+description = "Holding the flame builds pressure over 2.5 seconds. At full pressure the flame reaches 50% farther and wider, deals 60% more damage, builds burn stacks 50% faster and burns blue-white. Letting go drains it."
+
+[node name="FlamethrowerButton2" parent="Panel/TabContainer/Flamethrower/FlamethrowerButton1" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_top = 168.66
+offset_right = 120.0
+offset_bottom = 196.66
+text = "Accelerant"
+upgrade_id = "flamethrower_accelerant"
+description = "Burning enemies take 25% more damage from every other weapon. Set them alight, then finish them with the shotgun or pistol."
+
+[node name="FlamethrowerButton3" parent="Panel/TabContainer/Flamethrower/FlamethrowerButton1/FlamethrowerButton2" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_top = 191.34
+offset_right = 120.0
+offset_bottom = 219.34
+text = "Backdraft"
+upgrade_id = "flamethrower_backdraft"
+description = "Let go of the flame after holding it for 1.5 seconds or more and it vents: a blast of fire throws enemies in front of you back, hurts them and adds burn stacks. The longer you held, the bigger it is."
 
 [node name="Lightning Gun" type="Control" parent="Panel/TabContainer"]
 visible = false

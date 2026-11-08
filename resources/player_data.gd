@@ -9,6 +9,10 @@ class_name PlayerData
 	"pistol_piercing": false,
 	"pistol_lifesteal": false,
 
+	"flamethrower_pressure": false,
+	"flamethrower_accelerant": false,
+	"flamethrower_backdraft": false,
+
 	"shotgun_precision": false,
 	"shotgun_shield_break": false,
 	"shotgun_glitch_shot": false,

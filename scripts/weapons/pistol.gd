@@ -60,19 +60,19 @@ func _ready() -> void:
 func _process(delta: float) -> void:
 	super(delta)
 	var msec_left := parry_round_until - Time.get_ticks_msec()
-	var ready := has_piercing and msec_left > 0
-	if ready != charge_glow_on:
-		charge_glow_on = ready
+	var round_ready := has_piercing and msec_left > 0
+	if round_ready != charge_glow_on:
+		charge_glow_on = round_ready
 		if charge_glow_tween:
 			charge_glow_tween.kill()
-		if ready:
+		if round_ready:
 			weapon_mesh.material_overlay = charge_glow_material
 			charge_glow_tween = create_tween()
 			charge_glow_tween.tween_method(_set_charge_glow, 0.0, 1.0, CHARGE_GLOW_RAMP)
 		else:
 			weapon_mesh.material_overlay = null
 			_set_charge_glow(0.0)
-	if ready and msec_left < CHARGE_GLOW_BLINK_TIME * 1000.0:
+	if round_ready and msec_left < CHARGE_GLOW_BLINK_TIME * 1000.0:
 		_set_charge_glow(0.35 + 0.65 * (0.5 + 0.5 * sin(Time.get_ticks_msec() * 0.03)))
 
 

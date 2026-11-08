@@ -307,6 +307,10 @@ func damage(amount: float, multiplier: float = 1.0):
 	if destroyed:
 		return
 	var dmg := amount * multiplier
+	# Accelerant (flamethrower upgrade): a burning enemy takes extra from every other weapon. The flame, the burn and the
+	# fire blasts all deal their damage silently, so they don't get the bonus themselves.
+	if not silent_damage and _is_accelerated():
+		dmg *= ACCELERANT_MULTIPLIER
 	var shielded := shield != null and is_instance_valid(shield)
 	if shield:
 		dmg = shield.absorb_damage(dmg)
@@ -327,6 +331,16 @@ func damage_silently(amount: float) -> void:
 	silent_damage = true
 	damage(amount)
 	silent_damage = false
+
+
+const ACCELERANT_MULTIPLIER := 1.25
+
+
+func _is_accelerated() -> bool:
+	if not GlobalVariables.has_upgrade("flamethrower_accelerant"):
+		return false
+	var burning := get_node_or_null("Burning")
+	return burning != null and burning.get("extinguished") == false
 
 
 # A shield answers hits with its own clang, so only a hit that reaches the body gets the marker

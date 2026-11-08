@@ -11,6 +11,18 @@ const LIGHT_FLICKER_FPS := 12.0
 const NORMAL_HEIGHT := 1.75       # a normal enemy's height. Bigger enemies get more, bigger flames from it.
 const MAX_FIRE_AMOUNT := 110
 
+# Burn stacks: every hit of flame adds some. Reaching BLAST_STACKS makes the enemy blow up in a fireball that damages
+# and sets fire to everything round it, which then builds its own stacks (the blast gives some at once), so a crowd
+# goes up like a chain. Stacks fade if the flame leaves the enemy for a moment.
+const BLAST_STACKS := 10.0
+const STACK_HOLD := 1.0           # seconds the stacks stay put after the last gain before they start to fade
+const STACK_DECAY := 2.0          # stacks lost per second after that
+const BLAST_COOLDOWN := 1.2       # seconds before the same enemy can blow up again
+const BLAST_RADIUS := 3.6
+const BLAST_DAMAGE := 18.0        # to everything else in the radius, less towards the edge
+const BLAST_SELF_DAMAGE := 20.0   # to the enemy that blows up
+const BLAST_STACKS_GIVEN := 6.0   # stacks handed to everything the blast reaches
+
 var enemy: Node3D
 var time_left := 0.0
 var damage_per_second := 0.0
@@ -21,6 +33,11 @@ var light: OmniLight3D
 var flicker_timer := 0.0
 var extinguished := false
 var light_scale := 1.0
+var stacks := 0.0
+var stack_hold_left := 0.0
+var blast_ready_msec := 0
+var fire_base_amount := 0
+var embers_base_amount := 0
 
 
 func _ready() -> void:
@@ -52,6 +69,7 @@ func _ready() -> void:
 	})
 	fire.position.y = height * 0.5
 	add_child(fire)
+	fire_base_amount = fire.amount
 
 	# Square sparks drifting up off the fire
 	embers = FlameParticles.make_emitter({
@@ -69,6 +87,7 @@ func _ready() -> void:
 	})
 	embers.position.y = height * 0.5
 	add_child(embers)
+	embers_base_amount = embers.amount
 
 	light_scale = size_scale
 	light = OmniLight3D.new()
@@ -82,15 +101,49 @@ func _ready() -> void:
 	embers.emitting = true
 
 
+# Sets an enemy on fire (or refreshes its burn) and adds burn stacks to it. A live shield keeps the fire off.
+static func apply(target: Node3D, duration: float, dps: float, add_stacks := 0.0) -> void:
+	if target == null or not is_instance_valid(target):
+		return
+	var shield = target.get("shield")
+	if shield != null and is_instance_valid(shield):
+		return
+	if target.get("destroyed") == true or target.get("invulnerable") == true:
+		return
+	var burning = target.get_node_or_null("Burning")
+	if burning == null:
+		burning = (load("res://scripts/enemies/burning.gd") as GDScript).new()
+		burning.name = "Burning"
+		target.add_child(burning)
+	burning.ignite(duration, dps, add_stacks)
+
+
 # Called while the flame is on the enemy; keeps it burning and keeps the strongest burn
-func ignite(duration: float, dps: float) -> void:
+func ignite(duration: float, dps: float, add_stacks := 0.0) -> void:
 	time_left = maxf(time_left, duration)
 	damage_per_second = maxf(damage_per_second, dps)
 	if extinguished:
 		extinguished = false
+		stacks = 0.0
 		fire.emitting = true
 		embers.emitting = true
 		light.visible = true
+	if add_stacks > 0.0:
+		stacks += add_stacks
+		stack_hold_left = STACK_HOLD
+		if stacks >= BLAST_STACKS and Time.get_ticks_msec() >= blast_ready_msec:
+			_blow_up()
+
+
+# The enemy goes up in a fireball: everything round it takes damage and starts burning with stacks of its own
+func _blow_up() -> void:
+	blast_ready_msec = Time.get_ticks_msec() + int(BLAST_COOLDOWN * 1000.0)
+	stacks = 0.0
+	var half_height: float = enemy.body_size().y * 0.5 if enemy.has_method("body_size") else 0.9
+	var chest: Vector3 = enemy.global_position + Vector3.UP * half_height
+	FireBlast.explode(get_tree(), chest, BLAST_RADIUS, BLAST_DAMAGE, BLAST_STACKS_GIVEN, enemy)
+	if is_instance_valid(enemy) and enemy.has_method("damage_silently"):
+		enemy.damage_silently(BLAST_SELF_DAMAGE)
 
 
 func _process(delta: float) -> void:
@@ -98,10 +151,21 @@ func _process(delta: float) -> void:
 		_extinguish()
 		return
 
+	# Stacks fade once the flame has been off the enemy for a moment
+	if stack_hold_left > 0.0:
+		stack_hold_left -= delta
+	elif stacks > 0.0:
+		stacks = maxf(stacks - STACK_DECAY * delta, 0.0)
+
+	# The fire grows and the light swells and whitens as the stacks near the blast, so it reads as about to go off
+	var charge := clampf(stacks / BLAST_STACKS, 0.0, 1.0)
 	flicker_timer -= delta
 	if flicker_timer <= 0.0:
 		flicker_timer = 1.0 / LIGHT_FLICKER_FPS
-		light.light_energy = 0.0 if extinguished else randf_range(2.2, 3.8) * light_scale
+		light.light_energy = 0.0 if extinguished else randf_range(2.2, 3.8) * light_scale * (1.0 + charge * 1.2)
+		light.light_color = Color(1.0, 0.55, 0.15).lerp(Color(1.0, 0.92, 0.7), charge * charge)
+		fire.amount_ratio = lerpf(0.55, 1.0, charge)
+		embers.amount_ratio = lerpf(0.5, 1.0, charge)
 
 	if extinguished:
 		return
@@ -120,6 +184,7 @@ func _extinguish() -> void:
 	if extinguished:
 		return
 	extinguished = true
+	stacks = 0.0
 	damage_per_second = 0.0
 	fire.emitting = false
 	embers.emitting = false

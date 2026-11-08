@@ -11,6 +11,33 @@ const CONE_SPREAD := 0.17         # extra meters of width per meter of distance
 const NORMAL_BODY_RADIUS := 0.35  # the cone's width already allows for a body this wide; only wider ones add to it
 const BURN_DURATION := 3.0        # seconds an enemy keeps burning after the flame leaves it
 const BURN_DPS := 6.0             # damage per second while burning
+const STACKS_PER_TICK := 0.8      # burn stacks each hit of flame adds; at 10 the enemy blows up (see enemies/burning.gd)
+
+# --- Upgrades ---
+# 1 Pressure:   holding the flame builds pressure: longer, wider, hotter, and the stacks come faster
+# 2 Accelerant: burning enemies take extra damage from every other weapon (applied in EnemyBase.damage)
+# 3 Backdraft:  letting go after a long burn vents a blast that throws enemies back and sets them alight
+var pressure_id = "flamethrower_pressure"
+var backdraft_id = "flamethrower_backdraft"
+var has_pressure := false
+var has_backdraft := false
+
+const PRESSURE_BUILD_TIME := 2.5  # seconds of continuous fire to reach full pressure
+const PRESSURE_DECAY := 3.0       # pressure lost per second once the flame is out
+const PRESSURE_RANGE := 1.5       # range, cone width, damage and stacks, times this at full pressure
+const PRESSURE_WIDTH := 1.35
+const PRESSURE_DAMAGE := 1.6
+const PRESSURE_STACKS := 1.5
+const PRESSURE_SHAKE := 0.03      # camera rattle per tick at full pressure
+
+const BACKDRAFT_MIN_HOLD := 1.5   # seconds of fire before letting go vents
+const BACKDRAFT_MAX_HOLD := 4.0   # held this long it is as big as it gets
+const BACKDRAFT_RANGE := 10.0     # metres at full strength
+const BACKDRAFT_HALF_ANGLE := 38.0
+const BACKDRAFT_DAMAGE := 22.0
+const BACKDRAFT_STACKS := 5.0
+const BACKDRAFT_PUSH := 3.5       # metres past where the enemy stood that it is thrown, at full strength
+const BACKDRAFT_SOUND := "assets/audio/sfx/impacts/Balloon Explosion B.wav"
 
 # Flame audio. The clip is a quiet lead-in, an ignition swell, a steady burn, a second flare, more steady
 # burn and then the ending. Firing starts it just before the ignition, repeats a steady stretch of the burn
@@ -32,6 +59,10 @@ var flame: Node3D
 var last_fire_msec := -10000
 var tick_count := 0
 var out_of_fuel := false
+var pressure := 0.0               # 0..1, built by holding the flame (with the Pressure upgrade)
+var hold_time := 0.0              # seconds the flame has been held without a break
+var was_burning := false
+var fire_camera: Camera3D
 
 var sound_state := SoundState.IDLE
 var sound_players: Array[AudioStreamPlayer] = []
@@ -42,6 +73,7 @@ var sound_tail_tween: Tween
 
 func _ready() -> void:
 	super._ready()
+	_refresh_upgrades()
 	flame = FlameEffect.new()
 	muzzle_location.add_child(flame)
 	_filter_model_nearest()
@@ -163,11 +195,32 @@ func _filter_model_nearest() -> void:
 			mesh_instance.set_surface_override_material(i, copy)
 
 
+func _refresh_upgrades() -> void:
+	has_pressure = GlobalVariables.has_upgrade(pressure_id)
+	has_backdraft = GlobalVariables.has_upgrade(backdraft_id)
+	if not has_pressure:
+		pressure = 0.0
+
+
 func _process(delta: float) -> void:
 	super._process(delta)
 	var burning := (Time.get_ticks_msec() - last_fire_msec) < FLAME_LINGER * 1000.0
 	flame.set_burning(burning)
 	_update_sound(burning)
+
+	if burning:
+		hold_time += delta
+		if has_pressure:
+			pressure = minf(pressure + delta / PRESSURE_BUILD_TIME, 1.0)
+	else:
+		# Let go: a long enough burn vents (Backdraft), and the pressure drains away
+		if was_burning and has_backdraft and hold_time - FLAME_LINGER >= BACKDRAFT_MIN_HOLD:
+			_vent(hold_time - FLAME_LINGER)
+			pressure = 0.0
+		hold_time = 0.0
+		pressure = maxf(pressure - PRESSURE_DECAY * delta, 0.0)
+	was_burning = burning
+	flame.set_pressure(pressure)
 
 
 func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, _raycast: RayCast3D) -> bool:
@@ -184,7 +237,12 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, _raycast: Ray
 	out_of_fuel = false
 	tick_count += 1
 	last_fire_msec = Time.get_ticks_msec()
+	fire_camera = camera
 	trigger_recoil()
+	if pressure > 0.0:
+		var player = GlobalVariables.player
+		if player and is_instance_valid(player):
+			player.add_camera_shake(PRESSURE_SHAKE * pressure)
 
 	_burn_enemies_in_cone(camera)
 	return true
@@ -195,6 +253,11 @@ func _burn_enemies_in_cone(camera: Camera3D) -> void:
 	var origin := camera.global_position
 	var forward := -camera.global_basis.z
 	var space := camera.get_world_3d().direct_space_state
+	# Pressure stretches the flame, widens it and makes each tick hit harder and stack faster
+	var reach := data.max_distance * lerpf(1.0, PRESSURE_RANGE, pressure)
+	var width := lerpf(1.0, PRESSURE_WIDTH, pressure)
+	var tick_damage := data.damage * lerpf(1.0, PRESSURE_DAMAGE, pressure)
+	var tick_stacks := STACKS_PER_TICK * lerpf(1.0, PRESSURE_STACKS, pressure)
 
 	for candidate in get_tree().get_nodes_in_group("Enemy"):
 		var enemy := candidate as Node3D
@@ -204,34 +267,54 @@ func _burn_enemies_in_cone(camera: Camera3D) -> void:
 		# The nearest point of the enemy's body to the flame's centre line, so a tall enemy burns wherever it's aimed at
 		var body: Vector2 = enemy.body_size() if enemy.has_method("body_size") else Vector2(NORMAL_BODY_RADIUS, 1.75)
 		var feet := enemy.global_position
-		var closest := Geometry3D.get_closest_points_between_segments(feet, feet + Vector3.UP * body.y, origin, origin + forward * data.max_distance)
+		var closest := Geometry3D.get_closest_points_between_segments(feet, feet + Vector3.UP * body.y, origin, origin + forward * reach)
 		var target: Vector3 = closest[0]
 		var to_target := target - origin
 		var along := to_target.dot(forward)
-		if along < 0.0 or along > data.max_distance:
+		if along < 0.0 or along > reach:
 			continue
 		var off_axis := (to_target - forward * along).length() - maxf(body.x - NORMAL_BODY_RADIUS, 0.0)
-		if off_axis > CONE_BASE_RADIUS + along * CONE_SPREAD:
+		if off_axis > (CONE_BASE_RADIUS + along * CONE_SPREAD) * width:
 			continue
 
 		var query := PhysicsRayQueryParameters3D.create(origin, target, WORLD_MASK)
 		if not space.intersect_ray(query).is_empty():
 			continue
 
-		enemy.damage_silently(data.damage)   # a tick every 0.1 s would drown out the hit marker
-		_ignite(enemy)
+		enemy.damage_silently(tick_damage)   # a tick every 0.1 s would drown out the hit marker
+		Burning.apply(enemy, BURN_DURATION, BURN_DPS, tick_stacks)   # a live shield keeps the fire off
 
 
-# Sets the enemy on fire (or refreshes its burn). A live shield keeps the fire off.
-func _ignite(enemy: Node3D) -> void:
-	var shield = enemy.get("shield")
-	if shield != null and is_instance_valid(shield):
+# Backdraft: the flame was held a good while and then let go, so it vents. A blast of fire out of the nozzle throws
+# everything in the cone back, hurts it and sets it alight; the longer the flame was held, the bigger it is.
+func _vent(held: float) -> void:
+	var strength := clampf(inverse_lerp(BACKDRAFT_MIN_HOLD, BACKDRAFT_MAX_HOLD, held), 0.0, 1.0)
+	var power := lerpf(0.55, 1.0, strength)
+	flame.vent(power)
+	Audio.play(BACKDRAFT_SOUND, 0.55)
+	var player = GlobalVariables.player
+	if player and is_instance_valid(player):
+		player.add_camera_shake(lerpf(0.2, 0.45, strength))
+	if fire_camera == null or not is_instance_valid(fire_camera):
 		return
-	if enemy.get("destroyed") == true or enemy.get("invulnerable") == true:
-		return
-	var burning = enemy.get_node_or_null("Burning")
-	if burning == null:
-		burning = Burning.new()
-		burning.name = "Burning"
-		enemy.add_child(burning)
-	burning.ignite(BURN_DURATION, BURN_DPS)
+
+	var origin := fire_camera.global_position
+	var forward := -fire_camera.global_basis.z
+	var reach := BACKDRAFT_RANGE * lerpf(0.7, 1.0, strength)
+	var space := fire_camera.get_world_3d().direct_space_state
+	for candidate in get_tree().get_nodes_in_group("Enemy"):
+		var enemy := candidate as Node3D
+		if enemy == null or not enemy.has_method("damage_silently") or enemy.get("destroyed") == true:
+			continue
+		var body: Vector2 = enemy.body_size() if enemy.has_method("body_size") else Vector2(NORMAL_BODY_RADIUS, 1.75)
+		var chest := enemy.global_position + Vector3.UP * body.y * 0.5
+		var to_chest := chest - origin
+		var distance := to_chest.length()
+		if distance > reach or rad_to_deg(forward.angle_to(to_chest)) > BACKDRAFT_HALF_ANGLE:
+			continue
+		if not space.intersect_ray(PhysicsRayQueryParameters3D.create(origin, chest, WORLD_MASK)).is_empty():
+			continue
+		enemy.damage_silently(BACKDRAFT_DAMAGE * power)
+		Burning.apply(enemy, BURN_DURATION, BURN_DPS, BACKDRAFT_STACKS * power)
+		if is_instance_valid(enemy) and enemy.has_method("shove_from"):
+			enemy.shove_from(origin, distance + BACKDRAFT_PUSH * power)

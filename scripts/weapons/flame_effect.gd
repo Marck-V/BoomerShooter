@@ -20,6 +20,16 @@ var burning := false
 var flicker_timer := 0.0
 var light_level := 0.0
 
+# Pressure (flamethrower upgrade): the stream gets longer, bigger and whiter-blue the more pressure it has built
+const PRESSURE_SPEED := 1.45          # the stream's speed, times this at full pressure
+const PRESSURE_SIZE := 1.35
+const PRESSURE_TINT := Color(0.78, 0.95, 1.5)   # multiplies the flame's colours: hotter, bluer
+const PRESSURE_LIGHT := 0.6           # extra light at full pressure
+var pressure := -1.0
+var base_speeds := {}
+var vent_burst: GPUParticles3D        # Backdraft: a big one-off blast out of the nozzle
+var vent_flash := 0.0
+
 
 func _ready() -> void:
 	var texture := FlameParticles.make_texture()
@@ -103,9 +113,31 @@ func _ready() -> void:
 	pilot.local_coords = true
 	pilot.emitting = true
 
+	# Backdraft's blast: a thick burst of white-hot fire thrown far out of the nozzle all at once
+	vent_burst = FlameParticles.make_emitter({
+		"amount": 90, "lifetime": 0.5, "texture": texture, "additive": true,
+		"brightness": FlameParticles.HOT_BRIGHTNESS,
+		"size": 0.75, "speed": Vector2(20.0, 30.0), "damping": Vector2(2.5, 4.0),
+		"spread": 26.0, "gravity": Vector3(0, 0.8, 0), "fade_near": true,
+		"scale_curve": [Vector2(0.0, 0.3), Vector2(0.3, 1.1), Vector2(1.0, 0.7)],
+		"colors": [
+			[0.0, Color(1.0, 1.0, 0.9, 0.7)],
+			[0.3, Color(1.0, 0.8, 0.4, 0.6)],
+			[0.6, Color(1.0, 0.45, 0.15, 0.55)],
+			[0.85, Color(0.7, 0.15, 0.05, 0.35)],
+		],
+	})
+	vent_burst.one_shot = true
+	vent_burst.explosiveness = 0.9
+
 	# Drawn back to front: smoke behind, flame over it, then the bright bits on top
-	for emitter in [smoke, licks, flame, flare, embers, pilot]:
+	for emitter in [smoke, licks, flame, vent_burst, flare, embers, pilot]:
 		add_child(emitter)
+
+	base_speeds = {
+		flame: Vector2(13.0, 17.0),
+		licks: Vector2(7.0, 11.0),
+	}
 
 	# Lights along the stream so the room, floor and enemies pick up the glow
 	for setup in [[0.9, 6.0, 7.0], [3.2, 9.0, 11.0], [6.0, 6.0, 11.0]]:
@@ -133,12 +165,42 @@ func set_burning(on: bool) -> void:
 	pilot.visible = not on
 
 
+func set_pressure(value: float) -> void:
+	value = clampf(value, 0.0, 1.0)
+	if absf(value - pressure) < 0.015 and not (value == 0.0 and pressure != 0.0):
+		return
+	pressure = value
+	for emitter: GPUParticles3D in [flame, licks]:
+		var process := emitter.process_material as ParticleProcessMaterial
+		var speeds: Vector2 = base_speeds[emitter]
+		process.initial_velocity_min = speeds.x * lerpf(1.0, PRESSURE_SPEED, value)
+		process.initial_velocity_max = speeds.y * lerpf(1.0, PRESSURE_SPEED, value)
+		process.scale_min = lerpf(1.0, PRESSURE_SIZE, value)
+		process.scale_max = lerpf(1.0, PRESSURE_SIZE, value)
+		var material := (emitter.draw_pass_1 as QuadMesh).material as StandardMaterial3D
+		var tint := Color.WHITE.lerp(PRESSURE_TINT, value)
+		material.albedo_color = Color(tint.r, tint.g, tint.b)
+
+
+# Backdraft: the held flame is let go and vents. strength 0..1 sizes the blast
+func vent(strength: float) -> void:
+	var process := vent_burst.process_material as ParticleProcessMaterial
+	process.initial_velocity_min = lerpf(14.0, 20.0, strength)
+	process.initial_velocity_max = lerpf(20.0, 30.0, strength)
+	vent_burst.amount = int(lerpf(60.0, 110.0, strength))
+	vent_burst.restart()
+	vent_burst.emitting = true
+	vent_flash = 1.0
+
+
 func _process(delta: float) -> void:
 	# Light flickers in steps instead of smoothly
 	flicker_timer -= delta
 	if flicker_timer <= 0.0:
 		flicker_timer = 1.0 / LIGHT_FLICKER_FPS
 		light_level = randf_range(0.65, 1.0) if burning else 0.0
+	vent_flash = maxf(vent_flash - delta * 5.0, 0.0)
+	var level := maxf(light_level, vent_flash)
 	for i in lights.size():
-		lights[i].light_energy = light_energies[i] * light_level
-		lights[i].visible = light_level > 0.01
+		lights[i].light_energy = light_energies[i] * level * (1.0 + PRESSURE_LIGHT * maxf(pressure, 0.0) + vent_flash * 1.5)
+		lights[i].visible = level > 0.01
