@@ -35,7 +35,6 @@ var parry_round_until := 0           # ticks (msec) until which the next shot is
 var shot_scale := 1.0                # damage scale of the shot being fired (the Parry Round's double)
 
 var max_pierces = 3
-var max_distance = 300.0
 
 # --- Recoil Animation Parameters ---
 var recoil_angle := -32.0     # How far up the pistol tilts

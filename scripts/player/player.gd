@@ -122,6 +122,14 @@ var grapple_best_distance := INF
 var grapple_stuck_time := 0.0
 
 const DAMAGE_FLASH_SHADER: Shader = preload("res://shaders/player/damage_flash.gdshader")
+const SPEED_LINES_SHADER: Shader = preload("res://shaders/player/speed_lines.gdshader")
+const SPEED_LINES_DASH := 0.85        # how strong the lines get during a dash and a slam (1 is full)
+const SPEED_LINES_SLAM := 1.0
+const SPEED_LINES_IN := 24.0          # intensity gained per second as they come on...
+const SPEED_LINES_OUT := 5.0          # ...and lost as they fade
+var speed_lines_material: ShaderMaterial
+var speed_lines_rect: ColorRect
+var speed_lines_intensity := 0.0
 const OFFHAND_SHIELD = preload("res://scripts/player/offhand_shield.gd")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 var damage_flash_material: ShaderMaterial
@@ -177,6 +185,7 @@ func _ready():
 	_setup_damage_flash()
 	_setup_heal_flash()
 	_setup_fall_fade()
+	_setup_speed_lines()
 	# The shield is a node in the player scene (Head/Camera/OffhandShield) so its held pose can be edited there
 	offhand_shield = camera.get_node_or_null("OffhandShield")
 	if offhand_shield == null:
@@ -186,6 +195,7 @@ func _ready():
 	weapon_changed.emit(current_weapon)
 
 func _physics_process(delta):
+	_update_speed_lines(delta)
 	_decay_overshield(delta)
 	handle_controls(delta)
 	handle_gravity(delta)
@@ -352,6 +362,39 @@ func _setup_fall_fade() -> void:
 	fall_fade.set_anchors_preset(Control.PRESET_FULL_RECT)
 	fall_fade.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(fall_fade)
+
+
+# Speed lines over the screen (under the HUD) while dashing (lines flying out from the middle) and during the ground
+# slam (cyan streaks rushing up the screen)
+func _setup_speed_lines() -> void:
+	var layer := CanvasLayer.new()
+	layer.layer = 0
+	add_child(layer)
+	speed_lines_material = ShaderMaterial.new()
+	speed_lines_material.shader = SPEED_LINES_SHADER
+	speed_lines_rect = ColorRect.new()
+	speed_lines_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	speed_lines_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	speed_lines_rect.material = speed_lines_material
+	speed_lines_rect.visible = false
+	layer.add_child(speed_lines_rect)
+
+
+func _update_speed_lines(delta: float) -> void:
+	var want := 0.0
+	if slamming:
+		want = SPEED_LINES_SLAM
+		speed_lines_material.set_shader_parameter("vertical", 1.0)
+	elif dashing:
+		want = SPEED_LINES_DASH
+		speed_lines_material.set_shader_parameter("vertical", 0.0)
+	var rate := SPEED_LINES_IN if want > speed_lines_intensity else SPEED_LINES_OUT
+	speed_lines_intensity = move_toward(speed_lines_intensity, want, rate * delta)
+	speed_lines_rect.visible = speed_lines_intensity > 0.01
+	if speed_lines_rect.visible:
+		var size := get_viewport().get_visible_rect().size
+		speed_lines_material.set_shader_parameter("aspect", size.x / maxf(size.y, 1.0))
+		speed_lines_material.set_shader_parameter("intensity", speed_lines_intensity)
 
 
 # Turns the player to face a world yaw, including the target the view eases towards
