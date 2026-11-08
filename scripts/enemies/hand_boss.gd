@@ -1203,23 +1203,27 @@ func _mortar_transform() -> Transform3D:
 	return Transform3D(hand_basis(Vector3.UP, to_player), spot)
 
 
-# The hand hangs palm-down over the middle of the arena and lights up wedges of the floor that fan out from under it
-# like spokes: four at a time, a quarter turn apart. Each wedge fills red, then ignites into a wall of fire (the same
-# columns the robot boss's floor hazard raises) that surges out along it and burns for a moment, hurting anyone on the
-# ground inside it; jumping clears a tick. Then the hand turns and lights a different four. Every other set is aimed
-# so that one wedge lands on wherever the player is standing, so there is no spot to camp in and no edge to retreat
-# to: the safe ground is always between the spokes, and it moves.
+# The hand hangs over the middle of the arena. Each set of spokes is: the hand clenches into a fist and gathers a ball
+# of energy under it (sparks stream in, the floor under it and the four wedges that are about to burn fill up in red);
+# then the hand springs open, a beam of energy shoots down from the palm onto the floor, and the fire spreads out from
+# where it lands along the four wedges, a quarter turn apart. Each wedge is a wall of fire (the same columns the robot
+# boss's floor hazard raises) that surges out and burns for a moment, hurting anyone on the ground inside it; jumping
+# clears a tick. Then the hand turns and clenches again for a different four. Every other set is aimed so that one
+# wedge lands on wherever the player is standing, so there is no spot to camp in and no edge to retreat to: the safe
+# ground is always between the spokes, and it moves.
 #
-# How the hand moves (clips from tools/assetgen/hand_boss.py): it rises clenched and trembling, then FanBloom snaps it
-# open into a fan. While a set charges, FanWave ripples through the fingers and the hand glows brighter; when the
-# fire ignites FanStrike slaps the fingers flat, the hand dips and flashes white-hot, and it turns to the next set
-# with its wrist rolling into the turn. FanClose curls it shut at the end.
-const SPOKE_DIP := 1.4                      # how far the hand bobs down as a set ignites
+# How the hand moves (clips from tools/assetgen/hand_boss.py): Clench and FistTremble for the charge, FanBloom springs
+# it open as the beam fires, FanStrike slaps the fingers flat, and the wrist rolls into each turn. FanClose curls it
+# shut at the end.
+const SPOKE_DIP := 1.4                      # how far the hand bobs down as the beam fires
 const SPOKE_ROLL := 0.08                    # radians of wrist roll for each radian a second the hand turns
 const SPOKE_MAX_ROLL := 0.45
 const SPOKE_FLASH := Color(1.0, 0.95, 0.8)
 const SPOKE_GLOW_LOW := 0.45
 const SPOKE_GLOW_HIGH := 1.1
+const SPOKE_BEAM_RADIUS := 1.5
+const SPOKE_BEAM_TIME := 0.12               # the beam reaches the floor this long after the hand opens, then the fire spreads
+const BEAM_SHADER: Shader = preload("res://shaders/boss/boss_hazard_beam.gdshader")
 
 
 func _attack_spokes() -> void:
@@ -1241,27 +1245,21 @@ func _attack_spokes() -> void:
 		return
 	if not await glide(_spoke_transform(center, angle_of_player, height), 0.4 / speed()):
 		return
-	# Bloom: the fist snaps open into the fan with a white flash
-	pose("FanBloom", 0.05)
-	set_glow(SPOKE_FLASH, SPOKE_GLOW_HIGH, 0.05)
-	play_sfx(SFX_ROAR)
-	if not await wait(0.3):
-		return
-	set_glow(DANGER_GLOW, SPOKE_GLOW_LOW, 0.4)
-	pose("FanWave", 0.2)
 	var sets: Array[Dictionary] = []
 	for i in spoke_beats:
 		sets.append({"time": warn + beat * float(i), "state": 0, "aimed": i % 2 == 0, "angles": [], "teles": []})
 	var last_offset := [angle_of_player]
 	var roll := [0.0]
-	var total: float = sets[sets.size() - 1].time + 0.8
+	var total: float = sets[sets.size() - 1].time + SPOKE_BEAM_TIME + 0.8
 	var ok := await track(total, func(t: float, dt: float):
 		var dip := 0.0
 		for set_data in sets:
 			var strike: float = set_data.time
+			# 0 -> 1: the hand clenches and starts gathering energy; the floor shows where it will burn
 			if set_data.state == 0 and t >= strike - warn:
 				set_data.state = 1
-				pose("FanWave", 0.15)
+				pose("Clench", 0.15)
+				anim.queue("FistTremble")
 				glow_color = DANGER_GLOW
 				skin.set_shader_parameter("glow_color", DANGER_GLOW)
 				var offset: float = _spoke_angle(center, target_floor()) if set_data.aimed else last_offset[0] + deg_to_rad(randf_range(30.0, 60.0))
@@ -1271,28 +1269,49 @@ func _attack_spokes() -> void:
 					set_data.angles.append(angle)
 					set_data.teles.append(BossTelegraph.sector(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half))
 					action_fx.append(set_data.teles[quarter])
+				set_data.orb = HandChargeOrb.spawn(get_tree(), _fist_center())
+				action_fx.append(set_data.orb)
+				set_data.target = BossTelegraph.circle(get_tree(), center, SPOKE_BEAM_RADIUS * 2.2, DANGER_GLOW)
+				action_fx.append(set_data.target)
+				play_sfx(SFX_SHOOT)
+			# 1: charging
 			if set_data.state == 1:
+				var progress := clampf((t - (strike - warn)) / warn, 0.0, 1.0)
 				for tele in set_data.teles:
-					tele.set_progress(clampf((t - (strike - warn)) / warn, 0.0, 1.0))
+					tele.set_progress(progress)
+				set_data.target.set_progress(progress)
+				set_data.orb.global_position = _fist_center()      # stays inside the fist as the hand moves
+				set_data.orb.set_progress(progress)
 				var before: float = hand_angle[0]
 				hand_angle[0] = lerp_angle(hand_angle[0], _nearest_spoke(set_data.angles, hand_angle[0]), 1.0 - exp(-4.0 * dt))
 				roll[0] = lerpf(roll[0], clampf(angle_difference(before, hand_angle[0]) / dt * SPOKE_ROLL, -SPOKE_MAX_ROLL, SPOKE_MAX_ROLL), 1.0 - exp(-8.0 * dt))
-				_apply_glow(lerpf(SPOKE_GLOW_LOW, SPOKE_GLOW_HIGH, clampf((t - (strike - warn)) / warn, 0.0, 1.0)))
+				_apply_glow(lerpf(SPOKE_GLOW_LOW, SPOKE_GLOW_HIGH, progress))
 				if t >= strike:
+					# 1 -> 2: the hand springs open and a beam shoots down from the palm
 					set_data.state = 2
-					pose("FanStrike", 0.04)
-					for i in 4:
-						set_data.teles[i].finish(0.12)
-						var angle: float = set_data.angles[i]
-						BossBeamSector.spawn(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half, spoke_damage, spoke_burn, spoke_surge_speed)
-					WaterRipple.spawn(get_tree(), center, 0.8, 4.0)
-					BossDust.spawn(get_tree(), center, 1.0)
-					play_sfx(SFX_HIT)
-					rattle_player_camera(0.45)
-			if set_data.state == 2:
+					pose("FanBloom", 0.04)
+					set_data.orb.release()
+					set_data.target.finish(0.15)
+					_fire_spoke_beam(_fist_center(), center)
+					play_sfx(SFX_ROAR)
+					rattle_player_camera(0.3)
+			# 2: the beam is down; once it lands the fire spreads out from the spot
+			if set_data.state == 2 and t >= strike + SPOKE_BEAM_TIME:
+				set_data.state = 3
+				pose("FanStrike", 0.04)
+				for i in 4:
+					set_data.teles[i].finish(0.12)
+					var angle: float = set_data.angles[i]
+					BossBeamSector.spawn(get_tree(), center, Vector3(sin(angle), 0.0, cos(angle)), radius, half, spoke_damage, spoke_burn, spoke_surge_speed)
+				WaterRipple.spawn(get_tree(), center, 0.8, 4.0)
+				BossDust.spawn(get_tree(), center, 1.0)
+				ImpactParticles.spawn(get_tree(), center + Vector3.UP * 0.3, Vector3.UP, 2.4)
+				play_sfx(SFX_HIT)
+				rattle_player_camera(0.5)
+			if set_data.state >= 2:
 				var since: float = t - strike
-				dip = maxf(dip, SPOKE_DIP * sin(clampf(since / 0.3, 0.0, 1.0) * PI))
-				# White-hot as the fire goes off, cooling back to red
+				dip = maxf(dip, SPOKE_DIP * sin(clampf(since / 0.35, 0.0, 1.0) * PI))
+				# White-hot as it fires, cooling back to red
 				var cool := clampf(since / 0.5, 0.0, 1.0)
 				if set_data.time >= sets[sets.size() - 1].time or since < 0.4:
 					skin.set_shader_parameter("glow_color", SPOKE_FLASH.lerp(DANGER_GLOW, cool))
@@ -1306,6 +1325,49 @@ func _attack_spokes() -> void:
 	if not await wait(0.5):
 		return
 	await glide(hover_transform(), 0.8)
+
+
+# The middle of the clenched fist: between the wrist and the knuckles, a little below them (the palm faces down here)
+func _fist_center() -> Vector3:
+	var knuckles := (bone_head("index_2") + bone_head("middle_2") + bone_head("ring_2") + bone_head("pinky_2")) * 0.25
+	return (bone_head("hand") + knuckles) * 0.5 + Vector3.DOWN * 0.15 * hand_scale
+
+
+# A beam of energy from the palm straight down to the floor: it shoots down fast, burns for a moment, and fades.
+# Drawn with the same shader as the fire columns the robot boss raises, upside down so it is hottest at the palm.
+func _fire_spoke_beam(from: Vector3, floor_spot: Vector3) -> void:
+	var length := from.y - floor_spot.y
+	var cylinder := CylinderMesh.new()
+	cylinder.top_radius = SPOKE_BEAM_RADIUS
+	cylinder.bottom_radius = SPOKE_BEAM_RADIUS
+	cylinder.height = length
+	cylinder.radial_segments = 20
+	cylinder.rings = 1
+	cylinder.cap_top = false
+	cylinder.cap_bottom = false
+	var material := ShaderMaterial.new()
+	material.shader = BEAM_SHADER
+	material.set_shader_parameter("height", length)
+	material.set_shader_parameter("radius", SPOKE_BEAM_RADIUS)
+	material.set_shader_parameter("intensity", 1.6)
+	material.set_shader_parameter("flash", 1.5)
+	material.set_shader_parameter("rise_speed", -3.0)      # the streaks run down the beam
+	var pivot := Node3D.new()
+	get_tree().current_scene.add_child(pivot)
+	pivot.global_position = from
+	var beam := MeshInstance3D.new()
+	beam.mesh = cylinder
+	beam.material_override = material
+	beam.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	beam.rotation_degrees.x = 180.0            # upside down: the shader's hot end is at the palm
+	beam.position.y = -length * 0.5
+	pivot.add_child(beam)
+	pivot.scale = Vector3(1.0, 0.04, 1.0)
+	var tween := pivot.create_tween()
+	tween.tween_property(pivot, "scale:y", 1.0, SPOKE_BEAM_TIME)          # shoots down from the palm
+	tween.tween_interval(0.25)
+	tween.tween_method(func(v: float): material.set_shader_parameter("fade", v), 1.0, 0.0, 0.3)
+	tween.tween_callback(pivot.queue_free)
 
 
 func _any_charging(sets: Array[Dictionary]) -> bool:
