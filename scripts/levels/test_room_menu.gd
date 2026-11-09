@@ -33,6 +33,8 @@ func _switches() -> Array:
 	return [
 		["Freeze enemies", func(): return room.frozen, func(on: bool): room.set_frozen(on)],
 		["Shielded spawns", func(): return room.spawn_shielded, func(on: bool): room.set_spawn_shielded(on)],
+		["Story profile", func(): return GlobalVariables.profile == GlobalVariables.STORY,
+				func(on: bool): GlobalVariables.set_profile(GlobalVariables.STORY if on else GlobalVariables.DEV)],
 	]
 
 

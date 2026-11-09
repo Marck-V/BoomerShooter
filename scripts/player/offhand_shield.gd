@@ -144,6 +144,8 @@ var gun_tuck := 0.0   # 0 = gun where it belongs, 1 = tucked out of the raised s
 const FlashShader: Shader = preload("res://shaders/player/damage_flash.gdshader")
 const HIT_STOP_TIME := 0.06          # real seconds the game is frozen on a successful parry
 const HIT_STOP_SCALE := 0.04
+const SLOW_MO_TIME := 0.8            # real seconds of slow motion after the freeze, easing back to full speed
+const SLOW_MO_SCALE := 0.15         # game speed when the slow motion starts
 const FOV_PUNCH := 7.0               # degrees the FOV snaps out by
 const FOV_PUNCH_TIME := 0.22
 const RING_TIME := 0.3
@@ -219,6 +221,12 @@ func _refresh_upgrades() -> void:
 
 
 func _process(delta: float) -> void:
+	# Until the story hands the shield over it isn't there: no model, no parry, no throw
+	var owned := GlobalVariables.is_unlocked("shield")
+	if visible != owned:
+		visible = owned
+	if not owned:
+		return
 	# The streak fades if no parry lands for a while (not while the shield is out carrying it)
 	if parry_streak > 0:
 		streak_time_left -= delta
@@ -601,7 +609,7 @@ func _exit_tree() -> void:
 
 
 func _parry_impact_effects(point: Vector3) -> void:
-	GameManager.hit_stop(HIT_STOP_TIME, HIT_STOP_SCALE)
+	GameManager.hit_stop(HIT_STOP_TIME, HIT_STOP_SCALE, SLOW_MO_TIME, SLOW_MO_SCALE)
 	_fov_punch()
 	_edge_flash()
 	_parry_ring()

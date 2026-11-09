@@ -181,6 +181,8 @@ func _ready():
 	GlobalVariables.current_weapon = current_weapon.data.weapon_id
 	GlobalVariables.player = self
 	GlobalVariables.enemy_died.connect(_on_enemy_died_heal)
+	GlobalVariables.unlocks_changed.connect(_on_unlocks_changed)
+	_on_unlocks_changed()
 	psx_material.set_shader_parameter("effect_strength", GlobalVariables.psx_strength)
 	psx_material.set_shader_parameter("vignette_strength", GlobalVariables.vignette_strength)
 	_setup_damage_flash()
@@ -713,7 +715,7 @@ func action_weapon_toggle():
 		if previous_weapon_index >= 0 and previous_weapon_index < weapon_nodes.size() and previous_weapon_index != weapon_index:
 			change_weapon(previous_weapon_index)
 		else:
-			change_weapon((weapon_index + 1) % weapon_nodes.size())
+			change_weapon(_next_unlocked_weapon())
 
 	if Input.is_action_just_pressed("weapon_1") and weapon_nodes.size() >= 1:
 		change_weapon(0)
@@ -726,8 +728,30 @@ func action_weapon_toggle():
 	if Input.is_action_just_pressed("weapon_5") and weapon_nodes.size() >= 5:
 		change_weapon(4)
 
+func _weapon_unlocked(index: int) -> bool:
+	return index >= 0 and index < weapon_nodes.size() and GlobalVariables.is_unlocked(weapon_nodes[index].data.weapon_id)
+
+
+# The next weapon along the row that the player has (the one in hand if there is no other)
+func _next_unlocked_weapon() -> int:
+	for step in range(1, weapon_nodes.size()):
+		var index := (weapon_index + step) % weapon_nodes.size()
+		if _weapon_unlocked(index):
+			return index
+	return weapon_index
+
+
+# A weapon taken away (a new profile) can't stay in hand: fall back to the first one the player has
+func _on_unlocks_changed() -> void:
+	if not _weapon_unlocked(weapon_index):
+		for index in weapon_nodes.size():
+			if _weapon_unlocked(index):
+				change_weapon(index, false)
+				return
+
+
 func change_weapon(index, play_sound := true):
-	if index == weapon_index or index < 0 or index >= weapon_nodes.size():
+	if index == weapon_index or index < 0 or index >= weapon_nodes.size() or not _weapon_unlocked(index):
 		return
 
 	# Disable currently equipped weapon

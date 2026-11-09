@@ -56,6 +56,9 @@ func _ready():
 		button.mouse_entered.connect(_on_button_hovered.bind(button))
 		button.mouse_exited.connect(_on_button_unhovered.bind(button))
 
+	# A weapon (or the shield) the player hasn't been given yet has no tab
+	for id in weapon_nodes:
+		tab_container.set_tab_hidden(weapon_nodes[id].get_index(), not GlobalVariables.is_unlocked(id))
 	_open_current_weapon_tab()
 	_disable_purchased_upgrades()
 	_refresh_info()

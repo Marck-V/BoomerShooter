@@ -58,6 +58,7 @@ var props: Node3D                        # the windows and barrels in the corner
 
 
 func _ready() -> void:
+	GlobalVariables.set_profile(GlobalVariables.DEV)   # everything unlocked; the F1 menu can switch to the story profile
 	navigation.bake_navigation_mesh(false)
 	player.set("cannot_die", god_mode)
 	_last_health = player.get("health")

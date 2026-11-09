@@ -66,6 +66,13 @@ theme_override_fonts/font = ExtResource("3_x2yvf")
 theme_override_font_sizes/font_size = 32
 text = "Settings"
 
+[node name="ResetButton" type="Button" parent="ButtonsContainer"]
+layout_mode = 2
+theme = ExtResource("1_1g8jr")
+theme_override_fonts/font = ExtResource("3_x2yvf")
+theme_override_font_sizes/font_size = 32
+text = "Reset Story"
+
 [node name="QuitButton" type="Button" parent="ButtonsContainer"]
 layout_mode = 2
 theme = ExtResource("1_1g8jr")
@@ -96,6 +103,7 @@ cycle_length = 30.0
 
 [connection signal="pressed" from="ButtonsContainer/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="ButtonsContainer/ResetButton" to="." method="_on_reset_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/QuitButton" to="." method="_on_quit_button_pressed"]
 
 [editable path="SettingsMenu"]
