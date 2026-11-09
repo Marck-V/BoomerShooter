@@ -35,6 +35,7 @@ extends CharacterBody3D
 var weapon_nodes: Array[BaseWeapon] = []
 var current_weapon: BaseWeapon
 var weapon_index := 0
+var previous_weapon_index := -1     # the weapon held before this one (-1: none yet): what Q swaps back to
 
 var current_movement_speed = base_movement_speed
 var speed_multiplier := 1.0   # temporary boosts (the rifle's quickness), on top of walking or sliding speed
@@ -705,8 +706,14 @@ func add_camera_shake(trauma: float) -> void:
 	shake_trauma = minf(shake_trauma + trauma, 1.0)
 
 func action_weapon_toggle():
+	# Q swaps between the weapon in hand and the one held before it. Every switch, by any key, makes the weapon just put
+	# away the new "previous", so Q alternates between the last two weapons until something else is picked. With no
+	# previous weapon yet (nothing has been switched since the game started) it goes to the next one.
 	if Input.is_action_just_pressed("weapon_toggle"):
-		change_weapon((weapon_index + 1) % weapon_nodes.size())
+		if previous_weapon_index >= 0 and previous_weapon_index < weapon_nodes.size() and previous_weapon_index != weapon_index:
+			change_weapon(previous_weapon_index)
+		else:
+			change_weapon((weapon_index + 1) % weapon_nodes.size())
 
 	if Input.is_action_just_pressed("weapon_1") and weapon_nodes.size() >= 1:
 		change_weapon(0)
@@ -727,7 +734,8 @@ func change_weapon(index, play_sound := true):
 	weapon_nodes[weapon_index].visible = false
 	weapon_nodes[weapon_index].set_process(false)
 
-	# Activate weapon you are swapping to 
+	# Activate weapon you are swapping to (the one put away is what Q goes back to)
+	previous_weapon_index = weapon_index
 	weapon_index = index
 	current_weapon = weapon_nodes[weapon_index]
 	current_weapon.visible = true

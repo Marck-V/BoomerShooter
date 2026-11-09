@@ -64,6 +64,25 @@ const PARRY_SUCCESS_HOLD := 0.2                    # and this long after a parry
 const PARRY_RECOIL := 3.2                          # shove back into the player on a successful parry
 
 const WORLD_MASK := 2       # Environment
+# Keeping the held shield out of walls. It is held well in front of the camera, so close to a wall it would poke through.
+# Instead the whole shield is scaled towards the camera as one piece: this node (the shield's parent) sits at the camera's
+# origin, so scaling it scales the hand's position and its size together in a single transform. Everything about the
+# picture stays exactly the same (a thing at k times the distance and k times the size lands on the same pixels), so no
+# change of size or position can be seen, however fast it changes, but the shield becomes small enough to stay in front of
+# the wall. Several points round the shield are checked along their line of sight from the camera.
+# Shrinking can't be seen, so the margins are generous: the margin grows with the player's speed, so a dash into a wall
+# (and the render lagging the shield's scale by up to a physics tick) can never show it poking through.
+const WALL_MARGIN := 0.12            # metres kept between the shield and a wall
+const WALL_SPEED_MARGIN := 0.04      # plus this many seconds of the player's speed
+const WALL_MIN_SQUEEZE := 0.1        # the smallest it will shrink to: its nearest point is then still about 9 cm from the
+									 # camera, past the near plane (5 cm)
+const WALL_SQUEEZE_IN := 40.0        # how fast it shrinks as a wall comes close (fast, so it never shows clipping)
+const WALL_SQUEEZE_OUT := 12.0       # and how fast it grows back when the wall is gone
+const WALL_FRONT_DEPTH := 0.1        # how far the dome sticks out past the middle of the shield, in its own size
+const WALL_PROBES: Array[Vector3] = [
+	Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(-1, 0, 0), Vector3(0, 1, 0), Vector3(0, -1, 0),
+	Vector3(0.7, 0.7, 0), Vector3(-0.7, 0.7, 0), Vector3(0.7, -0.7, 0), Vector3(-0.7, -0.7, 0),
+]
 const HURTBOX_MASK := 8     # Enemy hurtboxes (shield hitboxes are on this layer too)
 const PARRY_COLOR := Color(0.4, 1.4, 2.4)
 const PARRY_YELLOW := Color(2.6, 1.9, 0.35)
@@ -157,6 +176,8 @@ var grapple_point: Node3D
 var rope: MeshInstance3D
 var flash := 0.0
 var previous_state := State.READY
+var wall_squeeze := 1.0                   # 1: the shield is full size; less: scaled down towards the camera to stay clear of a wall
+var avoid_walls := true
 
 
 func _ready() -> void:
@@ -347,6 +368,12 @@ func _animate_hand(delta: float) -> void:
 		if weapon and "bob_offset" in weapon:
 			target_pos += weapon.bob_offset * WALK_BOB_SCALE
 
+	# Close to a wall the whole shield is scaled towards the camera, as one piece, so it stays in front of it
+	var squeeze_target := _wall_squeeze(target_pos, target_rot, target_scale) if avoid_walls and state != State.THROWN else 1.0
+	var squeeze_rate := WALL_SQUEEZE_IN if squeeze_target < wall_squeeze else WALL_SQUEEZE_OUT
+	wall_squeeze = lerpf(wall_squeeze, squeeze_target, 1.0 - exp(-delta * squeeze_rate))
+	scale = Vector3.ONE * wall_squeeze      # this node's origin is the camera's: see WALL_MARGIN above
+
 	hand_scale_kick = lerpf(hand_scale_kick, 0.0, 1.0 - exp(-delta * 14.0))
 	var blend := 1.0 - exp(-delta * 20.0)
 	# Spring (slightly underdamped) so the shield overshoots when it slams into the parry pose
@@ -356,6 +383,37 @@ func _animate_hand(delta: float) -> void:
 	hand.rotation_degrees = hand.rotation_degrees.lerp(target_rot, blend)
 	hand.scale = hand.scale.lerp(Vector3.ONE * (target_scale + hand_scale_kick * 0.5), blend)
 	_tuck_gun(delta)
+
+
+# How much the held shield has to shrink towards the camera (1 = not at all) so that nothing of it reaches a wall: for
+# each of several points round it, a line from the camera through the point is checked for the level, and the shield is
+# scaled so that the point lands a margin in front of what the line hits. `pos`, `rot_degrees` and `size` are the
+# pose it is about to take (the camera's own space, -Z forward).
+func _wall_squeeze(pos: Vector3, rot_degrees: Vector3, size: float) -> float:
+	var space := get_world_3d().direct_space_state
+	var origin := camera.global_position
+	var radius := _hand_disc_radius() * size * 1.1
+	var exclude := PhysicsLayers.player_rids(get_tree())
+	# The shield is tilted in the hand, so its rim swings forward on one side: the points round it follow its own
+	# orientation (its disc lies in its local XY plane, the dome sticking out along -Z)
+	var tilt := Basis.from_euler(Vector3(deg_to_rad(rot_degrees.x), deg_to_rad(rot_degrees.y), deg_to_rad(rot_degrees.z)))
+	var player = GlobalVariables.player
+	var speed: float = player.velocity.length() if player and is_instance_valid(player) else 0.0
+	var margin: float = WALL_MARGIN + WALL_SPEED_MARGIN * speed
+	var squeeze := 1.0
+	for probe in WALL_PROBES:
+		var local := pos + tilt * (probe * radius + Vector3(0.0, 0.0, -WALL_FRONT_DEPTH * size))
+		var to_point := camera.global_transform * local - origin
+		var length := to_point.length()
+		if length < 0.01:
+			continue
+		var query := PhysicsRayQueryParameters3D.create(origin, origin + to_point / length * (length + margin), PhysicsLayers.SURFACE_MASK)
+		query.exclude = exclude
+		query.collide_with_areas = false
+		var hit := space.intersect_ray(query)
+		if not hit.is_empty():
+			squeeze = minf(squeeze, (origin.distance_to(hit["position"]) - margin) / length)
+	return clampf(squeeze, WALL_MIN_SQUEEZE, 1.0)
 
 
 # Moves the gun out of the shield's way while it is up in the middle of the screen, and back after
@@ -740,6 +798,9 @@ func _update_thrown(delta: float) -> void:
 		thrown_trail.empower = _trail_empower()
 	if flight_time > max_flight_time and phase != Phase.RETURN and phase != Phase.GRAPPLE:
 		phase = Phase.RETURN
+	# Recall: F again or right click while the shield is out brings it straight back
+	if phase != Phase.RETURN and (Input.is_action_just_pressed("throw_shield") or Input.is_action_just_pressed("parry")):
+		_recall()
 
 	match phase:
 		Phase.OUT:
@@ -750,6 +811,21 @@ func _update_thrown(delta: float) -> void:
 			_update_return(delta)
 		Phase.GRAPPLE:
 			_update_grapple()
+
+
+# Calls the thrown shield back to the hand from wherever it is, however far it has flown. If it is pulling the player
+# along a grapple they are let go first. A streak it is carrying is handed back when it is caught, as for any throw
+# that reached nothing.
+func _recall() -> void:
+	if phase == Phase.GRAPPLE:
+		var player := get_tree().get_first_node_in_group("Player")
+		if player != null and player.get("grappling") == true:
+			player.end_grapple(false)
+		_remove_rope()
+		grapple_point = null
+	phase = Phase.RETURN
+	bounce_target = null
+	Audio.play(THROW_SOUND, 1.3)
 
 
 func _update_out(delta: float) -> void:
