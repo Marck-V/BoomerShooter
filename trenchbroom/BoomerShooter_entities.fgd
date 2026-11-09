@@ -112,3 +112,11 @@
 	text(string) : "The lines below it, separated with |. {parry} and any other input action name in braces become the key bound to it" : ""
 	seconds(float) : "How long it stays before fading" : "7.0"
 ]
+
+@PointClass color(77 179 255) size(-32 -32 0, 32 32 128) = godot_boss : "Godot Man, the first boss (four times life size). Place it on the floor in the middle of a big arena with pillars. Beating it hands over the shotgun and opens a portal to level 2."
+[
+	wave(string) : "Wave name. The boss stays out of the level until the matching wave_trigger fires" : "boss"
+]
+
+@PointClass color(255 204 51) size(-16 -16 0, 16 16 16) = boss_reward : "Where the boss's reward appears (a weapon on a podium) when it is beaten. Put it on the floor at the back of the arena."
+[]

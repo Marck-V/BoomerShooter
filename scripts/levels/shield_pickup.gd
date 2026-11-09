@@ -1,7 +1,7 @@
 extends Area3D
 
-# A TrenchBroom point entity ("shield_pickup"): the shield, floating and spinning. Walking into it hands the player the
-# shield (GlobalVariables.unlock), shows a short how-to-use note, and starts the wave with the same name if there is one
+# A TrenchBroom point entity ("shield_pickup"): the shield, floating and spinning. Walking up to it shows the interact prompt, and
+# pressing interact hands the player the shield (GlobalVariables.unlock), shows a short how-to-use note, and starts the wave with the same name if there is one
 # (a wave_trigger with manual = 1), so the ambush begins the moment it is taken.
 # The unlock is saved with the profile, so dying afterwards keeps it; a checkpoint remembers that the pickup is gone.
 
@@ -19,12 +19,15 @@ const KEY_CATCHER := preload("res://scripts/levels/window_key_catcher.gd")
 
 var model: Node3D
 var time := 0.0
+var player_inside := false
+var taken := false
 
 
 func _ready() -> void:
 	collision_layer = 0
 	collision_mask = PhysicsLayers.PLAYER
 	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
 
 	var shape := CollisionShape3D.new()
 	var sphere := SphereShape3D.new()
@@ -49,6 +52,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if player_inside and not taken and Input.is_action_just_pressed("interact"):
+		_take()
+		return
 	time += delta
 	if model:
 		model.rotate_y(delta * SPIN_SPEED)
@@ -56,8 +62,21 @@ func _process(delta: float) -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if not body.is_in_group("Player"):
-		return
+	if body.is_in_group("Player") and not taken:
+		player_inside = true
+		InteractPrompt.show_prompt(get_tree(), "Take the shield")
+
+
+func _on_body_exited(body: Node3D) -> void:
+	if body.is_in_group("Player"):
+		player_inside = false
+		InteractPrompt.hide_prompt(get_tree())
+
+
+func _take() -> void:
+	taken = true
+	player_inside = false
+	InteractPrompt.hide_prompt(get_tree())
 	set_deferred("monitoring", false)
 	GlobalVariables.unlock(unlocks)
 	Audio.play("assets/audio/sfx/pickups/key_grab.mp3")

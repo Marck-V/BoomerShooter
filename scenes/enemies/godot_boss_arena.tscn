@@ -1,0 +1,13 @@
+[gd_scene format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/enemies/GodotBoss.tscn" id="1_boss"]
+
+[node name="GodotBossArena" instance=ExtResource("1_boss")]
+transform = Transform3D(-4, 0, -6.03983e-07, 0, 4, 0, 6.03983e-07, 0, -4, 0, 0, 0)
+next_level = "res://scenes/levels/level_02.tscn"
+unlocks_on_death = "shotgun"
+charge_speed = 15.0
+charge_damage = 60.0
+charge_duration = 1.8
+movement_speed = 11.0
+health = 2500.0

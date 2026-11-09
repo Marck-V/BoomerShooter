@@ -45,6 +45,8 @@ static func _add_label(box: Control, text: String, size: int, color: Color) -> v
 # The first key or button bound to an action, as text
 static func key(action: String) -> String:
 	for event in InputMap.action_get_events(action):
-		if event is InputEventKey or event is InputEventMouseButton:
-			return event.as_text().replace(" (Physical)", "")
+		if event is InputEventKey:
+			return event.as_text_physical_keycode() if event.physical_keycode != 0 else event.as_text_keycode()
+		if event is InputEventMouseButton:
+			return event.as_text()
 	return action

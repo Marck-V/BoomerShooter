@@ -42,4 +42,4 @@ map_settings = ExtResource("6_settings")
 crosshair = NodePath("../HUD/InGameHUD/Crosshair")
 
 [node name="UpgradeStation" parent="." instance=ExtResource("8_station")]
-transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 11.4, 0.842, -8)
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 236, 4.842, 130)

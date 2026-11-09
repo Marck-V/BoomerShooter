@@ -35,6 +35,8 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 @export_category("Basic Attributes")
 @export var health_bar: Control
 @export var boss_name := "Godot Man"   # shown under the health bar
+const REWARD_MODELS := {"shotgun": "res://models/weapons/Shotgun.glb"}
+@export var unlocks_on_death := ""    # a weapon id handed to the player when the boss is beaten (the shotgun, in level 1)
 @export_file("*.tscn") var next_level := ""   # when set, killing the boss opens a portal to this level instead of ending the game
 # How fast the whole fight runs: wind-ups, swings, holds, recoveries, stuns, animations, cooldowns, the gaps between
 # attacks, its movement and its charge. 1.2 is everything 20% faster. (The brute uses this; the boss keeps 1.)
@@ -82,6 +84,7 @@ const THRUST_TIME := 0.55          # seconds into the attack clip when the hands
 # then it drops out of the sky and lands in a burst of dust
 @export var entrance_enabled := true
 @export var entrance_height := 45.0          # meters above where it stands (less if something is in the way)
+@export var entrance_glass_drop := 14.0       # how far above a glass skylight it starts
 @export var entrance_gravity := 55.0         # how fast it falls
 @export var entrance_warn_time := 1.7        # the circle grows for this long before it appears
 @export var landing_radius := 1.5            # in boss lengths: standing under it hurts
@@ -132,6 +135,7 @@ var attack_hitbox: Area3D
 var shake_amount := 0.0
 var next_hazard_msec := 0
 var entrance_pending := false
+var entrance_glass: DestructibleWindow       # the skylight it drops through, if there is one
 var stored_layers := {}                      # collision objects hidden during the entrance -> their layer
 
 @onready var footsteps: AudioStreamPlayer3D = $Footsteps
@@ -185,6 +189,9 @@ func _ready() -> void:
 		attack_hitbox.monitoring = false
 		attack_hitbox.body_entered.connect(_on_attack_hitbox_body_entered)
 
+	if health_bar == null:
+		# Placed by a map entity, which can't set the bar: use the HUD's
+		health_bar = get_tree().current_scene.find_child("BossHealthBar", true, false) as Control
 	if health_bar:
 		health_bar.set_max_health(health)
 		health_bar.set_health(health)
@@ -237,6 +244,26 @@ func face_point(point: Vector3) -> void:
 # floats a little above it)
 # The boss is down: open the way to the next level, or end the game if there is none
 func finish_fight() -> void:
+	# A weapon on a podium at the back of the arena (the map's boss_reward marker): the way on only opens once the
+	# player has walked up and taken it
+	var marker := _find_reward_marker()
+	if unlocks_on_death != "" and marker != null and not GlobalVariables.is_unlocked(unlocks_on_death):
+		var pickup := WeaponPickup.spawn(get_tree(), floor_point(marker.global_position), unlocks_on_death, REWARD_MODELS.get(unlocks_on_death, ""))
+		pickup.taken.connect(_open_exit)
+		return
+	if unlocks_on_death != "" and not GlobalVariables.is_unlocked(unlocks_on_death):
+		GlobalVariables.unlock(unlocks_on_death)
+	_open_exit()
+
+
+func _find_reward_marker() -> Node3D:
+	for node in get_tree().current_scene.find_children("entity_*_boss_reward", "Node3D", true, false):
+		return node as Node3D
+	return null
+
+
+# The boss is down and the reward taken: open the way to the next level, or end the game if there is none
+func _open_exit() -> void:
 	if next_level != "":
 		LevelPortal.open_at(get_tree(), floor_point(global_position), next_level, target.global_position if is_instance_valid(target) else Vector3.INF)
 	else:
@@ -466,15 +493,34 @@ func _show_after_entrance() -> void:
 	stored_layers.clear()
 
 
-# How far up it can start: the sky is open over the arena, but stop short of anything in the way
+# How far up it can start: the sky is open over the arena, but stop short of anything in the way. A glass skylight
+# isn't in the way: it starts above the glass and breaks through it on the way down (see entrance_glass).
 func entrance_clearance() -> float:
+	entrance_glass = null
 	var from := global_position + Vector3.UP * unit()
 	var query := PhysicsRayQueryParameters3D.create(from, from + Vector3.UP * entrance_height)
 	query.collision_mask = 2
 	var hit := get_world_3d().direct_space_state.intersect_ray(query)
 	if hit.is_empty():
 		return entrance_height
+	if hit["collider"] is DestructibleWindow and not (hit["collider"] as DestructibleWindow).broken:
+		entrance_glass = hit["collider"]
+		return hit["position"].y - global_position.y + entrance_glass_drop
 	return maxf(hit["position"].y - from.y - 2.0 * unit(), 4.0 * unit())
+
+
+# Called while it falls: the head meets the skylight and the glass goes, with a crash
+func break_entrance_glass() -> void:
+	if entrance_glass == null or not is_instance_valid(entrance_glass) or entrance_glass.broken:
+		return
+	var glass_y := (entrance_glass.global_transform * entrance_glass.bounds.get_center()).y
+	if global_position.y + body_size().y > glass_y:
+		return
+	var spot := Vector3(global_position.x, glass_y, global_position.z)
+	entrance_glass.shatter(spot, Vector3.DOWN)
+	shake_player_camera(0.1, 0.03)
+	play_sfx("assets/audio/sfx/boss/Boss_Hit1.wav, assets/audio/sfx/boss/Boss_Hit2.wav")
+	entrance_glass = null
 
 
 # ---------------------------
@@ -705,6 +751,72 @@ func on_reflected_orb_hit(_orb_damage: float) -> void:
 # The boss is big, so it only flinches a little
 func flinch(world_point: Vector3, strength := 1.0) -> void:
 	super(world_point, strength * 0.4)
+
+
+const DISINTEGRATE_SHADER: Shader = preload("res://shaders/boss/disintegrate.gdshader")
+const DISINTEGRATE_TIME := 3.2
+
+
+# Falls apart: the model's own texture is eaten away in blocks from the head down, glowing along the edge, while
+# a cloud of sparks drifts up off it. Resolves when nothing is left.
+func disintegrate() -> void:
+	var meshes := model_root.find_children("*", "MeshInstance3D", true, false)
+	if meshes.is_empty():
+		return
+	var feet := global_position.y
+	var head := feet + body_size().y * 1.15
+	var materials: Array[ShaderMaterial] = []
+	for node in meshes:
+		var mesh := node as MeshInstance3D
+		var source := mesh.get_active_material(0) as StandardMaterial3D
+		var material := ShaderMaterial.new()
+		material.shader = DISINTEGRATE_SHADER
+		if source != null:
+			material.set_shader_parameter("albedo_tex", source.albedo_texture)
+			material.set_shader_parameter("albedo_color", source.albedo_color)
+		material.set_shader_parameter("y_bottom", feet)
+		material.set_shader_parameter("y_top", head)
+		material.set_shader_parameter("block_size", 0.09 * unit())
+		mesh.material_override = material
+		materials.append(material)
+
+	var sparks := CPUParticles3D.new()
+	sparks.amount = 260
+	sparks.lifetime = 1.6
+	sparks.emission_shape = CPUParticles3D.EMISSION_SHAPE_BOX
+	sparks.emission_box_extents = Vector3(BODY_RADIUS, BODY_HEIGHT * 0.5, BODY_RADIUS) * unit()
+	sparks.direction = Vector3.UP
+	sparks.spread = 50.0
+	sparks.initial_velocity_min = 1.5
+	sparks.initial_velocity_max = 5.0
+	sparks.gravity = Vector3(0, 1.5, 0)
+	sparks.scale_amount_min = 0.5
+	sparks.scale_amount_max = 1.2
+	var cube := BoxMesh.new()
+	cube.size = Vector3.ONE * 0.07
+	var spark_material := StandardMaterial3D.new()
+	spark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	spark_material.albedo_color = Color(1.0, 0.6, 0.2)
+	spark_material.vertex_color_use_as_albedo = true
+	cube.material = spark_material
+	sparks.mesh = cube
+	var fade := Gradient.new()
+	fade.set_color(0, Color(1.0, 0.85, 0.5, 1.0))
+	fade.set_color(1, Color(0.9, 0.2, 0.1, 0.0))
+	sparks.color_ramp = fade
+	get_tree().current_scene.add_child(sparks)
+	sparks.global_position = global_position + Vector3.UP * BODY_HEIGHT * 0.5 * unit()
+	sparks.emitting = true
+
+	var tween := create_tween().set_trans(Tween.TRANS_LINEAR)
+	tween.tween_method(func(value: float) -> void:
+		for material in materials:
+			material.set_shader_parameter("progress", value), 0.0, 1.0, DISINTEGRATE_TIME)
+	play_sfx("assets/audio/sfx/boss/Boss_Roar2.wav")
+	await tween.finished
+	model_root.visible = false
+	sparks.emitting = false
+	get_tree().create_timer(sparks.lifetime + 0.2, false).timeout.connect(sparks.queue_free)
 
 
 func _die() -> void:
@@ -1118,6 +1230,7 @@ class EntranceState extends BossState:
 			Phase.FALL:
 				fall_speed += enemy.entrance_gravity * delta
 				enemy.global_position.y -= fall_speed * delta
+				enemy.break_entrance_glass()
 				if is_instance_valid(enemy.target):
 					enemy.face_point(enemy.target.global_position)
 				if enemy.global_position.y <= rest_y:
@@ -1300,9 +1413,11 @@ class DeadState extends BossState:
 		await enemy.anim.animation_finished
 		if not is_instance_valid(enemy) or not enemy.is_inside_tree():
 			return
-		# It hits the floor and bursts, like the smaller enemies
+		# It hits the floor, then comes apart in blocks from the head down
 		var length := enemy.unit()
-		for offset in [Vector3.ZERO, Vector3(1, 0, 0.6), Vector3(-1, 0, -0.6)]:
-			BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), enemy.global_position + offset * length * 0.5 + Vector3.UP * 0.4 * length, 1.4, enemy.blood_scale)
-		await enemy.get_tree().create_timer(1.2, false).timeout
+		BLOOD_PARTICLES.spawn_burst(enemy.get_tree(), enemy.global_position + Vector3.UP * 0.4 * length, 1.4, enemy.blood_scale)
+		await enemy.disintegrate()
+		if not is_instance_valid(enemy) or not enemy.is_inside_tree():
+			return
+		await enemy.get_tree().create_timer(0.6, false).timeout
 		enemy.finish_fight()

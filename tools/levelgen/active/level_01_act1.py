@@ -27,7 +27,11 @@ The walk, all on one floor (z = 0) except the platform in the barrel hall. All p
   The pit    two ledges 40 m apart over a 6 m pit, with two pillars between. Every gap is crossed by throwing the shield at
              the green grapple point above the next platform. Landing on the first pillar starts a wave (wave "pit"):
              three ranged enemies on the far ledge. Fall in and a ramp leads out on each side.
-  Exit       corridor with a checkpoint, then a placeholder room where act 5 will go.
+  The hub    32 x 36 m, with the upgrade station. North: the red key through a parry gauntlet (ranged enemies on side
+             platforms, grunts below). South: the blue key up a grapple tower (three pillars, points above each,
+             ranged enemies on the floor and the balconies). East: a red door, a blue door, then the boss arena.
+  The boss   Godot Man in a 48 x 48 m arena with four pillars. Beating it hands over the shotgun and opens the portal to
+             level 2.
 """
 TEXTURES = "Kenney prototype textures (Dark set, texture_01 to 09) until real ones are chosen"
 import os
@@ -54,6 +58,7 @@ ROOM_HEIGHT = 8.0
 PLATFORM = 2.0          # height of the platform in the barrel hall
 BALCONY = 3.0           # height of the gallery balcony
 TIER = 4.0              # height of the shrine tier, the corridors after it and the ledges either side of the pit
+LEDGE = 8.0             # the red wing side platforms
 PIT = -2.0              # the pit floor
 T = 0.5                 # wall thickness (the grid's default)
 
@@ -81,11 +86,21 @@ g.add(18, 54, 19, 60, floor=TIER, ceiling=24.0, floor_tex=FLOOR, wall_tex=WALL_C
 g.add(20, 54, 27, 60, floor=PIT, ceiling=24.0, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)   # the pit
 g.add(28, 54, 29, 60, floor=TIER, ceiling=24.0, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # ledge B
 g.add(30, 57, 31, 57, floor=TIER, ceiling=TIER + 4.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # corridor
-g.add(32, 55, 35, 59, floor=TIER, ceiling=12.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # placeholder for act 5
+g.add(32, 53, 39, 61, floor=TIER, ceiling=14.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # hub
+g.add(36, 62, 36, 65, floor=TIER, ceiling=TIER + 4.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # corridor north
+g.add(32, 66, 40, 74, floor=TIER, ceiling=14.0, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)  # red wing: gauntlet
+g.add(32, 69, 33, 73, floor=LEDGE, ceiling=14.0, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)  # its side platforms
+g.add(39, 69, 40, 73, floor=LEDGE, ceiling=14.0, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)
+g.add(36, 49, 36, 52, floor=TIER, ceiling=TIER + 4.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # corridor south
+g.add(32, 41, 39, 48, floor=TIER, ceiling=34.0, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # blue wing: tower
+g.add(32, 46, 32, 47, floor=12.0, ceiling=34.0, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # its balconies
+g.add(39, 46, 39, 47, floor=12.0, ceiling=34.0, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)
+g.add(40, 57, 43, 57, floor=TIER, ceiling=TIER + 4.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # corridor east: key doors
+g.add(44, 51, 55, 62, floor=TIER, ceiling=24.0, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)  # boss arena
 # --- Windows and skylights -----------------------------------------------------------------------------------------
 # Openings are cut out of the walls and ceilings the grid builds, with a glass pane in each (the glass shows the neon
-# sky outside). The panes break like any window (one pistol shot) and have an invisible clip block behind them, so a
-# broken pane still leaves nothing to fall out through.
+# sky outside). The panes break like any window (one pistol shot). A broken one is an open hole: falling out of the
+# level is fine, the player's fall recovery puts them back.
 HOLES = []        # (x0, x1, y0, y1, z0, z1) in map units: anything the grid builds that overlaps one is cut
 WINDOWS = []      # brush entities to add after the build
 
@@ -193,11 +208,38 @@ skylight(76.0, 82.0, 224.0, 236.0, 24.0)
 skylight(92.0, 108.0, 222.0, 238.0, 24.0)
 skylight(114.0, 118.0, 224.0, 236.0, 24.0)
 
+# The hub (x 128..160, y 212..248, 14 m tall)
+for x0, x1 in ((132.0, 140.0), (152.0, 158.0)):
+    wall_window_y(248.0, 1, x0, x1, 7.0, 12.0)
+for y0, y1 in ((216.0, 224.0), (236.0, 244.0)):
+    wall_window_x(128.0, -1, y0, y1, 7.0, 12.0)
+for x0, x1 in ((132.0, 140.0), (148.0, 156.0)):
+    wall_window_y(212.0, -1, x0, x1, 7.0, 12.0)
+skylight(134.0, 154.0, 222.0, 238.0, 14.0)
+# Red wing (x 128..164, y 264..300)
+for y0, y1 in ((268.0, 274.0), (278.0, 286.0)):
+    wall_window_x(164.0, 1, y0, y1, 9.0, 13.0)
+    wall_window_x(128.0, -1, y0, y1, 9.0, 13.0)
+skylight(140.0, 152.0, 270.0, 296.0, 14.0)
+# Blue wing (x 128..160, y 164..196, 34 m tall)
+for x0, x1 in ((132.0, 140.0), (148.0, 156.0)):
+    wall_window_y(164.0, -1, x0, x1, 24.0, 32.0)
+for y0, y1 in ((168.0, 176.0), (180.0, 190.0)):
+    wall_window_x(160.0, 1, y0, y1, 26.0, 32.0)
+    wall_window_x(128.0, -1, y0, y1, 26.0, 32.0)
+skylight(138.0, 150.0, 170.0, 190.0, 34.0)
+# Boss arena (x 176..224, y 204..252, 24 m tall)
+for x0, x1 in ((182.0, 194.0), (198.0, 210.0)):
+    wall_window_y(252.0, 1, x0, x1, 12.0, 20.0)
+    wall_window_y(204.0, -1, x0, x1, 12.0, 20.0)
+for y0, y1 in ((210.0, 220.0), (236.0, 246.0)):
+    wall_window_x(224.0, 1, y0, y1, 12.0, 20.0)
+skylight(192.0, 208.0, 216.0, 240.0, 24.0)
+
 g.build()
 b.box = _plain_box
 for pane, clip in WINDOWS:
     b.brush_entity("window", [pane + (GLASS,)], health=WINDOW_HEALTH)
-    _plain_box(*clip, CLIP, "window clip")
 
 
 def box(x0, x1, y0, y1, z0, z1, tex, comment=""):
@@ -208,9 +250,9 @@ def entity(classname, x, y, z=0.0, **properties):
     b.entity(classname, m(x), m(y), m(z) + 1, **properties)
 
 
-def door(x0, x1, y, wave, starts_open):
-    """A door across a corridor, 0.5 m thick, from y to y + 0.5."""
-    b.brush_entity("locked_door", [(m(x0), m(x1), m(y), m(y + 0.5), m(0), m(CORRIDOR_HEIGHT), DOOR)],
+def door(x0, x1, y, wave, starts_open, z0=0.0):
+    """A door across a corridor, 0.5 m thick, from y to y + 0.5, 4 m tall from z0."""
+    b.brush_entity("locked_door", [(m(x0), m(x1), m(y), m(y + 0.5), m(z0), m(z0 + CORRIDOR_HEIGHT), DOOR)],
                    wave=wave, starts_open=starts_open)
 
 
@@ -348,6 +390,60 @@ entity("pickup", 76.0, 220.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
 entity("pickup", 104.0, 230.0, TIER + 0.8, type="Points")
 entity("pickup", 116.0, 224.0, TIER + 0.8, type="Health")
 b.brush_entity("checkpoint", [(m(124.0), m(125.0), m(228.0), m(232.0), m(TIER), m(TIER + 4.0), CLIP)])
+
+# --- Act 5: the hub. Red key to the north (parry gauntlet), blue key to the south (grapple tower), both doors to the
+# boss arena in the east. The upgrade station is in the hub: spend what the pickups gave you before the boss. ---
+b.brush_entity("checkpoint", [(m(172.0), m(173.0), m(228.0), m(232.0), m(TIER), m(TIER + 4.0), CLIP)])
+entity("pickup", 132.0, 216.0, TIER + 0.8, type="Health")
+entity("pickup", 132.0, 244.0, TIER + 0.8, type="Health")
+entity("pickup", 156.0, 216.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
+entity("pickup", 156.0, 244.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
+
+# Red wing: ranged enemies on the two side platforms and grunts on the floor, with low cover across the middle
+door(144.0, 148.0, 263.5, "gauntlet", 1, TIER)
+b.brush_entity("wave_trigger", [(m(128.0), m(164.0), m(265.0), m(271.0), m(TIER), m(14.0), CLIP)], wave="gauntlet")
+for x0, x1 in ((136.0, 142.0), (150.0, 156.0)):
+    box(x0, x1, 276.0, 276.5, TIER, TIER + 1.4, WALL_B, "cover")
+b.ramp(m(128), m(132), m(268), m(276), m(TIER), m(LEDGE), "+y", RAMP, "platform ramp")
+b.ramp(m(160), m(164), m(268), m(276), m(TIER), m(LEDGE), "+y", RAMP, "platform ramp")
+for ex, ey in ((132.0, 282.0), (132.0, 290.0)):
+    entity("enemy_ranged", ex, ey, LEDGE, wave="gauntlet")
+for ex, ey in ((160.0, 282.0), (160.0, 290.0)):
+    entity("enemy_ranged", ex, ey, LEDGE, wave="gauntlet")
+for ex, ey in ((138.0, 292.0), (146.0, 294.0), (154.0, 292.0), (146.0, 284.0)):
+    entity("enemy_horde", ex, ey, TIER, wave="gauntlet")
+box(144.0, 148.0, 297.0, 299.0, TIER, TIER + 1.0, PILLAR, "key dais")
+entity("level_key", 146.0, 298.0, TIER + 2.2, key="red")
+entity("pickup", 146.0, 268.0, TIER + 0.8, type="Health")
+entity("pickup", 132.0, 270.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
+
+# Blue wing: three pillars to grapple up (each point hangs above the next platform), the key on the top one. Ranged
+# enemies on the floor and the balconies. Jumping down afterwards is safe: there is no fall damage.
+door(144.0, 148.0, 196.0, "tower", 1, TIER)
+b.brush_entity("wave_trigger", [(m(128.0), m(160.0), m(164.0), m(195.0), m(TIER), m(34.0), CLIP)], wave="tower")
+for px, py, top in ((150.0, 188.0, 10.0), (134.0, 178.0, 16.0), (148.0, 168.0, 22.0)):
+    box(px, px + 4.0, py, py + 4.0, TIER, top, PILLAR, "pillar")
+for gx, gy, gz in ((152.0, 190.0, 16.0), (136.0, 180.0, 22.0), (150.0, 170.0, 28.0)):
+    b.entity("grapple_point", m(gx), m(gy), m(gz))
+entity("level_key", 150.0, 170.0, 24.2, key="blue")
+for ex, ey, ez in ((130.0, 168.0, TIER), (158.0, 168.0, TIER), (130.0, 188.0, 12.0), (158.0, 188.0, 12.0)):
+    entity("enemy_ranged", ex, ey, ez, wave="tower")
+entity("pickup", 146.0, 192.0, TIER + 0.8, type="Health")
+entity("pickup", 146.0, 175.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
+
+# The way to the boss: red door, blue door, then the arena. Walking into the arena shuts the door behind the player.
+b.brush_entity("key_door", [(m(164.0), m(164.5), m(228.0), m(232.0), m(TIER), m(TIER + 4.0), DOOR)], key="red")
+b.brush_entity("key_door", [(m(170.0), m(170.5), m(228.0), m(232.0), m(TIER), m(TIER + 4.0), DOOR)], key="blue")
+door_x(175.5, 228.0, 232.0, "boss", 1, TIER)
+b.brush_entity("wave_trigger", [(m(178.0), m(190.0), m(204.0), m(252.0), m(TIER), m(24.0), CLIP)], wave="boss")
+for px, py in ((192.0, 214.0), (192.0, 242.0), (210.0, 214.0), (210.0, 242.0)):
+    box(px - 2.0, px + 2.0, py - 2.0, py + 2.0, TIER, 24.0, PILLAR, "pillar")
+b.entity("godot_boss", m(204.0), m(228.0), m(TIER) + 1, wave="boss")
+b.entity("boss_reward", m(219.0), m(228.0), m(TIER) + 1)   # where the shotgun appears after the boss: back middle
+entity("pickup", 178.0, 208.0, TIER + 0.8, type="Health")
+entity("pickup", 178.0, 248.0, TIER + 0.8, type="Health")
+entity("pickup", 180.0, 214.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
+entity("pickup", 180.0, 242.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
 
 b.write(MAP)
 print("wrote", MAP, "-", b.brush_count, "brushes,", len(b.entities), "entities")

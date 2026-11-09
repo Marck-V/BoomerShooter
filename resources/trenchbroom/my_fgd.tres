@@ -24,10 +24,12 @@
 [ext_resource type="Resource" path="res://trenchbroom/entities/wave_trigger.tres" id="e_wave_trigger"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/shield_pickup.tres" id="e_shield_pickup"]
 [ext_resource type="Resource" path="res://trenchbroom/entities/hint_trigger.tres" id="e_hint_trigger"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/godot_boss.tres" id="e_godot_boss"]
+[ext_resource type="Resource" path="res://trenchbroom/entities/boss_reward.tres" id="e_boss_reward"]
 
 [resource]
 script = ExtResource("1_qkuc6")
 fgd_name = "BoomerShooter"
 base_fgd_files = Array[Resource]([ExtResource("1_rcank")])
-entity_definitions = Array[Resource]([ExtResource("e_info_player_start"), ExtResource("e_enemy_horde"), ExtResource("e_enemy_ranged"), ExtResource("e_enemy_dodger"), ExtResource("e_enemy_flyer"), ExtResource("e_pickup"), ExtResource("e_wave_trigger"), ExtResource("e_locked_door"), ExtResource("e_grapple_point"), ExtResource("e_key_door"), ExtResource("e_level_key"), ExtResource("e_enemy_melee_dodger"), ExtResource("e_enemy_bomber"), ExtResource("e_enemy_brute"), ExtResource("e_checkpoint"), ExtResource("e_hand_boss"), ExtResource("e_enemy_swordsman"), ExtResource("e_barrel"), ExtResource("e_explosive_barrel"), ExtResource("e_window"), ExtResource("e_shield_pickup"), ExtResource("e_hint_trigger")])
+entity_definitions = Array[Resource]([ExtResource("e_info_player_start"), ExtResource("e_enemy_horde"), ExtResource("e_enemy_ranged"), ExtResource("e_enemy_dodger"), ExtResource("e_enemy_flyer"), ExtResource("e_pickup"), ExtResource("e_wave_trigger"), ExtResource("e_locked_door"), ExtResource("e_grapple_point"), ExtResource("e_key_door"), ExtResource("e_level_key"), ExtResource("e_enemy_melee_dodger"), ExtResource("e_enemy_bomber"), ExtResource("e_enemy_brute"), ExtResource("e_checkpoint"), ExtResource("e_hand_boss"), ExtResource("e_enemy_swordsman"), ExtResource("e_barrel"), ExtResource("e_explosive_barrel"), ExtResource("e_window"), ExtResource("e_shield_pickup"), ExtResource("e_hint_trigger"), ExtResource("e_godot_boss"), ExtResource("e_boss_reward")])
 metadata/_custom_type_script = "uid://b77xkxr0m5nqw"

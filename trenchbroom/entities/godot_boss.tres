@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDPointClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_point_class.gd" id="1_point"]
+[ext_resource type="PackedScene" path="res://scenes/enemies/godot_boss_arena.tscn" id="2_scene"]
+
+[resource]
+script = ExtResource("1_point")
+scene_file = ExtResource("2_scene")
+classname = "godot_boss"
+description = "Godot Man, the first boss (four times life size). Place it on the floor in the middle of a big arena with pillars. Beating it hands over the shotgun and opens a portal to level 2."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"wave": "boss"
+}
+class_property_descriptions = {
+"wave": "Wave name. The boss stays out of the level until the matching wave_trigger fires"
+}
+meta_properties = {
+"color": Color(0.3, 0.7, 1, 1),
+"size": AABB(-32, -32, 0, 32, 32, 128)
+}
+node_class = ""
