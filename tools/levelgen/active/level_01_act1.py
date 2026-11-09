@@ -76,7 +76,7 @@ g.add(1, 28, 1, 31, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, c
 g.add(-2, 32, 4, 37, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)     # cover hall
 g.add(1, 38, 1, 43, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # corridor
 g.add(-3, 44, 5, 49, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)     # gallery
-g.add(3, 46, 5, 49, floor=BALCONY, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # balcony
+g.add(3, 48, 5, 49, floor=BALCONY, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # balcony
 g.add(1, 50, 1, 53, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # exit corridor
 g.add(1, 54, 7, 54, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # corridor turning east
 g.add(8, 52, 13, 58, ceiling=16.0, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)            # stair hall
@@ -262,6 +262,49 @@ def door_x(x, y0, y1, wave, starts_open, z0=0.0):
                    wave=wave, starts_open=starts_open)
 
 
+RAIL = 0.25        # thickness of a ramp's side rails (m)
+RAIL_HEIGHT = 1.0  # how far the rails stand above the slope. Without them enemies cut across the low edge of a ramp,
+                   # where the slope is only a few centimetres high but a vertical step to them, and run in place.
+
+
+def _rail(x0, x1, y0, y1, zb_lo, zb_hi, rises):
+    """A wedge beside a ramp: flat bottom at the ramp's base height, top RAIL_HEIGHT above the slope."""
+    zb, zt = zb_lo, zb_hi
+    if rises == "+y":
+        low, high = (y0, zb + RAIL_HEIGHT), (y1, zt + RAIL_HEIGHT)
+        a, bb, c, d = (x0, y0, zb), (x1, y0, zb), (x1, y1, zb), (x0, y1, zb)
+        e, f, g, h = (x0, y0, zb + RAIL_HEIGHT), (x1, y0, zb + RAIL_HEIGHT), (x1, y1, zt + RAIL_HEIGHT), (x0, y1, zt + RAIL_HEIGHT)
+    elif rises == "-y":
+        a, bb, c, d = (x0, y0, zb), (x1, y0, zb), (x1, y1, zb), (x0, y1, zb)
+        e, f, g, h = (x0, y0, zt + RAIL_HEIGHT), (x1, y0, zt + RAIL_HEIGHT), (x1, y1, zb + RAIL_HEIGHT), (x0, y1, zb + RAIL_HEIGHT)
+    elif rises == "+x":
+        a, bb, c, d = (x0, y0, zb), (x1, y0, zb), (x1, y1, zb), (x0, y1, zb)
+        e, f, g, h = (x0, y0, zb + RAIL_HEIGHT), (x1, y0, zt + RAIL_HEIGHT), (x1, y1, zt + RAIL_HEIGHT), (x0, y1, zb + RAIL_HEIGHT)
+    else:  # -x
+        a, bb, c, d = (x0, y0, zb), (x1, y0, zb), (x1, y1, zb), (x0, y1, zb)
+        e, f, g, h = (x0, y0, zt + RAIL_HEIGHT), (x1, y0, zb + RAIL_HEIGHT), (x1, y1, zb + RAIL_HEIGHT), (x0, y1, zt + RAIL_HEIGHT)
+    faces = [[a, bb, c, d], [e, f, g, h], [a, bb, f, e], [d, c, g, h], [a, d, h, e], [bb, c, g, f]]
+    b.convex([[tuple(m(v) for v in pt) for pt in face] for face in faces], RAMP, "ramp rail")
+
+
+def ramp(x0, x1, y0, y1, z_base, z_top, rises, tex=None, comment="ramp", rails="both"):
+    """A ramp rising along y (+y/-y) or x (+x/-x), with a rail down each side. rails: "both", "low" (the side with the
+    smaller x or y), "high", or "none": leave out a rail on a side that runs along a wall, where it would only clip into it."""
+    tex = tex or RAMP
+    if rises in ("+y", "-y"):
+        b.ramp(m(x0), m(x1), m(y0), m(y1), m(z_base), m(z_top), rises, tex, comment)
+        if rails in ("both", "low"):
+            _rail(x0 - RAIL, x0, y0, y1, z_base, z_top, rises)
+        if rails in ("both", "high"):
+            _rail(x1, x1 + RAIL, y0, y1, z_base, z_top, rises)
+    else:
+        ramp_x(x0, x1, y0, y1, z_base, z_top, rises, tex, comment)
+        if rails in ("both", "low"):
+            _rail(x0, x1, y0 - RAIL, y0, z_base, z_top, rises)
+        if rails in ("both", "high"):
+            _rail(x0, x1, y1, y1 + RAIL, z_base, z_top, rises)
+
+
 def ramp_x(x0, x1, y0, y1, z_base, z_top, rises_toward, tex, comment="ramp"):
     """Wedge that rises toward +x or -x (mapgen's ramp only rises along y)."""
     a, bb, c, d = (x0, y0, z_base), (x1, y0, z_base), (x1, y1, z_base), (x0, y1, z_base)
@@ -271,7 +314,7 @@ def ramp_x(x0, x1, y0, y1, z_base, z_top, rises_toward, tex, comment="ramp"):
     else:
         e, f = (x0, y0, z_top), (x0, y1, z_top)
         faces = [[a, bb, c, d], [bb, c, f, e], [a, d, f, e], [a, bb, e], [d, c, f]]
-    b.convex([[tuple(m(v) for v in p) for p in face] for face in faces], tex, comment)
+    b.convex([[tuple(m(v) for v in pt) for pt in face] for face in faces], tex, comment)
 
 
 def trigger(x0, x1, y0, y1, wave, z1=ROOM_HEIGHT):
@@ -279,10 +322,10 @@ def trigger(x0, x1, y0, y1, wave, z1=ROOM_HEIGHT):
 
 
 # --- Ramp up to the platform (south face of it, rising north) ---
-b.ramp(m(-12), m(-8), m(88), m(96), m(0), m(PLATFORM), "+y", RAMP, "platform ramp")
+ramp(-12, -4, 88, 96, 0, PLATFORM, "+y", RAMP, "platform ramp", rails="high")   # the wall is on its west side
 
 # --- Ramp up to the balcony ---
-b.ramp(m(12), m(16), m(176), m(184), m(0), m(BALCONY), "+y", RAMP, "balcony ramp")
+ramp(8, 16, 184, 192, 0, BALCONY, "+y", RAMP, "balcony ramp")   # its low end is in the open: a ramp starting at a wall can only be entered from the side
 
 # --- Pillars in the yard ---
 for px, py in ((0.0, 46.0), (12.0, 46.0), (0.0, 54.0), (12.0, 54.0)):
@@ -340,7 +383,7 @@ for px, py in ((-4.0, 186.0), (4.0, 186.0), (-4.0, 192.0), (4.0, 192.0)):
 door(4.0, 8.0, 175.5, "gallery", 1)
 door(4.0, 8.0, 200.0, "gallery", 0)
 trigger(-12.0, 24.0, 177.0, 183.0, "gallery")
-for ex, ey in ((20.0, 192.0), (18.0, 195.0)):
+for ex, ey in ((20.0, 195.0), (18.0, 198.0)):
     entity("enemy_ranged", ex, ey, BALCONY, wave="gallery")
 for ex, ey in ((-6.0, 194.0), (6.0, 197.0)):
     entity("enemy_ranged", ex, ey, wave="gallery")
@@ -348,13 +391,13 @@ for ex, ey in ((-6.0, 188.0), (2.0, 190.0), (8.0, 190.0)):
     entity("enemy_horde", ex, ey, wave="gallery")
 entity("pickup", -8.0, 179.0, 0.8, type="Health")
 entity("pickup", 20.0, 179.0, 0.8, type="Ammo", weapon_id="pistol")
-entity("pickup", 20.0, 188.0, BALCONY + 0.8, type="Points")
+entity("pickup", 20.0, 194.0, BALCONY + 0.8, type="Points")
 entity("pickup", 22.0, 196.0, BALCONY + 0.8, type="Points")
 entity("pickup", -10.0, 197.0, 0.8, type="Ammo", weapon_id="pistol")
 b.brush_entity("checkpoint", [(m(4.0), m(8.0), m(208.0), m(209.0), m(0), m(CORRIDOR_HEIGHT), CLIP)])
 
 # --- Act 3: the corridor turns east into a tall hall; the ramp climbs to a tier with the shield on a pedestal ---
-b.ramp(m(40), m(44), m(216), m(228), m(0), m(TIER), "+y", RAMP, "stair ramp")
+ramp(40, 48, 216, 228, 0, TIER, "+y", RAMP, "stair ramp")
 box(43.0, 45.0, 231.0, 233.0, TIER, TIER + 1.0, PILLAR, "pedestal")
 entity("shield_pickup", 44.0, 232.0, TIER + 1.6, wave="ambush")
 b.brush_entity("wave_trigger", [(m(43.0), m(45.0), m(229.0), m(230.0), m(TIER), m(TIER + 4.0), CLIP)], wave="ambush", manual=1)
@@ -372,8 +415,8 @@ box(72.0, 80.0, 216.0, 244.0, PIT - 0.5, -0.5, WALL_C, "ledge A support")
 box(112.0, 120.0, 216.0, 244.0, PIT - 0.5, -0.5, WALL_C, "ledge B support")
 for px in (90.0, 102.0):
     box(px, px + 4.0, 228.0, 232.0, PIT - 0.5, TIER, PILLAR, "pillar")
-ramp_x(80.0, 92.0, 216.0, 220.0, PIT, TIER, "-x", RAMP, "pit ramp A")
-ramp_x(100.0, 112.0, 240.0, 244.0, PIT, TIER, "+x", RAMP, "pit ramp B")
+ramp(80.0, 92.0, 216.0, 224.0, PIT, TIER, "-x", RAMP, "pit ramp A", rails="high")   # the south wall is on its low side
+ramp(100.0, 112.0, 236.0, 244.0, PIT, TIER, "+x", RAMP, "pit ramp B", rails="low")   # the north wall is on its high side
 for gx in (92.0, 104.0, 116.0):
     b.entity("grapple_point", m(gx), m(230.0), m(11.0))
 b.brush_entity("hint_trigger", [(m(74.0), m(78.0), m(224.0), m(236.0), m(TIER), m(TIER + 4.0), CLIP)],
@@ -404,8 +447,8 @@ door(144.0, 148.0, 263.5, "gauntlet", 1, TIER)
 b.brush_entity("wave_trigger", [(m(128.0), m(164.0), m(265.0), m(271.0), m(TIER), m(14.0), CLIP)], wave="gauntlet")
 for x0, x1 in ((136.0, 142.0), (150.0, 156.0)):
     box(x0, x1, 276.0, 276.5, TIER, TIER + 1.4, WALL_B, "cover")
-b.ramp(m(128), m(132), m(268), m(276), m(TIER), m(LEDGE), "+y", RAMP, "platform ramp")
-b.ramp(m(160), m(164), m(268), m(276), m(TIER), m(LEDGE), "+y", RAMP, "platform ramp")
+ramp(128, 136, 268, 276, TIER, LEDGE, "+y", RAMP, "platform ramp", rails="high")
+ramp(156, 164, 268, 276, TIER, LEDGE, "+y", RAMP, "platform ramp", rails="low")
 for ex, ey in ((132.0, 282.0), (132.0, 290.0)):
     entity("enemy_ranged", ex, ey, LEDGE, wave="gauntlet")
 for ex, ey in ((160.0, 282.0), (160.0, 290.0)):

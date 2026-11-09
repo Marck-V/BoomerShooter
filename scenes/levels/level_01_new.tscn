@@ -11,8 +11,8 @@
 
 [sub_resource type="NavigationMesh" id="NavigationMesh_level"]
 geometry_parsed_geometry_type = 1
-agent_radius = 0.25
-agent_max_climb = 0.5
+agent_radius = 0.5
+agent_max_climb = 0.25
 
 [node name="Level01" type="Node3D"]
 script = ExtResource("1_level")
