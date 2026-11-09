@@ -1,0 +1,45 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/levels/level_01_new.gd" id="1_level"]
+[ext_resource type="Environment" path="res://resources/environments/synthwave_environment.tres" id="2_env"]
+[ext_resource type="Script" path="res://scripts/environment/synthwave_backdrop.gd" id="3_backdrop"]
+[ext_resource type="PackedScene" path="res://scenes/ui/hud.tscn" id="4_hud"]
+[ext_resource type="Script" path="res://addons/func_godot/src/map/func_godot_map.gd" id="5_map"]
+[ext_resource type="Resource" path="res://addons/func_godot/func_godot_default_map_settings.tres" id="6_settings"]
+[ext_resource type="PackedScene" path="res://scenes/player/player.tscn" id="7_player"]
+[ext_resource type="PackedScene" path="res://scenes/ui/upgrade_station.tscn" id="8_station"]
+
+[sub_resource type="NavigationMesh" id="NavigationMesh_level"]
+geometry_parsed_geometry_type = 1
+agent_radius = 0.25
+agent_max_climb = 0.5
+
+[node name="Level01" type="Node3D"]
+script = ExtResource("1_level")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = ExtResource("2_env")
+
+[node name="SynthwaveBackdrop" type="Node3D" parent="."]
+script = ExtResource("3_backdrop")
+
+[node name="Lights" type="Node" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, -0.5, 0.866025, 0, -0.866025, -0.5, 0, 30, 0)
+
+[node name="HUD" parent="." instance=ExtResource("4_hud")]
+
+[node name="NavigationRegion3D" type="NavigationRegion3D" parent="."]
+navigation_mesh = SubResource("NavigationMesh_level")
+
+[node name="FuncGodotMap" type="Node3D" parent="NavigationRegion3D"]
+script = ExtResource("5_map")
+local_map_file = "res://trenchbroom/maps/level_01.map"
+map_settings = ExtResource("6_settings")
+
+[node name="Player" parent="." node_paths=PackedStringArray("crosshair") instance=ExtResource("7_player")]
+crosshair = NodePath("../HUD/InGameHUD/Crosshair")
+
+[node name="UpgradeStation" parent="." instance=ExtResource("8_station")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 11.4, 0.842, -8)
