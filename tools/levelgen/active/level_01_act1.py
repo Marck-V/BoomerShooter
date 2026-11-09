@@ -1,4 +1,4 @@
-"""Builds trenchbroom/maps/level_01.map: the true level 1, act 1 (pistol only), and a stub for what follows.
+"""Builds trenchbroom/maps/level_01.map: the true level 1, acts 1 and 2 (pistol only), and a stub for what follows.
 
 Run from the project root:  python tools/levelgen/active/level_01_act1.py
 
@@ -13,7 +13,12 @@ The walk, all on one floor (z = 0) except the platform in the barrel hall. All p
   Barrel hall  36 x 28 m with a raised platform in the north-west and a cluster of explosive barrels. Walking in shuts
              the door behind you (wave "hall"): 5 grunts. The platform holds ammo and points; the barrels teach that
              shooting one near the grunts is the better plan.
-  Exit       corridor with a checkpoint, then a placeholder room where act 2 will go.
+  Exit       corridor with a checkpoint, then act 2: the first ranged enemies.
+  Cover hall   28 x 24 m with four low walls. Walking in shuts the door behind you (wave "cover"): 2 ranged enemies at
+             the far end and a grunt that rushes you. Teaches that their energy balls can be dodged or ducked behind.
+  Gallery    36 x 24 m with four pillars and a raised balcony on the east side, reached by a ramp (wave "gallery"):
+             2 ranged enemies on the balcony, 2 on the floor and 3 grunts. Ammo, health and points around.
+  Exit       corridor with a checkpoint, then a placeholder room where act 3 (getting the shield) will go.
 """
 TEXTURES = "Kenney prototype textures (Dark set, texture_01 to 09) until real ones are chosen"
 import os
@@ -38,6 +43,7 @@ CELL = 4.0
 CORRIDOR_HEIGHT = 4.0   # doors slide down 4.2 m, so a corridor door is as tall as the corridor
 ROOM_HEIGHT = 8.0
 PLATFORM = 2.0          # height of the platform in the barrel hall
+BALCONY = 3.0           # height of the gallery balcony
 
 b = MapBuilder()
 g = TileGrid(b, cell=CELL)
@@ -50,7 +56,12 @@ g.add(1, 16, 1, 20, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, c
 g.add(-3, 21, 5, 27, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)     # barrel hall
 g.add(-3, 24, -1, 27, floor=PLATFORM, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # platform
 g.add(1, 28, 1, 31, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # exit corridor
-g.add(-1, 32, 3, 35, ceiling=6.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)             # placeholder for act 2
+g.add(-2, 32, 4, 37, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)     # cover hall
+g.add(1, 38, 1, 43, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # corridor
+g.add(-3, 44, 5, 49, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)     # gallery
+g.add(3, 46, 5, 49, floor=BALCONY, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # balcony
+g.add(1, 50, 1, 53, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # exit corridor
+g.add(-1, 54, 3, 57, ceiling=6.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)             # placeholder for act 3
 g.build()
 
 
@@ -74,6 +85,9 @@ def trigger(x0, x1, y0, y1, wave, z1=4.0):
 
 # --- Ramp up to the platform (south face of it, rising north) ---
 b.ramp(m(-12), m(-8), m(88), m(96), m(0), m(PLATFORM), "+y", RAMP, "platform ramp")
+
+# --- Ramp up to the balcony ---
+b.ramp(m(12), m(16), m(176), m(184), m(0), m(BALCONY), "+y", RAMP, "balcony ramp")
 
 # --- Pillars in the yard ---
 for px, py in ((0.0, 46.0), (12.0, 46.0), (0.0, 54.0), (12.0, 54.0)):
@@ -108,8 +122,40 @@ entity("pickup", -4.0, 108.0, PLATFORM + 0.8, type="Points")
 entity("pickup", -8.0, 104.0, PLATFORM + 0.8, type="Points")
 entity("pickup", 20.0, 88.0, 0.8, type="Health")
 
-# --- Exit: a checkpoint in the corridor, then the placeholder room ---
+# --- Exit: a checkpoint in the corridor ---
 b.brush_entity("checkpoint", [(m(4.0), m(8.0), m(120.0), m(121.0), m(0), m(CORRIDOR_HEIGHT), CLIP)])
+
+# --- Cover hall: low walls to duck behind (1.4 m high: taller than the player's crouch, below an enemy's eyeline) ---
+# Enemies only notice the player within about 18 m (their vision area), so the waves are placed close to the trigger.
+for x0, x1, y in ((-4.0, 2.0, 138.0), (10.0, 16.0, 138.0), (2.0, 8.0, 143.0), (-6.0, -2.0, 143.0)):
+    box(x0, x1, y, y + 0.5, 0.0, 1.4, WALL_B, "cover")
+door(4.0, 8.0, 127.5, "cover", 1)
+door(4.0, 8.0, 152.0, "cover", 0)
+trigger(0.0, 12.0, 133.0, 135.0, "cover")
+for ex, ey in ((-2.0, 149.0), (14.0, 149.0)):
+    entity("enemy_ranged", ex, ey, wave="cover")
+entity("enemy_horde", 6.0, 148.0, wave="cover")
+entity("pickup", -6.0, 132.0, 0.8, type="Health")
+entity("pickup", 18.0, 132.0, 0.8, type="Ammo", weapon_id="pistol")
+
+# --- Gallery ---
+for px, py in ((-4.0, 186.0), (4.0, 186.0), (-4.0, 192.0), (4.0, 192.0)):
+    box(px - 1.0, px + 1.0, py - 1.0, py + 1.0, 0.0, ROOM_HEIGHT, PILLAR, "pillar")
+door(4.0, 8.0, 175.5, "gallery", 1)
+door(4.0, 8.0, 200.0, "gallery", 0)
+trigger(0.0, 12.0, 180.0, 182.0, "gallery")
+for ex, ey in ((20.0, 192.0), (18.0, 195.0)):
+    entity("enemy_ranged", ex, ey, BALCONY, wave="gallery")
+for ex, ey in ((-6.0, 194.0), (6.0, 197.0)):
+    entity("enemy_ranged", ex, ey, wave="gallery")
+for ex, ey in ((-6.0, 188.0), (2.0, 190.0), (8.0, 190.0)):
+    entity("enemy_horde", ex, ey, wave="gallery")
+entity("pickup", -8.0, 179.0, 0.8, type="Health")
+entity("pickup", 20.0, 179.0, 0.8, type="Ammo", weapon_id="pistol")
+entity("pickup", 20.0, 188.0, BALCONY + 0.8, type="Points")
+entity("pickup", 22.0, 196.0, BALCONY + 0.8, type="Points")
+entity("pickup", -10.0, 197.0, 0.8, type="Ammo", weapon_id="pistol")
+b.brush_entity("checkpoint", [(m(4.0), m(8.0), m(208.0), m(209.0), m(0), m(CORRIDOR_HEIGHT), CLIP)])
 
 b.write(MAP)
 print("wrote", MAP, "-", b.brush_count, "brushes,", len(b.entities), "entities")
