@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDPointClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_point_class.gd" id="1_point"]
+[ext_resource type="Script" path="res://scripts/levels/shield_pickup.gd" id="2_script"]
+
+[resource]
+script = ExtResource("1_point")
+script_class = ExtResource("2_script")
+classname = "shield_pickup"
+description = "The shield, floating and spinning. Taking it unlocks the shield, shows how to use it, and starts the wave with the same name."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"wave": "",
+"unlocks": "shield"
+}
+class_property_descriptions = {
+"wave": "Wave to start when it is taken (a wave_trigger with manual = 1). Leave empty for none",
+"unlocks": "What it hands over: shield, or a weapon id (shotgun, rifle, flamethrower, lightning)"
+}
+meta_properties = {
+"color": Color(0.4, 1, 1, 1),
+"size": AABB(-8, -8, -8, 8, 8, 8)
+}
+node_class = "Area3D"

@@ -17,10 +17,12 @@ classname = "wave_trigger"
 description = "Invisible volume. When the player enters, every enemy with the same wave spawns in."
 auto_apply_to_matching_node_properties = true
 class_properties = {
-"wave": "arena"
+"wave": "arena",
+"manual": 0
 }
 class_property_descriptions = {
-"wave": "Wave name (match the enemies and door)"
+"wave": "Wave name (match the enemies and door)",
+"manual": "0 = starts when the player walks in. 1 = never starts by itself: something else does, e.g. a shield_pickup with the same wave"
 }
 meta_properties = {
 "color": Color(0.2, 0.6, 1, 0.5)

@@ -7,6 +7,7 @@ extends Area3D
 const SpawnEffect = preload("res://scripts/levels/spawn_effect.gd")
 
 @export var wave := ""
+@export var manual: int = 0           # 1: walking in does nothing; something else starts the wave by calling start()
 @export var spawn_interval := 0.1     # seconds between enemies appearing
 
 var held: Array[Node] = []
@@ -48,7 +49,14 @@ func _hold_wave_enemies() -> void:
 
 
 func _on_body_entered(body: Node3D) -> void:
-	if triggered or not body.is_in_group("Player"):
+	if manual == 1 or not body.is_in_group("Player"):
+		return
+	start()
+
+
+# Starts the wave (once): the entrance doors shut and the enemies come in
+func start() -> void:
+	if triggered:
 		return
 	triggered = true
 	GlobalVariables.enemy_died.connect(_on_enemy_died)
@@ -72,10 +80,23 @@ func _spawn_enemies() -> void:
 			continue
 		parents[enemy].add_child(enemy)
 		SpawnEffect.play(get_tree(), (enemy as Node3D).global_position)
+		_alert.call_deferred(enemy)
 		if spawn_interval > 0.0:
 			await get_tree().create_timer(spawn_interval, false).timeout
 	if remaining.is_empty():
 		_wave_cleared()
+
+
+# A wave comes for the player whatever the distance: enemies only notice the player inside their vision area (about
+# 18 m), so one spawned further away would stand idle forever with the doors shut behind the player
+func _alert(enemy: Node) -> void:
+	for i in 3:
+		await get_tree().process_frame
+		if not is_instance_valid(enemy) or not enemy.is_inside_tree():
+			return
+	var player := get_tree().get_first_node_in_group("Player")
+	if player and enemy.has_method("_on_body_entered") and "target" in enemy and is_instance_valid(enemy.target):
+		enemy.call("_on_body_entered", enemy.target)
 
 
 func _on_enemy_died(enemy: Node3D) -> void:

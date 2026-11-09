@@ -1,4 +1,4 @@
-"""Builds trenchbroom/maps/level_01.map: the true level 1, acts 1 and 2 (pistol only), and a stub for what follows.
+"""Builds trenchbroom/maps/level_01.map: the true level 1, acts 1 to 3 (pistol, then the shield), and a stub for what follows.
 
 Run from the project root:  python tools/levelgen/active/level_01_act1.py
 
@@ -18,7 +18,11 @@ The walk, all on one floor (z = 0) except the platform in the barrel hall. All p
              the far end and a grunt that rushes you. Teaches that their energy balls can be dodged or ducked behind.
   Gallery    36 x 24 m with four pillars and a raised balcony on the east side, reached by a ramp (wave "gallery"):
              2 ranged enemies on the balcony, 2 on the floor and 3 grunts. Ammo, health and points around.
-  Exit       corridor with a checkpoint, then a placeholder room where act 3 (getting the shield) will go.
+  Exit       corridor with a checkpoint, then act 3: getting the shield.
+  Shrine     20 x 20 m with the shield floating on a pedestal in the middle. Taking it unlocks the shield, shows how
+             to use it and shuts the door behind you: three ranged enemies in the corners open fire (wave "ambush"),
+             so the first thing the player has to do with the shield is parry. No cover but the pedestal.
+  Exit       corridor with a checkpoint, then a placeholder room where act 4 will go.
 """
 TEXTURES = "Kenney prototype textures (Dark set, texture_01 to 09) until real ones are chosen"
 import os
@@ -61,7 +65,9 @@ g.add(1, 38, 1, 43, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, c
 g.add(-3, 44, 5, 49, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)     # gallery
 g.add(3, 46, 5, 49, floor=BALCONY, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_C, ceiling_tex=CEILING)  # balcony
 g.add(1, 50, 1, 53, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # exit corridor
-g.add(-1, 54, 3, 57, ceiling=6.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)             # placeholder for act 3
+g.add(-2, 54, 2, 58, ceiling=ROOM_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_B, ceiling_tex=CEILING)     # shrine
+g.add(1, 59, 1, 62, ceiling=CORRIDOR_HEIGHT, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)  # exit corridor
+g.add(-1, 63, 3, 66, ceiling=6.0, floor_tex=FLOOR, wall_tex=WALL_A, ceiling_tex=CEILING)             # placeholder for act 4
 g.build()
 
 
@@ -112,7 +118,8 @@ entity("pickup", 18.0, 40.0, 0.8, type="Health")
 door(4.0, 8.0, 83.5, "hall", 1)
 door(4.0, 8.0, 112.0, "hall", 0)
 trigger(0.0, 12.0, 86.0, 88.0, "hall")
-for ex, ey in ((-4.0, 100.0), (6.0, 106.0), (14.0, 104.0), (18.0, 96.0), (10.0, 108.0)):
+entity("enemy_horde", -4.0, 100.0, PLATFORM, wave="hall")      # on the platform: z is its floor height
+for ex, ey in ((6.0, 106.0), (14.0, 104.0), (18.0, 96.0), (10.0, 108.0)):
     entity("enemy_horde", ex, ey, wave="hall")
 for bx, by in ((12.0, 98.0), (14.0, 98.0), (13.0, 100.5)):
     entity("explosive_barrel", bx, by)
@@ -156,6 +163,18 @@ entity("pickup", 20.0, 188.0, BALCONY + 0.8, type="Points")
 entity("pickup", 22.0, 196.0, BALCONY + 0.8, type="Points")
 entity("pickup", -10.0, 197.0, 0.8, type="Ammo", weapon_id="pistol")
 b.brush_entity("checkpoint", [(m(4.0), m(8.0), m(208.0), m(209.0), m(0), m(CORRIDOR_HEIGHT), CLIP)])
+
+# --- Shrine: the shield on a pedestal; taking it starts the ambush ---
+box(3.0, 5.0, 225.0, 227.0, 0.0, 1.0, PILLAR, "pedestal")
+entity("shield_pickup", 4.0, 226.0, 1.6, wave="ambush")
+b.brush_entity("wave_trigger", [(m(3.0), m(5.0), m(222.0), m(223.0), m(0), m(4.0), CLIP)], wave="ambush", manual=1)
+door(4.0, 8.0, 215.5, "ambush", 1)
+door(4.0, 8.0, 236.0, "ambush", 0)
+for ex, ey in ((-6.0, 233.0), (10.0, 233.0), (4.0, 233.0)):
+    entity("enemy_ranged", ex, ey, wave="ambush")
+entity("pickup", -6.0, 220.0, 0.8, type="Health")
+entity("pickup", 10.0, 220.0, 0.8, type="Health")
+b.brush_entity("checkpoint", [(m(4.0), m(8.0), m(244.0), m(245.0), m(0), m(CORRIDOR_HEIGHT), CLIP)])
 
 b.write(MAP)
 print("wrote", MAP, "-", b.brush_count, "brushes,", len(b.entities), "entities")

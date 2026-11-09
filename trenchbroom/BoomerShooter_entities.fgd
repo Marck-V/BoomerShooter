@@ -27,6 +27,7 @@
 @SolidClass color(51 153 255) = wave_trigger : "Invisible volume. When the player enters, every enemy with the same wave spawns in."
 [
 	wave(string) : "Wave name (match the enemies and door)" : "arena"
+	manual(integer) : "0 = starts when the player walks in. 1 = never starts by itself: something else does, e.g. a shield_pickup with the same wave" : 0
 ]
 
 @SolidClass color(255 77 77) = locked_door : "Door that slides down into the floor to open and back up to close, driven by its wave."
@@ -97,4 +98,10 @@
 @SolidClass color(128 217 255) = window : "Glass pane. Draw a thin brush (any texture, it is covered with the glass shader). Cracks when hit and shatters when it takes enough damage or is caught in an explosion."
 [
 	health(float) : "Damage it takes to shatter (a pistol shot does 25; a hit that does not break it cracks it)" : "20.0"
+]
+
+@PointClass color(102 255 255) size(-8 -8 -8, 8 8 8) = shield_pickup : "The shield, floating and spinning. Taking it unlocks the shield, shows how to use it, and starts the wave with the same name."
+[
+	wave(string) : "Wave to start when it is taken (a wave_trigger with manual = 1). Leave empty for none" : ""
+	unlocks(string) : "What it hands over: shield, or a weapon id (shotgun, rifle, flamethrower, lightning)" : "shield"
 ]
