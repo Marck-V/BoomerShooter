@@ -111,7 +111,10 @@ func spawn(what, distance := -1.0, angle_degrees := 0.0, shielded := -1) -> Node
 	var to_player := player.global_position - enemy.global_position
 	to_player.y = 0.0
 	if to_player.length() > 0.01:
-		enemy.global_transform.basis = Basis.looking_at(to_player.normalized(), Vector3.UP).rotated(Vector3.UP, PI)
+		# Turned to face the player, keeping the enemy's own scale (the brute is 1.8 times the size of its model: losing that
+		# made it so small that its charge, which hits within 0.6 of its size, never connected here)
+		var own_scale := enemy.global_basis.get_scale()
+		enemy.global_transform.basis = Basis.looking_at(to_player.normalized(), Vector3.UP).rotated(Vector3.UP, PI).scaled(own_scale)
 	if frozen:
 		_freeze(enemy, true)
 	return enemy
