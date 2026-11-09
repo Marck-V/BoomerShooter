@@ -1,0 +1,32 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDSolidClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_solid_class.gd" id="1_solid"]
+[ext_resource type="Script" path="res://scripts/levels/hint_trigger.gd" id="2_script"]
+
+[resource]
+script = ExtResource("1_solid")
+spawn_type = 2
+origin_type = 4
+build_visuals = false
+build_occlusion = false
+collision_shape_type = 1
+collision_layer = 0
+collision_mask = 1
+script_class = ExtResource("2_script")
+classname = "hint_trigger"
+description = "Invisible volume. The first time the player walks in, a note appears at the bottom of the screen and fades out."
+auto_apply_to_matching_node_properties = true
+class_properties = {
+"title": "",
+"text": "",
+"seconds": 7.0
+}
+class_property_descriptions = {
+"title": "Big line at the top of the note",
+"text": "The lines below it, separated with |. {parry} and any other input action name in braces become the key bound to it",
+"seconds": "How long it stays before fading"
+}
+meta_properties = {
+"color": Color(1, 1, 0.3, 0.5)
+}
+node_class = "Area3D"

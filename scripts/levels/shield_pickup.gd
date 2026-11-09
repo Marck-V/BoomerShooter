@@ -11,8 +11,8 @@ const MODEL_SCALE := 0.9
 const SPIN_SPEED := 1.4
 const BOB_HEIGHT := 0.12
 const BOB_SPEED := 2.0
-const NOTE_TIME := 9.0
-const FADE_TIME := 1.0
+const WINDOW_THEME: Theme = preload("res://resources/themes/Windows95.tres")
+const KEY_CATCHER := preload("res://scripts/levels/window_key_catcher.gd")
 
 @export var wave := ""
 @export var unlocks := "shield"
@@ -62,7 +62,7 @@ func _on_body_entered(body: Node3D) -> void:
 	GlobalVariables.unlock(unlocks)
 	Audio.play("assets/audio/sfx/pickups/key_grab.mp3")
 	Checkpoints.mark_gone(self)
-	_show_note()
+	_show_window()
 	if not wave.is_empty():
 		for trigger in get_tree().current_scene.find_children("*", "Area3D", true, false):
 			if trigger.has_method("start") and "wave" in trigger and trigger.wave == wave:
@@ -73,51 +73,83 @@ func _on_body_entered(body: Node3D) -> void:
 			child.visible = false
 
 
-# A note at the bottom of the screen that fades out by itself
-func _show_note() -> void:
+# Pauses the game and explains the shield in a window; Continue (or Enter, or Esc) closes it and the game carries on
+func _show_window() -> void:
 	var layer := CanvasLayer.new()
-	layer.layer = 20
+	layer.layer = 40
+	layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	get_tree().root.add_child(layer)
 
-	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	box.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	box.grow_vertical = Control.GROW_DIRECTION_BEGIN
-	box.offset_bottom = -90.0
-	box.alignment = BoxContainer.ALIGNMENT_END
-	box.add_theme_constant_override("separation", 6)
-	layer.add_child(box)
+	var shade := ColorRect.new()
+	shade.color = Color(0.02, 0.0, 0.06, 0.65)
+	shade.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(shade)
 
-	var lines := [
-		["SHIELD ACQUIRED", 34, Color(0.6, 1.0, 1.0)],
-		["Hold %s to parry: block a shot just as it lands and it flies back at the enemy." % _key("parry"), 20, Color.WHITE],
-		["%s throws the shield. Press it again to call it back." % _key("throw_shield"), 20, Color.WHITE],
+	var centre := CenterContainer.new()
+	centre.set_anchors_preset(Control.PRESET_FULL_RECT)
+	layer.add_child(centre)
+
+	var panel := PanelContainer.new()
+	panel.theme = WINDOW_THEME
+	panel.custom_minimum_size = Vector2(760, 0)
+	centre.add_child(panel)
+	var margin := MarginContainer.new()
+	for side in ["left", "right", "top", "bottom"]:
+		margin.add_theme_constant_override("margin_" + side, 22)
+	panel.add_child(margin)
+	var column := VBoxContainer.new()
+	column.add_theme_constant_override("separation", 12)
+	margin.add_child(column)
+
+	var title := Label.new()
+	title.text = "The Shield"
+	title.add_theme_font_size_override("font_size", 34)
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(title)
+
+	var entries := [
+		["Parry", "%s" % NoteBox.key("parry"),
+			"Press it just as an enemy shot or blow is about to land. A parry throws projectiles straight back at the enemies, and each parry freezes the moment for an instant."],
+		["Block", "hold %s" % NoteBox.key("parry"),
+			"Keep holding after the parry window closes and the shield stays up, taking the hits for you."],
+		["Throw", NoteBox.key("throw_shield"),
+			"Hurls the shield. It bounces between up to four enemies, hitting each, then flies back to you. Press %s or %s again to call it back early." % [NoteBox.key("throw_shield"), NoteBox.key("parry")]],
+		["Grapple", "throw at a green point",
+			"The shield sticks to a glowing green grapple point and pulls you across to it. It also refreshes your jumps and dash, so you can chain them."],
 	]
-	for line in lines:
-		var label := Label.new()
-		label.text = line[0]
-		label.add_theme_font_size_override("font_size", line[1])
-		label.add_theme_color_override("font_color", line[2])
-		label.add_theme_color_override("font_outline_color", Color.BLACK)
-		label.add_theme_constant_override("outline_size", 8)
-		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		box.add_child(label)
+	for entry in entries:
+		var row := VBoxContainer.new()
+		row.add_theme_constant_override("separation", 2)
+		column.add_child(row)
+		var heading := Label.new()
+		heading.text = "%s   (%s)" % [entry[0], entry[1]]
+		heading.add_theme_font_size_override("font_size", 24)
+		heading.add_theme_color_override("font_color", Color(0.1, 0.45, 0.5))
+		row.add_child(heading)
+		var body := Label.new()
+		body.text = entry[2]
+		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		body.add_theme_font_size_override("font_size", 18)
+		row.add_child(body)
 
-	var tween := layer.create_tween()
-	tween.tween_interval(NOTE_TIME)
-	tween.tween_property(box, "modulate:a", 0.0, FADE_TIME)
-	tween.tween_callback(layer.queue_free)
-	queue_free_after(NOTE_TIME + FADE_TIME + 0.5)
+	var button := Button.new()
+	button.text = "Continue"
+	button.custom_minimum_size = Vector2(160, 40)
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	button.add_theme_font_size_override("font_size", 22)
+	column.add_child(button)
 
+	var close := func() -> void:
+		get_tree().paused = false
+		Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+		layer.queue_free()
+		queue_free()
+	button.pressed.connect(close)
+	var keys := Node.new()
+	keys.set_script(KEY_CATCHER)
+	keys.set_meta("close", close)
+	layer.add_child(keys)
 
-# This pickup is hidden, not freed, until the note is done, so the tween's layer outlives nothing important
-func queue_free_after(seconds: float) -> void:
-	get_tree().create_timer(seconds).timeout.connect(queue_free)
-
-
-# The first key or button bound to an action, as text
-func _key(action: String) -> String:
-	for event in InputMap.action_get_events(action):
-		if event is InputEventKey or event is InputEventMouseButton:
-			return event.as_text().replace(" (Physical)", "")
-	return action
+	get_tree().paused = true
+	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	button.grab_focus()

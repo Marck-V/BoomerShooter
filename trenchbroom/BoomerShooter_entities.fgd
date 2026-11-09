@@ -105,3 +105,10 @@
 	wave(string) : "Wave to start when it is taken (a wave_trigger with manual = 1). Leave empty for none" : ""
 	unlocks(string) : "What it hands over: shield, or a weapon id (shotgun, rifle, flamethrower, lightning)" : "shield"
 ]
+
+@SolidClass color(255 255 77) = hint_trigger : "Invisible volume. The first time the player walks in, a note appears at the bottom of the screen and fades out."
+[
+	title(string) : "Big line at the top of the note" : ""
+	text(string) : "The lines below it, separated with |. {parry} and any other input action name in braces become the key bound to it" : ""
+	seconds(float) : "How long it stays before fading" : "7.0"
+]
