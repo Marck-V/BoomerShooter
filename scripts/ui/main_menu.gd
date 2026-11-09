@@ -10,6 +10,20 @@ var reset_armed := false
 
 func _ready():
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
+	_update_continue_button()
+
+
+# Continue is only there when a run has been saved: the last checkpoint (or the start of the level) of the story
+func _update_continue_button() -> void:
+	$ButtonsContainer/ContinueButton.visible = Checkpoints.has_saved_run()
+
+
+func _on_continue_button_pressed():
+	GlobalVariables.set_profile(GlobalVariables.STORY)
+	if Checkpoints.load_from_disk() and ResourceLoader.exists(Checkpoints.current.level_path):
+		get_tree().change_scene_to_file(Checkpoints.current.level_path)
+	else:
+		_update_continue_button()   # the save is unusable (a level that no longer exists): there is nothing to continue
 
 func _on_play_button_pressed():
 	GlobalVariables.set_profile(GlobalVariables.STORY)   # the intended run: only what the story has handed out so far
@@ -31,6 +45,7 @@ func _on_reset_button_pressed():
 		return
 	reset_armed = false
 	GlobalVariables.reset_story()
+	_update_continue_button()
 	button.text = "Story reset"
 	await get_tree().create_timer(1.5).timeout
 	button.text = "Reset Story"

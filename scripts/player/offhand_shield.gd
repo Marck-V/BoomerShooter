@@ -398,6 +398,8 @@ func _animate_hand(delta: float) -> void:
 # scaled so that the point lands a margin in front of what the line hits. `pos`, `rot_degrees` and `size` are the
 # pose it is about to take (the camera's own space, -Z forward).
 func _wall_squeeze(pos: Vector3, rot_degrees: Vector3, size: float) -> float:
+	if not is_inside_tree() or not camera.is_inside_tree():
+		return 1.0   # the level is being torn down (back to the main menu): nothing to measure against
 	var space := get_world_3d().direct_space_state
 	var origin := camera.global_position
 	var radius := _hand_disc_radius() * size * 1.1

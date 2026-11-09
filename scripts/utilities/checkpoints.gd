@@ -50,6 +50,7 @@ func level_started(level: Node) -> void:
 	var player := _find_player()
 	if player:
 		current = _snapshot(level, "", player.global_position, player.rotation_target.y)
+		_save_if_story()
 
 
 # Called by a checkpoint the player walks into. Each one only counts the first time: returns whether this was it.
@@ -61,6 +62,7 @@ func reach(checkpoint: Node3D, spawn_position: Vector3) -> bool:
 		return false
 	_reached[id] = true
 	current = _snapshot(level, id, spawn_position, player.rotation_target.y)
+	_save_if_story()
 	checkpoint_reached.emit(checkpoint)
 	return true
 
@@ -102,9 +104,21 @@ func is_wave_cleared(wave: String) -> bool:
 	return _cleared_waves.has(wave)
 
 
-# --- Saving between sessions (nothing calls these yet) ---
-# To continue a run after the game is closed: save_to_disk() when a checkpoint is reached, and on "Continue"
-# call load_from_disk() and change to current.level_path. level_started() then restores it like a respawn.
+# --- Saving between sessions ---
+# The story run is written to disk at the start of every level and at every checkpoint, so the main menu's Continue
+# button can load it (load_from_disk(), then change to current.level_path: level_started() restores it like a
+# respawn). Only the story profile saves: a level started from the editor runs on the dev profile and must not
+# overwrite the real run.
+func _save_if_story() -> void:
+	if GlobalVariables.profile == GlobalVariables.STORY:
+		save_to_disk()
+
+
+# Whether there is a saved run to continue
+func has_saved_run() -> bool:
+	return ResourceLoader.exists(SAVE_PATH)
+
+
 func save_to_disk() -> void:
 	if current:
 		ResourceSaver.save(current, SAVE_PATH)

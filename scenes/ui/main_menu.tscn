@@ -52,6 +52,14 @@ grow_horizontal = 2
 grow_vertical = 2
 alignment = 1
 
+[node name="ContinueButton" type="Button" parent="ButtonsContainer"]
+visible = false
+layout_mode = 2
+theme = ExtResource("1_1g8jr")
+theme_override_fonts/font = ExtResource("3_x2yvf")
+theme_override_font_sizes/font_size = 32
+text = "Continue"
+
 [node name="PlayButton" type="Button" parent="ButtonsContainer"]
 layout_mode = 2
 theme = ExtResource("1_1g8jr")
@@ -101,6 +109,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10, 0)
 script = ExtResource("8_wb0q5")
 cycle_length = 30.0
 
+[connection signal="pressed" from="ButtonsContainer/ContinueButton" to="." method="_on_continue_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/PlayButton" to="." method="_on_play_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
 [connection signal="pressed" from="ButtonsContainer/ResetButton" to="." method="_on_reset_button_pressed"]
