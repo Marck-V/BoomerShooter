@@ -184,8 +184,8 @@ for y0, y1 in ((133.0, 138.0), (143.0, 148.0)):
     wall_window_x(20.0, 1, y0, y1, 3.0, 6.5)
 skylight(0.0, 12.0, 136.0, 144.0, ROOM_HEIGHT)
 # Gallery (x -12..24, y 176..200)
-for y0, y1 in ((180.0, 185.0), (190.0, 195.0)):
-    wall_window_x(-12.0, -1, y0, y1, 3.0, 6.5)
+# the west wall is wide open (no glass): the fight is closed off by a barrier across the opening, not by the wall
+HOLES.append((m(-12.5) - 2, m(-12.0) + 2, m(178.0), m(198.0), m(3.0), m(7.0)))
 for x0, x1 in ((-8.0, -3.0), (-0.0, 4.0)):
     wall_window_y(200.0, 1, x0, x1, 3.0, 6.5)
 wall_window_y(200.0, 1, 16.0, 21.0, BALCONY + 2.0, BALCONY + 5.0)
@@ -386,8 +386,9 @@ entity("pickup", 18.0, 132.0, 0.8, type="Ammo", weapon_id="pistol")
 # --- Gallery ---
 for px, py in ((-4.0, 186.0), (4.0, 186.0), (-4.0, 192.0), (4.0, 192.0)):
     box(px - 1.0, px + 1.0, py - 1.0, py + 1.0, 0.0, ROOM_HEIGHT, PILLAR, "pillar")
-door(4.0, 8.0, 175.5, "gallery", 1)
-door(4.0, 8.0, 200.0, "gallery", 0)
+barrier(4.0, 8.0, 175.5, 175.75, 0.0, CORRIDOR_HEIGHT, "gallery")
+barrier(4.0, 8.0, 200.0, 200.25, 0.0, CORRIDOR_HEIGHT, "gallery")
+barrier(-12.5, -12.25, 178.0, 198.0, 3.0, 7.0, "gallery")
 trigger(-12.0, 24.0, 177.0, 183.0, "gallery")
 for ex, ey in ((20.0, 195.0), (18.0, 198.0)):
     entity("enemy_ranged", ex, ey, BALCONY, wave="gallery")
