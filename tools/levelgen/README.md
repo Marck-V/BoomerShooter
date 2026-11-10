@@ -27,3 +27,13 @@ Need an old script back? `git log --diff-filter=D --name-only -- tools/levelgen`
 From the project root:
 
     python tools/levelgen/active/<script>.py
+
+## Keeping hand edits alongside a script
+
+If you edit a section by hand but its script is still in use, capture the edits so a re-run keeps them. For level 1:
+
+    python tools/levelgen/active/level_01_hand_edits.py capture
+
+This diffs the script's raw output against the current map and stores the difference in `level_01_hand_edits.json`;
+`level_01_act1.py` applies it as its last step. Run `capture` again after each round of hand edits (before changing
+the script). Retiring the script (rule 2) is still the simpler end state.

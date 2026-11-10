@@ -495,5 +495,10 @@ entity("pickup", 178.0, 248.0, TIER + 0.8, type="Health")
 entity("pickup", 180.0, 214.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
 entity("pickup", 180.0, 242.0, TIER + 0.8, type="Ammo", weapon_id="pistol")
 
+if "--no-hand-edits" in sys.argv:   # used by level_01_hand_edits.py capture: the raw generator output
+    MAP = sys.argv[sys.argv.index("--no-hand-edits") + 1]
 b.write(MAP)
+if "--no-hand-edits" not in sys.argv:
+    import level_01_hand_edits
+    level_01_hand_edits.apply_patch(MAP)   # what was changed by hand in TrenchBroom is put back on top
 print("wrote", MAP, "-", b.brush_count, "brushes,", len(b.entities), "entities")
