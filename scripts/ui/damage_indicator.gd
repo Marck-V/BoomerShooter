@@ -26,7 +26,7 @@ func _ready() -> void:
 
 # `source` is a Node3D (followed while it lives) or a world position
 func add_source(source) -> void:
-	var node: Node3D = source if source is Node3D else null
+	var node: Node3D = source if source is Node3D and source.is_inside_tree() else null
 	var point := Vector3.ZERO
 	if node != null:
 		point = node.global_position
@@ -51,8 +51,8 @@ func _process(delta: float) -> void:
 	for arrow in arrows:
 		arrow.age += delta
 		if arrow.source != null:
-			if is_instance_valid(arrow.source):
-				arrow.point = arrow.source.global_position   # a source that dies leaves its arrow at the last spot
+			if is_instance_valid(arrow.source) and arrow.source.is_inside_tree():
+				arrow.point = arrow.source.global_position   # a source that dies, or is taken out of the level, leaves its arrow at the last spot
 			else:
 				arrow.source = null
 	arrows = arrows.filter(func(arrow): return arrow.age < HOLD_TIME + FADE_TIME)

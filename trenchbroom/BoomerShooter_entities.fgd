@@ -120,3 +120,8 @@
 
 @PointClass color(255 204 51) size(-16 -16 0, 16 16 16) = boss_reward : "Where the boss's reward appears (a weapon on a podium) when it is beaten. Put it on the floor at the back of the arena."
 []
+
+@SolidClass color(255 26 26) = barrier : "Red holographic wall. Not there until the wave with the same name starts (a wave_trigger), then it rises and blocks the player and enemies until every enemy of the wave is dead. Draw it thin (about 0.25 m) and as tall as the opening. Closes off a fight without a door, so the level can stay open."
+[
+	wave(string) : "Wave name (match the trigger and enemies)" : "arena"
+]

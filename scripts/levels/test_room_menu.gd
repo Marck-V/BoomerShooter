@@ -23,6 +23,7 @@ var _switch_nodes: Array[CheckButton] = []
 func _actions() -> Array:
 	return [
 		["Melee dodger horde", func(): room.spawn_horde()],
+		["Barrier arena", func(): room.spawn_barrier_arena()],
 		["Clear enemies", func(): room.clear_enemies()],
 		["Reset props", func(): room.reset_props()],
 	]

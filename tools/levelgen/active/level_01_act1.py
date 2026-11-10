@@ -305,6 +305,12 @@ def ramp(x0, x1, y0, y1, z_base, z_top, rises, tex=None, comment="ramp", rails="
             _rail(x0, x1, y1, y1 + RAIL, z_base, z_top, rises)
 
 
+def barrier(x0, x1, y0, y1, z0, z1, wave):
+    """A red holographic barrier (scripts/levels/barrier.gd) instead of a door: not there until the wave starts, then it
+    blocks the player and enemies until the wave is dead. Draw it thin (0.25 m) along one axis. Unused so far."""
+    b.brush_entity("barrier", [(m(x0), m(x1), m(y0), m(y1), m(z0), m(z1), DOOR)], wave=wave)
+
+
 def ramp_x(x0, x1, y0, y1, z_base, z_top, rises_toward, tex, comment="ramp"):
     """Wedge that rises toward +x or -x (mapgen's ramp only rises along y)."""
     a, bb, c, d = (x0, y0, z_base), (x1, y0, z_base), (x1, y1, z_base), (x0, y1, z_base)

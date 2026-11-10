@@ -9,6 +9,7 @@ extends Node3D
 # (F1, scripts/levels/test_room_menu.gd), which pauses the game while it's open:
 #   spawn buttons    one for each entry of `spawnable`, in front of you
 #   Melee dodger horde   HORDE_SIZE melee dodgers in two staggered rows ahead of you
+#   Barrier arena    an open area ahead of you that shuts you in with holographic barriers and a wave of enemies
 #   Clear enemies    removes every enemy
 #   Reset props      rebuilds the windows and barrels in the north-west corner (reset_props())
 #   Freeze enemies   switch: stops the enemies' AI where they are (animations pause; they can still be hit)
@@ -28,6 +29,10 @@ const WINDOW_SCRIPT := preload("res://scripts/props/destructible_window.gd")
 const PROPS_CORNER := Vector3(-18.0, 0.0, -22.0)  # the north-west corner holds the windows and barrels
 const HORDE_DISTANCES := [10.0, 13.0]           # metres to the front and back row
 const HORDE_SPREAD := 50.0                      # degrees each row fans across
+const BARRIER := preload("res://scripts/levels/barrier.gd")
+const WAVE_TRIGGER := preload("res://scripts/levels/wave_trigger.gd")
+const BARRIER_ARENA_SIZE := 18.0                # metres across the barrier test arena
+const BARRIER_HEIGHT := 5.0
 
 @export var god_mode := true
 @export var refill_below := 30                # god mode tops health back up once it falls under this
@@ -55,6 +60,7 @@ var damage_log: Array[Dictionary] = []   # {time, amount, health} for every hit 
 var menu: CanvasLayer                    # the F1 test menu
 var _last_health := PLAYER_MAX_HEALTH
 var props: Node3D                        # the windows and barrels in the corner (reset_props() rebuilds them)
+var barrier_arenas := 0                  # how many barrier arenas spawn_barrier_arena() has made
 
 
 func _ready() -> void:
@@ -156,6 +162,52 @@ func spawn_horde(count := HORDE_SIZE) -> Array[Node3D]:
 		var t := 0.5 if in_row == 1 else float(slot) / (in_row - 1)
 		spawned.append(spawn(HORDE_SCENE, HORDE_DISTANCES[row], lerpf(-spread / 2.0, spread / 2.0, t)))
 	return spawned
+
+
+# An open-air combat area ahead of you, with no walls: walking into it raises four holographic barriers round it
+# (scripts/levels/barrier.gd) and wakes its enemies, and the barriers drop when every enemy is dead. The same pieces a
+# level uses (a wave_trigger, enemies with a wave name, barriers with the same name). Each call makes a new one.
+func spawn_barrier_arena() -> void:
+	barrier_arenas += 1
+	var wave_name := "barrier_test_%d" % barrier_arenas
+	var forward := -get_viewport().get_camera_3d().global_basis.z
+	forward.y = 0.0
+	forward = forward.normalized() if forward.length() > 0.01 else Vector3.FORWARD
+	var centre := player.global_position + forward * (BARRIER_ARENA_SIZE * 0.5 + 4.0)
+	centre.y = 0.0
+	var half := BARRIER_ARENA_SIZE * 0.5
+	var arena := Node3D.new()
+	arena.name = "BarrierArena%d" % barrier_arenas
+	add_child(arena)
+	arena.global_position = centre
+	for wall in [[Vector3(0, 0, -half), Vector3(BARRIER_ARENA_SIZE, BARRIER_HEIGHT, 0.25)],
+			[Vector3(0, 0, half), Vector3(BARRIER_ARENA_SIZE, BARRIER_HEIGHT, 0.25)],
+			[Vector3(-half, 0, 0), Vector3(0.25, BARRIER_HEIGHT, BARRIER_ARENA_SIZE)],
+			[Vector3(half, 0, 0), Vector3(0.25, BARRIER_HEIGHT, BARRIER_ARENA_SIZE)]]:
+		var barrier := BARRIER.create(wall[1])
+		barrier.wave = wave_name
+		arena.add_child(barrier)
+		barrier.position = wall[0] + Vector3(0, BARRIER_HEIGHT * 0.5, 0)
+	# The enemies are made before the trigger: it holds the ones with its wave name out of the room until it fires
+	var ranged: PackedScene = load("res://scenes/enemies/enemy_ranged.tscn")
+	var spots := [Vector3(-5, 0, -5), Vector3(5, 0, -5), Vector3(-5, 0, 5), Vector3(5, 0, 5), Vector3(0, 0, -6), Vector3(0, 0, 6)]
+	for i in spots.size():
+		var enemy := (ranged if i >= 4 else HORDE_SCENE).instantiate() as Node3D
+		enemy.set("wave", wave_name)
+		enemies.add_child(enemy)
+		enemy.global_position = centre + spots[i]
+	var trigger := Area3D.new()
+	trigger.set_script(WAVE_TRIGGER)
+	trigger.set("wave", wave_name)
+	trigger.collision_layer = 0
+	trigger.collision_mask = PhysicsLayers.PLAYER
+	var shape := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = Vector3(BARRIER_ARENA_SIZE - 6.0, BARRIER_HEIGHT, BARRIER_ARENA_SIZE - 6.0)   # well inside the walls
+	shape.shape = box
+	trigger.add_child(shape)
+	arena.add_child(trigger)
+	trigger.position = Vector3(0, BARRIER_HEIGHT * 0.5, 0)
 
 
 func set_spawn_shielded(value: bool) -> void:
