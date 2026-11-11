@@ -20,7 +20,8 @@ class_name PlayerData
 	"shotgun_glitch_shot": false,
 
 	"rifle_firerate": false,
-	"rifle_quickness": false
+	"rifle_quickness": false,
+	"rifle_conductor": false
 }
 
 # What the player has been given so far: weapon ids and "shield". A new story starts with the pistol only (see

@@ -307,6 +307,9 @@ func damage(amount: float, multiplier: float = 1.0):
 	if destroyed:
 		return
 	var dmg := amount * multiplier
+	# Conductor Rounds (rifle upgrade): any other hit sets off the spikes the rifle planted
+	if not silent_damage and not spiking:
+		dmg += _take_spikes()
 	# Accelerant (flamethrower upgrade): a burning enemy takes extra from every other weapon. The flame, the burn and the
 	# fire blasts all deal their damage silently, so they don't get the bonus themselves.
 	if not silent_damage and _is_accelerated():
@@ -334,6 +337,40 @@ func damage_silently(amount: float) -> void:
 
 
 const ACCELERANT_MULTIPLIER := 1.25
+
+
+# --- Conductor Rounds (rifle upgrade) ---
+# Each rifle hit plants a spike, up to SPIKE_MAX. The next hit from anything but the rifle (a shotgun blast, a pistol shot,
+# a chain of lightning, the shield) sets off all of them for SPIKE_BONUS extra damage each. Damage over time (burning)
+# neither plants nor sets them off. They fade SPIKE_LIFETIME seconds after the last one landed.
+const SPIKE_MAX := 5
+const SPIKE_BONUS := 8.0
+const SPIKE_LIFETIME := 6.0
+const SpikeMarker = preload("res://scripts/weapons/spike_marker.gd")
+var spikes := 0
+var spikes_expire_msec := 0
+var spiking := false   # true while the rifle's own hit lands: it plants spikes and never sets them off
+
+
+func add_spike(world_point := Vector3.INF) -> void:
+	if destroyed:
+		return
+	if spikes > 0 and Time.get_ticks_msec() >= spikes_expire_msec:
+		spikes = 0
+	spikes = mini(spikes + 1, SPIKE_MAX)
+	spikes_expire_msec = Time.get_ticks_msec() + int(SPIKE_LIFETIME * 1000.0)
+	SpikeMarker.plant(self, world_point)
+
+
+# The bonus damage the spikes add to the hit that sets them off (0 if there are none or they faded)
+func _take_spikes() -> float:
+	if spikes <= 0:
+		return 0.0
+	var count := spikes
+	spikes = 0
+	if Time.get_ticks_msec() >= spikes_expire_msec:
+		return 0.0
+	return count * SPIKE_BONUS
 
 
 func _is_accelerated() -> bool:

@@ -3,6 +3,7 @@ extends BaseWeapon
 # --- Weapon Upgrades ---
 var firerate = "rifle_firerate"
 var quickness = "rifle_quickness"
+var conductor = "rifle_conductor"
 
 # --- Quickness Buff Parameters ---
 var enemies_killed: int = 0
@@ -26,6 +27,21 @@ func _ready():
 
 	# Listen for all enemy deaths globally
 	GlobalVariables.enemy_died.connect(on_enemy_died)
+
+# ---------------------------
+# Conductor Rounds: every rifle hit plants a spike (see EnemyBase.add_spike); other weapons set them off
+# ---------------------------
+func damage_hit(collider: Object, amount: float, point: Vector3) -> void:
+	var enemy = get_hit_enemy(collider)
+	if enemy == null or is_shield_hit(collider) or not GlobalVariables.has_upgrade(conductor) \
+			or not enemy.has_method("add_spike"):
+		super.damage_hit(collider, amount, point)
+		return
+	enemy.spiking = true
+	super.damage_hit(collider, amount, point)
+	enemy.spiking = false
+	enemy.add_spike(point)
+
 
 # ---------------------------
 # Quickness / Kill Streak

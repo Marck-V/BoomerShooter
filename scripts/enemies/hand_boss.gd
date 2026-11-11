@@ -1528,7 +1528,8 @@ func _transition() -> void:
 func damage(amount: float, multiplier: float = 1.0) -> void:
 	if destroyed or invulnerable:
 		return
-	_lose_health(amount * multiplier * vulnerability)
+	var spike_bonus := 0.0 if spiking else _take_spikes()   # Conductor Rounds
+	_lose_health((amount * multiplier + spike_bonus) * vulnerability)
 	_report_hit(multiplier > 1.0, false)
 
 

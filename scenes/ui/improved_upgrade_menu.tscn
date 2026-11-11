@@ -146,6 +146,15 @@ text = "Quickness"
 upgrade_id = "rifle_quickness"
 description = "Killing 3 enemies with the rifle, each within 5 seconds of the last, doubles your movement speed for 3 seconds."
 
+[node name="RifleButton3" parent="Panel/TabContainer/Rifle/RifleButton1/RifleButton2" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_top = 191.34
+offset_right = 120.0
+offset_bottom = 219.34
+text = "Conductor"
+upgrade_id = "rifle_conductor"
+description = "Rifle hits plant spikes (max 5). Any other weapon's next hit sets them off for +8 damage each."
+
 [node name="Flamethrower" type="Control" parent="Panel/TabContainer"]
 visible = false
 layout_mode = 2

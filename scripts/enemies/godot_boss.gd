@@ -583,9 +583,10 @@ func start_attack_gap() -> void:
 func damage(amount: float, multiplier: float = 1.0) -> void:
 	if destroyed or invulnerable:
 		return
-	var dealt := amount * multiplier
+	var spike_bonus := 0.0 if spiking else _take_spikes()   # Conductor Rounds
+	var dealt := amount * multiplier + spike_bonus
 	if shield != null and is_instance_valid(shield):
-		dealt = shield.absorb_damage(amount)
+		dealt = shield.absorb_damage(amount + spike_bonus)
 	dealt *= vulnerability
 	var shielded := shield != null and is_instance_valid(shield)
 	_lose_health(dealt)
