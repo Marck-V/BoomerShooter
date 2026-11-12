@@ -222,10 +222,12 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 			if collider and collider.has_method("damage"):
 				# The hit can be a hurtbox or a shield; the chain starts from the enemy it belongs to
 				var chain_target = get_hit_enemy(collider)
+				var was_alive := _is_alive(chain_target)
 				flash_hit_enemy(collider, raycast.get_collision_point(), 1.0, HIT_FLASH_COLOR)
 				damage_hit(collider, data.damage, raycast.get_collision_point())
 
 				if chain_target:
+					_burst_if_killed(chain_target, was_alive)
 					ElectricAura.apply(chain_target)
 					_jolt(chain_target)
 					_run_chain(chain_target)
@@ -278,12 +280,56 @@ func _run_chain(first_enemy: Node3D) -> void:
 				visited.append(next_enemy)
 				_spawn_lightning_arc(from_position, next_enemy.global_position)
 				next_frontier.append(next_enemy.global_position)
-				next_enemy.damage(data.damage, 1)
-				_jolt(next_enemy)
-				_chain_hit_effects(next_enemy, from_position)
+				_zap(next_enemy, data.damage, from_position)
 		frontier = next_frontier
 		if not frontier.is_empty():
 			await get_tree().create_timer(CHAIN_HOP_DELAY, false).timeout
+
+
+# One enemy struck by the lightning (a jump of the chain or a burst): damage, jolt, effects, and a burst if it died
+func _zap(enemy: Node3D, amount: float, from_position: Vector3) -> void:
+	var was_alive := _is_alive(enemy)
+	enemy.damage(amount, 1)
+	_jolt(enemy)
+	_chain_hit_effects(enemy, from_position)
+	_burst_if_killed(enemy, was_alive)
+
+
+func _is_alive(enemy) -> bool:
+	return enemy != null and is_instance_valid(enemy) and enemy.get("destroyed") != true
+
+
+# ---------------------------
+# Chain Reaction (upgrade): an enemy the lightning kills bursts, striking every enemy within BURST_RADIUS for
+# BURST_DAMAGE. An enemy the burst kills bursts too, so a dense crowd goes up one after another; each enemy only dies
+# once, so it always ends.
+# ---------------------------
+const CHAIN_REACTION := "lightning_chain_reaction"
+const BURST_RADIUS := 4.0
+const BURST_DAMAGE := 50.0
+const BURST_DELAY := 0.12      # between a kill and its burst, so the cascade can be followed
+const BURST_ARC_WIDTH := 0.09
+
+
+func _burst_if_killed(enemy, was_alive: bool) -> void:
+	if was_alive and not _is_alive(enemy) and GlobalVariables.has_upgrade(CHAIN_REACTION):
+		_burst(enemy.global_position)
+
+
+func _burst(center: Vector3) -> void:
+	await get_tree().create_timer(BURST_DELAY, false).timeout
+	var chest := Vector3.UP * 1.0
+	# The discharge itself: a crack straight up out of the body, with the light
+	LightningBolt.strike(get_tree(), center + chest * 0.4, center + chest * 2.2, {"width": BURST_ARC_WIDTH, "light": true})
+	var radius_d2 := BURST_RADIUS * BURST_RADIUS
+	for candidate in get_tree().get_nodes_in_group("Enemy"):
+		var enemy := candidate as Node3D
+		if not _is_alive(enemy) or not enemy.has_method("damage"):
+			continue
+		if center.distance_squared_to(enemy.global_position) > radius_d2:
+			continue
+		LightningBolt.strike(get_tree(), center + chest, enemy.global_position + chest, {"width": BURST_ARC_WIDTH, "light": false})
+		_zap(enemy, BURST_DAMAGE, center)
 
 
 func _jolt(enemy: Node3D) -> void:
