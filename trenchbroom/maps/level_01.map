@@ -4387,7 +4387,7 @@
 {
 "classname" "hint_trigger"
 "title" "GRAPPLE"
-"text" "Throw the shield ({throw_shield}) at a green point to be pulled to it.|Land on the pillar, then throw at the next point.|Fall in and there is a ramp out."
+"text" "Throw the shield ({throw_shield}) at a green point to be pulled to it.|Land on the pillar, then throw at the next point."
 "seconds" "9"
 // brush 0
 {
