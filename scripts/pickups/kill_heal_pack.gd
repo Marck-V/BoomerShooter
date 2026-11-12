@@ -3,7 +3,10 @@ class_name KillHealPack
 
 # A small health pack that pops out of a killed enemy. The kill itself heals nothing: the pack does.
 #  - HOMING (the player killed it from really close): it flies at the player and heals on arrival.
-#  - DROP (the player is further away): it falls to the floor and waits to be walked over, like any other pickup.
+#  - DROP (the player is further away): it falls to the floor and waits to be walked over, like any other pickup. It can
+#    be collected the whole time, in the air too (running through the burst picks it up), and when the player who needs
+#    the health comes near it is drawn to them. If it is not picked up it blinks and goes away after DROP_LIFETIME, so
+#    packs left behind don't pile up in the level.
 # Use: KillHealPack.spawn(tree, from_point, player, amount, homing)
 
 enum Mode { HOMING, DROP }
@@ -27,6 +30,12 @@ const HEAL_PER_PACK := 5             # a kill that heals more than this sends se
 const REST_HEIGHT := 0.45            # a dropped pack floats this far above the floor
 const PICKUP_RADIUS := 1.3           # a dropped pack is collected when the player's body is this close
 const FALL_LIMIT := 6.0              # a drop that finds no floor for this long (over a pit) is removed
+const MAGNET_RADIUS := 3.0           # a dropped pack this close to a player who needs health flies to them
+const MAGNET_START_SPEED := 6.0
+const MAGNET_ACCELERATION := 60.0
+const MAGNET_MAX_SPEED := 22.0
+const DROP_LIFETIME := 30.0          # seconds from the kill until a dropped pack nobody picked up goes away
+const DROP_WARNING := 4.0            # it blinks for the last few seconds of that
 
 var mode := Mode.HOMING
 var player: Node3D
@@ -38,6 +47,8 @@ var model: Node3D
 var landed := false
 var rest_y := 0.0
 var bob_time := randf() * TAU
+var last_position := Vector3.ZERO    # where it was last frame: the stretch it travelled is checked for the player too
+var magnet_speed := 0.0
 
 
 # Sends out the packs for a heal of `total`: one per HEAL_PER_PACK, the heal shared between them
@@ -53,6 +64,7 @@ static func spawn(tree: SceneTree, from_point: Vector3, target: Node3D, total: i
 		pack.mode = Mode.HOMING if homing else Mode.DROP
 		tree.current_scene.add_child(pack)
 		pack.global_position = from_point
+		pack.last_position = from_point
 
 
 func _ready() -> void:
@@ -110,13 +122,17 @@ func _process_homing(delta: float) -> void:
 
 # Falls to the floor, then bobs and spins in place until the player walks into it
 func _process_drop(delta: float) -> void:
+	if _collect_or_pull(delta):
+		return
 	if landed:
+		var time_left := DROP_LIFETIME - age
+		if time_left <= 0.0:
+			queue_free()
+			return
+		visible = time_left > DROP_WARNING or int(age * 6.0) % 2 == 0
 		bob_time += delta
 		global_position.y = rest_y + sin(bob_time * 2.0) * 0.08
 		model.rotate_y(1.5 * delta)
-		var body := player.global_position + Vector3.UP * 0.9
-		if global_position.distance_to(body) <= PICKUP_RADIUS and player.get("health") != null and player.health < 100:
-			_deliver()
 		return
 	if age > FALL_LIMIT:
 		queue_free()
@@ -135,6 +151,34 @@ func _process_drop(delta: float) -> void:
 			return
 	global_position = next
 	model.rotate_y(7.0 * delta)
+
+
+# Collected when the player's body touches it (also in the air, and anywhere along the way it moved since last frame, so
+# neither a fast pack nor a fast player slips past), and drawn to a player who needs health once they are close and
+# nothing solid is between them. Returns whether it did either this frame. A player at full health leaves it alone.
+func _collect_or_pull(delta: float) -> bool:
+	var swept_from := last_position
+	last_position = global_position
+	if player.get("health") == null or player.health >= 100:
+		magnet_speed = 0.0
+		return false
+	var body := player.global_position + Vector3.UP * 0.9
+	var closest := Geometry3D.get_closest_point_to_segment(body, swept_from, global_position)
+	if closest.distance_to(body) <= PICKUP_RADIUS:
+		_deliver()
+		return true
+	if global_position.distance_to(body) <= MAGNET_RADIUS and _clear_path_to(body):
+		magnet_speed = clampf(maxf(magnet_speed, MAGNET_START_SPEED) + MAGNET_ACCELERATION * delta, MAGNET_START_SPEED, MAGNET_MAX_SPEED)
+		global_position += (body - global_position).normalized() * magnet_speed * delta
+		model.rotate_y(7.0 * delta)
+		return true
+	magnet_speed = 0.0
+	return false
+
+
+func _clear_path_to(point: Vector3) -> bool:
+	var query := PhysicsRayQueryParameters3D.create(global_position, point, PhysicsLayers.ENVIRONMENT)
+	return get_world_3d().direct_space_state.intersect_ray(query).is_empty()
 
 
 func _deliver() -> void:
