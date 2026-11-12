@@ -33,6 +33,7 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 @export var max_bounces := 4
 @export var throw_speed := 38.0
 @export var return_speed := 48.0
+@export var recall_time := 0.0     # a shield called back by the player (F or parry again) crosses any distance in this long. 0: it is back in the hand the same frame
 @export var bounce_radius := 11.0
 @export var throw_range := 60.0
 @export var catch_distance := 1.3
@@ -168,6 +169,7 @@ var fov_tween: Tween
 var thrown: Node3D
 var thrown_spinner: Node3D
 var phase := Phase.OUT
+var recall_speed := 0.0                   # while recalled by the player: how fast it flies home (0 when it is coming back by itself)
 var fly_dir := Vector3.FORWARD
 var traveled := 0.0
 var flight_time := 0.0
@@ -783,6 +785,7 @@ func _start_throw() -> void:
 	thrown_trail = trail
 
 	phase = Phase.OUT
+	recall_speed = 0.0
 	traveled = 0.0
 	flight_time = 0.0
 	bounces = 0
@@ -835,6 +838,8 @@ func _recall() -> void:
 		grapple_point = null
 	phase = Phase.RETURN
 	bounce_target = null
+	var hand_point := camera.global_position + camera.global_basis * HAND_OFFSET
+	recall_speed = thrown.global_position.distance_to(hand_point) / maxf(recall_time, 0.001)
 	Audio.play(THROW_SOUND, 1.3)
 
 
@@ -897,7 +902,10 @@ func _update_return(delta: float) -> void:
 	if to_hand.length() <= catch_distance:
 		_catch()
 		return
-	thrown.global_position += to_hand.normalized() * minf(return_speed * delta, to_hand.length())
+	thrown.global_position += to_hand.normalized() * minf(maxf(return_speed, recall_speed) * delta, to_hand.length())
+	# A recalled shield that got all the way home this frame is caught this frame, not the next
+	if recall_speed > 0.0 and thrown.global_position.distance_to(hand_point) <= catch_distance:
+		_catch()
 
 
 func _catch() -> void:
@@ -909,6 +917,7 @@ func _catch() -> void:
 	thrown.queue_free()
 	thrown = null
 	bounce_target = null
+	recall_speed = 0.0
 	visited_ids.clear()
 	# A throw that never reached an enemy gives the streak back (with a fresh clock)
 	if carried_streak > 0:
