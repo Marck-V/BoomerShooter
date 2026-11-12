@@ -43,7 +43,10 @@ var gamepad_sensitivity := 0.075
 var mouse_captured := true
 
 var movement_velocity: Vector3
-var rotation_target: Vector3
+const MOUSE_SCALE := 0.667   # 1280 / 1920: what the stretch used to apply on a 1080p screen
+var rotation_target: Vector3   # where the player is looking (yaw in y, pitch in x): the view follows it exactly, see _process
+var head_offset := Vector3.ZERO   # the head's place on the body (the scene's), kept when the head is driven every frame
+var head_euler := Vector3.ZERO    # kick and shake on top of the look, set in _update_camera_effects
 var input_mouse: Vector2
 
 var health:int = 100
@@ -169,6 +172,13 @@ func _ready():
 	raycast.collision_mask = (1 << 3) | (1 << 1)
 	
 	rotation_target = Vector3(camera.rotation.x, rotation.y, 0)
+	# The view is driven every rendered frame from the mouse (see _process and _update_view), not by the physics ticks
+	# and their interpolation, which delayed it and held it to 60 updates a second. So the head (with the camera and
+	# the weapons under it) stands apart from the body's interpolated transform and is placed from it each frame.
+	head_offset = head.position
+	head.top_level = true
+	head.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_OFF
+	_update_view()
 	for child in weapon_holder.get_children():
 		if child is BaseWeapon:
 			weapon_nodes.append(child)
@@ -255,30 +265,14 @@ func _physics_process(delta):
 	if slamming and is_on_floor():
 		_land_slam()
 
-	camera_kick = camera_kick.lerp(Vector2.ZERO, clampf(delta * kick_recovery, 0.0, 1.0))
-	var shake := Vector3.ZERO
-	if shake_trauma > 0.0:
-		shake_time += delta * 38.0
-		var amount := shake_trauma * shake_trauma
-		shake = Vector3(
-			sin(shake_time * 1.13) + 0.6 * sin(shake_time * 2.71 + 1.3),
-			sin(shake_time * 0.97 + 2.1) + 0.6 * sin(shake_time * 2.37),
-			sin(shake_time * 1.31 + 4.0)) * amount
-		shake_trauma = move_toward(shake_trauma, 0.0, delta * SHAKE_DECAY)
-	head.rotation.x = camera_kick.x + shake.x * SHAKE_MAX_ANGLE
-	head.rotation.y = camera_kick.y + shake.y * SHAKE_MAX_ANGLE
-	head.rotation.z = shake.z * SHAKE_MAX_ROLL
-
-	camera.rotation.z = lerp_angle(camera.rotation.z, -input_mouse.x * 25 * delta, delta * 5)
-	camera.rotation.x = lerp_angle(camera.rotation.x, rotation_target.x, delta * 25)
-	rotation.y = lerp_angle(rotation.y, rotation_target.y, delta * 25)
+	# The body turns with the view, so movement goes the way the player is looking
+	rotation.y = rotation_target.y
 
 	sound_footsteps.stream_paused = true
 	if is_on_floor():
 		if (abs(velocity.x) > 1 or abs(velocity.z) > 1) and !sliding:
 			sound_footsteps.stream_paused = false
 
-	camera.position.y = lerp(camera.position.y, 0.0, delta * 5)
 	if is_on_floor() and gravity > 1 and !previously_floored:
 		Audio.play("assets/audio/sfx/player/land.ogg")
 		camera.position.y = -0.1
@@ -412,13 +406,52 @@ func _update_speed_lines(delta: float) -> void:
 func set_facing(yaw: float) -> void:
 	rotation.y = yaw
 	rotation_target.y = yaw
+	_update_view()
+
+
+# Every rendered frame: the gamepad look, then the view. Mouse movement goes straight into rotation_target in _input.
+func _process(delta: float) -> void:
+	var look := Input.get_vector("camera_right", "camera_left", "camera_down", "camera_up")
+	if look != Vector2.ZERO:
+		# gamepad_sensitivity is per physics tick at 60 ticks a second; scaled to the frame so it turns at the same speed
+		rotation_target -= Vector3(-look.y, -look.x, 0).limit_length(1.0) * gamepad_sensitivity * 60.0 * delta
+		rotation_target.x = clampf(rotation_target.x, deg_to_rad(-90), deg_to_rad(90))
+	_update_camera_effects(delta)
+	camera.position.y = lerp(camera.position.y, 0.0, delta * 5)
+	_update_view()
+
+
+# The camera's kick (recoil) and shake, as a rotation on top of the look
+func _update_camera_effects(delta: float) -> void:
+	camera_kick = camera_kick.lerp(Vector2.ZERO, clampf(delta * kick_recovery, 0.0, 1.0))
+	var shake := Vector3.ZERO
+	if shake_trauma > 0.0:
+		shake_time += delta * 38.0
+		var amount := shake_trauma * shake_trauma
+		shake = Vector3(
+			sin(shake_time * 1.13) + 0.6 * sin(shake_time * 2.71 + 1.3),
+			sin(shake_time * 0.97 + 2.1) + 0.6 * sin(shake_time * 2.37),
+			sin(shake_time * 1.31 + 4.0)) * amount
+		shake_trauma = move_toward(shake_trauma, 0.0, delta * SHAKE_DECAY)
+	head_euler = Vector3(camera_kick.x + shake.x * SHAKE_MAX_ANGLE, camera_kick.y + shake.y * SHAKE_MAX_ANGLE, shake.z * SHAKE_MAX_ROLL)
+
+
+# Puts the head where the player is looking from, at the body's interpolated position: yaw from the look, pitch on the
+# camera, and the kick and shake on top. The mouse moves it with no smoothing and no wait for the next physics tick.
+func _update_view() -> void:
+	var body := get_global_transform_interpolated()
+	var yaw := Basis(Vector3.UP, rotation_target.y)
+	head.global_transform = Transform3D(yaw * Basis.from_euler(head_euler), body.origin + body.basis * head_offset)
+	camera.rotation.x = rotation_target.x
 
 
 func _input(event):
 	if event is InputEventMouseMotion and mouse_captured:
-		var sens = GlobalVariables.mouse_sensitivity * 0.0001
-		rotation_target.y -= event.relative.x * sens
-		rotation_target.x -= event.relative.y * sens
+		# screen_relative is the mouse's real movement in pixels. (relative is scaled by the window's stretch, so the same
+		# mouse movement turned a different amount at every window size.) MOUSE_SCALE keeps the old feel on a 1080p screen.
+		var sens = GlobalVariables.mouse_sensitivity * 0.0001 * MOUSE_SCALE
+		rotation_target.y -= event.screen_relative.x * sens
+		rotation_target.x = clampf(rotation_target.x - event.screen_relative.y * sens, deg_to_rad(-90), deg_to_rad(90))
 
 
 func handle_controls(_delta):
@@ -456,10 +489,6 @@ func handle_controls(_delta):
 		can_slide = false
 		sliding = false
 		current_movement_speed = base_movement_speed
-
-	var rotation_input := Input.get_vector("camera_right", "camera_left", "camera_down", "camera_up")
-	rotation_target -= Vector3(-rotation_input.y, -rotation_input.x, 0).limit_length(1.0) * gamepad_sensitivity
-	rotation_target.x = clamp(rotation_target.x, deg_to_rad(-90), deg_to_rad(90))
 
 	action_shoot()
 
