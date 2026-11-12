@@ -5,7 +5,7 @@ movement-first combat in levels built with TrenchBroom.
 
 ## Features
 
-- **Movement:** sprint, slide, dash, wall jump, grapple points and launch pads.
+- **Movement:** sprint, slide, dash, wall jump, grapple points and teleporters.
 - **Weapons:** pistol, rifle, shotgun, rocket launcher, blaster, flamethrower and lightning gun. Each weapon has
   its own upgrades, bought at upgrade stations.
 - **Off-hand shield:** block, parry enemy punches to stun them, and throw the shield.

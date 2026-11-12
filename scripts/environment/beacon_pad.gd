@@ -9,7 +9,7 @@ class_name BeaconPad
 #   play_activate()    flash, surge up the beam, and blend to the active colour
 
 const PAD_SHADER: Shader = preload("res://shaders/environment/beacon_pad.gdshader")
-const BEAM_SHADER: Shader = preload("res://shaders/environment/launch_portal_beam.gdshader")
+const BEAM_SHADER: Shader = preload("res://shaders/environment/teleporter_portal_beam.gdshader")
 
 @export var radius := 0.8
 @export var beam_height := 3.0

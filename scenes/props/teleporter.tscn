@@ -1,6 +1,6 @@
 [gd_scene load_steps=5 format=3 uid="uid://c1qi0hggy4jff"]
 
-[ext_resource type="Script" uid="uid://dha2us8huelup" path="res://scripts/environment/launch_pad.gd" id="1_yulrt"]
+[ext_resource type="Script" uid="uid://dha2us8huelup" path="res://scripts/environment/teleporter.gd" id="1_yulrt"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_ivhvk"]
 
@@ -13,10 +13,10 @@ emission_energy_multiplier = 16.0
 material = SubResource("StandardMaterial3D_yulrt")
 size = Vector3(1, 0.25, 1)
 
-[node name="LaunchPad" type="Area3D" node_paths=PackedStringArray("launch_target")]
+[node name="Teleporter" type="Area3D" node_paths=PackedStringArray("teleport_target")]
 collision_layer = 2
 script = ExtResource("1_yulrt")
-launch_target = NodePath("Marker3D")
+teleport_target = NodePath("Marker3D")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_ivhvk")

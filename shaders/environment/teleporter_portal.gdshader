@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled;
 
-// The vortex disc of a launchpad: swirling purple energy that spirals into a bright core, with a glowing
+// The vortex disc of a teleporter: swirling purple energy that spirals into a bright core, with a glowing
 // rim. Drawn additively on a flat plane lying on the ground (UV 0..1 across the plane).
 
 uniform vec3 deep_color : source_color = vec3(0.14, 0.0, 0.34);

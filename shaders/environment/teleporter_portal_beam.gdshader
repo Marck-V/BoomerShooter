@@ -1,7 +1,7 @@
 shader_type spatial;
 render_mode unshaded, blend_add, cull_disabled, depth_draw_never, shadows_disabled;
 
-// The faint column of light rising out of a launchpad portal: streaks that drift upward and fade with height.
+// The faint column of light rising out of a teleporter portal: streaks that drift upward and fade with height.
 // Put on an open-ended cylinder whose bottom is at the portal; `height` must match the mesh height.
 
 uniform vec3 beam_color : source_color = vec3(0.6, 0.2, 1.0);
