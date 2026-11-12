@@ -9,7 +9,8 @@ class_name GodotBoss
 #   1 Brawler    melee, charge (crashing into a wall stuns it), shockwave slam
 #   2 Summoner   gets a shield and fires slow orbs that can be parried back, which pops the shield and staggers it
 #   3 Berserk    faster, glowing, shorter gaps between attacks
-# On each change it rears up, roars and throws everyone back, and cannot be hurt for a moment.
+# On each change it floats up inside a pillar of light in the new phase's colour, turning and pulsing faster and
+# faster, then drops and throws everyone back. It cannot be hurt meanwhile. (Nothing like the slam: no rear-up.)
 
 const BLOOD_PARTICLES = preload("res://scripts/weapons/blood_particles.gd")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
@@ -18,8 +19,7 @@ const SpawnEffect = preload("res://scripts/levels/spawn_effect.gd")
 # What the boss calls in, weighted by how often each is picked
 const ADD_SCENES := [
 	{"scene": preload("res://scenes/enemies/enemy_horde.tscn"), "weight": 3},
-	{"scene": preload("res://scenes/enemies/enemy_dodger.tscn"), "weight": 2},
-	{"scene": preload("res://scenes/enemies/enemy_flyer.tscn"), "weight": 2},
+	{"scene": preload("res://scenes/enemies/enemy_ranged.tscn"), "weight": 2},
 ]
 
 const PHASES := [
@@ -91,9 +91,9 @@ const REWARD_MODELS := {"shotgun": "res://models/weapons/Shotgun.glb"}
 @export var landing_damage := 60.0
 
 @export_category("Adds")
-@export var summon_count := 3                # per summon in phase 2 (phase 3 calls in one more)
-@export var intro_add_count := 4             # called in with the roar when phase 2 starts
-@export var max_adds := 8                    # it will not summon while this many are alive
+@export var summon_count := 2                # per summon in phase 2 (phase 3 calls in one more)
+@export var intro_add_count := 2             # called in with the phase 2 change
+@export var max_adds := 4                    # it will not summon while this many are alive
 @export var summon_windup := 1.2
 @export var summon_cooldown := 15.0
 @export var add_spawn_distance := Vector2(6.0, 14.0)   # how far from the player (meters) adds appear
@@ -133,6 +133,7 @@ var pending_stun_time := 0.0
 var original_material: Material
 var attack_hitbox: Area3D
 var shake_amount := 0.0
+var model_lift := 0.0                        # how far the model floats above the floor (a phase change)
 var next_hazard_msec := 0
 var entrance_pending := false
 var entrance_glass: DestructibleWindow       # the skylight it drops through, if there is one
@@ -216,8 +217,9 @@ func body_size() -> Vector2:
 func _physics_process(delta: float) -> void:
 	super(delta * tempo)   # the states' wind-ups, holds and recoveries all count this
 	_update_hazard()
-	if shake_amount > 0.0:
-		model_root.position = model_rest.origin + Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)) * shake_amount
+	if shake_amount > 0.0 or model_lift != 0.0:
+		var jitter := Vector3(randf_range(-1.0, 1.0), 0.0, randf_range(-1.0, 1.0)) * shake_amount
+		model_root.position = model_rest.origin + Vector3.UP * model_lift + jitter
 	if debug and debug_label and get_viewport().get_camera_3d():
 		debug_label.look_at(get_viewport().get_camera_3d().global_position, Vector3.UP)
 
@@ -299,7 +301,14 @@ func release_pose(speed := 2.2) -> void:
 func set_shake(amount: float) -> void:
 	shake_amount = amount
 	if amount <= 0.0 and model_root != null:
-		model_root.position = model_rest.origin
+		model_root.position = model_rest.origin + Vector3.UP * model_lift
+
+
+# Lifts the model off the floor (in the model's own units: 1 is one boss length). The body and its collision stay put.
+func set_lift(height: float) -> void:
+	model_lift = height
+	if model_root != null and shake_amount <= 0.0:
+		model_root.position = model_rest.origin + Vector3.UP * model_lift
 
 
 func play_sfx(paths: String) -> void:
@@ -433,6 +442,8 @@ func _add_phase_shield() -> void:
 	shield = new_shield
 	shield.connect("shield_destroyed", Callable(self, "_on_shield_destroyed"))
 	shield_material = shield_material.duplicate()
+	if shield_cage and shield.has_method("attach_aura"):
+		shield.attach_aura(model)   # the heat aura, like every other shielded enemy
 	apply_shield_material()
 
 
@@ -874,15 +885,24 @@ class ChaseState extends BossState:
 		enemy._update_footsteps()
 
 
-# A swing: the clip's own rear-up is the warning, shown on the floor where the hands will land
+# A swing: the clip's own rear-up is the warning, shown on the floor where the hands will land.
+# What hurts is that circle, not the hand's hitbox: the hands come down on the near side of the body, well short of
+# where a player stands when the swing starts, so the hitbox alone missed a player standing right in the warning. When
+# the hands land (THRUST_TIME) anyone inside the circle is hit, unless they jumped clear of it.
 class MeleeState extends BossState:
+	const STRIKE_REACH_HEIGHT := 1.2   # feet this far above the circle's floor (a jump) are clear of the blow
+	const PLAYER_RADIUS := 0.3
+
 	var elapsed := 0.0
 	var warning: BossTelegraph
 	var hitbox_on := false
+	var struck := false
+	var strike_center := Vector3.ZERO
 
 	func enter() -> void:
 		elapsed = 0.0
 		hitbox_on = false
+		struck = false
 		enemy.hit_done = false
 		enemy.is_attacking = true
 		enemy.velocity = Vector3.ZERO
@@ -902,15 +922,29 @@ class MeleeState extends BossState:
 		if not hitbox_on and elapsed >= enemy.damage_window_start and elapsed < enemy.damage_window_end:
 			hitbox_on = true
 			enemy.hit_done = false
+			strike_center = warning.global_position   # where the circle was when it stopped following: this is where it lands
 			if enemy.attack_hitbox:
 				enemy.attack_hitbox.monitoring = true
 			warning.finish(0.1)
+		if hitbox_on and not struck and elapsed >= THRUST_TIME:
+			struck = true
+			_strike()
 		if hitbox_on and elapsed >= enemy.damage_window_end:
 			hitbox_on = false
 			if enemy.attack_hitbox:
 				enemy.attack_hitbox.monitoring = false
 		if elapsed >= ATTACK_ANIMATION_LENGTH:
 			enemy.change_state("Chase")
+
+	# The hands land: whoever stands in the circle takes the blow (once), unless they are in the air above it
+	func _strike() -> void:
+		var target := enemy.target
+		if not is_instance_valid(target) or enemy.hit_done:
+			return
+		var offset: Vector3 = target.global_position - strike_center
+		var reach := 0.75 * enemy.unit() + PLAYER_RADIUS
+		if Vector2(offset.x, offset.z).length() <= reach and offset.y <= STRIKE_REACH_HEIGHT:
+			enemy._on_attack_hitbox_body_entered(target)
 
 	func exit() -> void:
 		enemy.is_attacking = false
@@ -1338,61 +1372,145 @@ class StunnedState extends BossState:
 		enemy.start_attack_gap()
 
 
-# Between phases: rears up, roars and throws the player back, and cannot be hurt. The new phase takes hold at
-# the moment of the roar.
+# Between phases: it floats up off the floor inside a pillar of light in the new phase's colour, turning slowly and
+# pulsing faster and faster, then drops: the landing throws the player back and the new phase takes hold. It cannot
+# be hurt meanwhile. It never rears up here, so it can't be mistaken for the slam.
 class TransitionState extends BossState:
-	enum Phase { REAR, ROAR }
+	enum Phase { RISE, DROP, SETTLE }
 
-	var phase := Phase.REAR
+	const PHASE_COLORS := {2: Color(0.7, 0.25, 1.0), 3: Color(1.0, 0.12, 0.08)}
+	const RISE_SHARE := 0.62           # of transition_time spent floating up
+	const DROP_TIME := 0.16
+	const LIFT := 0.55                 # boss lengths off the floor at the top
+	const TURNS := 1.0                 # full turns while it rises
+	const PILLAR_HEIGHT := 60.0
+
+	var phase := Phase.RISE
 	var elapsed := 0.0
+	var color := Color.WHITE
+	var pillar: MeshInstance3D
+	var pillar_material: StandardMaterial3D
+	var start_yaw := 0.0
 
 	func enter() -> void:
-		phase = Phase.REAR
+		phase = Phase.RISE
 		elapsed = 0.0
-		_roared = false
+		color = PHASE_COLORS.get(enemy.phase, Color(1.0, 0.9, 0.7))
 		enemy.invulnerable = true
 		enemy.is_attacking = true
 		enemy.velocity = Vector3.ZERO
 		enemy.vulnerability = 1.0
 		enemy.remove_charge_material()
-		enemy.hold_rear_up_pose()
-		enemy.set_glow(true, Color(1.0, 0.9, 0.7), 3.0, 0.3)
-		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav, assets/audio/sfx/boss/Boss_Roar2.wav")
+		enemy.set_shake(0.0)
+		enemy.anim.play("idle")
+		enemy.anim.speed_scale = 0.35
+		enemy.set_glow(true, color, 1.0, 0.15)
+		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar1.wav")
+		start_yaw = enemy.rotation.y
+		_make_pillar()
 
 	func update(delta: float) -> void:
 		elapsed += delta
+		var rise_time: float = enemy.transition_time * RISE_SHARE
 		match phase:
-			Phase.REAR:
-				enemy.set_shake(0.03 * minf(elapsed / (enemy.transition_time * 0.45), 1.0))
-				if elapsed >= enemy.transition_time * 0.45:
-					phase = Phase.ROAR
+			Phase.RISE:
+				var t := clampf(elapsed / rise_time, 0.0, 1.0)
+				var eased := 1.0 - (1.0 - t) * (1.0 - t)
+				enemy.set_lift(LIFT * eased)
+				enemy.rotation.y = start_yaw + TAU * TURNS * eased
+				# The pulse speeds up as it climbs: about 2 beats a second at the start, 9 at the top
+				if enemy.glow_overlay != null and elapsed > 0.15:
+					var beat := 0.5 + 0.5 * sin(elapsed * TAU * lerpf(2.0, 9.0, t))
+					enemy._apply_glow(lerpf(0.25, 1.0 + 0.5 * t, beat))
+				enemy.rattle_player_camera(0.12 * t)
+				_update_pillar(t)
+				if elapsed >= rise_time:
+					phase = Phase.DROP
 					elapsed = 0.0
-					enemy.set_shake(0.0)
-					enemy.release_pose(2.2)
-			Phase.ROAR:
-				if not _roared and (enemy.anim.current_animation_position >= THRUST_TIME - 0.05 or elapsed >= 0.45):
-					_roar()
-				if elapsed >= enemy.transition_time * 0.55:
+			Phase.DROP:
+				var fall := clampf(elapsed / DROP_TIME, 0.0, 1.0)
+				enemy.set_lift(LIFT * (1.0 - fall * fall))
+				if elapsed >= DROP_TIME:
+					phase = Phase.SETTLE
+					elapsed = 0.0
+					_burst()
+			Phase.SETTLE:
+				if elapsed >= enemy.transition_time * (1.0 - RISE_SHARE) - DROP_TIME:
 					enemy.change_state("Chase")
 
-	var _roared := false
-
-	func _roar() -> void:
-		_roared = true
+	# The landing: dust, a push that throws the player back, and the new phase
+	func _burst() -> void:
+		var tree := enemy.get_tree()
 		var length := enemy.unit()
-		BossShockwave.spawn(enemy.get_tree(), enemy.floor_point(enemy.global_position), 3.5 * length, 4.0 * length, 0.0, true)
+		var floor_spot := enemy.floor_point(enemy.global_position)
+		enemy.set_lift(0.0)
+		enemy.model_root.scale = Vector3(1.2, 0.75, 1.2)
+		var squash := enemy.create_tween().set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		squash.tween_property(enemy.model_root, "scale", Vector3.ONE, 0.5)
+		BossDust.spawn(tree, floor_spot, length)
+		BossShockwave.spawn(tree, floor_spot, 3.5 * length, 4.0 * length, 0.0, true)
 		enemy.shake_player_camera(0.12, 0.04)
+		enemy.rattle_player_camera(0.7)
 		enemy.play_sfx("assets/audio/sfx/boss/Boss_Roar2.wav")
+		enemy.anim.speed_scale = 1.0 * enemy.tempo
+		enemy.set_glow(true, color, 3.0, 0.05)
+		_release_pillar()
 		enemy.apply_phase()
 
+	func _make_pillar() -> void:
+		var mesh := CylinderMesh.new()
+		var radius := 0.9 * enemy.unit()
+		mesh.top_radius = radius
+		mesh.bottom_radius = radius
+		mesh.height = PILLAR_HEIGHT
+		mesh.radial_segments = 12
+		mesh.rings = 1
+		mesh.cap_top = false
+		mesh.cap_bottom = false
+		pillar_material = StandardMaterial3D.new()
+		pillar_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		pillar_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		pillar_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		pillar_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		pillar_material.disable_fog = true
+		pillar_material.albedo_color = Color(color, 0.0)
+		mesh.material = pillar_material
+		pillar = MeshInstance3D.new()
+		pillar.mesh = mesh
+		pillar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		enemy.get_tree().current_scene.add_child(pillar)
+		pillar.global_position = enemy.floor_point(enemy.global_position) + Vector3.UP * PILLAR_HEIGHT * 0.5
+
+	# Wide and faint at first, closing in on the boss and brightening as it climbs
+	func _update_pillar(t: float) -> void:
+		if not is_instance_valid(pillar):
+			return
+		var width := lerpf(2.2, 1.0, t)
+		pillar.scale = Vector3(width, 1.0, width)
+		pillar_material.albedo_color = Color(color, 0.08 + 0.4 * t)
+
+	# Flares out and fades as it lands
+	func _release_pillar() -> void:
+		if not is_instance_valid(pillar):
+			return
+		var node := pillar
+		pillar = null
+		var tween := node.create_tween().set_parallel(true)
+		tween.tween_property(node, "scale", Vector3(3.5, 1.0, 3.5), 0.35)
+		tween.tween_property(pillar_material, "albedo_color:a", 0.0, 0.35)
+		tween.chain().tween_callback(node.queue_free)
+
 	func exit() -> void:
-		_roared = false
 		enemy.invulnerable = false
 		enemy.is_attacking = false
 		enemy.set_shake(0.0)
+		enemy.set_lift(0.0)
 		enemy.anim.speed_scale = 1.0 * enemy.tempo
 		enemy.settle_glow()
 		enemy.start_attack_gap()
+		if is_instance_valid(pillar):
+			pillar.queue_free()
+			pillar = null
 
 
 class DeadState extends BossState:
