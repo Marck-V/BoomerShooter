@@ -29,13 +29,15 @@ var shell_color := Color(1.0, 0.72, 0.1)  # outer glow. Set before the ball ente
 
 const REFLECT_SPEED_MULT := 3.2   # a parried ball flies back twice as fast as it came (it used to be 1.6x)
 const REFLECT_DAMAGE_MULT := 2.0
-const REFLECT_MASK := 2 | 4          # environment + enemy bodies
 const REFLECT_HIT_STRENGTH := 3.0     # flinch strength on the enemy a reflected ball lands on
 const REFLECT_HIT_FLASH_RADIUS := 1.9 # hit flash radius multiplier
-# A boss's orb sent back (always_return_to_shooter) chases its shooter straight on and can't miss: it flies through
-# the level, and counts as a hit once it is this close to the point it aims at (on top of one frame's travel)
+# A ball sent back by a parry is never wasted: it ignores the level and everything in it (walls, floors, ramps, other
+# enemies) and flies straight at its target, the enemy that fired it or, if that one is gone, the nearest enemy. It counts
+# as a hit once it is this close to the point it aims at (on top of one frame's travel). A boss's orb
+# (always_return_to_shooter) goes faster and always goes back to its shooter.
 const RETURN_SPEED_MULT := 4.0
 const RETURN_HIT_RADIUS := 1.5
+const REFLECT_HIT_RADIUS := 1.2
 
 # Yellow always means "you can parry this"; a ball the player sent back turns cyan, like the shield
 const SHARD_COLOR := Color(1.4, 1.1, 0.1)
@@ -203,7 +205,7 @@ func reflect(new_target: Node3D, direction: Vector3) -> void:
 		return
 	reflected = true
 	var returning := always_return_to_shooter and new_target == shooter and is_instance_valid(new_target)
-	collision_mask = 4 if returning else REFLECT_MASK   # enemy bodies only: the walls can't stop it on the way
+	collision_mask = 0   # nothing stops it on the way: it is landed on its target by distance (see _physics_process)
 	SPEED *= RETURN_SPEED_MULT if returning else REFLECT_SPEED_MULT
 	damage *= REFLECT_DAMAGE_MULT
 	velocity = direction.normalized() * SPEED
@@ -282,14 +284,17 @@ func _physics_process(delta):
 		var scale_value = lerp(1.0, max_scale, scale_progress)
 		scale = Vector3.ONE * scale_value
 
-	if reflected and always_return_to_shooter and target == shooter and is_instance_valid(target):
-		# Straight at it every frame, wherever it moves
-		var to_aim := _aim_point() - global_position
-		if to_aim.length() <= SPEED * delta + RETURN_HIT_RADIUS:
-			global_position += to_aim
-			_hit_reflected(target)
-			return
-		velocity = to_aim.normalized() * SPEED
+	if reflected:
+		_retarget_if_lost()
+		if is_instance_valid(target):
+			# Straight at it every frame, wherever it moves, through whatever is in the way
+			var to_aim := _aim_point() - global_position
+			var reach := RETURN_HIT_RADIUS if always_return_to_shooter and target == shooter else REFLECT_HIT_RADIUS
+			if to_aim.length() <= SPEED * delta + reach:
+				global_position += to_aim
+				_hit_reflected(target)
+				return
+			velocity = to_aim.normalized() * SPEED
 	elif is_instance_valid(target):
 		# Homing calculation
 		var to_target = (_aim_point() - global_position).normalized()
@@ -303,6 +308,27 @@ func _physics_process(delta):
 	var direction := velocity.normalized()
 	if velocity.length() > 0.01 and absf(direction.y) < 0.999:
 		look_at(global_position + direction, Vector3.UP)
+
+
+# A sent-back ball whose target has died (or is gone) goes for the nearest enemy still standing instead; with none left
+# it just carries on the way it was going
+func _retarget_if_lost() -> void:
+	if _is_live_enemy(target):
+		return
+	var best: Node3D = null
+	var best_distance := INF
+	for enemy in get_tree().get_nodes_in_group("Enemy"):
+		if not _is_live_enemy(enemy):
+			continue
+		var distance := global_position.distance_squared_to((enemy as Node3D).global_position)
+		if distance < best_distance:
+			best_distance = distance
+			best = enemy
+	target = best
+
+
+func _is_live_enemy(enemy) -> bool:
+	return is_instance_valid(enemy) and enemy is Node3D and enemy.is_in_group("Enemy") and not enemy.get("destroyed")
 
 
 # Where it homes to on its target: the target's own choice (the hand boss aims it at its palm), else above its origin
