@@ -28,6 +28,7 @@
 [
 	wave(string) : "Wave name (match the enemies and door)" : "arena"
 	manual(integer) : "0 = starts when the player walks in. 1 = never starts by itself: something else does, e.g. a shield_pickup with the same wave" : 0
+	spawn_interval(float) : "Seconds between one enemy of the wave appearing and the next (0.1 = all at once, 1.5 = a trickle)" : "0.1"
 ]
 
 @SolidClass color(255 77 77) = locked_door : "Door that slides down into the floor to open and back up to close, driven by its wave."
@@ -44,7 +45,7 @@
 	key(string) : "Which key opens it: red or blue" : "red"
 ]
 
-@PointClass color(255 153 51) size(-8 -8 -8, 8 8 8) = level_key : "Key the player collects by walking through it. Opens the key_door of the same colour."
+@PointClass color(255 153 51) size(-8 -8 -8, 8 8 8) = level_key : "Key the player takes by walking up to it and pressing interact. Opens the key_door of the same colour."
 [
 	key(string) : "Which key this is: red or blue" : "red"
 ]
@@ -125,3 +126,6 @@
 [
 	wave(string) : "Wave name (match the trigger and enemies)" : "arena"
 ]
+
+@SolidClass color(255 77 204) = fall_trigger : "Invisible volume under open ledges. A player who falls in is put back on the last solid ground they stood on, minus a little health; an enemy that falls in dies. Draw it wide and flat, a few metres below the lowest floor above it."
+[]

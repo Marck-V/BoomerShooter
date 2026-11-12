@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="FuncGodotFGDSolidClass" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://addons/func_godot/src/fgd/func_godot_fgd_solid_class.gd" id="1_solid"]
+[ext_resource type="Script" path="res://scripts/levels/fall_trigger.gd" id="2_script"]
+
+[resource]
+script = ExtResource("1_solid")
+spawn_type = 2
+origin_type = 4
+build_visuals = false
+build_occlusion = false
+collision_shape_type = 1
+collision_layer = 0
+collision_mask = 5
+script_class = ExtResource("2_script")
+classname = "fall_trigger"
+description = "Invisible volume under open ledges. A player who falls in is put back on the last solid ground they stood on, minus a little health; an enemy that falls in dies. Draw it wide and flat, a few metres below the lowest floor above it."
+auto_apply_to_matching_node_properties = true
+class_properties = {}
+class_property_descriptions = {}
+meta_properties = {
+"color": Color(1, 0.3, 0.8, 0.5)
+}
+node_class = "Area3D"

@@ -7,7 +7,7 @@
 script = ExtResource("1_point")
 script_class = ExtResource("2_script")
 classname = "level_key"
-description = "Key the player collects by walking through it. Opens the key_door of the same colour."
+description = "Key the player takes by walking up to it and pressing interact. Opens the key_door of the same colour."
 auto_apply_to_matching_node_properties = true
 class_properties = {
 "key": "red"

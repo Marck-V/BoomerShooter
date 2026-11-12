@@ -1,24 +1,26 @@
 extends Area3D
 
-# A TrenchBroom point entity ("level_key"): a floating coloured key the player collects by walking through it.
-# The player holds on to it for the rest of the level (a checkpoint remembers it), and the key_door of the same
+# A TrenchBroom point entity ("level_key"): a floating coloured key. Walking up to it shows the interact prompt, and
+# pressing interact takes it. The player holds on to it for the rest of the level (a checkpoint remembers it), and the key_door of the same
 # colour opens for them.
 
 const KEY_SCENE: PackedScene = preload("res://scenes/pickups/key.tscn")
 const COLORS := {"red": Color(1.0, 0.15, 0.1), "blue": Color(0.15, 0.4, 1.0)}
-const PICKUP_RADIUS := 1.4
+const PICKUP_RADIUS := 2.0
 const MODEL_SCALE := 0.45
 const SPIN_SPEED := 1.5
 
 @export var key := "red"
 
 var model: Node3D
+var player: Node3D      # the player, while they are in reach
 
 
 func _ready() -> void:
 	collision_layer = 0
 	collision_mask = PhysicsLayers.PLAYER
 	body_entered.connect(_on_body_entered)
+	body_exited.connect(_on_body_exited)
 
 	var shape := CollisionShape3D.new()
 	var sphere := SphereShape3D.new()
@@ -53,13 +55,29 @@ func _build_visuals() -> void:
 
 
 func _process(delta: float) -> void:
+	if is_instance_valid(player) and Input.is_action_just_pressed("interact"):
+		_take()
+		return
 	if model:
 		model.rotate_y(delta * SPIN_SPEED)
 
 
 func _on_body_entered(body: Node3D) -> void:
 	if body.is_in_group("Player") and body.has_method("add_key"):
-		body.add_key(key)
-		Audio.play("assets/audio/sfx/pickups/key_grab.mp3")
-		Checkpoints.mark_gone(self)
-		queue_free()
+		player = body
+		InteractPrompt.show_prompt(get_tree(), "Take the %s key" % key)
+
+
+func _on_body_exited(body: Node3D) -> void:
+	if body == player:
+		player = null
+		InteractPrompt.hide_prompt(get_tree())
+
+
+func _take() -> void:
+	InteractPrompt.hide_prompt(get_tree())
+	player.add_key(key)
+	player = null
+	Audio.play("assets/audio/sfx/pickups/key_grab.mp3")
+	Checkpoints.mark_gone(self)
+	queue_free()

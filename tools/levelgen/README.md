@@ -30,10 +30,8 @@ From the project root:
 
 ## Keeping hand edits alongside a script
 
-If you edit a section by hand but its script is still in use, capture the edits so a re-run keeps them. For level 1:
-
-    python tools/levelgen/active/level_01_hand_edits.py capture
-
-This diffs the script's raw output against the current map and stores the difference in `level_01_hand_edits.json`;
-`level_01_act1.py` applies it as its last step. Run `capture` again after each round of hand edits (before changing
-the script). Retiring the script (rule 2) is still the simpler end state.
+If you edit a section by hand but its script is still in use, the edits have to be captured so a re-run keeps them.
+The old level 1 did this with `level_01_hand_edits.py capture`: it diffed the script's raw output against the current
+map, stored the difference as JSON, and the generator applied it as its last step. That tool was deleted with the old
+level 1 (commit `d5ac641` added it; see "Need an old script back?" above). `level_01_redesign.py` has no such patch:
+running it overwrites hand edits. Retiring the script (rule 2) is the simpler end state.

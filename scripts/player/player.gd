@@ -320,6 +320,14 @@ func _is_solid_ground_below(point: Vector3) -> bool:
 	return not hit.is_empty() and hit["collider"] is StaticBody3D
 
 
+# A fall_trigger volume under an open ledge: the player has fallen off the map, without waiting for the long drop
+func fall_off_map() -> void:
+	if has_safe_ground:
+		_recover_from_fall()
+	else:
+		Checkpoints.respawn()
+
+
 # Back to the last safe spot with a quick fade, minus some health, and straight back into the fight
 func _recover_from_fall() -> void:
 	slamming = false

@@ -18,11 +18,13 @@ description = "Invisible volume. When the player enters, every enemy with the sa
 auto_apply_to_matching_node_properties = true
 class_properties = {
 "wave": "arena",
-"manual": 0
+"manual": 0,
+"spawn_interval": 0.1
 }
 class_property_descriptions = {
 "wave": "Wave name (match the enemies and door)",
-"manual": "0 = starts when the player walks in. 1 = never starts by itself: something else does, e.g. a shield_pickup with the same wave"
+"manual": "0 = starts when the player walks in. 1 = never starts by itself: something else does, e.g. a shield_pickup with the same wave",
+"spawn_interval": "Seconds between one enemy of the wave appearing and the next (0.1 = all at once, 1.5 = a trickle)"
 }
 meta_properties = {
 "color": Color(0.2, 0.6, 1, 0.5)
