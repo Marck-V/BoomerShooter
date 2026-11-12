@@ -6,10 +6,13 @@ const ElectricAura = preload("res://scripts/weapons/electric_aura.gd")
 const LightningBolt = preload("res://scripts/weapons/lightning_bolt.gd")
 
 # --- Chain Lightning Parameters ---
+# A scarce horde-clearer (15 shots at most, see GlobalVariables.AMMO_CAPS): every hop kills a basic enemy (data.damage,
+# 100), and the chain forks, so one shot spreads through a crowd instead of running down a line.
 var chain_radius = 8.0        # how far (meters) the lightning can jump to the next enemy
-var max_targets = 8           # most enemies one shot can hit, including the one that was shot
-var chain_damage = 50
-const CHAIN_HOP_DELAY := 0.1  # seconds between jumps
+var max_targets = 20          # most enemies one shot can hit, including the one that was shot
+var fork_count = 2            # each enemy the chain reaches jumps on to up to this many new ones
+const CHAIN_HOP_DELAY := 0.1  # seconds between waves of jumps
+const JOLT_TIME := 0.3        # every enemy hit is held in place this long and its attack called off
 
 const AMMO_PER_SHOT := 1
 const HIT_FLASH_COLOR := Color(0.3, 0.6, 1.0)   # blue, like the lightning
@@ -56,9 +59,9 @@ var fire_glow := 0.0                             # 1 right after a shot, fading 
 
 func _ready() -> void:
 	super._ready()
-	muzzle_flash_size = 0.09
-	muzzle_flash_time = 0.08
-	muzzle_light_energy = 8.0
+	muzzle_flash_size = 0.12
+	muzzle_flash_time = 0.1
+	muzzle_light_energy = 12.0
 
 	# The flash and the light come from between the claw tips
 	muzzle_location.global_position = muzzle_marker.global_position
@@ -220,10 +223,11 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 				# The hit can be a hurtbox or a shield; the chain starts from the enemy it belongs to
 				var chain_target = get_hit_enemy(collider)
 				flash_hit_enemy(collider, raycast.get_collision_point(), 1.0, HIT_FLASH_COLOR)
-				damage_hit(collider, chain_damage, raycast.get_collision_point())
+				damage_hit(collider, data.damage, raycast.get_collision_point())
 
 				if chain_target:
 					ElectricAura.apply(chain_target)
+					_jolt(chain_target)
 					_run_chain(chain_target)
 
 			spawn_impact_particles(raycast, camera)
@@ -258,29 +262,41 @@ func _chain_hit_effects(target: Node3D, from_position: Vector3) -> void:
 	ElectricAura.apply(target)
 
 
-# Jumps from enemy to enemy, always to the nearest one not hit yet, until max_targets are hit or nobody is in range.
+# Spreads out from the enemy that was shot in waves: every enemy reached in a wave jumps to its fork_count nearest
+# enemies not hit yet, all at once, then the next wave goes CHAIN_HOP_DELAY later. Stops at max_targets or when
+# nobody is left in range.
 func _run_chain(first_enemy: Node3D) -> void:
 	var visited: Array = [first_enemy]
-	var from_position := first_enemy.global_position
-	while visited.size() < max_targets:
-		var next_enemy := _find_next_enemy(from_position, visited)
-		if next_enemy == null:
-			return
-		visited.append(next_enemy)
-		_spawn_lightning_arc(from_position, next_enemy.global_position)
-		next_enemy.damage(chain_damage, 1)
-		_chain_hit_effects(next_enemy, from_position)
-		# Remembered now: the enemy may die and be freed before the next jump
-		from_position = next_enemy.global_position
-		await get_tree().create_timer(CHAIN_HOP_DELAY, false).timeout
+	# Positions are remembered as the chain goes: an enemy may die and be freed before its own jumps
+	var frontier: Array[Vector3] = [first_enemy.global_position]
+	while not frontier.is_empty() and visited.size() < max_targets:
+		var next_frontier: Array[Vector3] = []
+		for from_position in frontier:
+			for next_enemy in _find_next_enemies(from_position, visited, fork_count):
+				if visited.size() >= max_targets:
+					break
+				visited.append(next_enemy)
+				_spawn_lightning_arc(from_position, next_enemy.global_position)
+				next_frontier.append(next_enemy.global_position)
+				next_enemy.damage(data.damage, 1)
+				_jolt(next_enemy)
+				_chain_hit_effects(next_enemy, from_position)
+		frontier = next_frontier
+		if not frontier.is_empty():
+			await get_tree().create_timer(CHAIN_HOP_DELAY, false).timeout
 
 
-# The nearest living enemy within chain_radius of a point that has not been hit by this chain yet.
+func _jolt(enemy: Node3D) -> void:
+	if is_instance_valid(enemy) and enemy.has_method("jolt"):
+		enemy.jolt(JOLT_TIME)
+
+
+# Up to `count` living enemies within chain_radius of a point that have not been hit by this chain yet, nearest first.
 # Looks through the Enemy group instead of running a physics query: an overlap query only returns a limited
 # number of shapes, and every enemy has a dozen hurtbox and vision areas, so in a crowd it missed most enemies.
-func _find_next_enemy(from_position: Vector3, visited: Array) -> Node3D:
-	var best: Node3D = null
-	var best_d2: float = chain_radius * chain_radius
+func _find_next_enemies(from_position: Vector3, visited: Array, count: int) -> Array[Node3D]:
+	var in_range: Array = []
+	var radius_d2: float = chain_radius * chain_radius
 	for candidate in get_tree().get_nodes_in_group("Enemy"):
 		var enemy := candidate as Node3D
 		if enemy == null or enemy in visited or not enemy.has_method("damage"):
@@ -288,10 +304,13 @@ func _find_next_enemy(from_position: Vector3, visited: Array) -> Node3D:
 		if enemy.get("destroyed") == true:
 			continue
 		var d2 := from_position.distance_squared_to(enemy.global_position)
-		if d2 <= best_d2:
-			best_d2 = d2
-			best = enemy
-	return best
+		if d2 <= radius_d2:
+			in_range.append([d2, enemy])
+	in_range.sort_custom(func(a, b): return a[0] < b[0])
+	var result: Array[Node3D] = []
+	for entry in in_range.slice(0, count):
+		result.append(entry[1])
+	return result
 
 
 # A jump of the chain from one enemy to the next, chest to chest

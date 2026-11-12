@@ -85,7 +85,9 @@ func _load_profile(new_profile: String) -> void:
 		save_to_disk()
 	for weapon_id in ["pistol", "shotgun", "rifle", "flamethrower", "lightning"]:
 		if not save_data.ammo.has(weapon_id):
-			save_data.ammo[weapon_id] = 50
+			save_data.ammo[weapon_id] = full_ammo(weapon_id)
+		# Saves from before a weapon got its cap can hold more than it allows
+		save_data.ammo[weapon_id] = mini(save_data.ammo[weapon_id], max_ammo(weapon_id))
 
 
 # Starts the story over: the pistol only, no points, no upgrades. The dev profile is untouched.
@@ -243,17 +245,35 @@ func spend_ammo(weapon_id: String, amount: int) -> bool:
 	
 func add_ammo(weapon_id: String, amount: int):
 	var current = save_data.ammo.get(weapon_id, 0)
-	var max_ammo = 999
-	var new_value = clamp(current + amount, 0, max_ammo)
+	var new_value = clamp(current + amount, 0, max_ammo(weapon_id))
 
 	save_data.ammo[weapon_id] = new_value
 	ammo_changed.emit(weapon_id, new_value)
 
 func refill_all_ammo():
 	for weapon_id in save_data.ammo.keys():
-		var max_ammo = 50
-		save_data.ammo[weapon_id] = max_ammo
-		ammo_changed.emit(weapon_id, max_ammo)
+		save_data.ammo[weapon_id] = full_ammo(weapon_id)
+		ammo_changed.emit(weapon_id, save_data.ammo[weapon_id])
+
+
+# Most weapons refill to 50 and can be topped up to 999. The lightning gun is a scarce, horde-clearing weapon: it
+# holds 15 at most and its pickups give a few shots, whatever ammo_amount the map put on them.
+const AMMO_CAPS := {"lightning": 15}
+const AMMO_PICKUP_AMOUNTS := {"lightning": 4}
+const DEFAULT_FULL_AMMO := 50
+const DEFAULT_MAX_AMMO := 999
+
+
+func max_ammo(weapon_id: String) -> int:
+	return AMMO_CAPS.get(weapon_id, DEFAULT_MAX_AMMO)
+
+
+func full_ammo(weapon_id: String) -> int:
+	return mini(DEFAULT_FULL_AMMO, max_ammo(weapon_id))
+
+
+func pickup_ammo_amount(weapon_id: String, map_amount: int) -> int:
+	return AMMO_PICKUP_AMOUNTS.get(weapon_id, map_amount)
 	
 # Health
 func get_health():

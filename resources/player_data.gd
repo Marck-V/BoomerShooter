@@ -35,7 +35,7 @@ class_name PlayerData
 	"shotgun": 50,
 	"rifle": 50,
 	"flamethrower": 50,
-	"lightning": 50
+	"lightning": 15
 }
 
 

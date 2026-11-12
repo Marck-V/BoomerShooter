@@ -5,12 +5,12 @@
 
 [resource]
 script = ExtResource("2_weapon")
-cooldown = 0.6
+cooldown = 0.9
 max_distance = 40
-damage = 50.0
-recoil_strength = 2
-camera_kick = 0.04
-camera_shake = 0.12
+damage = 100.0
+recoil_strength = 3
+camera_kick = 0.06
+camera_shake = 0.2
 weapon_id = "lightning"
 sound = "assets/audio/sfx/weapons/lightning_magic.mp3"
 crosshair = ExtResource("1_cross")

@@ -287,7 +287,7 @@ func _on_area_3d_body_entered(body: Node3D) -> void:
 		
 	match type:
 		"Ammo":
-			GlobalVariables.add_ammo(weapon_id, ammo_amount)
+			GlobalVariables.add_ammo(weapon_id, GlobalVariables.pickup_ammo_amount(weapon_id, ammo_amount))
 			Audio.play("assets/audio/sfx/weapons/reload.mp3")
 		"Health":
 			# Already at full health: a medkit would be wasted, so it stays where it is for later

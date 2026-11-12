@@ -593,6 +593,11 @@ func damage(amount: float, multiplier: float = 1.0) -> void:
 	_report_hit(multiplier > 1.0, shielded)
 
 
+# The lightning gun's jolt doesn't hold a boss (or the brute)
+func jolt(_duration: float) -> void:
+	pass
+
+
 func _lose_health(amount: float) -> void:
 	health = maxf(health - amount, 0.0)
 	if health_bar:

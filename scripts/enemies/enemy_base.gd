@@ -440,6 +440,16 @@ func _on_shoved() -> void:
 	pass
 
 
+# The lightning gun's jolt: the enemy is held where it stands for `duration` and whatever attack it had going is
+# called off. Bosses (and the brute, which is built on the boss) shrug it off by overriding this.
+func jolt(duration: float) -> void:
+	if destroyed:
+		return
+	shove_hold_until_msec = maxi(shove_hold_until_msec, Time.get_ticks_msec() + int(duration * 1000.0))
+	velocity = Vector3.ZERO
+	_on_shoved()
+
+
 # ---------------------------
 # Hit reactions
 # ---------------------------
