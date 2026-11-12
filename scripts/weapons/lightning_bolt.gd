@@ -28,6 +28,8 @@ const DEFAULTS := {
 	"sparks": true,           # a burst of sparks where it lands
 	"energy": 5.0,
 	"follow": null,           # a Node3D (the gun's muzzle) the bolt's start stays on while it lives; the end stays put
+	"inner_color": null,      # Colors to recolor the glow (the shader's blue and violet by default): the chain carrying
+	"outer_color": null,      # fire with the Conduit upgrade burns orange
 }
 const LIGHT_COLOR := Color(0.45, 0.55, 1.0)
 const LIGHT_ENERGY := 5.0
@@ -66,6 +68,10 @@ func _ready() -> void:
 	global_transform = Transform3D.IDENTITY
 	mesh = ImmediateMesh.new()
 	material = new_material(settings["energy"])
+	if settings["inner_color"] != null:
+		material.set_shader_parameter("inner_color", settings["inner_color"])
+	if settings["outer_color"] != null:
+		material.set_shader_parameter("outer_color", settings["outer_color"])
 	var instance := MeshInstance3D.new()
 	instance.mesh = mesh
 	instance.material_override = material

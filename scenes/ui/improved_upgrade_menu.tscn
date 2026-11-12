@@ -203,6 +203,15 @@ text = "Chain Reaction"
 upgrade_id = "lightning_chain_reaction"
 description = "Enemies the lightning kills burst, hitting everything within 4 m for 50 damage. Burst kills burst too."
 
+[node name="LightningButton2" parent="Panel/TabContainer/Lightning Gun/LightningButton1" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_top = 168.66
+offset_right = 120.0
+offset_bottom = 196.66
+text = "Conduit"
+upgrade_id = "lightning_conduit"
+description = "The chain copies the shot enemy's burn and rifle spikes to every enemy it jumps to."
+
 [node name="Shield" type="Control" parent="Panel/TabContainer"]
 visible = false
 layout_mode = 2

@@ -223,6 +223,8 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 				# The hit can be a hurtbox or a shield; the chain starts from the enemy it belongs to
 				var chain_target = get_hit_enemy(collider)
 				var was_alive := _is_alive(chain_target)
+				# Read before the shot lands: its hit sets off this enemy's own spikes
+				var carried := _conduit_read(chain_target)
 				flash_hit_enemy(collider, raycast.get_collision_point(), 1.0, HIT_FLASH_COLOR)
 				damage_hit(collider, data.damage, raycast.get_collision_point())
 
@@ -230,7 +232,7 @@ func fire(_origin: Vector3, _direction: Vector3, camera: Camera3D, raycast: RayC
 					_burst_if_killed(chain_target, was_alive)
 					ElectricAura.apply(chain_target)
 					_jolt(chain_target)
-					_run_chain(chain_target)
+					_run_chain(chain_target, carried)
 
 			spawn_impact_particles(raycast, camera)
 	return true
@@ -267,7 +269,7 @@ func _chain_hit_effects(target: Node3D, from_position: Vector3) -> void:
 # Spreads out from the enemy that was shot in waves: every enemy reached in a wave jumps to its fork_count nearest
 # enemies not hit yet, all at once, then the next wave goes CHAIN_HOP_DELAY later. Stops at max_targets or when
 # nobody is left in range.
-func _run_chain(first_enemy: Node3D) -> void:
+func _run_chain(first_enemy: Node3D, carried := {}) -> void:
 	var visited: Array = [first_enemy]
 	# Positions are remembered as the chain goes: an enemy may die and be freed before its own jumps
 	var frontier: Array[Vector3] = [first_enemy.global_position]
@@ -278,8 +280,10 @@ func _run_chain(first_enemy: Node3D) -> void:
 				if visited.size() >= max_targets:
 					break
 				visited.append(next_enemy)
-				_spawn_lightning_arc(from_position, next_enemy.global_position)
+				_spawn_lightning_arc(from_position, next_enemy.global_position, carried.has("burn"))
 				next_frontier.append(next_enemy.global_position)
+				# The carried effects land first, so the jump's own hit sets the spikes off and gets Accelerant's bonus
+				_conduit_apply(next_enemy, carried)
 				_zap(next_enemy, data.damage, from_position)
 		frontier = next_frontier
 		if not frontier.is_empty():
@@ -359,7 +363,42 @@ func _find_next_enemies(from_position: Vector3, visited: Array, count: int) -> A
 	return result
 
 
-# A jump of the chain from one enemy to the next, chest to chest
-func _spawn_lightning_arc(start: Vector3, end: Vector3):
+# A jump of the chain from one enemy to the next, chest to chest. Carrying fire (Conduit) it burns orange.
+func _spawn_lightning_arc(start: Vector3, end: Vector3, fiery := false):
 	var chest := Vector3(0, 1.0, 0)
-	LightningBolt.strike(get_tree(), start + chest, end + chest, {"width": CHAIN_WIDTH})
+	var options := {"width": CHAIN_WIDTH}
+	if fiery:
+		options["inner_color"] = FIRE_INNER
+		options["outer_color"] = FIRE_OUTER
+	LightningBolt.strike(get_tree(), start + chest, end + chest, options)
+
+
+# ---------------------------
+# Conduit (upgrade): the chain copies the effects on the enemy that was shot to every enemy it jumps to: its burn
+# (time, strength and stacks, so a burn about to blow up spreads as one) and the rifle's spikes, which each jump's hit
+# then sets off.
+# ---------------------------
+const CONDUIT := "lightning_conduit"
+const Burning = preload("res://scripts/enemies/burning.gd")
+const FIRE_INNER := Color(1.0, 0.55, 0.15)
+const FIRE_OUTER := Color(1.0, 0.2, 0.05)
+
+
+func _conduit_read(enemy) -> Dictionary:
+	if not _is_alive(enemy) or not GlobalVariables.has_upgrade(CONDUIT):
+		return {}
+	var carried := {}
+	var burning = enemy.get_node_or_null("Burning")
+	if burning != null and not burning.extinguished:
+		carried["burn"] = [burning.time_left, burning.damage_per_second, burning.stacks]
+	if enemy.get("spikes") != null and enemy.spikes > 0 and Time.get_ticks_msec() < enemy.spikes_expire_msec:
+		carried["spikes"] = enemy.spikes
+	return carried
+
+
+func _conduit_apply(enemy: Node3D, carried: Dictionary) -> void:
+	if carried.has("burn"):
+		var burn: Array = carried["burn"]
+		Burning.apply(enemy, burn[0], burn[1], burn[2])
+	if carried.has("spikes") and enemy.has_method("receive_spikes"):
+		enemy.receive_spikes(carried["spikes"])

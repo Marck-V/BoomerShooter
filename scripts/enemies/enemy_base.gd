@@ -362,6 +362,17 @@ func add_spike(world_point := Vector3.INF) -> void:
 	SpikeMarker.plant(self, world_point)
 
 
+# Spikes handed over without being shot in (the lightning's Conduit copies them along its chain): no visual, since the
+# hit that brings them sets them off straight away
+func receive_spikes(count: int) -> void:
+	if destroyed or count <= 0:
+		return
+	if Time.get_ticks_msec() >= spikes_expire_msec:
+		spikes = 0
+	spikes = mini(spikes + count, SPIKE_MAX)
+	spikes_expire_msec = Time.get_ticks_msec() + int(SPIKE_LIFETIME * 1000.0)
+
+
 # The bonus damage the spikes add to the hit that sets them off (0 if there are none or they faded)
 func _take_spikes() -> float:
 	if spikes <= 0:
