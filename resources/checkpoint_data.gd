@@ -22,4 +22,5 @@ class_name CheckpointData
 # --- The level ---
 @export var gone := PackedStringArray()                 # paths (from the level root) of pickups, keys and enemies already used up
 @export var cleared_waves := PackedStringArray()
+@export var started_waves := PackedStringArray()       # waves that had begun by this checkpoint, cleared or not: the player is past them
 @export var reached_checkpoints := PackedStringArray()

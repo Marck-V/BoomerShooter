@@ -34,11 +34,17 @@ func _exit_tree() -> void:
 func _hold_wave_enemies() -> void:
 	if wave.is_empty():
 		return
-	# Beaten before the checkpoint the player came back to: its enemies are already gone, so just open up
-	if Checkpoints.is_wave_cleared(wave):
+	# Beaten, or at least begun, before the checkpoint the player came back to: they are past it. Its enemies are not
+	# brought back (they would only stand about behind the player using up resources), and its doors are open. This
+	# goes by the wave's name, not the enemies' saved paths, which stop matching as soon as the map is edited.
+	if Checkpoints.is_wave_done(wave):
 		triggered = true
 		for door in _wave_doors():
 			door.open_now()
+		for enemy in get_tree().get_nodes_in_group("Enemy"):
+			if "wave" in enemy and enemy.wave == wave:
+				enemy.get_parent().remove_child(enemy)
+				enemy.queue_free()
 		return
 	for enemy in get_tree().get_nodes_in_group("Enemy"):
 		if "wave" in enemy and enemy.wave == wave:
@@ -59,6 +65,7 @@ func start() -> void:
 	if triggered:
 		return
 	triggered = true
+	Checkpoints.mark_wave_started(wave)
 	GlobalVariables.enemy_died.connect(_on_enemy_died)
 	for enemy in held:
 		remaining[enemy] = true

@@ -13,6 +13,16 @@ extends Node
 const SAVE_PATH := "user://checkpoint.res"
 const NO_STABLE_NAME := "@"   # nodes spawned at runtime get names like "@Enemy@42" that differ every run
 
+# How the level's things are told apart between runs. The map build names its nodes "entity_<number>_<classname>", and
+# the number is just the entity's place in the .map file: it changes whenever anything is added, removed or reordered
+# in TrenchBroom, so a saved path would soon point at a different entity. Instead every map entity gets an id built from
+# what it is and where it was placed: "enemy_horde@36.0,0.0,66.1" (class, then x, y, z in meters, to a tenth). That
+# only changes if the entity itself is moved or replaced, whatever else is edited. Two entities of one class at the very
+# same spot get "#2", "#3" in file order. The id is taken when the level starts, before anything has had a chance to move.
+const ID_META := "checkpoint_id"
+const ENTITY_NAME := "^entity_\\d+_(.+)$"
+const LEGACY_MAP_PATH := "/entity_"   # an id saved as a path to a map entity: the number may not mean the same entity now
+
 signal checkpoint_reached(checkpoint: Node)
 
 var current: CheckpointData   # what dying goes back to; null outside a level
@@ -20,7 +30,9 @@ var current: CheckpointData   # what dying goes back to; null outside a level
 # Progress since the level started, copied into each snapshot
 var _gone := {}
 var _cleared_waves := {}
+var _started_waves := {}
 var _reached := {}
+var _by_id := {}   # id -> the level's map entity with that id (this run of the level)
 
 
 func _ready() -> void:
@@ -40,12 +52,14 @@ func _on_scene_changed() -> void:
 
 # Starts a fresh run of the level, or carries on from the snapshot if it is for this level (after dying)
 func level_started(level: Node) -> void:
+	_index_level(level)
 	GlobalVariables.carry_ammo_over = false   # the weapons have loaded with the carried ammo; later loads refill as usual
 	if current and current.level_path == level.scene_file_path:
 		_restore(level)
 		return
 	_gone.clear()
 	_cleared_waves.clear()
+	_started_waves.clear()
 	_reached.clear()
 	var player := _find_player()
 	if player:
@@ -56,9 +70,9 @@ func level_started(level: Node) -> void:
 # Called by a checkpoint the player walks into. Each one only counts the first time: returns whether this was it.
 func reach(checkpoint: Node3D, spawn_position: Vector3) -> bool:
 	var level := get_tree().current_scene
-	var id := String(level.get_path_to(checkpoint))
+	var id := id_of(checkpoint)
 	var player := _find_player()
-	if current == null or player == null or _reached.has(id):
+	if current == null or player == null or id.is_empty() or _reached.has(id):
 		return false
 	_reached[id] = true
 	current = _snapshot(level, id, spawn_position, player.rotation_target.y)
@@ -71,7 +85,7 @@ func is_reached(checkpoint: Node) -> bool:
 	var level := get_tree().current_scene
 	if level == null or not level.is_ancestor_of(checkpoint):
 		return false   # a node the map build has already taken out of the level
-	return _reached.has(String(level.get_path_to(checkpoint)))
+	return _reached.has(id_of(checkpoint))
 
 
 # Back to the last checkpoint (or the level start)
@@ -83,6 +97,7 @@ func clear() -> void:
 	current = null
 	_gone.clear()
 	_cleared_waves.clear()
+	_started_waves.clear()
 	_reached.clear()
 
 
@@ -91,9 +106,9 @@ func mark_gone(node: Node) -> void:
 	var level := get_tree().current_scene
 	if current == null or level == null or not level.is_ancestor_of(node):
 		return
-	var path := String(level.get_path_to(node))
-	if not path.contains(NO_STABLE_NAME):
-		_gone[path] = true
+	var id := id_of(node)
+	if not id.is_empty():
+		_gone[id] = true
 
 
 func mark_wave_cleared(wave: String) -> void:
@@ -102,6 +117,16 @@ func mark_wave_cleared(wave: String) -> void:
 
 func is_wave_cleared(wave: String) -> bool:
 	return _cleared_waves.has(wave)
+
+
+# A wave that has begun. Once a checkpoint is reached the player is past it, whether or not they finished it
+func mark_wave_started(wave: String) -> void:
+	_started_waves[wave] = true
+
+
+# Beaten, or begun before the checkpoint the run came back to: the level does not bring its enemies back
+func is_wave_done(wave: String) -> bool:
+	return _cleared_waves.has(wave) or _started_waves.has(wave)
 
 
 # --- Saving between sessions ---
@@ -145,6 +170,7 @@ func _snapshot(level: Node, id: String, spawn_position: Vector3, spawn_yaw: floa
 	data.weapon_index = player.weapon_index
 	data.gone = PackedStringArray(_gone.keys())
 	data.cleared_waves = PackedStringArray(_cleared_waves.keys())
+	data.started_waves = PackedStringArray(_started_waves.keys())
 	data.reached_checkpoints = PackedStringArray(_reached.keys())
 	return data
 
@@ -152,16 +178,22 @@ func _snapshot(level: Node, id: String, spawn_position: Vector3, spawn_yaw: floa
 func _restore(level: Node) -> void:
 	_gone.clear()
 	_cleared_waves.clear()
+	_started_waves.clear()
 	_reached.clear()
-	for path in current.gone:
-		_gone[path] = true
-		var node := level.get_node_or_null(NodePath(path))
-		if node:
-			# Out of the tree now, so wave triggers collecting their enemies don't pick it up
-			node.get_parent().remove_child(node)
-			node.queue_free()
+	for id in current.gone:
+		var node: Node = _by_id.get(id)
+		if node == null and not id.contains("@") and not id.contains(LEGACY_MAP_PATH):
+			node = level.get_node_or_null(NodePath(id))   # a node placed by hand in the scene, found by its path
+		if node == null:
+			continue   # gone from the map since, or saved before ids existed: nothing to remove, and nothing to keep
+		_gone[id] = true
+		# Out of the tree now, so wave triggers collecting their enemies don't pick it up
+		node.get_parent().remove_child(node)
+		node.queue_free()
 	for wave in current.cleared_waves:
 		_cleared_waves[wave] = true
+	for wave in current.started_waves:
+		_started_waves[wave] = true
 	for id in current.reached_checkpoints:
 		_reached[id] = true
 
@@ -176,6 +208,41 @@ func _restore(level: Node) -> void:
 	for key in current.keys:
 		player.add_key(key)
 	player.change_weapon(current.weapon_index, false)
+
+
+# Gives every map entity of the level its id (see ID_META). Called as the level starts, once the map is built.
+func _index_level(level: Node) -> void:
+	_by_id.clear()
+	var regex := RegEx.create_from_string(ENTITY_NAME)
+	for node in level.find_children("entity_*", "Node3D", true, false):
+		if not node.get_parent() is FuncGodotMap:
+			continue
+		var found := regex.search(node.name)
+		if found == null or found.get_string(1) == "worldspawn":
+			continue
+		var at: Vector3 = (node as Node3D).global_position
+		var base := "%s@%.1f,%.1f,%.1f" % [found.get_string(1), at.x, at.y, at.z]
+		var id := base
+		var copy := 2
+		while _by_id.has(id):
+			id = "%s#%d" % [base, copy]
+			copy += 1
+		node.set_meta(ID_META, id)
+		_by_id[id] = node
+
+
+# What a node is called in the saved run: its map id, or for anything placed by hand in the scene its path. Empty for
+# things made while playing (their names change every run), which are never saved.
+func id_of(node: Node) -> String:
+	if node.has_meta(ID_META):
+		return node.get_meta(ID_META)
+	var level := get_tree().current_scene
+	if level == null or not level.is_ancestor_of(node):
+		return ""
+	var path := String(level.get_path_to(node))
+	if path.contains(NO_STABLE_NAME) or path.contains(LEGACY_MAP_PATH):
+		return ""
+	return path
 
 
 func _find_player() -> Node3D:
