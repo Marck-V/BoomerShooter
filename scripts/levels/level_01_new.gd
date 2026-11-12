@@ -26,6 +26,9 @@ func _ready() -> void:
 	# Always bake fresh so the nav mesh matches the current map (a mesh saved in the scene can go stale)
 	_bake_navigation()
 	Checkpoints.level_started(self)
+	# The controls window, on a fresh start of the level (not when coming back from a checkpoint further on)
+	if Checkpoints.current == null or Checkpoints.current.checkpoint_id.is_empty():
+		ControlsHint.show_at_start(self, player)
 
 
 # Builds the map and waits until every step has finished

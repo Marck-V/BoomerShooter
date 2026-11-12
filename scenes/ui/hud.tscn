@@ -4,7 +4,7 @@
 [ext_resource type="FontFile" uid="uid://cfxfvqdxhxg26" path="res://assets/fonts/lilita_one_regular.ttf" id="2_bo48s"]
 [ext_resource type="Script" uid="uid://3i8fy1cpn0cc" path="res://scripts/ui/boss_health_bar.gd" id="3_136eg"]
 [ext_resource type="PackedScene" uid="uid://be11d55tkybrx" path="res://scenes/ui/pause_menu.tscn" id="3_bo48s"]
-[ext_resource type="Texture2D" uid="uid://j2h3fi3q5fe5" path="res://assets/images/keyboard_e.png" id="3_oj5la"]
+[ext_resource type="Texture2D" uid="uid://bnikircxbumlv" path="res://assets/images/Input_Prompts/Keyboard & Mouse/Default/keyboard_e.png" id="3_oj5la"]
 [ext_resource type="Theme" uid="uid://b850r5w08k6r5" path="res://resources/VaporwaveTheme.tres" id="4_oj5la"]
 [ext_resource type="Texture2D" uid="uid://cadd7w68s7j2s" path="res://assets/images/00.png" id="6_gss2c"]
 [ext_resource type="PackedScene" uid="uid://b28ujmdpvw234" path="res://scenes/ui/death_screen.tscn" id="7_gss2c"]
