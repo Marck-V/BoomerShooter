@@ -212,6 +212,15 @@ text = "Conduit"
 upgrade_id = "lightning_conduit"
 description = "The chain copies the shot enemy's burn and rifle spikes to every enemy it jumps to."
 
+[node name="LightningButton3" parent="Panel/TabContainer/Lightning Gun/LightningButton1/LightningButton2" instance=ExtResource("2_0fsr2")]
+layout_mode = 0
+offset_top = 191.34
+offset_right = 120.0
+offset_bottom = 219.34
+text = "Grounding"
+upgrade_id = "lightning_grounding"
+description = "A shot whose chain hits 6 or more enemies refunds its ammo."
+
 [node name="Shield" type="Control" parent="Panel/TabContainer"]
 visible = false
 layout_mode = 2

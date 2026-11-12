@@ -271,6 +271,7 @@ func _chain_hit_effects(target: Node3D, from_position: Vector3) -> void:
 # nobody is left in range.
 func _run_chain(first_enemy: Node3D, carried := {}) -> void:
 	var visited: Array = [first_enemy]
+	var grounded := false
 	# Positions are remembered as the chain goes: an enemy may die and be freed before its own jumps
 	var frontier: Array[Vector3] = [first_enemy.global_position]
 	while not frontier.is_empty() and visited.size() < max_targets:
@@ -280,6 +281,9 @@ func _run_chain(first_enemy: Node3D, carried := {}) -> void:
 				if visited.size() >= max_targets:
 					break
 				visited.append(next_enemy)
+				if not grounded and visited.size() >= GROUNDING_TARGETS and GlobalVariables.has_upgrade(GROUNDING):
+					grounded = true
+					_ground_refund()
 				_spawn_lightning_arc(from_position, next_enemy.global_position, carried.has("burn"))
 				next_frontier.append(next_enemy.global_position)
 				# The carried effects land first, so the jump's own hit sets the spikes off and gets Accelerant's bonus
@@ -334,6 +338,21 @@ func _burst(center: Vector3) -> void:
 			continue
 		LightningBolt.strike(get_tree(), center + chest, enemy.global_position + chest, {"width": BURST_ARC_WIDTH, "light": false})
 		_zap(enemy, BURST_DAMAGE, center)
+
+
+# ---------------------------
+# Grounding (upgrade): a shot whose chain reaches GROUNDING_TARGETS enemies (the one shot included; Chain Reaction's
+# bursts don't count) gives its ammo back the moment it gets there. Scarce on single targets, free on a crowd.
+# ---------------------------
+const GROUNDING := "lightning_grounding"
+const GROUNDING_TARGETS := 6
+const GROUNDING_SOUND := "assets/audio/sfx/weapons/reload.mp3"
+
+
+func _ground_refund() -> void:
+	GlobalVariables.add_ammo("lightning", AMMO_PER_SHOT)
+	Audio.play(GROUNDING_SOUND, 1.4)
+	fire_glow = 1.0   # the globe flares again, so the refund reads on the gun
 
 
 func _jolt(enemy: Node3D) -> void:

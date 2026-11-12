@@ -24,7 +24,8 @@ class_name PlayerData
 	"rifle_conductor": false,
 
 	"lightning_chain_reaction": false,
-	"lightning_conduit": false
+	"lightning_conduit": false,
+	"lightning_grounding": false
 }
 
 # What the player has been given so far: weapon ids and "shield". A new story starts with the pistol only (see
