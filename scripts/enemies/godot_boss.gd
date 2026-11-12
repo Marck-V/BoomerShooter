@@ -132,6 +132,7 @@ var melee_ready_msec := 0
 var pending_stun_time := 0.0
 var original_material: Material
 var attack_hitbox: Area3D
+var arena_center := Vector3.INF               # where it was placed in the arena (the middle): the exit portal opens here
 var shake_amount := 0.0
 var model_lift := 0.0                        # how far the model floats above the floor (a phase change)
 var next_hazard_msec := 0
@@ -215,6 +216,8 @@ func body_size() -> Vector2:
 
 
 func _physics_process(delta: float) -> void:
+	if arena_center == Vector3.INF:
+		arena_center = global_position   # its first frame in the level: still where the map put it, before it has moved
 	super(delta * tempo)   # the states' wind-ups, holds and recoveries all count this
 	_update_hazard()
 	if shake_amount > 0.0 or model_lift != 0.0:
@@ -264,10 +267,12 @@ func _find_reward_marker() -> Node3D:
 	return null
 
 
-# The boss is down and the reward taken: open the way to the next level, or end the game if there is none
+# The boss is down and the reward taken: open the way to the next level, or end the game if there is none. The portal
+# opens in the middle of the arena (where the boss was placed), not where it happened to fall.
 func _open_exit() -> void:
 	if next_level != "":
-		LevelPortal.open_at(get_tree(), floor_point(global_position), next_level, target.global_position if is_instance_valid(target) else Vector3.INF)
+		var middle := arena_center if arena_center != Vector3.INF else global_position
+		LevelPortal.open_at(get_tree(), floor_point(middle), next_level, target.global_position if is_instance_valid(target) else Vector3.INF)
 	else:
 		GameManager.win()
 
