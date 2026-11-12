@@ -37,7 +37,7 @@ func _on_body_entered(body: Node3D):
 		change_state("Chase")
 
 func _on_body_exited(body: Node3D):
-	if body == target:
+	if body == target and not keeps_fighting():
 		change_state("Idle")
 
 # Can we shoot? (in range + LOS)

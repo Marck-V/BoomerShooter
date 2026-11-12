@@ -58,6 +58,14 @@ var reappear_flash_tween: Tween
 var state = null
 var states = {}
 
+# --- Staying in the fight ---
+# Seeing the player only starts a fight. Once an enemy is in one it stays in it for as long as the player is within
+# AGGRO_RANGE, however far its own vision reaches (so in a big room the whole room fights, not just whoever is close
+# enough to see), and the moment one enemy goes after the player the enemies it can see wake up with it.
+const AGGRO_RANGE := 60.0           # meters: beyond this an enemy loses interest and goes back to idle
+const ALLY_ALERT_RADIUS := 30.0     # an enemy starting a fight wakes idle ones this close that have a clear line to it
+var aggroed := false
+
 # --- References (set in subclasses) ---
 @onready var nav: NavigationAgent3D = $NavigationAgent3D
 @onready var anim: AnimationPlayer = _find_anim()
@@ -147,6 +155,43 @@ func _resolve_target() -> void:
 	target = player
 	# The vision area may already overlap the player, which fired body_entered before a target existed
 	if has_node("VisionArea") and $VisionArea.overlaps_body(player) and has_method("_on_body_entered"):
+		call("_on_body_entered", player)
+
+
+# In a fight with a player who is still within AGGRO_RANGE: it does not go back to idle because the player left its
+# vision or it spent a while without a clear shot
+func keeps_fighting() -> bool:
+	return aggroed and not destroyed and is_instance_valid(target) 			and global_position.distance_to(target.global_position) <= AGGRO_RANGE
+
+
+# The first time this enemy goes into a fight it wakes the idle enemies around it that have a clear line to it
+func become_aggroed() -> void:
+	if aggroed:
+		return
+	aggroed = true
+	if not is_inside_tree() or not is_instance_valid(target):
+		return
+	var from := global_position + Vector3.UP
+	for other in get_tree().get_nodes_in_group("Enemy"):
+		if other == self or not other is EnemyBase or other.aggroed or other.destroyed or other.dummy:
+			continue
+		if other.get("entrance_pending") == true:
+			continue   # a boss that has not made its entrance yet comes in on its own
+		if other.state != other.states.get("Idle"):
+			continue
+		if other.global_position.distance_to(global_position) > ALLY_ALERT_RADIUS:
+			continue
+		var query := PhysicsRayQueryParameters3D.create(from, other.global_position + Vector3.UP, PhysicsLayers.ENVIRONMENT)
+		if not get_world_3d().direct_space_state.intersect_ray(query).is_empty():
+			continue
+		other.hear_alarm(target)
+
+
+# An ally started a fight in sight of this enemy
+func hear_alarm(player: Node3D) -> void:
+	if not is_instance_valid(target):
+		target = player
+	if has_method("_on_body_entered"):
 		call("_on_body_entered", player)
 
 
@@ -689,6 +734,8 @@ func change_state(state_name: String):
 		return  # a corpse stays dead (switching its vision area off, for one, would send it back to Idle)
 	if dummy and state_name != "Idle" and state_name != "Dead":
 		return  # a dummy never chases, attacks, dodges or jumps
+	if state_name != "Idle" and state_name != "Dead":
+		become_aggroed()
 	if state and state.has_method("exit"):
 		state.exit()
 	state = states[state_name]

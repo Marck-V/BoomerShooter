@@ -107,7 +107,7 @@ func _on_body_entered(body: Node3D):
 
 
 func _on_body_exited(body: Node3D):
-	if body == target:
+	if body == target and not keeps_fighting():
 		change_state("Idle")
 
 

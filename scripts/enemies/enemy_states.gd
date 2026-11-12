@@ -25,7 +25,7 @@ class IdleState:
 		if vision_check_timer < VISION_CHECK_INTERVAL:
 			return
 		vision_check_timer = 0.0
-		if is_instance_valid(enemy.target) and enemy.sees_target():
+		if is_instance_valid(enemy.target) and (enemy.sees_target() or enemy.keeps_fighting()):
 			enemy.change_state("Chase")
 
 
@@ -56,9 +56,12 @@ class ChaseState:
 		if enemy.get("shoot_range") != null:  # Check if this is a ranged enemy
 			stuck_timer += _delta
 			if stuck_timer >= STUCK_TIMEOUT:
-				# Been chasing too long, return to idle and wait for player to come closer
-				enemy.change_state("Idle")
-				return
+				if enemy.keeps_fighting():
+					stuck_timer = 0.0   # no shot yet, but the fight is on: keep closing in
+				else:
+					# Been chasing too long with the player out of reach, return to idle and wait for them to come closer
+					enemy.change_state("Idle")
+					return
 		
 		# --- Throttled Pathfinding (reduce recalculations) ---
 		path_update_timer += _delta

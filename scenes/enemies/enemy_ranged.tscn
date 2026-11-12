@@ -221,6 +221,7 @@ collision_layer = 4
 collision_mask = 7
 script = ExtResource("1_xbodr")
 firing_rate = 2.0
+health = 75.0
 
 [node name="Enemy_Model" parent="." instance=ExtResource("2_mt7bm")]
 

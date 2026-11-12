@@ -191,7 +191,7 @@ func _on_body_entered(body: Node3D):
 
 
 func _on_body_exited(body: Node3D):
-	if body == target and not _is_committed() and not _within_leash():
+	if body == target and not _is_committed() and not _within_leash() and not keeps_fighting():
 		change_state("Idle")
 
 
