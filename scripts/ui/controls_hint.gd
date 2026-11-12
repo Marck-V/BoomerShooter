@@ -15,8 +15,10 @@ class_name ControlsHint
 # doesn't depend on any particular map.
 
 const WINDOW_THEME: Theme = preload("res://resources/themes/Windows95.tres")
-const PROMPTS := "res://assets/images/Input_Prompts/Keyboard & Mouse/Default/"
+const PROMPTS := "res://assets/images/Input_Prompts/Keyboard & Mouse/Double/"
 const KEY_SIZE := 38.0
+const KEY_BACKING := Color.BLACK   # what shows through the transparent letters of a key picture, so they stand out
+const KEY_BACKING_INSET := 2.0    # pixels in from the key's own edge, so the backing is entirely hidden behind the key
 const DROP_TO_CLOSE := 2.5      # meters below the starting height
 const CLOSE_DISTANCE := 20.0    # meters from the starting spot, sideways
 const FADE_IN := 0.5
@@ -118,10 +120,10 @@ func _build_group(actions: Array, text: String) -> Control:
 	var keys := HBoxContainer.new()
 	keys.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	keys.alignment = BoxContainer.ALIGNMENT_CENTER
-	keys.add_theme_constant_override("separation", 2)
+	keys.add_theme_constant_override("separation", 5)
 	box.add_child(keys)
 	for action in actions:
-		keys.add_child(_key_icon(action))
+		keys.add_child(key_icon(action))
 
 	var label := Label.new()
 	label.text = text
@@ -133,8 +135,9 @@ func _build_group(actions: Array, text: String) -> Control:
 	return box
 
 
-# The picture of the key bound to an action, or its name as text when there is no picture for it
-func _key_icon(action: String) -> Control:
+# The picture of the key bound to an action, or its name as text when there is no picture for it. Also used by other
+# windows that name a key (the shield's), so they show the same pictures.
+static func key_icon(action: String, size := KEY_SIZE) -> Control:
 	var texture := key_texture(action)
 	if texture == null:
 		var fallback := Label.new()
@@ -143,17 +146,35 @@ func _key_icon(action: String) -> Control:
 		fallback.add_theme_color_override("font_color", Color.BLACK)
 		fallback.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		return fallback
+	var holder := Control.new()
+	holder.custom_minimum_size = Vector2(size, size)
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# The key's cap only fills the middle of its picture (and wide keys are shorter), so the backing is sized from the
+	# picture's own opaque area. Mouse pictures have nothing transparent to show it through and get none.
+	if not texture.resource_path.get_file().begins_with("mouse"):
+		var scale := size / maxf(texture.get_width(), texture.get_height())
+		var cap := Rect2(texture.get_image().get_used_rect())
+		var backing := Panel.new()
+		var square := StyleBoxFlat.new()
+		square.bg_color = KEY_BACKING
+		backing.add_theme_stylebox_override("panel", square)
+		backing.position = cap.position * scale + Vector2.ONE * KEY_BACKING_INSET
+		backing.size = cap.size * scale - Vector2.ONE * KEY_BACKING_INSET * 2.0
+		backing.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		holder.add_child(backing)
+
 	var icon := TextureRect.new()
 	icon.texture = texture
-	icon.custom_minimum_size = Vector2(KEY_SIZE, KEY_SIZE)
+	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	return icon
+	holder.add_child(icon)
+	return holder
 
 
-# The picture for the first key or mouse button bound to an action (null if none has one). The outlined version is
-# preferred: it stands out against the window's grey.
+# The picture for the first key or mouse button bound to an action (null if none has one)
 static func key_texture(action: String) -> Texture2D:
 	for event in InputMap.action_get_events(action):
 		var picture := ""
@@ -164,10 +185,9 @@ static func key_texture(action: String) -> Texture2D:
 			picture = {MOUSE_BUTTON_LEFT: "mouse_left", MOUSE_BUTTON_RIGHT: "mouse_right"}.get(event.button_index, "")
 		if picture.is_empty():
 			continue
-		for suffix in ["_outline", ""]:
-			var path: String = PROMPTS + picture + suffix + ".png"
-			if ResourceLoader.exists(path):
-				return load(path)
+		var path: String = PROMPTS + picture + ".png"
+		if ResourceLoader.exists(path):
+			return load(path)
 	return null
 
 

@@ -7,6 +7,7 @@ extends Area3D
 
 const ShieldModel = preload("res://scripts/player/shield_model.gd")
 const PICKUP_RADIUS := 1.6
+const KEY_PICTURE_SIZE := 36.0     # the key pictures in the how-to window
 const MODEL_SCALE := 0.9
 const SPIN_SPEED := 1.4
 const BOB_HEIGHT := 0.12
@@ -126,30 +127,38 @@ func _show_window() -> void:
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	column.add_child(title)
 
+	# Each entry: its name, the words and key pictures that follow it in the heading, and the explanation. The keys are
+	# pictures (the same ones as the controls window), taken from the input map.
 	var entries := [
-		["Parry", "%s" % NoteBox.key("parry"),
-			"Press it just as an enemy shot or blow is about to land. A parry throws projectiles straight back at the enemies, and each parry freezes the moment for an instant."],
-		["Block", "hold %s" % NoteBox.key("parry"),
-			"Keep holding after the parry window closes and the shield stays up, taking the hits for you."],
-		["Throw", NoteBox.key("throw_shield"),
-			"Hurls the shield. It bounces between up to four enemies, hitting each, then flies back to you. Press %s or %s again to call it back early." % [NoteBox.key("throw_shield"), NoteBox.key("parry")]],
-		["Grapple", "throw at a green point",
-			"The shield sticks to a glowing green grapple point and pulls you across to it. It also refreshes your jumps and dash, so you can chain them."],
+		{"name": "Parry", "heading": [["parry"]],
+			"text": "Press it just as an enemy shot or blow is about to land. A parry throws projectiles straight back at the enemies, and each parry freezes the moment for an instant."},
+		{"name": "Block", "heading": ["hold", ["parry"]],
+			"text": "Keep holding after the parry window closes and the shield stays up, taking the hits for you."},
+		{"name": "Throw", "heading": [["throw_shield"]],
+			"text": "Hurls the shield. It bounces between up to four enemies, hitting each, then flies back to you.",
+			"tail": ["Press", ["throw_shield"], "or", ["parry"], "again to call it back early."]},
+		{"name": "Grapple", "heading": ["throw", ["throw_shield"], "at a green point"],
+			"text": "The shield sticks to a glowing green grapple point and pulls you across to it. It also refreshes your jumps and dash, so you can chain them."},
 	]
 	for entry in entries:
 		var row := VBoxContainer.new()
-		row.add_theme_constant_override("separation", 2)
+		row.add_theme_constant_override("separation", 4)
 		column.add_child(row)
-		var heading := Label.new()
-		heading.text = "%s   (%s)" % [entry[0], entry[1]]
-		heading.add_theme_font_size_override("font_size", 24)
-		heading.add_theme_color_override("font_color", Color(0.1, 0.45, 0.5))
+		var heading := HBoxContainer.new()
+		heading.add_theme_constant_override("separation", 8)
 		row.add_child(heading)
+		heading.add_child(_window_label(entry["name"], 24, Color(0.1, 0.45, 0.5)))
+		_add_words_and_keys(heading, entry["heading"], 20, Color(0.1, 0.45, 0.5))
 		var body := Label.new()
-		body.text = entry[2]
+		body.text = entry["text"]
 		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 		body.add_theme_font_size_override("font_size", 18)
 		row.add_child(body)
+		if entry.has("tail"):
+			var tail := HFlowContainer.new()
+			tail.add_theme_constant_override("h_separation", 6)
+			row.add_child(tail)
+			_add_words_and_keys(tail, entry["tail"], 18, Color.BLACK)
 
 	var button := Button.new()
 	button.text = "Continue"
@@ -172,3 +181,22 @@ func _show_window() -> void:
 	get_tree().paused = true
 	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 	button.grab_focus()
+
+
+# Words (strings) and key pictures (an array holding the action) in a row
+func _add_words_and_keys(container: Control, parts: Array, font_size: int, color: Color) -> void:
+	for part in parts:
+		if part is Array:
+			container.add_child(ControlsHint.key_icon(part[0], KEY_PICTURE_SIZE))
+		else:
+			container.add_child(_window_label(part, font_size, color))
+
+
+func _window_label(text: String, font_size: int, color: Color) -> Label:
+	var label := Label.new()
+	label.text = text
+	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_color_override("font_color", color)
+	label.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	return label
+
