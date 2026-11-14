@@ -53,6 +53,11 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE, HOVER }
 const HOVER_WALL_GAP := 1.0            # it stops this far short of a wall
 const HOVER_BLINK_TIME := 2.0          # it blinks for this long before it comes back
 const HOVER_BOB := 0.08
+const HOVER_SCALE := 2.0               # hovering, it grows to this size (and shrinks back when it leaves)
+# The size follows a spring (slightly underdamped): it swells as it is tossed out and settles with a small overshoot,
+# so it reads as the shield opening up rather than a scale tween
+const HOVER_GROW_STIFFNESS := 120.0
+const HOVER_GROW_DAMPING := 16.0
 const RICOCHET_SOUND_GAP_MSEC := 90    # a shotgun blast or a flamethrower bounces many hits at once
 const RICOCHET_SPREAD := 0.25          # bounced pellets land a little apart on the enemy
 const RICOCHET_MISS_RANGE := 25.0      # with no enemy to go to, the shot flies off this far
@@ -206,6 +211,8 @@ var hover_from := Vector3.ZERO            # where the toss started and where it 
 var hover_to := Vector3.ZERO
 var hover_left := 0.0                     # seconds of hovering left
 var hover_kick := Vector3.ZERO            # a shot knocks the hovering shield back a little
+var hover_size := 1.0                     # the thrown shield's current size (HOVER_SCALE while hovering)
+var hover_size_velocity := 0.0
 var last_ricochet_sound_msec := -RICOCHET_SOUND_GAP_MSEC
 
 
@@ -833,6 +840,8 @@ func _spawn_thrown(start: Vector3) -> void:
 	recall_speed = 0.0
 	traveled = 0.0
 	flight_time = 0.0
+	hover_size = 1.0
+	hover_size_velocity = 0.0
 	bounces = 0
 	bounce_target = null
 	visited_ids.clear()
@@ -862,6 +871,7 @@ func _update_thrown(delta: float) -> void:
 	# Only a hovering shield can be shot
 	if phase != Phase.HOVER and is_instance_valid(hover_target):
 		_end_hover()
+	_update_hover_size(delta)
 
 	match phase:
 		Phase.HOVER:
@@ -930,6 +940,20 @@ func _face_camera() -> void:
 		return
 	var up := Vector3.UP if absf(to_camera.normalized().y) < 0.99 else Vector3.FORWARD
 	thrown.global_basis = Basis.looking_at(-to_camera, up) * Basis(Vector3.RIGHT, PI * 0.5)
+
+
+# Grows while hovering and shrinks back once it leaves. The model and the part shots hit grow together, so the target is
+# always the size it looks.
+func _update_hover_size(delta: float) -> void:
+	var target := HOVER_SCALE if phase == Phase.HOVER else 1.0
+	if is_equal_approx(hover_size, target) and absf(hover_size_velocity) < 0.001:
+		return
+	var step := minf(delta, 0.03)
+	hover_size_velocity += ((target - hover_size) * HOVER_GROW_STIFFNESS - hover_size_velocity * HOVER_GROW_DAMPING) * step
+	hover_size += hover_size_velocity * step
+	thrown_spinner.scale = Vector3.ONE * hover_size
+	if is_instance_valid(hover_target):
+		hover_target.scale = Vector3.ONE * hover_size
 
 
 func _end_hover() -> void:
