@@ -251,6 +251,29 @@ func _spawn_shot_bolt(start: Vector3, end: Vector3, hit: bool) -> void:
 	})
 
 
+# Bounced off the hovering shield: a bolt leaps from the shield to the enemy, which is struck like a direct hit (the
+# chain spreads on from it)
+func ricochet_hit(enemy: Node3D, amount: float, from_point: Vector3) -> void:
+	var chest := enemy.global_position + Vector3.UP * 1.2
+	LightningBolt.strike(get_tree(), from_point, chest, {"width": BOLT_WIDTH, "light": true, "sparks": true})
+	var was_alive := _is_alive(enemy)
+	var carried := _conduit_read(enemy)
+	ricocheting = true
+	flash_hit_enemy(enemy, chest, 1.0, HIT_FLASH_COLOR)
+	damage_hit(enemy, amount, chest)
+	ricocheting = false
+	if not is_instance_valid(enemy):
+		return
+	_burst_if_killed(enemy, was_alive)
+	ElectricAura.apply(enemy)
+	_jolt(enemy)
+	_run_chain(enemy, carried)
+
+
+func ricochet_tracer_color() -> Color:
+	return Color(0.0, 0.0, 0.0, 0.0)   # the bolt is the tracer
+
+
 # ---------------------------
 # Chain Lightning
 # ---------------------------

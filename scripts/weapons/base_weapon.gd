@@ -99,6 +99,32 @@ func get_shield_multiplier() -> float:
 	return 1.0
 
 
+func is_hover_shield(collider: Object) -> bool:
+	return collider is Node and collider.is_in_group("HoverShield")
+
+
+# True while a shot that bounced off the hovering shield lands, so per-shot bonuses already in `amount` (the pistol's
+# Parry Round) aren't applied a second time
+var ricocheting := false
+
+
+# A shot of this weapon bounced off the hovering shield at `from_point` and flies on to `enemy`: it lands as a hit of
+# this weapon, so the weapon's own upgrades still work. Weapons with a special shot (lightning) override this.
+func ricochet_hit(enemy: Node3D, amount: float, from_point: Vector3) -> void:
+	var chest := enemy.global_position + Vector3.UP * 1.2
+	ricocheting = true
+	flash_hit_enemy(enemy, chest, 1.0 if data.shot_count <= 1 else 0.4)
+	damage_hit(enemy, amount, chest)
+	ricocheting = false
+	BloodParticles.spawn(get_tree(), chest, (chest - from_point).normalized(), 1.0 if data.shot_count <= 1 else 0.5,
+		BloodParticles.thickness_for(enemy))
+
+
+# The colour of the streak the shield draws for a bounced shot. A clear colour means the weapon draws its own.
+func ricochet_tracer_color() -> Color:
+	return Color(3.0, 2.4, 1.2)
+
+
 func is_shield_hit(collider: Object) -> bool:
 	return collider is Node and collider.is_in_group("Shield")
 
@@ -106,6 +132,10 @@ func is_shield_hit(collider: Object) -> bool:
 # Damages what a shot hit. A shield hitbox passes the damage on to its enemy like any hurtbox; this only adds the
 # metal clang and the weapon's bonus against shields.
 func damage_hit(collider: Object, amount: float, point: Vector3) -> void:
+	# The player's own hovering shield: the shot is bounced on to the nearest enemy (see ricochet_hit)
+	if is_hover_shield(collider):
+		collider.ricochet(self, amount, point)
+		return
 	if is_shield_hit(collider):
 		play_sound_3d(SHIELD_HIT_SOUND, point)
 		amount *= get_shield_multiplier()

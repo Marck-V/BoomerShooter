@@ -284,6 +284,37 @@ func _burn_enemies_in_cone(camera: Camera3D) -> void:
 		enemy.damage_silently(tick_damage)   # a tick every 0.1 s would drown out the hit marker
 		Burning.apply(enemy, BURN_DURATION, BURN_DPS, tick_stacks)   # a live shield keeps the fire off
 
+	# The player's hovering shield in the flame throws the fire on to the nearest enemy (see ricochet_hit)
+	ricochet_stacks = tick_stacks
+	for hover in get_tree().get_nodes_in_group("HoverShield"):
+		var point: Vector3 = (hover as Node3D).global_position
+		var to_point := point - origin
+		var along := to_point.dot(forward)
+		if along < 0.0 or along > reach:
+			continue
+		if (to_point - forward * along).length() > (CONE_BASE_RADIUS + along * CONE_SPREAD) * width + 0.4:
+			continue
+		if not space.intersect_ray(PhysicsRayQueryParameters3D.create(origin, point, WORLD_MASK)).is_empty():
+			continue
+		hover.ricochet(self, tick_damage, point)
+
+
+var ricochet_stacks := 0.0   # the burn stacks of the flame tick being bounced
+
+
+# Fire bounced off the hovering shield: the enemy burns as if it stood in the flame
+func ricochet_hit(enemy: Node3D, amount: float, _from_point: Vector3) -> void:
+	if enemy.has_method("damage_silently"):
+		enemy.damage_silently(amount)
+	else:
+		enemy.damage(amount)
+	if is_instance_valid(enemy):
+		Burning.apply(enemy, BURN_DURATION, BURN_DPS, ricochet_stacks)
+
+
+func ricochet_tracer_color() -> Color:
+	return Color(3.2, 1.3, 0.25)
+
 
 # Backdraft: the flame was held a good while and then let go, so it vents. A blast of fire out of the nozzle throws
 # everything in the cone back, hurts it and sets it alight; the longer the flame was held, the bigger it is.

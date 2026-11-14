@@ -118,6 +118,8 @@ func damage_hit(collider: Object, amount: float, point: Vector3) -> void:
 
 
 func _shot_damage(collider: Object, amount: float) -> float:
+	if ricocheting:
+		return amount   # bounced off the hovering shield: the Parry Round's double is already in it
 	amount *= shot_scale
 	if has_dead_eye and _is_critical(collider):
 		amount *= DEAD_EYE_DAMAGE
@@ -186,8 +188,8 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 		return
 
 	var first_target = first_collider
-	if is_shield_hit(first_target):
-		return  # shields stop the shot
+	if is_shield_hit(first_target) or is_hover_shield(first_target):
+		return  # shields stop the shot (the hovering shield bounces it on instead)
 	if first_target and not first_target.has_method("damage") and first_target.get_parent() and first_target.get_parent().has_method("damage"):
 		first_target = first_target.get_parent()
 
@@ -224,7 +226,7 @@ func _do_piercing_hits(camera: Camera3D, raycast: RayCast3D) -> void:
 			target = target.get_parent()
 
 		# Walls and shields end the shot
-		if not target or not target.has_method("damage") or is_shield_hit(target):
+		if not target or not target.has_method("damage") or is_shield_hit(target) or is_hover_shield(target):
 			break
 
 		# A second hurtbox of an enemy that was already hit is skipped without using up a pierce
