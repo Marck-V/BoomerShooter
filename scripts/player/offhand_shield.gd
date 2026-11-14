@@ -13,8 +13,10 @@ const BLOCK_SOUND: AudioStream = preload("res://assets/audio/sfx/player/shield_b
 const BLOCK_SOUND_GAP_MSEC := 100   # one attack can report its block twice (a lunge's shove, then its hit)
 const THROW_SOUND := "assets/audio/sfx/player/simple_whoosh.mp3"
 
+const HoverTarget = preload("res://scripts/player/hover_shield_target.gd")
+
 enum State { READY, PARRY, RECOVER, THROWN, BLOCK }
-enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
+enum Phase { OUT, BOUNCE, RETURN, GRAPPLE, HOVER }
 
 # --- Parry ---
 @export var parry_window := 0.3
@@ -40,6 +42,22 @@ enum Phase { OUT, BOUNCE, RETURN, GRAPPLE }
 @export var throw_cooldown := 0.4
 @export var max_flight_time := 6.0
 @export var grapple_aim_assist_degrees := 3.0   # a grapple point this close to the crosshair is aimed at for you
+
+# --- Hover (R) ---
+# The shield is tossed a short way out along the crosshair and hangs there, facing the player. Shooting it bounces the
+# shot on to the nearest enemy it can see, as a hit of the weapon that fired it.
+@export var hover_distance := 8.0      # how far out it hangs (less if a wall is closer)
+@export var hover_time := 10.0         # how long it hangs before it comes back by itself
+@export var hover_launch_time := 0.35  # the toss out, easing to a stop
+@export var ricochet_range := 60.0     # how far a bounced shot looks for an enemy
+const HOVER_WALL_GAP := 1.0            # it stops this far short of a wall
+const HOVER_BLINK_TIME := 2.0          # it blinks for this long before it comes back
+const HOVER_BOB := 0.08
+const RICOCHET_SOUND_GAP_MSEC := 90    # a shotgun blast or a flamethrower bounces many hits at once
+const RICOCHET_SPREAD := 0.25          # bounced pellets land a little apart on the enemy
+const RICOCHET_MISS_RANGE := 25.0      # with no enemy to go to, the shot flies off this far
+const TRACER_TIME := 0.12
+const TRACER_WIDTH := 0.035
 
 const WALK_BOB_SCALE := 1.0                        # the gun's walking bob, times this, for the shield
 const HELD_SCALE := 1.15
@@ -183,6 +201,13 @@ var previous_state := State.READY
 var wall_squeeze := 1.0                   # 1: the shield is full size; less: scaled down towards the camera to stay clear of a wall
 var avoid_walls := true
 
+var hover_target: Area3D                  # the part shots hit, while the shield hovers
+var hover_from := Vector3.ZERO            # where the toss started and where it stops
+var hover_to := Vector3.ZERO
+var hover_left := 0.0                     # seconds of hovering left
+var hover_kick := Vector3.ZERO            # a shot knocks the hovering shield back a little
+var last_ricochet_sound_msec := -RICOCHET_SOUND_GAP_MSEC
+
 
 func _ready() -> void:
 	camera = get_parent() as Camera3D
@@ -242,6 +267,8 @@ func _process(delta: float) -> void:
 				_start_parry()
 			elif Input.is_action_just_pressed("throw_shield"):
 				_start_throw()
+			elif Input.is_action_just_pressed("hover_shield"):
+				_start_hover()
 		State.PARRY:
 			_check_parry()
 			state_timer -= delta
@@ -319,7 +346,15 @@ func _update_glow(delta: float) -> void:
 	_apply_glow(hand, rim.lerp(FLASH_COLOR, flash), gem.lerp(FLASH_COLOR, flash), body)
 
 	if is_instance_valid(thrown_spinner):
-		if phase == Phase.GRAPPLE:
+		if phase == Phase.HOVER:
+			# Hot yellow, the parry colour, so it reads as something to hit; it blinks before it comes back
+			var hover_rim := RIM_BASE.lerp(RIM_PARRY, 0.5 + 0.2 * sin(Time.get_ticks_msec() * 0.006))
+			var hover_gem := GEM_BASE.lerp(GEM_PARRY, 0.4)
+			if hover_left < HOVER_BLINK_TIME and fmod(hover_left, 0.25) < 0.1:
+				hover_rim = _scaled(hover_rim, RECOVER_DIM)
+				hover_gem = _scaled(hover_gem, RECOVER_DIM)
+			_apply_glow(thrown_spinner, hover_rim.lerp(FLASH_COLOR, flash), hover_gem.lerp(FLASH_COLOR, flash), 1.0)
+		elif phase == Phase.GRAPPLE:
 			_apply_glow(thrown_spinner, RIM_GRAPPLE, GEM_GRAPPLE, 1.0)
 		elif carried_streak > 0:
 			var carried_level := float(carried_streak) / float(STREAK_MAX)
@@ -768,6 +803,17 @@ func _start_throw() -> void:
 	aim_point = _grapple_aim_assist(aim_point)
 	fly_dir = (aim_point - start).normalized()
 
+	_spawn_thrown(start)
+	phase = Phase.OUT
+	# The streak goes out with the shield; it is cashed in on the first enemy hit, or handed back if none is reached
+	carried_streak = parry_streak if has_retaliation else 0
+	parry_streak = 0
+	thrown_trail.empower = _trail_empower()
+	Audio.play(THROW_SOUND)
+
+
+# The flying shield (model, light and trail) at `start`, and the flight's bookkeeping reset. Leaves the shield THROWN.
+func _spawn_thrown(start: Vector3) -> void:
 	thrown = Node3D.new()
 	thrown_spinner = _make_disc(false)
 	thrown.add_child(thrown_spinner)
@@ -784,19 +830,13 @@ func _start_throw() -> void:
 	thrown.add_child(trail)
 	thrown_trail = trail
 
-	phase = Phase.OUT
 	recall_speed = 0.0
 	traveled = 0.0
 	flight_time = 0.0
 	bounces = 0
 	bounce_target = null
 	visited_ids.clear()
-	# The streak goes out with the shield; it is cashed in on the first enemy hit, or handed back if none is reached
-	carried_streak = parry_streak if has_retaliation else 0
-	parry_streak = 0
-	thrown_trail.empower = _trail_empower()
 	_set_state(State.THROWN)
-	Audio.play(THROW_SOUND)
 
 
 func _update_thrown(delta: float) -> void:
@@ -805,17 +845,27 @@ func _update_thrown(delta: float) -> void:
 		return
 
 	flight_time += delta
-	thrown_spinner.rotate_y(delta * 22.0)
+	# Hovering, it turns slowly in its own plane, faster while it is still being tossed out
+	var spin := 22.0
+	if phase == Phase.HOVER:
+		spin = lerpf(22.0, 4.0, clampf(flight_time / hover_launch_time, 0.0, 1.0))
+	thrown_spinner.rotate_y(delta * spin)
 	# The trail turns blue while the shield carries a streak, a little more so for a bigger one
 	if is_instance_valid(thrown_trail):
 		thrown_trail.empower = _trail_empower()
-	if flight_time > max_flight_time and phase != Phase.RETURN and phase != Phase.GRAPPLE:
+	if flight_time > max_flight_time and phase != Phase.RETURN and phase != Phase.GRAPPLE and phase != Phase.HOVER:
 		phase = Phase.RETURN
-	# Recall: F again or right click while the shield is out brings it straight back
-	if phase != Phase.RETURN and (Input.is_action_just_pressed("throw_shield") or Input.is_action_just_pressed("parry")):
+	# Recall: F again or right click while the shield is out brings it straight back (R too, for a hovering one)
+	if phase != Phase.RETURN and (Input.is_action_just_pressed("throw_shield") or Input.is_action_just_pressed("parry") \
+			or (phase == Phase.HOVER and Input.is_action_just_pressed("hover_shield"))):
 		_recall()
+	# Only a hovering shield can be shot
+	if phase != Phase.HOVER and is_instance_valid(hover_target):
+		_end_hover()
 
 	match phase:
+		Phase.HOVER:
+			_update_hover(delta)
 		Phase.OUT:
 			_update_out(delta)
 		Phase.BOUNCE:
@@ -824,6 +874,147 @@ func _update_thrown(delta: float) -> void:
 			_update_return(delta)
 		Phase.GRAPPLE:
 			_update_grapple()
+
+
+# ---------------------------
+# Hover
+# ---------------------------
+func _start_hover() -> void:
+	var start := camera.global_position + camera.global_basis * HAND_OFFSET
+	# Out along the crosshair, stopping short of whatever is in the way
+	var forward := -camera.global_basis.z
+	var destination := camera.global_position + forward * hover_distance
+	var hit := _raycast(camera.global_position, destination, WORLD_MASK)
+	if not hit.is_empty():
+		var gap := minf(HOVER_WALL_GAP, camera.global_position.distance_to(hit["position"]) * 0.5)
+		destination = hit["position"] - forward * gap
+
+	_spawn_thrown(start)
+	phase = Phase.HOVER
+	carried_streak = 0          # the streak stays with the player: it is for the throw
+	fly_dir = forward
+	hover_from = start
+	hover_to = destination
+	hover_left = hover_time
+	hover_kick = Vector3.ZERO
+	_face_camera()
+
+	hover_target = HoverTarget.new()
+	hover_target.shield = self
+	var shape := CollisionShape3D.new()
+	var sphere := SphereShape3D.new()
+	sphere.radius = _thrown_disc_radius() * 1.15   # a little bigger than the disc: it is a target, it should be easy to hit
+	shape.shape = sphere
+	hover_target.add_child(shape)
+	thrown.add_child(hover_target)
+	Audio.play(THROW_SOUND, 0.85)
+
+
+func _update_hover(delta: float) -> void:
+	var t := clampf(flight_time / maxf(hover_launch_time, 0.001), 0.0, 1.0)
+	var bob := Vector3.UP * sin(flight_time * 2.2) * HOVER_BOB * t
+	hover_kick = hover_kick.lerp(Vector3.ZERO, 1.0 - exp(-delta * 10.0))
+	thrown.global_position = hover_from.lerp(hover_to, 1.0 - pow(1.0 - t, 3.0)) + bob + hover_kick
+	_face_camera()
+	if t < 1.0:
+		return
+	hover_left -= delta
+	if hover_left <= 0.0:
+		phase = Phase.RETURN
+
+
+# Stands the hovering shield up with its dome towards the player (the model's front points along its +Y)
+func _face_camera() -> void:
+	var to_camera := camera.global_position - thrown.global_position
+	if to_camera.length() < 0.01:
+		return
+	var up := Vector3.UP if absf(to_camera.normalized().y) < 0.99 else Vector3.FORWARD
+	thrown.global_basis = Basis.looking_at(-to_camera, up) * Basis(Vector3.RIGHT, PI * 0.5)
+
+
+func _end_hover() -> void:
+	if is_instance_valid(hover_target):
+		hover_target.queue_free()
+	hover_target = null
+
+
+# The disc's radius (thrown model, unscaled), for the size of the hover target
+func _thrown_disc_radius() -> float:
+	var radius := 0.4
+	for mesh_instance in thrown_spinner.find_children("*", "MeshInstance3D", true, false):
+		var box: AABB = (mesh_instance as MeshInstance3D).get_aabb()
+		radius = maxf(radius, maxf(box.size.x, box.size.z) * 0.5 * (mesh_instance as Node3D).scale.x)
+	return radius
+
+
+# A shot hit the hovering shield at `point`: it bounces on to the nearest enemy the shield can see and lands there as a
+# hit of `weapon` (null for something that isn't a gun: then it is plain damage). With nobody to go to it glances off.
+func on_hover_shot(weapon: Node, amount: float, point: Vector3) -> void:
+	if phase != Phase.HOVER or not is_instance_valid(thrown):
+		return
+	var from := thrown.global_position
+	var color: Color = weapon.ricochet_tracer_color() if weapon != null and weapon.has_method("ricochet_tracer_color") else Color(3.0, 2.4, 1.2)
+	var enemy := _nearest_enemy(from, ricochet_range, true)
+
+	# The shield takes the hit: a flash, a knock back away from the player and a ping
+	flash = maxf(flash, 0.6)
+	hover_kick += (from - camera.global_position).normalized() * 0.12
+	_pop(point, PARRY_YELLOW, 0.7)
+	var now := Time.get_ticks_msec()
+	if now - last_ricochet_sound_msec >= RICOCHET_SOUND_GAP_MSEC:
+		last_ricochet_sound_msec = now
+		_clang(point, randf_range(1.25, 1.45))
+
+	if enemy == null:
+		# Glances off away from the player, somewhere ahead
+		var away := (from - camera.global_position).normalized()
+		var direction := (away + Vector3(randf_range(-0.6, 0.6), randf_range(-0.3, 0.4), randf_range(-0.6, 0.6))).normalized()
+		var end := from + direction * RICOCHET_MISS_RANGE
+		var miss := _raycast(from, end, WORLD_MASK)
+		if not miss.is_empty():
+			end = miss["position"]
+			ImpactParticles.spawn(get_tree(), end, miss["normal"], 0.6)
+		if color.a > 0.0:
+			_tracer(from, end, color)
+		return
+
+	var chest := enemy.global_position + Vector3.UP * 1.2
+	var spread := Vector3(randf_range(-1.0, 1.0), randf_range(-1.0, 1.0), randf_range(-1.0, 1.0)) * RICOCHET_SPREAD
+	if color.a > 0.0:
+		_tracer(from, chest + spread, color)
+	if weapon != null and weapon.has_method("ricochet_hit"):
+		weapon.ricochet_hit(enemy, amount, from)
+	elif enemy.has_method("damage"):
+		if enemy.has_method("hit_flash"):
+			enemy.hit_flash(chest, 1.0)
+		enemy.damage(amount)
+
+
+# A bright streak from `from` to `to` that fades at once: a bounced shot
+func _tracer(from: Vector3, to: Vector3, color: Color) -> void:
+	var length := from.distance_to(to)
+	if length < 0.05:
+		return
+	var material := StandardMaterial3D.new()
+	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material.albedo_color = color
+	material.disable_fog = true
+	var box := BoxMesh.new()
+	box.size = Vector3(TRACER_WIDTH, TRACER_WIDTH, 1.0)
+	box.material = material
+	var tracer := MeshInstance3D.new()
+	tracer.mesh = box
+	tracer.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	get_tree().current_scene.add_child(tracer)
+	tracer.global_position = (from + to) * 0.5
+	tracer.look_at(to, Vector3.UP if absf((to - from).normalized().y) < 0.99 else Vector3.RIGHT)
+	tracer.scale = Vector3(1.0, 1.0, length)
+	var tween := tracer.create_tween().set_parallel(true)
+	tween.tween_property(material, "albedo_color", Color(0.0, 0.0, 0.0, 0.0), TRACER_TIME)
+	tween.tween_property(tracer, "scale", Vector3(0.3, 0.3, length), TRACER_TIME)
+	tween.chain().tween_callback(tracer.queue_free)
 
 
 # Calls the thrown shield back to the hand from wherever it is, however far it has flown. If it is pulling the player
