@@ -171,6 +171,7 @@ class ChaseState:
 	const SMOOTH_SNAP_SPEED := 2.0   # slower than this it turns on the spot: there is no arc to run yet
 	const SMOOTH_REACHED := 1.0      # a path point this close (flat) counts as reached
 	const SMOOTH_SETTLE_SPEED := 3.0 # m/s it is always pushed down onto the floor with
+	const SMOOTH_LIVE_AIM_DISTANCE := 4.0   # this close, the last stretch runs at where the target is now
 	var path_index := 0              # the point of the agent's current path it is heading for
 	var path_size := -1              # the path it was following (a new one starts again from its first point)
 	var path_start := Vector3.ZERO
@@ -199,9 +200,17 @@ class ChaseState:
 				break
 		if path_index < path.size():
 			aim = path[path_index]
-		if nav.is_navigation_finished():
-			# The agent counts its target reached a metre short of it: the last bit is run straight at it
-			aim = nav.target_position
+		# On the last straight stretch it runs at where it is going now, not where that was when the path was last
+		# worked out (up to PATH_UPDATE_INTERVAL ago: a couple of metres behind a running player, which it would slow
+		# down for as if it had arrived). That also covers the last metre, which the agent counts as reached early.
+		# Only close in: further out the path is followed, so it doesn't cut the corner the last stretch starts at.
+		var last_leg := nav.is_navigation_finished()
+		if not last_leg and path_index >= path.size() - 1:
+			var live: Vector3 = enemy.chase_destination()
+			if Vector2(live.x - enemy.global_position.x, live.z - enemy.global_position.z).length() < SMOOTH_LIVE_AIM_DISTANCE:
+				last_leg = true
+		if last_leg:
+			aim = enemy.chase_destination()
 		var to_aim: Vector3 = aim - enemy.global_position
 		var flat := Vector3(to_aim.x, 0.0, to_aim.z)
 		var target_speed: float = enemy.chase_speed()
@@ -223,7 +232,8 @@ class ChaseState:
 
 		# Eases off over the last stretch of the whole path (enemies that pace their own arrival opt out)
 		if not (enemy.has_method("chase_eases_into_waypoints") and not enemy.chase_eases_into_waypoints()):
-			target_speed *= clampf(nav.distance_to_target() / enemy.chase_arrive_distance, 0.3, 1.0)
+			var remaining: float = flat.length() if last_leg else nav.distance_to_target()
+			target_speed *= clampf(remaining / enemy.chase_arrive_distance, 0.3, 1.0)
 
 		var wanted := heading * target_speed
 		var rate: float = enemy.chase_acceleration if wanted.length() > planned.length() else enemy.chase_deceleration
