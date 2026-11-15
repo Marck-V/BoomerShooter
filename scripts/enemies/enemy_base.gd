@@ -205,7 +205,63 @@ func _on_velocity_computed(safe_velocity: Vector3):
 	# Use the avoidance-adjusted velocity
 	if should_move:
 		velocity = safe_velocity
-		move_and_slide()
+		move_and_step()
+
+
+# ---------------------------
+# Stepping up
+# ---------------------------
+# The navigation mesh counts any rise up to its agent_max_climb (0.5 m in the test room and level 2) as walkable: a
+# stair, a lip where two brushes meet, the side of a ramp near its foot. Enemies have no gravity and only slide along
+# what they hit, and a capsule rides up an edge no higher than about a tenth of a metre, so they pushed against those
+# rises forever. When a move is blocked, this tries the same move from up to STEP_MAX higher and settles back down onto
+# whatever is there; still blocked that high, it was a real wall and nothing changes.
+# The mesh joins rises a little higher than agent_max_climb (the bake works in cell_height steps of 0.25 m: the side of
+# a ramp linked where it was 0.55 m high), so an enemy has to manage the climb plus a cell, and a little more
+const STEP_MAX := 0.8
+const STEP_MIN := 0.05            # a rise smaller than this isn't a step: the slide handles it
+const STEP_MIN_SPEED := 0.5       # m/s: only while it is actually trying to go somewhere
+const STEP_OVER := 0.05           # metres past its own radius it moves forward when it steps up
+
+
+func move_and_step() -> void:
+	var start := global_transform
+	var horizontal := Vector3(velocity.x, 0.0, velocity.z)
+	move_and_slide()
+	if horizontal.length() < STEP_MIN_SPEED or not _hit_wall():
+		return
+	# Forward at least far enough to get the body over the edge: one frame's worth (a few centimetres) left it perched
+	# on the edge on its rounded bottom, and it slid back off
+	var motion := horizontal * get_physics_process_delta_time()
+	motion = motion.normalized() * maxf(motion.length(), body_size().x + STEP_OVER)
+	var stepped := start
+	var up_hit := KinematicCollision3D.new()
+	var rise := STEP_MAX
+	if test_move(stepped, Vector3.UP * STEP_MAX, up_hit):
+		rise = up_hit.get_travel().y   # a low ceiling: step only as high as there is room
+	if rise < STEP_MIN:
+		return
+	stepped.origin.y += rise
+	if test_move(stepped, motion):
+		return   # still blocked up there: a wall, not a step
+	stepped.origin += motion
+	var down_hit := KinematicCollision3D.new()
+	if not test_move(stepped, Vector3.DOWN * (rise + STEP_MIN), down_hit):
+		return   # nothing to stand on: it would step off into the air
+	if down_hit.get_normal().angle_to(Vector3.UP) > floor_max_angle:
+		return   # it would land on an edge or a steep face, not on top of the step
+	stepped.origin += down_hit.get_travel()
+	if stepped.origin.y - start.origin.y < STEP_MIN:
+		return   # it didn't end up any higher: not a step
+	global_transform = stepped
+
+
+# Whether the last move ran into something upright (a wall, the face of a step), not just the floor or a slope
+func _hit_wall() -> bool:
+	for i in get_slide_collision_count():
+		if absf(get_slide_collision(i).get_normal().y) < 0.3:
+			return true
+	return false
 
 
 func _set_velocity(new_velocity: Vector3):
@@ -228,6 +284,8 @@ func _physics_process(delta):
 const NAVMESH_MAX_DRIFT := 0.15     # further sideways off the mesh than this gets corrected (slopes read as a little drift)
 const NAVMESH_MAX_HOVER := 0.75     # the same for height: it normally stands a little off the mesh's height
 const NAVMESH_MAX_CORRECTION := 2.0 # further than this it isn't a drift (no mesh here, placed off it): leave it alone
+const NAVMESH_PROBE_UP := 1.0       # the upright line it checks for mesh: this far above its feet (the mesh floats
+const NAVMESH_PROBE_DOWN := 0.5     # about half a metre over the floor)...and this far below
 
 
 func _stay_on_navmesh() -> void:
@@ -236,7 +294,11 @@ func _stay_on_navmesh() -> void:
 	var map := nav.get_navigation_map()
 	if NavigationServer3D.map_get_iteration_id(map) == 0:
 		return
-	var closest := NavigationServer3D.map_get_closest_point(map, global_position)
+	# The mesh point closest to a short upright line through the enemy, not to its feet: the mesh floats a little above
+	# the floor, so on a slope the point nearest the feet lies downhill of them, and correcting to it dragged enemies
+	# back down every ramp (on one steeper than about 20° they could barely climb). Measured along the line, an enemy
+	# standing anywhere on the mesh is left where it is.
+	var closest := navmesh_point_here()
 	if closest.distance_to(global_position) > NAVMESH_MAX_CORRECTION:
 		return
 	var corrected := global_position
@@ -246,6 +308,16 @@ func _stay_on_navmesh() -> void:
 	if absf(closest.y - corrected.y) > NAVMESH_MAX_HOVER:
 		corrected.y = closest.y
 	global_position = corrected
+
+
+# The navigation mesh where the enemy stands: the point of it closest to a short upright line through the enemy (see
+# _stay_on_navmesh for why not the point closest to its feet). Off the mesh, the nearest point of its edge.
+func navmesh_point_here() -> Vector3:
+	var map := nav.get_navigation_map()
+	if NavigationServer3D.map_get_iteration_id(map) == 0:
+		return global_position   # the map isn't built yet (the level's first frames): treat where it stands as on it
+	return NavigationServer3D.map_get_closest_point_to_segment(map,
+			global_position + Vector3.UP * NAVMESH_PROBE_UP, global_position + Vector3.DOWN * NAVMESH_PROBE_DOWN)
 
 
 # Roughly how much space the body takes up, in metres: x is its radius and y its height from the feet. Read from the
