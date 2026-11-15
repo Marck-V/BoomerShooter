@@ -47,6 +47,13 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var avoidance_neighbor_distance := 5.0
 @export var avoidance_time_horizon := 1.0
 
+@export_group("Getting unstuck")
+# Trying to run but getting almost nowhere (a prop that isn't in the navigation mesh, a jam in the crowd) for
+# stuck_time seconds, it steps sideways round the obstacle for up to detour_time seconds, stopping as soon as the way
+# ahead is clear, and works out its path again.
+@export var stuck_time := 0.6
+@export var detour_time := 1.2
+
 @export_group("Lunge")
 # While closing in from range the enemy sometimes crouches, dashes and punches. The fist glows yellow for
 # the whole lunge, and a parry timed on that punch stuns the enemy. Close up it just uses the normal punch.
@@ -186,6 +193,15 @@ var lane := 0.0                             # -1..1: its own side of the line to
 var lead_velocity := Vector3.ZERO           # the player's smoothed ground velocity
 const LEAD_SMOOTHING := 4.0
 const CHASE_RUNNER_SPEED := 2.0             # m/s: a player moving faster than this is run down without easing off
+const STUCK_MIN_SPEED := 2.0                # it only counts as stuck while it wants to go at least this fast...
+const STUCK_PROGRESS := 0.3                 # ...and actually gets less than this share of the way it meant to run
+const DETOUR_PROBE := 1.5                   # metres of free space a sidestep needs
+const DETOUR_LOOK_AHEAD := 3.0              # the way ahead counts as clear when this much of it is free
+var stuck_for := 0.0                        # seconds into the current stuck check
+var stuck_from := Vector3.ZERO              # where it was when the check started
+var stuck_intended := 0.0                   # metres it has meant to run since
+var detour_direction := Vector3.ZERO
+var detour_left := 0.0
 
 @onready var attack_timer: Timer = $AttackTimer
 @onready var vision_area: Area3D = $VisionArea
@@ -249,6 +265,7 @@ func _setup_navigation() -> void:
 
 func _physics_process(delta):
 	_update_lead_velocity(delta)
+	_update_stuck(delta)
 	super(delta)
 	if state == states["Chase"] and not _within_leash():
 		change_state("Idle")
@@ -471,6 +488,89 @@ func _approach_goal() -> Vector3:
 		var wall: Vector3 = hit["position"]
 		point = Vector3(wall.x, player_at.y, wall.z) - offset.normalized() * FLANK_WALL_MARGIN
 	return point
+
+
+# ---------------------------
+# Getting unstuck
+# ---------------------------
+# Watches how far it really gets against how fast it means to go (the chase's planned speed keeps building while it
+# pushes against something, so the two drift apart). Only for the smooth chase, which reads chase_detour().
+func _update_stuck(delta: float) -> void:
+	var chase = states.get("Chase")
+	if not smooth_movement or state != chase or strafe == null:
+		stuck_for = 0.0
+		detour_left = 0.0
+		return
+	if detour_left > 0.0:
+		detour_left -= delta
+		if _way_ahead_clear():
+			detour_left = 0.0
+		return
+	# Over each stuck_time window: how far it meant to run against how far it actually got from where the window started.
+	# Measured as the distance covered, not speed, so sliding back and forth along a wall counts as stuck too.
+	var wanted: float = chase.planned.length()
+	if wanted < STUCK_MIN_SPEED:
+		stuck_for = 0.0   # standing on guard, easing in: not trying to get anywhere
+		return
+	if stuck_for == 0.0:
+		stuck_from = global_position
+		stuck_intended = 0.0
+	stuck_for += delta
+	stuck_intended += wanted * delta
+	if stuck_for < stuck_time:
+		return
+	var covered := Vector2(global_position.x - stuck_from.x, global_position.z - stuck_from.z).length()
+	stuck_for = 0.0
+	if covered < stuck_intended * STUCK_PROGRESS:
+		_start_detour(chase)
+
+
+# Sideways round the obstacle: to whichever side is free, the one nearer the player if both are, backing off if
+# neither is. The path is worked out again straight away.
+func _start_detour(chase) -> void:
+	stuck_for = 0.0
+	var heading: Vector3 = chase.heading
+	var side := heading.cross(Vector3.UP).normalized()
+	var to_player := target.global_position - global_position
+	if side.dot(to_player) < 0.0:
+		side = -side   # try the player's side first
+	var direction := -heading
+	for candidate: Vector3 in [side, -side]:
+		if _free_towards(candidate, DETOUR_PROBE):
+			direction = candidate
+			break
+	detour_direction = direction
+	detour_left = detour_time
+	chase.path_update_timer = chase.PATH_UPDATE_INTERVAL
+
+
+# The way it is steering (while it steps round something), or zero
+func chase_detour() -> Vector3:
+	return detour_direction if detour_left > 0.0 else Vector3.ZERO
+
+
+# Nothing solid within `distance` along `direction`, checked at waist height from its middle and both its sides
+func _free_towards(direction: Vector3, distance: float) -> bool:
+	var space := get_world_3d().direct_space_state
+	var side := direction.cross(Vector3.UP).normalized() * body_size().x
+	var exclude := PhysicsLayers.player_rids(get_tree())
+	exclude.append(get_rid())
+	for offset: Vector3 in [Vector3.ZERO, side, -side]:
+		var from := global_position + Vector3.UP * 0.9 + offset
+		var query := PhysicsRayQueryParameters3D.create(from, from + direction * distance, PhysicsLayers.SURFACE_MASK)
+		query.exclude = exclude
+		if not space.intersect_ray(query).is_empty():
+			return false
+	return true
+
+
+# The straight line to where it is going is free for a few metres: the sidestep has taken it past the obstacle
+func _way_ahead_clear() -> bool:
+	var to_goal := chase_destination() - global_position
+	to_goal.y = 0.0
+	if to_goal.length() < 0.1:
+		return true
+	return _free_towards(to_goal.normalized(), minf(to_goal.length(), DETOUR_LOOK_AHEAD))
 
 
 # The player's ground velocity, smoothed so a quick strafe or a dash doesn't swing the whole crowd about

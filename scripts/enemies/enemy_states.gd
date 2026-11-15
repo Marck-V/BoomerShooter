@@ -222,6 +222,9 @@ class ChaseState:
 			target_speed = 0.0
 		else:
 			var desired := flat.normalized()
+			# Stepping round something it got stuck on (see EnemyHorde._update_stuck)
+			if enemy.has_method("chase_detour") and enemy.chase_detour() != Vector3.ZERO:
+				desired = enemy.chase_detour()
 			var angle := heading.signed_angle_to(desired, Vector3.UP)
 			if planned.length() < SMOOTH_SNAP_SPEED:
 				heading = desired
