@@ -40,7 +40,6 @@ var previous_weapon_index := -1     # the weapon held before this one (-1: none 
 var current_movement_speed = base_movement_speed
 var speed_multiplier := 1.0   # temporary boosts (the rifle's quickness), on top of walking or sliding speed
 var gamepad_sensitivity := 0.075
-var mouse_captured := true
 
 var movement_velocity: Vector3
 const MOUSE_SCALE := 0.667   # 1280 / 1920: what the stretch used to apply on a 1080p screen
@@ -446,7 +445,7 @@ func _update_view() -> void:
 
 
 func _input(event):
-	# The real mouse mode, not mouse_captured: a menu that shows the cursor without pausing must not turn the view
+	# Only while the mouse is captured, so a menu that shows the cursor without pausing doesn't turn the view
 	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		# screen_relative is the mouse's real movement in pixels. (relative is scaled by the window's stretch, so the same
 		# mouse movement turned a different amount at every window size.) MOUSE_SCALE keeps the old feel on a 1080p screen.
@@ -458,11 +457,9 @@ func _input(event):
 func handle_controls(_delta):
 	if Input.is_action_just_pressed("mouse_capture"):
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		mouse_captured = true
 
 	if Input.is_action_just_pressed("mouse_capture_exit"):
 		Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-		mouse_captured = false
 		
 		input_mouse = Vector2.ZERO
 
