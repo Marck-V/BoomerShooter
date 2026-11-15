@@ -25,6 +25,18 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var chase_turn_slowdown := 0.55
 @export var chase_arrive_distance := 2.0
 
+@export_group("Approach")
+# Where it runs while closing in (see _approach_goal). It aims ahead of a moving player, by about the time it needs
+# to get there, so it cuts them off; and each enemy keeps to its own sideways lane while far off, so a crowd fans out.
+# Both fade away as it closes in.
+@export var lead_target := true
+@export var lead_max_time := 0.8             # seconds ahead of the player at most
+@export var lead_max_distance := 6.0         # metres ahead at most (a dash would otherwise send it far off)
+@export var lead_min_distance := 4.0         # no lead closer than this; full lead from twice this
+@export var spread_lane := 3.0               # metres to the side at most, at spread_start
+@export var spread_start := 20.0             # full lane from this far out...
+@export var spread_end := 8.0                # ...down to none here, where the waiting ring spreads them anyway
+
 @export_group("Lunge")
 # While closing in from range the enemy sometimes crouches, dashes and punches. The fist glows yellow for
 # the whole lunge, and a parry timed on that punch stuns the enemy. Close up it just uses the normal punch.
@@ -160,6 +172,10 @@ var strafe: StrafeTwist                     # turns the legs towards where it wa
 var walking_backward := false               # the circling walk is playing in reverse
 var last_position := Vector3.INF
 var circle_playback_set := false            # anim.speed_scale is matched to the circling speed right now
+var lane := 0.0                             # -1..1: its own side of the line to the player while it closes in
+var lead_velocity := Vector3.ZERO           # the player's smoothed ground velocity
+const LEAD_SMOOTHING := 4.0
+const CHASE_RUNNER_SPEED := 2.0             # m/s: a player moving faster than this is run down without easing off
 
 @onready var attack_timer: Timer = $AttackTimer
 @onready var vision_area: Area3D = $VisionArea
@@ -185,6 +201,7 @@ func _ready():
 	recoil.name = "HitRecoil"
 	$Enemy_Model/Rig/Skeleton3D.add_child(recoil)
 	_roll_lunge_cooldown(0.5)
+	lane = randf_range(-1.0, 1.0)
 
 	#draw_debug_gizmos()
 
@@ -214,6 +231,7 @@ func _on_body_exited(body: Node3D):
 
 
 func _physics_process(delta):
+	_update_lead_velocity(delta)
 	super(delta)
 	if state == states["Chase"] and not _within_leash():
 		change_state("Idle")
@@ -380,7 +398,7 @@ func _assign_flank() -> void:
 
 
 func chase_destination() -> Vector3:
-	var goal := target.global_position
+	var goal := _approach_goal()
 	if holds_attack_slot:
 		return _press_point() if _is_pressing() else goal
 	if not flank_assigned:
@@ -403,6 +421,48 @@ func chase_destination() -> Vector3:
 		var wall: Vector3 = hit["position"]
 		return Vector3(wall.x, goal.y, wall.z) - (point - goal).normalized() * FLANK_WALL_MARGIN
 	return point
+
+
+# Where it runs at while closing in: not where the player is but where they are going (a little ahead of them, so it
+# cuts them off instead of trailing behind), shifted sideways onto its own lane so a crowd fans out instead of arriving
+# in single file. Both fade out as it gets close, so up close it goes for the player themselves. Kept on the player's
+# side of any wall in between.
+func _approach_goal() -> Vector3:
+	var player_at := target.global_position
+	var to_player := player_at - global_position
+	to_player.y = 0.0
+	var distance := to_player.length()
+	if distance < 0.01:
+		return player_at
+
+	var offset := Vector3.ZERO
+	if lead_target:
+		# Ahead by about the time it takes to get there, never more than lead_max_time or lead_max_distance
+		var lead_time := minf(distance / maxf(movement_speed, 0.1), lead_max_time)
+		var lead := lead_velocity * lead_time * smoothstep(lead_min_distance, lead_min_distance * 2.0, distance)
+		offset += lead.limit_length(lead_max_distance)
+	if spread_lane > 0.0:
+		var side := to_player.cross(Vector3.UP) / distance
+		offset += side * lane * spread_lane * smoothstep(spread_end, spread_start, distance)
+	if offset.length() < 0.05:
+		return player_at
+
+	var point := player_at + offset
+	var query := PhysicsRayQueryParameters3D.create(player_at + Vector3.UP, point + Vector3.UP, PhysicsLayers.ENVIRONMENT)
+	var hit := get_world_3d().direct_space_state.intersect_ray(query)
+	if not hit.is_empty():
+		var wall: Vector3 = hit["position"]
+		point = Vector3(wall.x, player_at.y, wall.z) - offset.normalized() * FLANK_WALL_MARGIN
+	return point
+
+
+# The player's ground velocity, smoothed so a quick strafe or a dash doesn't swing the whole crowd about
+func _update_lead_velocity(delta: float) -> void:
+	if not is_instance_valid(target):
+		return
+	var current: Vector3 = target.get("velocity") if "velocity" in target else Vector3.ZERO
+	current.y = 0.0
+	lead_velocity = lead_velocity.lerp(current, 1.0 - exp(-delta * LEAD_SMOOTHING))
 
 
 # Runs with the smooth chase (ChaseState._steer and the Movement settings). That also walks the last metre to a waiting
@@ -450,7 +510,10 @@ func chase_faces_target() -> bool:
 # Waiting enemies set their own pace to their spot (and stop there), so the chase's slow-down near a waypoint, which
 # would have them creep the last two metres, is skipped
 func chase_eases_into_waypoints() -> bool:
-	return not (_is_circling() or _is_pressing())
+	# Going for a player who is on the move it runs all the way into reach (the attack stops it): easing off there would
+	# leave it trailing a running player at their own speed. A player standing still it eases into as before.
+	var chasing_runner := holds_attack_slot and smooth_movement and lead_velocity.length() > CHASE_RUNNER_SPEED
+	return not (chasing_runner or _is_circling() or _is_pressing())
 
 
 func _within_leash() -> bool:
