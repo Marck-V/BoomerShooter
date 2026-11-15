@@ -564,9 +564,12 @@ func _free_towards(direction: Vector3, distance: float) -> bool:
 	return true
 
 
-# The straight line to where it is going is free for a few metres: the sidestep has taken it past the obstacle
+# The way along its path is free for a few metres: the sidestep has taken it past the obstacle. Measured towards the
+# path point it is heading for, not the final destination, which can lie the other way (round a post, back past it).
 func _way_ahead_clear() -> bool:
-	var to_goal := chase_destination() - global_position
+	var chase = states.get("Chase")
+	var goal: Vector3 = chase._path_aim() if chase.has_method("_path_aim") else chase_destination()
+	var to_goal := goal - global_position
 	to_goal.y = 0.0
 	if to_goal.length() < 0.1:
 		return true

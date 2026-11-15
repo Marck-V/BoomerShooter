@@ -49,7 +49,7 @@ class ChaseState:
 		# Every other state stops the enemy: a smooth chase starts from standing, facing the way the enemy faces
 		heading = Vector3.ZERO
 		planned = Vector3.ZERO
-		path_size = -1
+		path_size = -1   # both chases follow the path from its start again
 		# ...and asks for its path straight away, not after the first PATH_UPDATE_INTERVAL spent standing in the sprint
 		if enemy.has_method("smooth_chase") and enemy.smooth_chase():
 			path_update_timer = PATH_UPDATE_INTERVAL
@@ -81,8 +81,11 @@ class ChaseState:
 		if smooth:
 			dir = _steer(_delta)
 		else:
-			var next_pos = enemy.nav.get_next_path_position()
-			var raw_dir = (next_pos - enemy.global_position).normalized()
+			var next_pos := _path_aim()
+			var to_next: Vector3 = next_pos - enemy.global_position
+			var flat_to_next := Vector3(to_next.x, 0.0, to_next.z)
+			# Steers flat; up and down are added below (_vertical_speed)
+			var raw_dir := flat_to_next.normalized()
 
 			# --- Smooth direction changes (fixes jitter) ---
 			if last_direction == Vector3.ZERO:
@@ -92,14 +95,18 @@ class ChaseState:
 
 			dir = last_direction.normalized()
 
-			# --- Distance-based speed reduction (stop jitter near waypoints) ---
-			var distance_to_waypoint = enemy.global_position.distance_to(next_pos)
-			var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
+			# --- Distance-based speed reduction, near the end of the path only ---
+			# Slowing for every path point made it crawl along any path with points close together (stairs, a winding
+			# ramp: under half speed the whole way); it only slows down as it arrives
+			var distance_to_waypoint = flat_to_next.length()
+			var on_last_point: bool = path_index >= enemy.nav.get_current_navigation_path().size() - 1
+			var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0) if on_last_point else 1.0
 			# Enemies that pace their own arrival (melee enemies walking to a waiting spot) opt out of the slowdown
 			if enemy.has_method("chase_eases_into_waypoints") and not enemy.chase_eases_into_waypoints():
 				speed_multiplier = 1.0
 
-			enemy.velocity = dir * enemy.chase_speed() * speed_multiplier
+			var speed: float = enemy.chase_speed() * speed_multiplier
+			enemy.velocity = dir * speed + Vector3.UP * _vertical_speed(next_pos, distance_to_waypoint, speed)
 		enemy.should_move = true
 		
 		# --- Line-of-sight ---
@@ -169,7 +176,9 @@ class ChaseState:
 	# little in a sharp turn) instead of blending straight to each new direction, and only ease off at the end of the
 	# path, not at every corner of it. Returns the direction it is running in, for facing.
 	const SMOOTH_SNAP_SPEED := 2.0   # slower than this it turns on the spot: there is no arc to run yet
-	const SMOOTH_REACHED := 1.0      # a path point this close (flat) counts as reached
+	# A path point this close (flat) counts as reached. Not much more: turning for the next point any earlier cuts the
+	# corner, and the corner the path goes round can be a step too high to climb (level 1 has one by a stair).
+	const SMOOTH_REACHED := 0.5
 	const SMOOTH_SETTLE_SPEED := 3.0 # m/s it is always pushed down onto the floor with
 	const SMOOTH_LIVE_AIM_DISTANCE := 4.0   # this close, the last stretch runs at where the target is now
 	var path_index := 0              # the point of the agent's current path it is heading for
@@ -178,17 +187,19 @@ class ChaseState:
 	var heading := Vector3.ZERO      # flat unit vector: the way it is running
 	var planned := Vector3.ZERO      # flat velocity it wants this frame, before crowd avoidance
 
-	func _steer(delta: float) -> Vector3:
+	# The point of the current path it is heading for, as the mesh has it (not lowered by path_height_offset). It
+	# keeps its own place on the path, measured flat: the agent only moves on to the next point within a metre of it in
+	# 3D, after lowering it by path_height_offset, so an enemy standing a little high (just spawned, after a shove, on
+	# a ramp where the mesh takes a step) never moves on, and creeps up to a point it has reached and stops there.
+	func _path_aim() -> Vector3:
 		var nav: NavigationAgent3D = enemy.nav
-		var aim: Vector3 = nav.get_next_path_position()
-		# It keeps its own place on the path, measured flat. The agent only moves on to the next point within a metre
-		# of it in 3D, so an enemy standing a little high (just spawned, after a shove) never moves on and runs back
-		# to points it has passed.
 		var path := nav.get_current_navigation_path()
 		if path.size() != path_size or (path.size() > 0 and path[0] != path_start):
 			path_size = path.size()
 			path_start = path[0] if path.size() > 0 else Vector3.ZERO
 			path_index = 0
+		if path.is_empty():
+			return nav.get_next_path_position() + Vector3.UP * nav.path_height_offset
 		var here := Vector2(enemy.global_position.x, enemy.global_position.z)
 		while path_index < path.size() - 1:
 			var point := Vector2(path[path_index].x, path[path_index].z)
@@ -198,8 +209,12 @@ class ChaseState:
 				path_index += 1
 			else:
 				break
-		if path_index < path.size():
-			aim = path[path_index]
+		return path[path_index]
+
+	func _steer(delta: float) -> Vector3:
+		var nav: NavigationAgent3D = enemy.nav
+		var aim := _path_aim()
+		var path := nav.get_current_navigation_path()
 		# On the last straight stretch it runs at where it is going now, not where that was when the path was last
 		# worked out (up to PATH_UPDATE_INTERVAL ago: a couple of metres behind a running player, which it would slow
 		# down for as if it had arrived). That also covers the last metre, which the agent counts as reached early.
@@ -244,11 +259,18 @@ class ChaseState:
 		# Up and down: it follows the rise and fall of the path ahead (measured on the navigation mesh, which sits a little
 		# above the floor, so only the difference counts) and is pushed down onto the floor all the time, since enemies
 		# have no gravity. Without the push one that started a bit high (spawned, shoved) would stay floating there.
-		var map := nav.get_navigation_map()
-		var mesh_here := NavigationServer3D.map_get_closest_point(map, enemy.global_position).y
-		var grade := clampf((aim.y - mesh_here) / maxf(flat.length(), 0.5), -1.5, 1.5)
-		enemy.velocity = planned + Vector3.UP * (grade * planned.length() - SMOOTH_SETTLE_SPEED)
+		enemy.velocity = planned + Vector3.UP * _vertical_speed(aim, flat.length(), planned.length())
 		return heading
+
+	# Up and down for both chases: it follows the rise and fall of the path ahead (measured on the navigation mesh,
+	# which sits a little above the floor, so only the difference counts) and is pushed down onto the floor all the
+	# time, since enemies have no gravity. Without the push one that started a bit high (spawned, shoved) would stay
+	# floating there; aiming straight at the path point instead (as the old chase did) pulled it down into the floor
+	# or up into the air, depending on how far above the floor the mesh happens to be.
+	func _vertical_speed(aim: Vector3, flat_distance: float, horizontal_speed: float) -> float:
+		var mesh_here: float = enemy.navmesh_point_here().y
+		var grade := clampf((aim.y - mesh_here) / maxf(flat_distance, 0.5), -1.5, 1.5)
+		return grade * horizontal_speed - SMOOTH_SETTLE_SPEED
 
 
 # --- Attack (Melee enemies only) ---
