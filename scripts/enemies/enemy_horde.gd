@@ -37,6 +37,16 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 @export var spread_start := 20.0             # full lane from this far out...
 @export var spread_end := 8.0                # ...down to none here, where the waiting ring spreads them anyway
 
+@export_group("Crowd avoidance")
+# How grunts steer round each other. With the base settings the personal space is no bigger than the body, so in a
+# crowd the bodies keep bumping and shoving. Measured on 8 grunts charging from a clump (same random lanes for each
+# setting): radius 0.5 with 5 m neighbours cut the frames where one grunt runs into another by about three quarters,
+# for a little more steering (about 3 degrees of turn per metre run instead of 2). A shorter look-ahead (0.5 s) did not
+# help: they dodged later and more sharply.
+@export var avoidance_radius := 0.5
+@export var avoidance_neighbor_distance := 5.0
+@export var avoidance_time_horizon := 1.0
+
 @export_group("Lunge")
 # While closing in from range the enemy sometimes crouches, dashes and punches. The fist glows yellow for
 # the whole lunge, and a parry timed on that punch stuns the enemy. Close up it just uses the normal punch.
@@ -228,6 +238,13 @@ func _on_body_entered(body: Node3D):
 func _on_body_exited(body: Node3D):
 	if body == target and not _is_committed() and not _within_leash() and not keeps_fighting():
 		change_state("Idle")
+
+
+func _setup_navigation() -> void:
+	super()
+	nav.radius = avoidance_radius
+	nav.neighbor_distance = avoidance_neighbor_distance
+	nav.time_horizon_agents = avoidance_time_horizon
 
 
 func _physics_process(delta):
