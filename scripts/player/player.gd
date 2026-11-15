@@ -446,7 +446,8 @@ func _update_view() -> void:
 
 
 func _input(event):
-	if event is InputEventMouseMotion and mouse_captured:
+	# The real mouse mode, not mouse_captured: a menu that shows the cursor without pausing must not turn the view
+	if event is InputEventMouseMotion and Input.mouse_mode == Input.MOUSE_MODE_CAPTURED:
 		# screen_relative is the mouse's real movement in pixels. (relative is scaled by the window's stretch, so the same
 		# mouse movement turned a different amount at every window size.) MOUSE_SCALE keeps the old feel on a 1080p screen.
 		var sens = GlobalVariables.mouse_sensitivity * 0.0001 * MOUSE_SCALE
