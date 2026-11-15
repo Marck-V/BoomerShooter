@@ -24,6 +24,7 @@ func _actions() -> Array:
 	return [
 		["Melee dodger horde", func(): room.spawn_horde()],
 		["Barrier arena", func(): room.spawn_barrier_arena()],
+		["Ramp course", func(): room.build_ramp_course()],
 		["Clear enemies", func(): room.clear_enemies()],
 		["Reset props", func(): room.reset_props()],
 	]

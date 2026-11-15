@@ -10,6 +10,8 @@ extends Node3D
 #   spawn buttons    one for each entry of `spawnable`, in front of you
 #   Melee dodger horde   HORDE_SIZE melee dodgers in two staggered rows ahead of you
 #   Barrier arena    an open area ahead of you that shuts you in with holographic barriers and a wave of enemies
+#   Ramp course      ramps of different widths (and one steep one) up to platforms along the south wall
+#                    (build_ramp_course()), for testing how enemies get up ramps
 #   Clear enemies    removes every enemy
 #   Reset props      rebuilds the windows and barrels in the north-west corner (reset_props())
 #   Freeze enemies   switch: stops the enemies' AI where they are (animations pause; they can still be hit)
@@ -208,6 +210,104 @@ func spawn_barrier_arena() -> void:
 	trigger.add_child(shape)
 	arena.add_child(trigger)
 	trigger.position = Vector3(0, BARRIER_HEIGHT * 0.5, 0)
+
+
+# A row of ramps along the south wall, each up to its own platform: the same slope at different widths, and one steep
+# ramp, for testing how enemies get up ramps. Ramps are wedges like the ones TrenchBroom brushes make. They are built
+# inside the navigation region and the navigation mesh is baked again with them. A label over each platform gives the
+# ramp's width and slope. ramp_course_ramps lists each one's foot and the middle of its platform, for tests.
+const RAMP_COURSE_RAMPS := [[1.0, 18.4], [1.5, 18.4], [2.5, 18.4], [4.0, 18.4], [6.0, 18.4], [2.5, 30.0]]  # [width m, slope °]
+const RAMP_COURSE_HEIGHT := 2.0
+const RAMP_COURSE_DEPTH := 5.0                  # how deep each platform is, from the south wall
+const RAMP_COURSE_WALL_Z := 30.0                # the south wall's inner face
+const RAMP_COURSE_START_X := -22.0
+const RAMP_COURSE_GAP := 3.0                    # metres between platforms
+var ramp_course: Node3D
+var ramp_course_ramps: Array[Dictionary] = []   # {width, slope, foot, top}
+
+
+func build_ramp_course() -> void:
+	if is_instance_valid(ramp_course):
+		return
+	ramp_course = Node3D.new()
+	ramp_course.name = "RampCourse"
+	navigation.add_child(ramp_course)
+	var material := StandardMaterial3D.new()
+	material.albedo_color = Color(0.35, 0.3, 0.45)
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED   # the wedge's faces aren't wound consistently
+	var x := RAMP_COURSE_START_X
+	var top_z := RAMP_COURSE_WALL_Z - RAMP_COURSE_DEPTH
+	for spec in RAMP_COURSE_RAMPS:
+		var width: float = spec[0]
+		var slope: float = spec[1]
+		var platform_width := width + 2.0
+		var centre_x := x + platform_width * 0.5
+		var length := RAMP_COURSE_HEIGHT / tan(deg_to_rad(slope))
+		_add_course_body(_box_shape(Vector3(platform_width, RAMP_COURSE_HEIGHT, RAMP_COURSE_DEPTH)),
+				Vector3(centre_x, RAMP_COURSE_HEIGHT * 0.5, RAMP_COURSE_WALL_Z - RAMP_COURSE_DEPTH * 0.5), material)
+		_add_course_body(_wedge_shape(width, length, RAMP_COURSE_HEIGHT), Vector3(centre_x, 0.0, top_z), material)
+		var label := Label3D.new()
+		label.text = "%.1f m wide, %d°" % [width, roundi(slope)]
+		label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		label.font_size = 64
+		ramp_course.add_child(label)
+		label.global_position = Vector3(centre_x, RAMP_COURSE_HEIGHT + 2.0, top_z + 1.0)
+		ramp_course_ramps.append({
+			"width": width, "slope": slope,
+			"foot": Vector3(centre_x, 0.0, top_z - length),
+			"top": Vector3(centre_x, RAMP_COURSE_HEIGHT, RAMP_COURSE_WALL_Z - RAMP_COURSE_DEPTH * 0.5),
+		})
+		x += platform_width + RAMP_COURSE_GAP
+	navigation.bake_navigation_mesh(false)
+
+
+func _box_shape(size: Vector3) -> BoxShape3D:
+	var box := BoxShape3D.new()
+	box.size = size
+	return box
+
+
+# A ramp rising towards +Z: `length` long on the floor, `height` high at its far end, `width` across
+func _wedge_shape(width: float, length: float, height: float) -> ConvexPolygonShape3D:
+	var w := width * 0.5
+	var shape := ConvexPolygonShape3D.new()
+	shape.points = PackedVector3Array([
+		Vector3(-w, 0, -length), Vector3(w, 0, -length), Vector3(-w, 0, 0), Vector3(w, 0, 0),
+		Vector3(-w, height, 0), Vector3(w, height, 0),
+	])
+	return shape
+
+
+# A static body with `shape` at `at`, on the same layers as the room's own geometry, drawn with the shape's own mesh
+func _add_course_body(shape: Shape3D, at: Vector3, material: Material) -> void:
+	var body := StaticBody3D.new()
+	body.collision_layer = PhysicsLayers.PLAYER | PhysicsLayers.ENVIRONMENT
+	body.collision_mask = 0
+	var collider := CollisionShape3D.new()
+	collider.shape = shape
+	body.add_child(collider)
+	var mesh := MeshInstance3D.new()
+	if shape is BoxShape3D:
+		var box := BoxMesh.new()
+		box.size = (shape as BoxShape3D).size
+		mesh.mesh = box
+	else:
+		mesh.mesh = _hull_mesh((shape as ConvexPolygonShape3D).points)
+	mesh.material_override = material
+	body.add_child(mesh)
+	ramp_course.add_child(body)
+	body.global_position = at
+
+
+# The wedge's six points as a closed mesh (the order _wedge_shape gives them in)
+func _hull_mesh(p: PackedVector3Array) -> ArrayMesh:
+	var tool := SurfaceTool.new()
+	tool.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for face in [[0, 4, 1], [1, 4, 5], [0, 1, 2], [1, 3, 2], [2, 3, 4], [3, 5, 4], [0, 2, 4], [1, 5, 3]]:
+		for index in face:
+			tool.add_vertex(p[index])
+	tool.generate_normals()
+	return tool.commit()
 
 
 func set_spawn_shielded(value: bool) -> void:
