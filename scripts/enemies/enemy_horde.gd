@@ -186,7 +186,8 @@ func get_state_definitions() -> Dictionary:
 
 
 func _on_body_entered(body: Node3D):
-	if body == target and not _is_committed():
+	# Already chasing it carries on: going into the chase again would restart its run from standing
+	if body == target and not _is_committed() and state != states["Chase"]:
 		change_state("Chase")
 
 
