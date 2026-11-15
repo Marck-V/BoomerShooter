@@ -14,6 +14,17 @@ const ENEMY_STATES = preload("res://scripts/enemies/enemy_states.gd")
 # pit) doesn't leave it standing idle halfway
 @export var chase_leash: float = 40.0
 
+@export_group("Movement")
+# How it runs (see ChaseState._steer): it speeds up and slows down at these rates, turns along an arc at most
+# chase_turn_rate degrees a second (dropping to chase_turn_slowdown of its speed in a full U-turn) and eases off over the
+# last chase_arrive_distance metres of its path.
+@export var smooth_movement := true         # off: the old chase (full speed at once, slowing at every path corner)
+@export var chase_acceleration := 45.0       # m/s²: from standing to a 12 m/s sprint in about a quarter second
+@export var chase_deceleration := 60.0
+@export var chase_turn_rate := 540.0
+@export var chase_turn_slowdown := 0.55
+@export var chase_arrive_distance := 2.0
+
 @export_group("Lunge")
 # While closing in from range the enemy sometimes crouches, dashes and punches. The fist glows yellow for
 # the whole lunge, and a parry timed on that punch stuns the enemy. Close up it just uses the normal punch.
@@ -94,6 +105,12 @@ const REPOSITION_ANIMATION := "Jog_Fwd"
 const WAITING_CLIP_SPEEDS := {"Walk": 1.0, "Jog_Fwd": 2.5}
 const CIRCLE_PLAYBACK_RANGE := Vector2(0.8, 1.9)
 const REPOSITION_GAP := 1.2                 # further than this from its spot, it jogs there
+# The sprint plays at its normal speed at movement_speed and is slowed or sped up to the actual speed within this range.
+# Slower than JOG_BELOW (a turn, the crowd, the end of the path) it drops to the jog, and goes back to the sprint above
+# SPRINT_ABOVE (the gap between the two keeps it from flickering between them).
+const SPRINT_PLAYBACK_RANGE := Vector2(0.55, 1.25)
+const JOG_BELOW := 4.0
+const SPRINT_ABOVE := 5.0
 const ARRIVED := 0.5                        # this close to its spot it stands still
 const STAND_SPEED := 0.35                   # moving slower than this, it stands on guard instead of walking
 
@@ -213,10 +230,14 @@ func _update_strafe(delta: float) -> void:
 	last_position = global_position
 	var current := anim.current_animation
 	strafe.walking = not destroyed and (current == RUN_ANIMATION or WAITING_CLIP_SPEEDS.has(current))
-	# The waiting walk and jog keep pace with the ground; anything else plays at its normal speed again
+	# The walk, jog and sprint keep pace with the ground; anything else plays at its normal speed again
+	var ground_speed := Vector2(strafe.world_velocity.x, strafe.world_velocity.z).length()
 	if WAITING_CLIP_SPEEDS.has(current):
-		var pace: float = strafe.world_velocity.length() / WAITING_CLIP_SPEEDS[current]
+		var pace: float = ground_speed / WAITING_CLIP_SPEEDS[current]
 		anim.speed_scale = clampf(pace, CIRCLE_PLAYBACK_RANGE.x, CIRCLE_PLAYBACK_RANGE.y)
+		circle_playback_set = true
+	elif current == RUN_ANIMATION and state == states.get("Chase"):
+		anim.speed_scale = clampf(ground_speed / maxf(movement_speed, 0.1), SPRINT_PLAYBACK_RANGE.x, SPRINT_PLAYBACK_RANGE.y)
 		circle_playback_set = true
 	elif circle_playback_set:
 		anim.speed_scale = 1.0
@@ -322,6 +343,12 @@ func _update_shuffle(delta: float) -> void:
 # reverse while backing away; StrafeTwist turns the legs to match). A hit reaction playing is left to finish.
 func _update_chase_animation() -> void:
 	var wanted := RUN_ANIMATION
+	# Running slowly (turning, held up by the crowd, at the end of its path) it jogs instead of sprinting in slow motion
+	if strafe != null:
+		var ground_speed := Vector2(strafe.world_velocity.x, strafe.world_velocity.z).length()
+		var jogging := anim.current_animation == REPOSITION_ANIMATION
+		if ground_speed < (SPRINT_ABOVE if jogging else JOG_BELOW) and ground_speed > STAND_SPEED:
+			wanted = REPOSITION_ANIMATION
 	if _is_circling() or _is_pressing():
 		var speed := chase_speed()
 		var still := speed == 0.0 and strafe != null and strafe.world_velocity.length() < STAND_SPEED
@@ -378,10 +405,16 @@ func chase_destination() -> Vector3:
 	return point
 
 
-# The navigation agent counts a destination as reached a metre short of it, which leaves a waiting enemy standing in
-# the wrong place (in the player's face, when pressing in): it walks the last bit straight there itself
+# Runs with the smooth chase (ChaseState._steer and the Movement settings). That also walks the last metre to a waiting
+# spot, which the navigation agent counts as reached early: it used to be a second move of its own each frame.
+func smooth_chase() -> bool:
+	return smooth_movement
+
+
+# The old chase's last metre: the navigation agent counts a destination as reached a metre short of it, which leaves a
+# waiting enemy standing in the wrong place (in the player's face, when pressing in), so it walks the last bit itself
 func _step_to_spot() -> void:
-	if not nav.is_navigation_finished():
+	if smooth_movement or not nav.is_navigation_finished():
 		return
 	var spot := chase_destination()
 	var to_spot := Vector3(spot.x - global_position.x, 0.0, spot.z - global_position.z)

@@ -46,6 +46,13 @@ class ChaseState:
 		last_direction = Vector3.ZERO
 		path_update_timer = 0.0
 		stuck_timer = 0.0
+		# Every other state stops the enemy: a smooth chase starts from standing, facing the way the enemy faces
+		heading = Vector3.ZERO
+		planned = Vector3.ZERO
+		path_size = -1
+		# ...and asks for its path straight away, not after the first PATH_UPDATE_INTERVAL spent standing in the sprint
+		if enemy.has_method("smooth_chase") and enemy.smooth_chase():
+			path_update_timer = PATH_UPDATE_INTERVAL
 	
 	func update(_delta):
 		if not is_instance_valid(enemy.target):
@@ -69,26 +76,31 @@ class ChaseState:
 			path_update_timer = 0.0
 			enemy.nav.set_target_position(enemy.chase_destination())
 		
-		var next_pos = enemy.nav.get_next_path_position()
-		var raw_dir = (next_pos - enemy.global_position).normalized()
-		
-		# --- Smooth direction changes (fixes jitter) ---
-		if last_direction == Vector3.ZERO:
-			last_direction = raw_dir
+		var smooth: bool = enemy.has_method("smooth_chase") and enemy.smooth_chase()
+		var dir: Vector3
+		if smooth:
+			dir = _steer(_delta)
 		else:
-			last_direction = last_direction.lerp(raw_dir, _delta * 8.0)  # Smooth direction blend
-		
-		var dir = last_direction.normalized()
-		
-		# --- Distance-based speed reduction (stop jitter near waypoints) ---
-		var distance_to_waypoint = enemy.global_position.distance_to(next_pos)
-		var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
-		# Enemies that pace their own arrival (melee enemies walking to a waiting spot) opt out of the slowdown
-		if enemy.has_method("chase_eases_into_waypoints") and not enemy.chase_eases_into_waypoints():
-			speed_multiplier = 1.0
-		
+			var next_pos = enemy.nav.get_next_path_position()
+			var raw_dir = (next_pos - enemy.global_position).normalized()
+
+			# --- Smooth direction changes (fixes jitter) ---
+			if last_direction == Vector3.ZERO:
+				last_direction = raw_dir
+			else:
+				last_direction = last_direction.lerp(raw_dir, _delta * 8.0)  # Smooth direction blend
+
+			dir = last_direction.normalized()
+
+			# --- Distance-based speed reduction (stop jitter near waypoints) ---
+			var distance_to_waypoint = enemy.global_position.distance_to(next_pos)
+			var speed_multiplier = clamp(distance_to_waypoint / 2.0, 0.3, 1.0)  # Slow down when close
+			# Enemies that pace their own arrival (melee enemies walking to a waiting spot) opt out of the slowdown
+			if enemy.has_method("chase_eases_into_waypoints") and not enemy.chase_eases_into_waypoints():
+				speed_multiplier = 1.0
+
+			enemy.velocity = dir * enemy.chase_speed() * speed_multiplier
 		enemy.should_move = true
-		enemy.velocity = dir * enemy.chase_speed() * speed_multiplier
 		
 		# --- Line-of-sight ---
 		var space_state = enemy.get_world_3d().direct_space_state
@@ -123,15 +135,22 @@ class ChaseState:
 			var target_basis = Basis.looking_at(forward_dir, Vector3.UP)
 			target_basis = target_basis.rotated(Vector3.UP, deg_to_rad(180))
 			
-			# Faster rotation - increase multiplier (10-15 for snappy turns)
-			enemy.global_transform.basis = enemy.global_transform.basis.slerp(
-				target_basis, 
-				_delta * enemy.rotation_speed * 2.0  # Multiply by 2-3x for faster rotation
-			)
+			# Faster rotation - increase multiplier (10-15 for snappy turns). The smooth chase uses the frame-rate
+			# independent form of the same blend.
+			var turn_weight: float = _delta * enemy.rotation_speed * 2.0
+			if smooth:
+				turn_weight = 1.0 - exp(-_delta * enemy.rotation_speed * 2.0)
+			enemy.global_transform.basis = enemy.global_transform.basis.slerp(target_basis, turn_weight)
 		
-		if enemy.nav.avoidance_enabled:
+		# Once the agent counts its path as finished (a metre short of the target) avoidance hands back no velocity
+		# at all, so the smooth chase moves the last bit itself; avoidance is still told where it is going, so the
+		# others keep steering round it
+		var last_stretch: bool = smooth and enemy.nav.is_navigation_finished()
+		if enemy.nav.avoidance_enabled and not last_stretch:
 			enemy.nav.set_velocity(enemy.velocity)
 		else:
+			if enemy.nav.avoidance_enabled:
+				enemy.nav.set_velocity_forced(enemy.velocity)
 			enemy._on_velocity_computed(enemy.velocity)
 		
 		# --- Lunge: enemies that have one use it while closing in from range ---
@@ -143,6 +162,80 @@ class ChaseState:
 		if enemy.is_in_attack_range() and enemy.can_start_attack():
 			stuck_timer = 0.0  # Reset timer when successfully entering attack
 			enemy.change_state("Attack")
+
+	# --- Smooth chase ---
+	# Enemies that have smooth_chase() (and its chase_* settings) run like this instead: they speed up and slow down at
+	# a set rate rather than going from standing to full speed in one frame, turn along an arc at a set rate (slowing a
+	# little in a sharp turn) instead of blending straight to each new direction, and only ease off at the end of the
+	# path, not at every corner of it. Returns the direction it is running in, for facing.
+	const SMOOTH_SNAP_SPEED := 2.0   # slower than this it turns on the spot: there is no arc to run yet
+	const SMOOTH_REACHED := 1.0      # a path point this close (flat) counts as reached
+	const SMOOTH_SETTLE_SPEED := 3.0 # m/s it is always pushed down onto the floor with
+	var path_index := 0              # the point of the agent's current path it is heading for
+	var path_size := -1              # the path it was following (a new one starts again from its first point)
+	var path_start := Vector3.ZERO
+	var heading := Vector3.ZERO      # flat unit vector: the way it is running
+	var planned := Vector3.ZERO      # flat velocity it wants this frame, before crowd avoidance
+
+	func _steer(delta: float) -> Vector3:
+		var nav: NavigationAgent3D = enemy.nav
+		var aim: Vector3 = nav.get_next_path_position()
+		# It keeps its own place on the path, measured flat. The agent only moves on to the next point within a metre
+		# of it in 3D, so an enemy standing a little high (just spawned, after a shove) never moves on and runs back
+		# to points it has passed.
+		var path := nav.get_current_navigation_path()
+		if path.size() != path_size or (path.size() > 0 and path[0] != path_start):
+			path_size = path.size()
+			path_start = path[0] if path.size() > 0 else Vector3.ZERO
+			path_index = 0
+		var here := Vector2(enemy.global_position.x, enemy.global_position.z)
+		while path_index < path.size() - 1:
+			var point := Vector2(path[path_index].x, path[path_index].z)
+			var after := Vector2(path[path_index + 1].x, path[path_index + 1].z)
+			# Close to the point, or already past it along the path
+			if here.distance_to(point) < SMOOTH_REACHED or (here - point).dot(after - point) > 0.0:
+				path_index += 1
+			else:
+				break
+		if path_index < path.size():
+			aim = path[path_index]
+		if nav.is_navigation_finished():
+			# The agent counts its target reached a metre short of it: the last bit is run straight at it
+			aim = nav.target_position
+		var to_aim: Vector3 = aim - enemy.global_position
+		var flat := Vector3(to_aim.x, 0.0, to_aim.z)
+		var target_speed: float = enemy.chase_speed()
+
+		if heading == Vector3.ZERO:
+			var facing: Vector3 = enemy.global_basis.z   # the enemies' models face +Z
+			heading = Vector3(facing.x, 0.0, facing.z).normalized() if Vector2(facing.x, facing.z).length() > 0.01 else Vector3.FORWARD
+		if flat.length() < 0.05:
+			target_speed = 0.0
+		else:
+			var desired := flat.normalized()
+			var angle := heading.signed_angle_to(desired, Vector3.UP)
+			if planned.length() < SMOOTH_SNAP_SPEED:
+				heading = desired
+			else:
+				var max_turn := deg_to_rad(enemy.chase_turn_rate) * delta
+				heading = heading.rotated(Vector3.UP, clampf(angle, -max_turn, max_turn)).normalized()
+				target_speed *= lerpf(1.0, enemy.chase_turn_slowdown, clampf(absf(angle) / PI, 0.0, 1.0))
+
+		# Eases off over the last stretch of the whole path (enemies that pace their own arrival opt out)
+		if not (enemy.has_method("chase_eases_into_waypoints") and not enemy.chase_eases_into_waypoints()):
+			target_speed *= clampf(nav.distance_to_target() / enemy.chase_arrive_distance, 0.3, 1.0)
+
+		var wanted := heading * target_speed
+		var rate: float = enemy.chase_acceleration if wanted.length() > planned.length() else enemy.chase_deceleration
+		planned = planned.move_toward(wanted, rate * delta)
+		# Up and down: it follows the rise and fall of the path ahead (measured on the navigation mesh, which sits a little
+		# above the floor, so only the difference counts) and is pushed down onto the floor all the time, since enemies
+		# have no gravity. Without the push one that started a bit high (spawned, shoved) would stay floating there.
+		var map := nav.get_navigation_map()
+		var mesh_here := NavigationServer3D.map_get_closest_point(map, enemy.global_position).y
+		var grade := clampf((aim.y - mesh_here) / maxf(flat.length(), 0.5), -1.5, 1.5)
+		enemy.velocity = planned + Vector3.UP * (grade * planned.length() - SMOOTH_SETTLE_SPEED)
+		return heading
 
 
 # --- Attack (Melee enemies only) ---
