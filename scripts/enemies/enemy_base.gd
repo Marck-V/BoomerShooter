@@ -435,6 +435,15 @@ func rattle_player_camera(trauma: float) -> void:
 # ---------------------------
 var dodge_timer := 0.0   # until the next sidestep
 
+# A rest after every dodge on top of the enemy's own interval, so one sidestep doesn't run straight into the next.
+const DODGE_REST := 1.5
+
+
+# Called when a dodge ends, finished or cut short (a flinch, a stun). A cut-short dodge never rolled a new interval, so
+# without this its timer would still be at zero and it would dodge again the moment it was back in the chase.
+func dodge_ended() -> void:
+	dodge_timer = maxf(dodge_timer, 0.0) + DODGE_REST
+
 
 func _try_dodge() -> void:
 	if pick_dodge_direction() == Vector3.ZERO:

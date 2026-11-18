@@ -437,6 +437,7 @@ class DodgeState:
 		enemy.velocity = Vector3.ZERO
 		enemy.is_dodging = false
 		enemy.set_dodge_vanished(false)
+		enemy.dodge_ended()
 
 
 # --- Dead ---
