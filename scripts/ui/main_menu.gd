@@ -27,7 +27,7 @@ func _on_continue_button_pressed():
 
 func _on_play_button_pressed():
 	GlobalVariables.set_profile(GlobalVariables.STORY)   # the intended run: only what the story has handed out so far
-	get_tree().change_scene_to_file("res://scenes/levels/level_01_new.tscn")
+	get_tree().change_scene_to_file("res://scenes/levels/level_01.tscn")
 
 func _on_settings_button_pressed():
 	settings_panel.visible = true
