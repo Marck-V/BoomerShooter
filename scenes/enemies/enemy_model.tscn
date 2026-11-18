@@ -16,48 +16,48 @@ func damage(amount: int):
 "
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_nx6qb"]
-radius = 0.120922
-height = 0.329883
+radius = 0.140922
+height = 0.369883
 
 [sub_resource type="CylinderShape3D" id="CylinderShape3D_nx6qb"]
-height = 0.13002
-radius = 0.0844727
+height = 0.17002
+radius = 0.104473
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_d01jf"]
-radius = 0.171729
-height = 0.376175
+radius = 0.201729
+height = 0.436175
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_lf7uq"]
-radius = 0.136981
-height = 0.47376
+radius = 0.186981
+height = 0.57376
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_f103d"]
-radius = 0.147511
-height = 0.295023
+radius = 0.197511
+height = 0.395023
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_rpi5p"]
-radius = 0.0778487
-height = 0.3672
+radius = 0.127849
+height = 0.4672
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_lvwqp"]
-radius = 0.0553297
-height = 0.27784
+radius = 0.10533
+height = 0.37784
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_nhsxk"]
-radius = 0.0465102
-height = 0.23121
+radius = 0.09651
+height = 0.33121
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_j5rvg"]
-radius = 0.0908483
-height = 0.501209
+radius = 0.140848
+height = 0.601209
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_nlnek"]
-radius = 0.0621872
-height = 0.37357
+radius = 0.112187
+height = 0.47357
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_abuuq"]
-radius = 0.0585152
-height = 0.312848
+radius = 0.108515
+height = 0.412848
 
 [node name="Enemy_Model" instance=ExtResource("1_yhd2x")]
 
@@ -289,6 +289,8 @@ bone_name = "DEF-shin.L"
 bone_idx = 46
 
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/LeftShin" index="0"]
+collision_layer = 8
+collision_mask = 0
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/LeftShin/Area3D" index="0"]
@@ -329,6 +331,8 @@ bone_name = "DEF-shin.R"
 bone_idx = 50
 
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/RightShin" index="0"]
+collision_layer = 8
+collision_mask = 0
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/RightShin/Area3D" index="0"]

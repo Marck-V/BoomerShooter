@@ -26,6 +26,10 @@ const ENERGY_BALL: PackedScene = preload("res://scenes/enemies/energy_ball.tscn"
 const HAND_SHADER: Shader = preload("res://shaders/boss/hand_boss.gdshader")
 const PORTAL_SHADER: Shader = preload("res://shaders/boss/dark_portal.gdshader")
 const HURTBOX_SCRIPT: Script = preload("res://scripts/enemies/body_hurtbox.gd")
+# How far the hurtboxes reach past the model, in metres, so a shot that just clips an edge still lands. The palm and
+# knuckles (the crit spots) get less, so a crit still takes aim.
+const HURTBOX_MARGIN := 0.05
+const CRIT_HURTBOX_MARGIN := 0.02
 const BLOOD_PARTICLES = preload("res://scripts/weapons/blood_particles.gd")
 const ImpactParticles = preload("res://scripts/weapons/impact_particles.gd")
 
@@ -362,14 +366,17 @@ func _build_hurtboxes() -> void:
 		attach.add_child(area)
 		var shape := CollisionShape3D.new()
 		var length := bone_length(bone)
+		# The margin in the skeleton's own units (it is scaled up to the hand's size)
+		var crit_spot := bone == "hand" or bone.ends_with("_1")
+		var margin := (CRIT_HURTBOX_MARGIN if crit_spot else HURTBOX_MARGIN) / skeleton.global_basis.get_scale().x
 		if bone == "hand":
 			var box := BoxShape3D.new()
-			box.size = Vector3(2.3, length, 0.6)
+			box.size = Vector3(2.3, length, 0.6) + Vector3.ONE * margin * 2.0
 			shape.shape = box
 		else:
 			var capsule := CapsuleShape3D.new()
-			capsule.radius = 0.95 if bone == "forearm" else (0.36 if bone.begins_with("thumb") else 0.3)
-			capsule.height = maxf(length + capsule.radius, capsule.radius * 2.0 + 0.01)
+			capsule.radius = (0.95 if bone == "forearm" else (0.36 if bone.begins_with("thumb") else 0.3)) + margin
+			capsule.height = maxf(length + capsule.radius + margin, capsule.radius * 2.0 + 0.01)
 			shape.shape = capsule
 		shape.position = Vector3(0.0, length * 0.5, 0.0)
 		area.add_child(shape)

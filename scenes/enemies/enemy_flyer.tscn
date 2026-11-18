@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="Script" path="res://scripts/enemies/enemy_flyer.gd" id="1_script"]
 [ext_resource type="PackedScene" uid="uid://dgupnfiwg2uyr" path="res://models/kenney/enemy-flying.glb" id="2_model"]
@@ -8,8 +8,14 @@
 [sub_resource type="SphereShape3D" id="SphereShape3D_body"]
 radius = 0.5
 
-[sub_resource type="SphereShape3D" id="SphereShape3D_head"]
-radius = 0.2
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_torso"]
+size = Vector3(1.06, 1.06, 1.116)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_blaster"]
+size = Vector3(0.58, 0.74, 1.22)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_antenna"]
+size = Vector3(0.36, 0.56, 0.36)
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_vision"]
 radius = 20.0
@@ -35,8 +41,16 @@ script = ExtResource("3_hurtbox")
 owner_enemy = NodePath("../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Enemy_Model/BodyHurtbox"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-shape = SubResource("SphereShape3D_body")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.48, -0.01)
+shape = SubResource("BoxShape3D_hurt_torso")
+
+[node name="BlasterLeft" type="CollisionShape3D" parent="Enemy_Model/BodyHurtbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.72, 0.48, 0.136)
+shape = SubResource("BoxShape3D_hurt_blaster")
+
+[node name="BlasterRight" type="CollisionShape3D" parent="Enemy_Model/BodyHurtbox"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.72, 0.48, 0.136)
+shape = SubResource("BoxShape3D_hurt_blaster")
 
 [node name="HeadHurtbox" type="Area3D" parent="Enemy_Model" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
@@ -46,8 +60,8 @@ multiplier = 2.0
 owner_enemy = NodePath("../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Enemy_Model/HeadHurtbox"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.0, 0)
-shape = SubResource("SphereShape3D_head")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.14, -0.038)
+shape = SubResource("BoxShape3D_hurt_antenna")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)

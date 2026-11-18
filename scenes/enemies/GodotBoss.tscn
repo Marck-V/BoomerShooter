@@ -1,38 +1,66 @@
-[gd_scene load_steps=16 format=3 uid="uid://dbgnnsy4gp4aw"]
+[gd_scene load_steps=27 format=3 uid="uid://dbgnnsy4gp4aw"]
 
 [ext_resource type="PackedScene" uid="uid://qrdvngdymejs" path="res://models/enemies/godotman.glb" id="1_j4gqk"]
 [ext_resource type="Script" uid="uid://bywio4k2j1xe2" path="res://scripts/enemies/godot_boss.gd" id="1_tivg1"]
 [ext_resource type="AudioStream" uid="uid://b2e6t5mwppf6e" path="res://assets/audio/sfx/boss/Boss_Footsteps.wav" id="4_4ckck"]
 [ext_resource type="Script" uid="uid://m5xnxt1s8y6f" path="res://scripts/enemies/body_hurtbox.gd" id="4_j1mxd"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_tivg1"]
-size = Vector3(1.28433, 1.42923, 1.49584)
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_body_001"]
+size = Vector3(1.1275245, 0.98481715, 1.6284003)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_btt32"]
-size = Vector3(2.00238, 1, 1.34839)
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_body_002"]
+size = Vector3(1.4406774, 1.5712165, 1.4333856)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_j1mxd"]
-size = Vector3(1.35973, 0.779297, 1.15417)
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_L"]
+size = Vector3(0.8127912, 1.019182, 1.5539024)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_btt32"]
-radius = 0.273558
-height = 0.749546
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_L_001"]
+size = Vector3(0.66347253, 0.55945027, 0.6776518)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_4ckck"]
-radius = 0.216044
-height = 0.50934
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_L_002"]
+size = Vector3(0.62826824, 0.61648995, 0.6379692)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_j1mxd"]
-radius = 0.26
-height = 1.04
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_L_003"]
+size = Vector3(0.45149532, 0.3146047, 0.5614036)
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_btt32"]
-height = 0.640137
-radius = 0.322754
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_R"]
+size = Vector3(1.0181255, 1.0191822, 1.5581068)
 
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_j1mxd"]
-height = 0.573303
-radius = 0.405273
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_R_001"]
+size = Vector3(0.6634728, 0.55945045, 0.67765206)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_R_002"]
+size = Vector3(0.62826854, 0.6164901, 0.6379694)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_foot_R_003"]
+size = Vector3(0.45149535, 0.3146047, 0.5614036)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_hand_L"]
+size = Vector3(1.2974014, 1.327684, 1.3687627)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_hand_L_001"]
+size = Vector3(1.0904238, 0.99170005, 0.88593465)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_hand_L_002"]
+size = Vector3(1.1620411, 1.136436, 1.0584921)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_hand_R"]
+size = Vector3(0.9088344, 1.3276839, 1.3687626)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_hand_R_001"]
+size = Vector3(1.0904235, 0.99170005, 0.88593465)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_hand_R_002"]
+size = Vector3(1.1620413, 1.136436, 1.0584921)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_handIK_L"]
+size = Vector3(1.4400821, 1.3055687, 1.1883341)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_handIK_R"]
+size = Vector3(1.4400817, 1.3055686, 1.1883341)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_hurt_head"]
+size = Vector3(2.4035382, 2.1716664, 1.7210529)
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_qrfe6"]
 
@@ -119,8 +147,8 @@ multiplier = 2.0
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/HeadAttach/Area3D"]
-transform = Transform3D(0.999998, 3.37175e-07, 1.39662e-07, -3.37174e-07, 0.707107, 0.707107, 1.39662e-07, -0.707107, 0.707107, 0.0065768, 0.480865, -0.344782)
-shape = SubResource("BoxShape3D_tivg1")
+transform = Transform3D(1, 3.3928876e-07, -3.350476e-07, -3.9112858e-14, 0.70264566, 0.71154, 4.768372e-07, -0.71154, 0.70264566, 1.2100429e-06, 0.72066045, -0.48472083)
+shape = SubResource("BoxShape3D_hurt_head")
 debug_color = Color(0.997749, 0, 0.158895, 0.42)
 
 [node name="ChestAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="2"]
@@ -135,8 +163,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/ChestAttach/Area3D"]
-transform = Transform3D(0.999991, 9.30466e-19, -1.87583e-12, -2.81427e-19, 1, -3.55271e-15, -2.11742e-12, 8.88178e-16, 1, -0.0094139, 0.542426, 0.0960482)
-shape = SubResource("BoxShape3D_btt32")
+transform = Transform3D(1, 7.3353324e-14, -2.3841855e-07, -7.3353324e-14, 1, 0, 2.3841855e-07, 1.7488794e-20, 1, -1.2045662e-08, 0.64727914, 0.050523594)
+shape = SubResource("BoxShape3D_hurt_body_002")
 debug_color = Color(0.797064, 0.423296, 5.77569e-07, 0.42)
 
 [node name="TorsoAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="3"]
@@ -151,8 +179,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/TorsoAttach/Area3D"]
-transform = Transform3D(1, 6.77626e-19, -1.4353e-12, -6.77627e-21, 1, 0, -5.68434e-14, 1.77716e-25, 1, 0.0100937, 0.379752, 0.0770874)
-shape = SubResource("BoxShape3D_j1mxd")
+transform = Transform3D(1, 1.3232055e-13, -2.3841854e-07, -1.3019674e-13, 1, 8.907892e-09, 2.3841854e-07, -8.9078895e-09, 1, -4.998521e-08, 0.40575826, 0.20965351)
+shape = SubResource("BoxShape3D_hurt_body_001")
 debug_color = Color(0.786286, 0.432205, 9.62615e-07, 0.42)
 
 [node name="LeftThighAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="4"]
@@ -167,8 +195,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftThighAttach/Area3D"]
-transform = Transform3D(0.999052, -0.043544, -0.000350435, 0.0432258, 0.992662, -0.112937, 0.0052656, 0.112815, 0.993602, 0.0048151, 0.269467, -0.0147919)
-shape = SubResource("CapsuleShape3D_btt32")
+transform = Transform3D(0.99980044, 0.01523947, 0.01292148, 0.012921524, -0.98644257, 0.16359724, 0.015239434, -0.16339761, -0.98644257, 5.9962273e-05, 0.12159407, -0.017002381)
+shape = SubResource("BoxShape3D_hurt_foot_L_001")
 debug_color = Color(0.801515, 0.419505, 7.70092e-07, 0.42)
 
 [node name="LeftCalfAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="5"]
@@ -183,8 +211,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftCalfAttach/Area3D"]
-transform = Transform3D(1, 9.31323e-10, 0, 0, 1, 0, -3.72529e-09, 0, 1, -0.0427057, 0.221782, -0.0181122)
-shape = SubResource("CapsuleShape3D_4ckck")
+transform = Transform3D(1, 1.6903499e-07, 2.142042e-08, 1.6975845e-07, -0.9776209, -0.21037422, -1.4619553e-08, 0.2103742, -0.9776209, -0.005951643, 0.22753277, -0.044143006)
+shape = SubResource("BoxShape3D_hurt_foot_L_002")
 debug_color = Color(0.805803, 0.415788, 5.77569e-07, 0.42)
 
 [node name="RightThighAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="6"]
@@ -199,8 +227,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightThighAttach/Area3D"]
-transform = Transform3D(0.996171, 0.0862609, 0.0142599, -0.0862517, 0.996273, -0.00125983, -0.0143154, 2.52277e-05, 0.999897, -0.0221357, 0.0985574, 0.015783)
-shape = SubResource("CapsuleShape3D_j1mxd")
+transform = Transform3D(0.99980044, -0.015239292, -0.012921557, -0.012921338, -0.98644257, 0.16359715, -0.015239479, -0.16339752, -0.98644257, -6.0141087e-05, 0.12159413, -0.017002443)
+shape = SubResource("BoxShape3D_hurt_foot_R_001")
 debug_color = Color(0.827497, 0.395928, 0, 0.42)
 
 [node name="RightCalfAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="7"]
@@ -215,8 +243,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightCalfAttach/Area3D"]
-transform = Transform3D(0.999986, 0.00529494, -0.000169538, -0.00507072, 0.965926, 0.258768, 0.00153392, -0.258763, 0.965939, -0.0200124, 0.217811, -0.0281596)
-shape = SubResource("CapsuleShape3D_4ckck")
+transform = Transform3D(1, -2.7473986e-08, -1.490116e-07, -5.8207327e-08, -0.9776209, -0.21037412, -1.3989704e-07, 0.2103741, -0.977621, 0.0059514344, 0.22753274, -0.04414305)
+shape = SubResource("BoxShape3D_hurt_foot_R_002")
 debug_color = Color(0.805803, 0.415788, 5.77569e-07, 0.42)
 
 [node name="LeftBicepAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="8"]
@@ -231,8 +259,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftBicepAttach/Area3D"]
-transform = Transform3D(0.988178, -0.146047, 0.0466351, -0.147104, -0.988917, 0.0200702, 0.043187, -0.0266933, -0.998711, -0.00448656, 0.206428, -0.0293275)
-shape = SubResource("CylinderShape3D_btt32")
+transform = Transform3D(-0.5728662, -0.8196136, 0.0076065585, 0.80635023, -0.56521225, -0.17416763, 0.14704949, -0.09364121, 0.9846866, -0.070439816, 0.31962118, -0.020743728)
+shape = SubResource("BoxShape3D_hurt_hand_L_001")
 debug_color = Color(0.822928, 0.400265, 0, 0.42)
 
 [node name="RightBicepAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="9"]
@@ -247,8 +275,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightBicepAttach/Area3D"]
-transform = Transform3D(0.999389, 0.00273434, 0.0348546, 0.00172427, -0.999578, 0.0289802, 0.0349192, -0.0289024, -0.998973, 0.0207081, 0.317952, -0.0130517)
-shape = SubResource("CylinderShape3D_btt32")
+transform = Transform3D(-0.57286614, 0.8196137, -0.00760656, -0.80635035, -0.5652122, -0.17416768, -0.14704953, -0.09364121, 0.98468673, 0.070440054, 0.31962097, -0.020743698)
+shape = SubResource("BoxShape3D_hurt_hand_R_001")
 debug_color = Color(0.822928, 0.400265, 0, 0.42)
 
 [node name="RightHandAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D" index="10"]
@@ -263,8 +291,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightHandAttach/Area3D"]
-transform = Transform3D(0.999872, -0.00501316, -0.0152877, 0.0120229, 0.864278, 0.502871, 0.0106933, -0.50299, 0.864226, 0.0533441, 0.173388, -0.123966)
-shape = SubResource("CylinderShape3D_j1mxd")
+transform = Transform3D(-0.88887835, 0.45684913, 0.034410287, -0.34501415, -0.7169142, 0.6058046, 0.30143052, 0.52661467, 0.79486895, 0.13291669, 0.36092237, -0.18274033)
+shape = SubResource("BoxShape3D_hurt_handIK_R")
 debug_color = Color(0.791319, 0.428091, 0, 0.42)
 
 [node name="RightAttackHitbox" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightHandAttach"]
@@ -289,8 +317,8 @@ script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftHandAttach/Area3D"]
-transform = Transform3D(0.995466, -0.0875175, -0.0373082, 0.094946, 0.888904, 0.448148, -0.00605567, -0.449657, 0.893181, 0.0069325, 0.131433, -0.0801981)
-shape = SubResource("CylinderShape3D_j1mxd")
+transform = Transform3D(-0.8888786, -0.4568488, -0.034410402, 0.34501398, -0.71691436, 0.6058045, -0.3014304, 0.52661455, 0.794869, -0.13291717, 0.36092266, -0.18274046)
+shape = SubResource("BoxShape3D_hurt_handIK_L")
 debug_color = Color(0.791319, 0.428091, 0, 0.42)
 
 [node name="BodyCollider3D" type="CollisionShape3D" parent="."]
@@ -334,3 +362,115 @@ bus = &"SFX"
 [connection signal="body_exited" from="VisionArea" to="." method="_on_vision_area_body_exited"]
 
 [editable path="godotman"]
+
+[node name="LeftShoulderAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "hand.L"
+bone_idx = 5
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftShoulderAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftShoulderAttach/Area3D"]
+transform = Transform3D(-0.39600042, -0.9182504, -3.8940918e-05, 0.91636676, -0.3951854, -0.06403474, 0.058784526, -0.025393467, 0.9979477, 0.1401689, 0.7014265, -0.06342892)
+shape = SubResource("BoxShape3D_hurt_hand_L")
+
+[node name="RightShoulderAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "hand.R"
+bone_idx = 18
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightShoulderAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightShoulderAttach/Area3D"]
+transform = Transform3D(-0.39600036, 0.9182503, 3.8957904e-05, -0.91636676, -0.39518532, -0.064034745, -0.058784526, -0.025393479, 0.9979477, -0.06323266, 0.87946135, -0.052008033)
+shape = SubResource("BoxShape3D_hurt_hand_R")
+
+[node name="LeftForearmAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "hand.L.002"
+bone_idx = 7
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftForearmAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftForearmAttach/Area3D"]
+transform = Transform3D(-0.8803088, -0.47430587, -0.009503969, 0.43195406, -0.8096653, 0.39731306, -0.19614294, 0.34565288, 0.91763395, -0.047091484, 0.38741153, -0.009031091)
+shape = SubResource("BoxShape3D_hurt_hand_L_002")
+
+[node name="RightForearmAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "hand.R.002"
+bone_idx = 20
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightForearmAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightForearmAttach/Area3D"]
+transform = Transform3D(-0.88030875, 0.47430602, 0.009503894, -0.4319542, -0.8096654, 0.397313, 0.1961429, 0.34565288, 0.91763395, 0.047091484, 0.3874119, -0.009031072)
+shape = SubResource("BoxShape3D_hurt_hand_R_002")
+
+[node name="LeftHipAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "foot.L"
+bone_idx = 31
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftHipAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftHipAttach/Area3D"]
+transform = Transform3D(-0.16459034, -0.59233147, 0.7887037, 0.8268075, 0.353177, 0.4377846, -0.53786564, 0.72416127, 0.43161455, -0.009209931, 0.6707303, 0.1402973)
+shape = SubResource("BoxShape3D_hurt_foot_L")
+
+[node name="RightHipAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "foot.R"
+bone_idx = 34
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightHipAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightHipAttach/Area3D"]
+transform = Transform3D(-0.16459027, 0.59233147, -0.78870374, -0.8268075, 0.35317704, 0.43778455, 0.5378656, 0.72416127, 0.43161455, -0.0056313276, 0.58470297, 0.19439286)
+shape = SubResource("BoxShape3D_hurt_foot_R")
+
+[node name="LeftFootAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "foot.L.003"
+bone_idx = 41
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftFootAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/LeftFootAttach/Area3D"]
+transform = Transform3D(0.99988997, 0.014835918, 0, 0, 0, 1, 0.014835918, -0.99988997, 0, -0.0033923388, 0.1618903, 0.024817668)
+shape = SubResource("BoxShape3D_hurt_foot_L_003")
+
+[node name="RightFootAttach" type="BoneAttachment3D" parent="godotman/godot_rig/Skeleton3D"]
+bone_name = "foot.R.003"
+bone_idx = 42
+
+[node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightFootAttach" node_paths=PackedStringArray("owner_enemy")]
+collision_layer = 8
+collision_mask = 0
+script = ExtResource("4_j1mxd")
+owner_enemy = NodePath("../../../../..")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="godotman/godot_rig/Skeleton3D/RightFootAttach/Area3D"]
+transform = Transform3D(0.99988997, -0.014835918, 0, 0, 0, 1, -0.014835918, -0.99988997, 0, 0.0033923388, 0.1618903, 0.024817668)
+shape = SubResource("BoxShape3D_hurt_foot_R_003")
