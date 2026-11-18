@@ -418,6 +418,39 @@ func chase_faces_target() -> bool:
 
 
 # ---------------------------
+# Player camera
+# ---------------------------
+# A kick to the player's view (a hit, a stomp): pitch up and a random yaw either way
+func shake_player_camera(pitch: float, yaw: float) -> void:
+	if is_instance_valid(target) and target.has_method("apply_camera_kick"):
+		target.apply_camera_kick(pitch, randf_range(-yaw, yaw))
+
+
+# A sustained rattle on top of the kick (a landing, a slam, a blast), fading by itself
+func rattle_player_camera(trauma: float) -> void:
+	if is_instance_valid(target) and target.has_method("add_camera_shake"):
+		target.add_camera_shake(trauma)
+
+
+# ---------------------------
+# Dodging (the dodger, melee dodger and flyer, which set dodge_timer and pick the way)
+# ---------------------------
+var dodge_timer := 0.0   # until the next sidestep
+
+
+func _try_dodge() -> void:
+	if pick_dodge_direction() == Vector3.ZERO:
+		dodge_timer = 0.3  # boxed in: try again shortly
+		return
+	change_state("Dodge")
+
+
+# The way to sidestep, or ZERO if there is none. Dodging enemies override this.
+func pick_dodge_direction() -> Vector3:
+	return Vector3.ZERO
+
+
+# ---------------------------
 # Damage & Death
 # ---------------------------
 func damage(amount: float, multiplier: float = 1.0):

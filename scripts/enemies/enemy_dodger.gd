@@ -9,9 +9,6 @@ class_name EnemyDodger
 
 const DODGE_BLOCKED_PADDING := 0.6  # extra clearance beyond the sidestep distance
 
-var dodge_timer := 0.0
-
-
 func _ready():
 	super()
 	_roll_dodge_timer()
@@ -37,14 +34,6 @@ func _physics_process(delta):
 
 func _roll_dodge_timer() -> void:
 	dodge_timer = randf_range(dodge_interval_min, dodge_interval_max)
-
-
-func _try_dodge() -> void:
-	if pick_dodge_direction() == Vector3.ZERO:
-		# Boxed in on both sides: try again shortly
-		dodge_timer = 0.3
-		return
-	change_state("Dodge")
 
 
 # Random side, flipped if a wall is in the way; ZERO if both sides are blocked

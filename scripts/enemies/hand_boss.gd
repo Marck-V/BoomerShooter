@@ -553,16 +553,6 @@ func play_sfx(paths: String) -> void:
 	Audio.play(paths)
 
 
-func shake_player_camera(pitch: float, yaw: float) -> void:
-	if is_instance_valid(target) and target.has_method("apply_camera_kick"):
-		target.apply_camera_kick(pitch, randf_range(-yaw, yaw))
-
-
-func rattle_player_camera(trauma: float) -> void:
-	if is_instance_valid(target) and target.has_method("add_camera_shake"):
-		target.add_camera_shake(trauma)
-
-
 func warn_circle(center: Vector3, radius: float, color := WARN_COLOR) -> BossTelegraph:
 	var warning := BossTelegraph.circle(get_tree(), center, radius, color)
 	action_fx.append(warning)

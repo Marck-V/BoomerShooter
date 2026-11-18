@@ -12,9 +12,6 @@ const DODGE_FORWARD := 0.5              # share of the sidestep that also closes
 const DODGE_BLOCKED_PADDING := 0.6
 const FLOOR_CHECK_DEPTH := 1.0          # how far below its feet the floor can be at the end of a sidestep
 
-var dodge_timer := 0.0
-
-
 func _ready():
 	super()
 	_roll_dodge_timer()
@@ -37,13 +34,6 @@ func _physics_process(delta):
 
 func _roll_dodge_timer() -> void:
 	dodge_timer = randf_range(dodge_interval_min, dodge_interval_max)
-
-
-func _try_dodge() -> void:
-	if pick_dodge_direction() == Vector3.ZERO:
-		dodge_timer = 0.3  # boxed in: try again shortly
-		return
-	change_state("Dodge")
 
 
 # Random side, flipped if that way is blocked; ZERO if both are

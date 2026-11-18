@@ -30,7 +30,6 @@ const VISUAL_SCALE := 1.6  # the Kenney model is ~0.6 m; matches the Visual node
 @onready var spawn_marker: Marker3D = $EnergyBallSpawnMarker
 @onready var vision_area: Area3D = $VisionArea
 
-var dodge_timer := 0.0
 var bob_time := 0.0
 
 
@@ -201,13 +200,6 @@ func hover(delta: float) -> void:
 # ---------------------------
 func _roll_dodge_timer() -> void:
 	dodge_timer = randf_range(dodge_interval_min, dodge_interval_max)
-
-
-func _try_dodge() -> void:
-	if pick_dodge_direction() == Vector3.ZERO:
-		dodge_timer = 0.3  # boxed in: try again shortly
-		return
-	change_state("Dodge")
 
 
 # Random side (with a bit of vertical drift), flipped if a wall is in the way; ZERO if both are blocked

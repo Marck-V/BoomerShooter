@@ -320,17 +320,6 @@ func play_sfx(paths: String) -> void:
 	Audio.play(paths)
 
 
-func shake_player_camera(pitch: float, yaw: float) -> void:
-	if is_instance_valid(target) and target.has_method("apply_camera_kick"):
-		target.apply_camera_kick(pitch, randf_range(-yaw, yaw))
-
-
-# A sustained rattle on top of the kick (the landing, the slam), fading by itself
-func rattle_player_camera(trauma: float) -> void:
-	if is_instance_valid(target) and target.has_method("add_camera_shake"):
-		target.add_camera_shake(trauma)
-
-
 func _update_footsteps() -> void:
 	# Horizontal movement speed (ignore vertical)
 	var horizontal_speed := Vector3(velocity.x, 0, velocity.z).length()
@@ -601,10 +590,10 @@ func damage(amount: float, multiplier: float = 1.0) -> void:
 		return
 	var spike_bonus := 0.0 if spiking else _take_spikes()   # Conductor Rounds
 	var dealt := amount * multiplier + spike_bonus
-	if shield != null and is_instance_valid(shield):
+	var shielded := shield != null and is_instance_valid(shield)
+	if shielded:
 		dealt = shield.absorb_damage(amount + spike_bonus)
 	dealt *= vulnerability
-	var shielded := shield != null and is_instance_valid(shield)
 	_lose_health(dealt)
 	_report_hit(multiplier > 1.0, shielded)
 
