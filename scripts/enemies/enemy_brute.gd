@@ -14,6 +14,11 @@ func get_state_definitions() -> Dictionary:
 	return definitions
 
 
+# An ordinary enemy: no boss health bar (and it must not take over the HUD's one from the real boss)
+func _has_boss_bar() -> bool:
+	return false
+
+
 # Its roars come from where it stands, unlike the boss's, which fill the arena
 func play_sfx(paths: String) -> void:
 	Audio.play_at(global_position, paths)

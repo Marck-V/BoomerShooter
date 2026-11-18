@@ -191,7 +191,9 @@ func _ready() -> void:
 		attack_hitbox.monitoring = false
 		attack_hitbox.body_entered.connect(_on_attack_hitbox_body_entered)
 
-	if health_bar == null:
+	if not _has_boss_bar():
+		health_bar = null   # every use of the bar checks for it, so without one nothing shows or changes it
+	elif health_bar == null:
 		# Placed by a map entity, which can't set the bar: use the HUD's
 		health_bar = get_tree().current_scene.find_child("BossHealthBar", true, false) as Control
 	if health_bar:
@@ -314,6 +316,11 @@ func set_lift(height: float) -> void:
 	model_lift = height
 	if model_root != null and shake_amount <= 0.0:
 		model_root.position = model_rest.origin + Vector3.UP * model_lift
+
+
+# Whether this fight puts up the HUD's boss health bar. The brute, built on the boss, says no.
+func _has_boss_bar() -> bool:
+	return true
 
 
 func play_sfx(paths: String) -> void:
