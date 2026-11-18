@@ -1,6 +1,6 @@
 # Level 1 redesign brief
 
-Goal: make `level_01_new` more fun to play and more distinct from room to room, without changing what level 1 is for.
+Goal: make `level_01` more fun to play and more distinct from room to room, without changing what level 1 is for.
 
 ## Fixed constraints (do not redesign these)
 
@@ -12,9 +12,9 @@ Goal: make `level_01_new` more fun to play and more distinct from room to room, 
 
 ## Where the level lives
 
-- Scene: `scenes/levels/level_01_new.tscn`, a `FuncGodotMap` with about 180 entities.
+- Scene: `scenes/levels/level_01.tscn`, a `FuncGodotMap` with about 180 entities.
 - The source is most likely `trenchbroom/maps/level_01.map` (a TrenchBroom map). Check that the scene's FuncGodotMap actually points at it before editing anything.
-- `level_01_new.tscn` has **uncommitted edits from before this brief**. Do not commit that file unless the user says to.
+- `level_01.tscn` has **uncommitted edits from before this brief**. Do not commit that file unless the user says to.
 - Any level-generation scripts go in `tools/levelgen/active/` and get deleted when a section is done.
 - For testing enemies, use `scenes/test_scenes/test_room.tscn` and its `spawn()` / `spawn_horde()` / `clear_enemies()` helpers.
 - The godot-ai MCP tools can open scenes, take editor screenshots, run the game and evaluate GDScript in the running game.
@@ -77,7 +77,7 @@ The user said level design is the thing bothering them most but has not said wha
 - Each pre-shield arena plays differently from the others.
 - Barrels matter in at least two arenas.
 - A fresh player gets the shield and grapple without a wall of text.
-- Everything has been run in the game with screenshots, and nothing from the pre-existing `level_01_new.tscn` edits has been committed or lost.
+- Everything has been run in the game with screenshots, and nothing from the pre-existing `level_01.tscn` edits has been committed or lost.
 
 ## Out of scope
 
