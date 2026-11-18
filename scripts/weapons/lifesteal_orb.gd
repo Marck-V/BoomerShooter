@@ -35,12 +35,9 @@ func _ready() -> void:
 # Droplets fall off the orb and are left behind in the world as it rises, trailing short blue streaks
 func _add_drips() -> void:
 	if _drip_mesh == null:
-		var material := StandardMaterial3D.new()
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		var material := FX.unshaded(Color(BloodParticles.GLOW_BOOST, BloodParticles.GLOW_BOOST, BloodParticles.GLOW_BOOST), true)
 		material.vertex_color_use_as_albedo = true
 		material.use_particle_trails = true
-		material.albedo_color = Color(BloodParticles.GLOW_BOOST, BloodParticles.GLOW_BOOST, BloodParticles.GLOW_BOOST)
 
 		var taper := Curve.new()
 		taper.add_point(Vector2(0.0, 1.0))

@@ -106,9 +106,7 @@ func _build_frame() -> void:
 	metal.albedo_color = FRAME_COLOR
 	metal.metallic = 0.6
 	metal.roughness = 0.35
-	var neon := StandardMaterial3D.new()
-	neon.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	neon.albedo_color = NEON_COLOR * NEON_BOOST
+	var neon := FX.unshaded(NEON_COLOR * NEON_BOOST)
 
 	var half_w := DOOR_WIDTH * 0.5
 	var t := FRAME_THICKNESS

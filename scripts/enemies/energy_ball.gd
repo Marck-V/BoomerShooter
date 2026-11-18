@@ -164,9 +164,7 @@ func _add_shell(radius: float, color: Color, rim_power: float, phase: float) -> 
 
 
 func _make_glow_material(color: Color) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = color
+	var material := FX.unshaded(color)
 	return material
 
 
@@ -176,11 +174,7 @@ func _spawn_muzzle_flash() -> void:
 
 # A ball of light that swells and fades out. Lives on its own, so it outlasts the projectile that made it.
 static func _spawn_flash(parent: Node, point: Vector3, color: Color, size: float) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.albedo_color = Color(color.r * 2.5, color.g * 2.5, color.b * 2.5, 1.0)
+	var material := FX.unshaded(Color(color.r * 2.5, color.g * 2.5, color.b * 2.5, 1.0), true, true)
 	var mesh := SphereMesh.new()
 	mesh.radial_segments = 10
 	mesh.rings = 5

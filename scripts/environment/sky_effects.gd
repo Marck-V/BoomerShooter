@@ -147,10 +147,7 @@ func _build_beams() -> void:
 	texture.width = 4
 	texture.height = 64
 
-	beam_material = StandardMaterial3D.new()
-	beam_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	beam_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	beam_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	beam_material = FX.unshaded(Color.WHITE, true, true)
 	beam_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	beam_material.albedo_texture = texture
 	beam_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
@@ -198,14 +195,10 @@ func _build_shooting_star() -> void:
 	texture.width = 32
 	texture.height = 4
 
-	star_material = StandardMaterial3D.new()
-	star_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	star_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	star_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	star_material = FX.unshaded(Color(2.0, 2.0, 2.0, 1.0), true, true)
 	star_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	star_material.albedo_texture = texture
 	star_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-	star_material.albedo_color = Color(2.0, 2.0, 2.0, 1.0)
 	star_material.disable_fog = true
 
 	var quad := QuadMesh.new()

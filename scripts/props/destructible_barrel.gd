@@ -169,9 +169,7 @@ func _punch() -> void:
 
 func _flash(color: Color, time: float) -> void:
 	if overlay == null:
-		overlay = StandardMaterial3D.new()
-		overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		overlay = FX.unshaded(Color.WHITE, true)
 		overlay.render_priority = 2
 	overlay.albedo_color = color
 	for node in visuals.get_children():

@@ -86,12 +86,9 @@ func _basis_facing(up: Vector3) -> Basis:
 
 func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, life: float, thickness := 1.0) -> GPUParticles3D:
 	if _streak_mesh == null:
-		var material := StandardMaterial3D.new()
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		var material := FX.unshaded(Color(GLOW_BOOST, GLOW_BOOST, GLOW_BOOST), true)
 		material.vertex_color_use_as_albedo = true
 		material.use_particle_trails = true
-		material.albedo_color = Color(GLOW_BOOST, GLOW_BOOST, GLOW_BOOST)
 
 		# Thick at the head of the droplet, tapering to nothing along its trail
 		var taper := Curve.new()
@@ -149,28 +146,16 @@ func _add_streaks(count: int, spread: float, vel_min: float, vel_max: float, lif
 
 func _add_mist(count: int, spread := 30.0, thickness := 1.0) -> void:
 	if _mist_mesh == null:
-		var puff := Gradient.new()
-		puff.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
-		puff.colors = PackedColorArray([
+		var texture := FX.radial_texture([0.0, 0.5, 1.0], [
 			Color(1.0, 1.0, 1.0, 1.0),
 			Color(1.0, 1.0, 1.0, 0.4),
 			Color(1.0, 1.0, 1.0, 0.0),
 		])
-		var texture := GradientTexture2D.new()
-		texture.gradient = puff
-		texture.fill = GradientTexture2D.FILL_RADIAL
-		texture.fill_from = Vector2(0.5, 0.5)
-		texture.fill_to = Vector2(1.0, 0.5)
-		texture.width = 64
-		texture.height = 64
 
-		var material := StandardMaterial3D.new()
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		var material := FX.unshaded(Color(GLOW_BOOST, GLOW_BOOST, GLOW_BOOST), true)
 		material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 		material.vertex_color_use_as_albedo = true
 		material.albedo_texture = texture
-		material.albedo_color = Color(GLOW_BOOST, GLOW_BOOST, GLOW_BOOST)
 		_mist_mesh = QuadMesh.new()
 		_mist_mesh.size = Vector2(0.22, 0.22)
 		_mist_mesh.material = material

@@ -248,10 +248,7 @@ func _setup_muzzle_flash() -> void:
 	muzzle_glow_warm = _make_glow_texture(Color(1.0, 1.0, 1.0, 1.0), Color(1.0, 0.75, 0.3, 0.75), Color(1.0, 0.4, 0.1, 0.0))
 	muzzle_glow_blue = _make_glow_texture(Color(0.85, 0.95, 1.0, 1.0), Color(0.25, 0.55, 1.0, 0.75), Color(0.1, 0.3, 1.0, 0.0))
 
-	muzzle_flash_material = StandardMaterial3D.new()
-	muzzle_flash_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	muzzle_flash_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	muzzle_flash_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	muzzle_flash_material = FX.unshaded(Color.WHITE, true, true)
 	muzzle_flash_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	muzzle_flash_material.billboard_keep_scale = true
 	muzzle_flash_material.no_depth_test = true
@@ -266,16 +263,7 @@ func _setup_muzzle_flash() -> void:
 
 
 func _make_glow_texture(core: Color, mid: Color, edge: Color) -> GradientTexture2D:
-	var gradient := Gradient.new()
-	gradient.offsets = PackedFloat32Array([0.0, 0.3, 1.0])
-	gradient.colors = PackedColorArray([core, mid, edge])
-	var glow := GradientTexture2D.new()
-	glow.gradient = gradient
-	glow.fill = GradientTexture2D.FILL_RADIAL
-	glow.fill_from = Vector2(0.5, 0.5)
-	glow.fill_to = Vector2(1.0, 0.5)
-	glow.width = 128
-	glow.height = 128
+	var glow := FX.radial_texture([0.0, 0.3, 1.0], [core, mid, edge], 128)
 	return glow
 
 

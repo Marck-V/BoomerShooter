@@ -45,9 +45,7 @@ func _ready() -> void:
 	mesh.height = 0.9
 	mesh.radial_segments = 8
 	mesh.rings = 4
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color(SHELL_COLOR.r * 2.5, SHELL_COLOR.g * 2.5, SHELL_COLOR.b * 2.5)
+	var material := FX.unshaded(Color(SHELL_COLOR.r * 2.5, SHELL_COLOR.g * 2.5, SHELL_COLOR.b * 2.5))
 	shell = MeshInstance3D.new()
 	shell.mesh = mesh
 	shell.material_override = material

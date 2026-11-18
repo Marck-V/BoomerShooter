@@ -29,12 +29,8 @@ static func play(tree: SceneTree, position: Vector3) -> void:
 	cylinder.rings = 1
 	cylinder.cap_top = false
 	cylinder.cap_bottom = false
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(1.0, 0.35, 0.95, 0.8), true, true)
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material.albedo_color = Color(1.0, 0.35, 0.95, 0.8)
 	material.disable_fog = true
 	cylinder.material = material
 	column.mesh = cylinder
@@ -112,13 +108,9 @@ static func _add_dust(root: Node3D, count: int, life: float, speed: Vector2, spr
 static func _trail_mesh(radius: float) -> TubeTrailMesh:
 	if _trail_meshes.has(radius):
 		return _trail_meshes[radius]
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(0.9, 1.1, 1.7), true, true)
 	material.vertex_color_use_as_albedo = true
 	material.use_particle_trails = true
-	material.albedo_color = Color(0.9, 1.1, 1.7)
 	material.disable_fog = true
 
 	# Thick at the head of each particle, tapering to nothing along its trail

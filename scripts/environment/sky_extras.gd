@@ -65,9 +65,7 @@ func _process(delta: float) -> void:
 
 
 func _unshaded(color: Color) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = color
+	var material := FX.unshaded(color)
 	material.disable_fog = true
 	return material
 
@@ -158,16 +156,7 @@ func _build_aurora() -> void:
 # ---------------------------------------------------------------- lightning
 
 func _build_lightning() -> void:
-	var gradient := Gradient.new()
-	gradient.offsets = PackedFloat32Array([0.0, 0.35, 1.0])
-	gradient.colors = PackedColorArray([Color(1.0, 0.95, 1.0, 1.0), Color(0.7, 0.4, 1.0, 0.6), Color(0.4, 0.1, 0.8, 0.0)])
-	var texture := GradientTexture2D.new()
-	texture.gradient = gradient
-	texture.fill = GradientTexture2D.FILL_RADIAL
-	texture.fill_from = Vector2(0.5, 0.5)
-	texture.fill_to = Vector2(1.0, 0.5)
-	texture.width = 32
-	texture.height = 32
+	var texture := FX.radial_texture([0.0, 0.35, 1.0], [Color(1.0, 0.95, 1.0, 1.0), Color(0.7, 0.4, 1.0, 0.6), Color(0.4, 0.1, 0.8, 0.0)], 32)
 	var material := _unshaded(Color(2.0, 1.6, 2.2, 1.0))
 	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD

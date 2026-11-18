@@ -455,17 +455,8 @@ func _portal_smoke() -> GPUParticles3D:
 	ramp.gradient = fade
 	process.color_ramp = ramp
 
-	var puff := GradientTexture2D.new()
-	var dot := Gradient.new()
-	dot.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
-	dot.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.45), Color(1, 1, 1, 0)])
-	puff.gradient = dot
-	puff.fill = GradientTexture2D.FILL_RADIAL
-	puff.fill_from = Vector2(0.5, 0.5)
-	puff.fill_to = Vector2(1.0, 0.5)
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var puff := FX.radial_texture([0.0, 0.5, 1.0], [Color(1, 1, 1, 1), Color(1, 1, 1, 0.45), Color(1, 1, 1, 0)])
+	var material := FX.unshaded(Color.WHITE, true)
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	material.vertex_color_use_as_albedo = true
 	material.albedo_texture = puff

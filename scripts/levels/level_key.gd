@@ -39,11 +39,7 @@ func _build_visuals() -> void:
 	model = key_scene.get_node("Key").duplicate() as Node3D
 	key_scene.free()
 	model.scale = Vector3.ONE * MODEL_SCALE
-	var tint := StandardMaterial3D.new()
-	tint.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	tint.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	tint.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	tint.albedo_color = Color(color, 0.8)
+	var tint := FX.unshaded(Color(color, 0.8), true, true)
 	(model as MeshInstance3D).material_overlay = tint
 	add_child(model)
 

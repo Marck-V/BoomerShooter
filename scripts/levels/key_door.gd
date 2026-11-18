@@ -15,11 +15,7 @@ func _setup() -> void:
 	super()
 	var color: Color = LevelKey.COLORS.get(key, Color.WHITE)
 
-	var tint := StandardMaterial3D.new()
-	tint.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	tint.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	tint.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	tint.albedo_color = Color(color, 0.55)
+	var tint := FX.unshaded(Color(color, 0.55), true, true)
 	for mesh in find_children("*", "MeshInstance3D", true, false):
 		(mesh as MeshInstance3D).material_overlay = tint
 

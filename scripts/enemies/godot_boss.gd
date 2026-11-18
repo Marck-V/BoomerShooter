@@ -371,11 +371,7 @@ var shield_base_albedo := Color(5.0, 0.0, 7.0, 1.0)
 # energy is how strong the glow gets (3 is full); seconds is how long the fade takes
 func set_glow(active: bool, color := Color(1.0, 0.4, 0.1), energy := 3.0, seconds := 0.6) -> void:
 	if glow_overlay == null:
-		glow_overlay = StandardMaterial3D.new()
-		glow_overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		glow_overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		glow_overlay.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-		glow_overlay.albedo_color = Color(1.0, 1.0, 1.0, 0.0)
+		glow_overlay = FX.unshaded(Color(1.0, 1.0, 1.0, 0.0), true, true)
 		var current = shield_material.get_shader_parameter("albedo")
 		if current is Color:
 			shield_base_albedo = current
@@ -805,9 +801,7 @@ func disintegrate() -> void:
 	sparks.scale_amount_max = 1.2
 	var cube := BoxMesh.new()
 	cube.size = Vector3.ONE * 0.07
-	var spark_material := StandardMaterial3D.new()
-	spark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	spark_material.albedo_color = Color(1.0, 0.6, 0.2)
+	var spark_material := FX.unshaded(Color(1.0, 0.6, 0.2))
 	spark_material.vertex_color_use_as_albedo = true
 	cube.material = spark_material
 	sparks.mesh = cube
@@ -1461,13 +1455,9 @@ class TransitionState extends BossState:
 		mesh.rings = 1
 		mesh.cap_top = false
 		mesh.cap_bottom = false
-		pillar_material = StandardMaterial3D.new()
-		pillar_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		pillar_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		pillar_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		pillar_material = FX.unshaded(Color(color, 0.0), true, true)
 		pillar_material.cull_mode = BaseMaterial3D.CULL_DISABLED
 		pillar_material.disable_fog = true
-		pillar_material.albedo_color = Color(color, 0.0)
 		mesh.material = pillar_material
 		pillar = MeshInstance3D.new()
 		pillar.mesh = mesh

@@ -22,14 +22,10 @@ var surge := 0.0
 
 
 func _ready() -> void:
-	core_material = StandardMaterial3D.new()
-	core_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	core_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	core_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	core_material = FX.unshaded(Color(2.0, 2.0, 2.0, 1.0), true, true)
 	core_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	core_material.billboard_keep_scale = true
 	core_material.albedo_texture = _glow_tex()
-	core_material.albedo_color = Color(2.0, 2.0, 2.0, 1.0)
 	core = MeshInstance3D.new()
 	core.mesh = QuadMesh.new()
 	core.material_override = core_material
@@ -49,13 +45,9 @@ func _ready() -> void:
 
 # Lashing, jittering sparks right at the opening: fast out, then they stall and whip about in turbulence and die
 func _build_sparks() -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(2.5, 2.5, 2.5), true, true)
 	material.vertex_color_use_as_albedo = true
 	material.use_particle_trails = true
-	material.albedo_color = Color(2.5, 2.5, 2.5)
 	var mesh := RibbonTrailMesh.new()
 	mesh.shape = RibbonTrailMesh.SHAPE_CROSS
 	mesh.size = 0.005
@@ -127,14 +119,5 @@ func _process(delta: float) -> void:
 
 static func _glow_tex() -> GradientTexture2D:
 	if _glow_texture == null:
-		var gradient := Gradient.new()
-		gradient.offsets = PackedFloat32Array([0.0, 0.18, 0.55, 1.0])
-		gradient.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.6), Color(1, 1, 1, 0.12), Color(1, 1, 1, 0)])
-		_glow_texture = GradientTexture2D.new()
-		_glow_texture.gradient = gradient
-		_glow_texture.fill = GradientTexture2D.FILL_RADIAL
-		_glow_texture.fill_from = Vector2(0.5, 0.5)
-		_glow_texture.fill_to = Vector2(1.0, 0.5)
-		_glow_texture.width = 128
-		_glow_texture.height = 128
+		_glow_texture = FX.radial_texture([0.0, 0.18, 0.55, 1.0], [Color(1, 1, 1, 1), Color(1, 1, 1, 0.6), Color(1, 1, 1, 0.12), Color(1, 1, 1, 0)], 128)
 	return _glow_texture

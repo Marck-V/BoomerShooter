@@ -95,26 +95,13 @@ func _make_smoke() -> GPUParticles3D:
 
 func _add_flash() -> void:
 	if flash_texture == null:
-		var gradient := Gradient.new()
-		gradient.offsets = PackedFloat32Array([0.0, 0.25, 0.6, 1.0])
-		gradient.colors = PackedColorArray([
-			Color(1.0, 1.0, 1.0, 1.0), Color(1.0, 0.9, 0.55, 0.95), Color(1.0, 0.35, 0.1, 0.4), Color(1.0, 0.1, 0.0, 0.0)])
-		flash_texture = GradientTexture2D.new()
-		flash_texture.gradient = gradient
-		flash_texture.fill = GradientTexture2D.FILL_RADIAL
-		flash_texture.fill_from = Vector2(0.5, 0.5)
-		flash_texture.fill_to = Vector2(1.0, 0.5)
-		flash_texture.width = 128
-		flash_texture.height = 128
+		flash_texture = FX.radial_texture([0.0, 0.25, 0.6, 1.0], [
+			Color(1.0, 1.0, 1.0, 1.0), Color(1.0, 0.9, 0.55, 0.95), Color(1.0, 0.35, 0.1, 0.4), Color(1.0, 0.1, 0.0, 0.0)], 128)
 
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(2.0, 2.0, 2.0), true, true)
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	material.billboard_keep_scale = true
 	material.albedo_texture = flash_texture
-	material.albedo_color = Color(2.0, 2.0, 2.0)
 
 	var flash := MeshInstance3D.new()
 	flash.mesh = QuadMesh.new()

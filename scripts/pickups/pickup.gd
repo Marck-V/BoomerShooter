@@ -257,11 +257,7 @@ func _model_bounds() -> AABB:
 
 
 func _tint(root: Node, color: Color) -> void:
-	var overlay := StandardMaterial3D.new()
-	overlay.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	overlay.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	overlay.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	overlay.albedo_color = color
+	var overlay := FX.unshaded(color, true, true)
 	for node in root.find_children("*", "MeshInstance3D", true, false):
 		(node as MeshInstance3D).material_overlay = overlay
 

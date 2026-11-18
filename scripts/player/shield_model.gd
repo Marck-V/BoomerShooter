@@ -41,14 +41,10 @@ static func build() -> Node3D:
 	body.texture_filter = BaseMaterial3D.TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC
 	mats["body"] = body
 
-	var rim := StandardMaterial3D.new()
-	rim.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	rim.albedo_color = Color(2.6, 1.9, 0.3)
+	var rim := FX.unshaded(Color(2.6, 1.9, 0.3))
 	mats["rim"] = rim
 
-	var gem := StandardMaterial3D.new()
-	gem.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	gem.albedo_color = Color(0.4, 2.0, 2.6)
+	var gem := FX.unshaded(Color(0.4, 2.0, 2.6))
 	mats["gem"] = gem
 
 	var mesh_instance := MeshInstance3D.new()

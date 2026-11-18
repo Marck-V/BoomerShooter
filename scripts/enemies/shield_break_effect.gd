@@ -38,29 +38,16 @@ func _start(with_shards: bool) -> void:
 
 func _add_pop() -> void:
 	if _glow_texture == null:
-		var gradient := Gradient.new()
-		gradient.offsets = PackedFloat32Array([0.0, 0.35, 1.0])
-		gradient.colors = PackedColorArray([
+		_glow_texture = FX.radial_texture([0.0, 0.35, 1.0], [
 			Color(1.0, 1.0, 1.0, 1.0),
 			Color(0.85, 0.9, 1.0, 0.8),
 			Color(0.6, 0.7, 1.0, 0.0),
-		])
-		_glow_texture = GradientTexture2D.new()
-		_glow_texture.gradient = gradient
-		_glow_texture.fill = GradientTexture2D.FILL_RADIAL
-		_glow_texture.fill_from = Vector2(0.5, 0.5)
-		_glow_texture.fill_to = Vector2(1.0, 0.5)
-		_glow_texture.width = 128
-		_glow_texture.height = 128
+		], 128)
 
-	_pop_material = StandardMaterial3D.new()
-	_pop_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	_pop_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	_pop_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	_pop_material = FX.unshaded(Color(4.0, 4.0, 4.0), true, true)
 	_pop_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	_pop_material.billboard_keep_scale = true
 	_pop_material.albedo_texture = _glow_texture
-	_pop_material.albedo_color = Color(4.0, 4.0, 4.0)
 
 	_pop = MeshInstance3D.new()
 	_pop.mesh = QuadMesh.new()
@@ -83,13 +70,9 @@ func _add_pop() -> void:
 
 func _add_sparks() -> void:
 	if _spark_mesh == null:
-		var material := StandardMaterial3D.new()
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		var material := FX.unshaded(Color(3.0, 3.0, 3.0), true, true)
 		material.vertex_color_use_as_albedo = true
 		material.use_particle_trails = true
-		material.albedo_color = Color(3.0, 3.0, 3.0)
 
 		var taper := Curve.new()
 		taper.add_point(Vector2(0.0, 1.0))
@@ -145,10 +128,8 @@ func _add_sparks() -> void:
 
 func _add_shards() -> void:
 	if _shard_mesh == null:
-		var material := StandardMaterial3D.new()
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var material := FX.unshaded(Color(1.6, 1.6, 1.8))
 		material.vertex_color_use_as_albedo = true
-		material.albedo_color = Color(1.6, 1.6, 1.8)
 		_shard_mesh = BoxMesh.new()
 		_shard_mesh.size = Vector3(0.11, 0.02, 0.07)
 		_shard_mesh.material = material

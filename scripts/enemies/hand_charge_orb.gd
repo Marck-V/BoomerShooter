@@ -76,23 +76,15 @@ func _ready() -> void:
 
 
 func _glow_material(color: Color, alpha: float) -> StandardMaterial3D:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(color.r * 2.0, color.g * 2.0, color.b * 2.0, alpha), true, true)
 	material.cull_mode = BaseMaterial3D.CULL_BACK
-	material.albedo_color = Color(color.r * 2.0, color.g * 2.0, color.b * 2.0, alpha)
 	return material
 
 
 func _build_streaks() -> void:
 	var mesh := BoxMesh.new()
 	mesh.size = Vector3(0.06, 0.06, 1.0)          # stretched along its length in code
-	streak_material = StandardMaterial3D.new()
-	streak_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	streak_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	streak_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	streak_material.albedo_color = Color(2.0, 1.4, 0.8, 0.9)
+	streak_material = FX.unshaded(Color(2.0, 1.4, 0.8, 0.9), true, true)
 	for i in STREAKS:
 		var node := MeshInstance3D.new()
 		node.mesh = mesh

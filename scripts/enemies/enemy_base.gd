@@ -350,9 +350,7 @@ func set_dodge_vanished(vanished: bool) -> void:
 # A bright overlay across every mesh of the enemy that fades out, so it flashes into view
 func _play_reappear_flash() -> void:
 	if reappear_flash_material == null:
-		reappear_flash_material = StandardMaterial3D.new()
-		reappear_flash_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		reappear_flash_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		reappear_flash_material = FX.unshaded(Color.WHITE, true)
 	reappear_flash_material.albedo_color = Color(REAPPEAR_FLASH_COLOR, 0.95)
 	for mesh in model_root.find_children("*", "GeometryInstance3D", true, false):
 		(mesh as GeometryInstance3D).material_overlay = reappear_flash_material

@@ -38,9 +38,7 @@ func _ready() -> void:
 	sphere.height = VISUAL_RADIUS * 2.0
 	sphere.radial_segments = 8
 	sphere.rings = 4
-	var core_material := StandardMaterial3D.new()
-	core_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	core_material.albedo_color = CORE_COLOR
+	var core_material := FX.unshaded(CORE_COLOR)
 	core_material.disable_fog = true
 	sphere.material = core_material
 	core = MeshInstance3D.new()
@@ -49,23 +47,10 @@ func _ready() -> void:
 	add_child(core)
 
 	# Soft glow around it so it reads from across the room
-	var glow := Gradient.new()
-	glow.offsets = PackedFloat32Array([0.0, 0.35, 1.0])
-	glow.colors = PackedColorArray([Color(0.8, 1.0, 0.85, 1.0), Color(0.2, 1.0, 0.4, 0.5), Color(0.0, 0.8, 0.2, 0.0)])
-	var glow_texture := GradientTexture2D.new()
-	glow_texture.gradient = glow
-	glow_texture.fill = GradientTexture2D.FILL_RADIAL
-	glow_texture.fill_from = Vector2(0.5, 0.5)
-	glow_texture.fill_to = Vector2(1.0, 0.5)
-	glow_texture.width = 64
-	glow_texture.height = 64
-	var halo_material := StandardMaterial3D.new()
-	halo_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	halo_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	halo_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var glow_texture := FX.radial_texture([0.0, 0.35, 1.0], [Color(0.8, 1.0, 0.85, 1.0), Color(0.2, 1.0, 0.4, 0.5), Color(0.0, 0.8, 0.2, 0.0)])
+	var halo_material := FX.unshaded(Color(1.4, 1.6, 1.4), true, true)
 	halo_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	halo_material.albedo_texture = glow_texture
-	halo_material.albedo_color = Color(1.4, 1.6, 1.4)
 	halo_material.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 	halo_material.disable_fog = true
 	var quad := QuadMesh.new()

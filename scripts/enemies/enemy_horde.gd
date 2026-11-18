@@ -1010,25 +1010,12 @@ func _build_parry_glow() -> void:
 	glow_fist.add_child(glow_trail)
 
 	# A soft ring that always faces the camera, with an empty centre so it never covers the fist
-	var ring := Gradient.new()
-	ring.offsets = PackedFloat32Array([0.0, 0.66, 0.74, 0.78, 0.86])
-	ring.colors = PackedColorArray([
-		Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.0), Color(1, 1, 1, 1.0), Color(1, 1, 1, 0.5), Color(1, 1, 1, 0.0)])
-	var texture := GradientTexture2D.new()
-	texture.gradient = ring
-	texture.fill = GradientTexture2D.FILL_RADIAL
-	texture.fill_from = Vector2(0.5, 0.5)
-	texture.fill_to = Vector2(1.0, 0.5)
-	texture.width = 128
-	texture.height = 128
-	glow_halo_material = StandardMaterial3D.new()
-	glow_halo_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	glow_halo_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	glow_halo_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var texture := FX.radial_texture([0.0, 0.66, 0.74, 0.78, 0.86], [
+		Color(1, 1, 1, 0.0), Color(1, 1, 1, 0.0), Color(1, 1, 1, 1.0), Color(1, 1, 1, 0.5), Color(1, 1, 1, 0.0)], 128)
+	glow_halo_material = FX.unshaded(Color(AURA_COLOR * 2.0, 0.0), true, true)
 	glow_halo_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	glow_halo_material.billboard_keep_scale = true
 	glow_halo_material.albedo_texture = texture
-	glow_halo_material.albedo_color = Color(AURA_COLOR * 2.0, 0.0)
 	glow_halo_material.disable_fog = true
 	var quad := QuadMesh.new()
 	quad.size = Vector2(0.55, 0.55)

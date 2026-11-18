@@ -673,13 +673,9 @@ func _parry_ring() -> void:
 
 
 func _spark_burst(centre: Vector3, radius: float, count: int, speed_min: float, speed_max: float, size: float, life: float) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(3.0, 2.3, 0.8), true, true)
 	material.vertex_color_use_as_albedo = true
 	material.use_particle_trails = true
-	material.albedo_color = Color(3.0, 2.3, 0.8)
 	var mesh := RibbonTrailMesh.new()
 	mesh.shape = RibbonTrailMesh.SHAPE_CROSS
 	mesh.size = size
@@ -779,22 +775,13 @@ func _set_edge_intensity(value: float) -> void:
 # Thin bright ring used by the catch
 func _ring_tex() -> GradientTexture2D:
 	if _ring_texture == null:
-		var gradient := Gradient.new()
-		gradient.offsets = PackedFloat32Array([0.0, 0.6, 0.82, 0.92, 1.0])
-		gradient.colors = PackedColorArray([
+		_ring_texture = FX.radial_texture([0.0, 0.6, 0.82, 0.92, 1.0], [
 			Color(1.0, 1.0, 1.0, 0.0),
 			Color(1.0, 1.0, 1.0, 0.0),
 			Color(1.0, 1.0, 1.0, 1.0),
 			Color(1.0, 0.85, 0.2, 0.45),
 			Color(1.0, 0.65, 0.1, 0.0),
-		])
-		_ring_texture = GradientTexture2D.new()
-		_ring_texture.gradient = gradient
-		_ring_texture.fill = GradientTexture2D.FILL_RADIAL
-		_ring_texture.fill_from = Vector2(0.5, 0.5)
-		_ring_texture.fill_to = Vector2(1.0, 0.5)
-		_ring_texture.width = 256
-		_ring_texture.height = 256
+		], 256)
 	return _ring_texture
 
 
@@ -1019,11 +1006,7 @@ func _tracer(from: Vector3, to: Vector3, color: Color) -> void:
 	var length := from.distance_to(to)
 	if length < 0.05:
 		return
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	material.albedo_color = color
+	var material := FX.unshaded(color, true, true)
 	material.disable_fog = true
 	var box := BoxMesh.new()
 	box.size = Vector3(TRACER_WIDTH, TRACER_WIDTH, 1.0)
@@ -1216,9 +1199,7 @@ func _update_grapple() -> void:
 # A glowing green line from the player's hand to the shield while they are being pulled
 func _make_rope() -> void:
 	_remove_rope()
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color(0.4, 2.2, 0.9)
+	var material := FX.unshaded(Color(0.4, 2.2, 0.9))
 	material.disable_fog = true
 	var box := BoxMesh.new()
 	box.size = Vector3(ROPE_THICKNESS, ROPE_THICKNESS, 1.0)
@@ -1381,14 +1362,10 @@ func _catch_burst() -> void:
 
 
 func _plane_effect(texture: Texture2D, color: Color, from_size: float, to_size: float, time: float) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(color, true, true)
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	material.no_depth_test = true
 	material.albedo_texture = texture
-	material.albedo_color = color
 	var effect := MeshInstance3D.new()
 	effect.mesh = QuadMesh.new()   # faces +Z: the hand's disc lies in its local XY plane
 	effect.material_override = material
@@ -1434,15 +1411,11 @@ func _hand_disc_centre() -> Vector3:
 
 
 func _pop(position_in_world: Vector3, color: Color, size: float) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(color, true, true)
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	material.billboard_keep_scale = true
 	material.no_depth_test = true
 	material.albedo_texture = _glow_tex()
-	material.albedo_color = color
 
 	var pop := MeshInstance3D.new()
 	pop.mesh = QuadMesh.new()
@@ -1461,18 +1434,9 @@ func _pop(position_in_world: Vector3, color: Color, size: float) -> void:
 # Soft round glow shared by every pop
 func _glow_tex() -> GradientTexture2D:
 	if _glow_texture == null:
-		var gradient := Gradient.new()
-		gradient.offsets = PackedFloat32Array([0.0, 0.4, 1.0])
-		gradient.colors = PackedColorArray([
+		_glow_texture = FX.radial_texture([0.0, 0.4, 1.0], [
 			Color(1.0, 1.0, 1.0, 1.0),
 			Color(0.7, 0.9, 1.0, 0.7),
 			Color(0.3, 0.6, 1.0, 0.0),
-		])
-		_glow_texture = GradientTexture2D.new()
-		_glow_texture.gradient = gradient
-		_glow_texture.fill = GradientTexture2D.FILL_RADIAL
-		_glow_texture.fill_from = Vector2(0.5, 0.5)
-		_glow_texture.fill_to = Vector2(1.0, 0.5)
-		_glow_texture.width = 128
-		_glow_texture.height = 128
+		], 128)
 	return _glow_texture

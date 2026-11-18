@@ -82,9 +82,7 @@ func _build_disc() -> void:
 
 # A thin glowing ring around the edge, so the portal has a solid frame
 func _build_rim() -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.albedo_color = Color(RIM_COLOR.r, RIM_COLOR.g, RIM_COLOR.b) * GLOW_BOOST
+	var material := FX.unshaded(Color(RIM_COLOR.r, RIM_COLOR.g, RIM_COLOR.b) * GLOW_BOOST)
 	var rim := MeshInstance3D.new()
 	rim.mesh = _make_ring(radius, 0.04, material)
 	rim.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -165,11 +163,7 @@ func _build_light() -> void:
 	light.position.y = 0.5
 	add_child(light)
 	# The ring that shoots outwards on a launch
-	shock_material = StandardMaterial3D.new()
-	shock_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	shock_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	shock_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	shock_material.albedo_color = Color(RIM_COLOR.r * GLOW_BOOST, RIM_COLOR.g * GLOW_BOOST, RIM_COLOR.b * GLOW_BOOST, 0.0)
+	shock_material = FX.unshaded(Color(RIM_COLOR.r * GLOW_BOOST, RIM_COLOR.g * GLOW_BOOST, RIM_COLOR.b * GLOW_BOOST, 0.0), true, true)
 	shock_ring = MeshInstance3D.new()
 	shock_ring.mesh = _make_ring(radius, 0.06, shock_material)
 	shock_ring.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -189,25 +183,12 @@ func _make_ring(ring_radius: float, thickness: float, material: Material) -> Tor
 
 
 func _make_particles(process: ParticleProcessMaterial, count: int, lifetime: float, size: float) -> GPUParticles3D:
-	var texture := GradientTexture2D.new()
-	var dot := Gradient.new()
-	dot.offsets = PackedFloat32Array([0.0, 0.45, 1.0])
-	dot.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.5), Color(1, 1, 1, 0)])
-	texture.gradient = dot
-	texture.fill = GradientTexture2D.FILL_RADIAL
-	texture.fill_from = Vector2(0.5, 0.5)
-	texture.fill_to = Vector2(1.0, 0.5)
-	texture.width = 32
-	texture.height = 32
+	var texture := FX.radial_texture([0.0, 0.45, 1.0], [Color(1, 1, 1, 1), Color(1, 1, 1, 0.5), Color(1, 1, 1, 0)], 32)
 
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(SPARK_BOOST, SPARK_BOOST, SPARK_BOOST, 1.0), true, true)
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	material.vertex_color_use_as_albedo = true
 	material.albedo_texture = texture
-	material.albedo_color = Color(SPARK_BOOST, SPARK_BOOST, SPARK_BOOST, 1.0)
 	var quad := QuadMesh.new()
 	quad.size = Vector2(size, size)
 	quad.material = material

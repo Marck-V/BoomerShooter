@@ -339,8 +339,7 @@ func _make_palm(height: float) -> MeshInstance3D:
 					tool.add_vertex(vertex)
 			previous = spine
 
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+	var material := FX.unshaded()
 	material.vertex_color_use_as_albedo = true
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	material.disable_fog = true

@@ -76,9 +76,7 @@ func _ready() -> void:
 	cap_mesh.size = Vector3(PODIUM_SIZE.x + 0.16, 0.1, PODIUM_SIZE.z + 0.16)
 	cap.mesh = cap_mesh
 	cap.position.y = PODIUM_SIZE.y
-	var glow := StandardMaterial3D.new()
-	glow.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	glow.albedo_color = Color(0.4, 1.8, 2.2)
+	var glow := FX.unshaded(Color(0.4, 1.8, 2.2))
 	cap.material_override = glow
 	podium.add_child(cap)
 

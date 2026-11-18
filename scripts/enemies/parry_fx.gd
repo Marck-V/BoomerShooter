@@ -44,25 +44,12 @@ static func _make_motes(amount: int, lifetime: float, process: ParticleProcessMa
 static func _get_mote_mesh() -> QuadMesh:
 	if mote_mesh != null:
 		return mote_mesh
-	var glow := Gradient.new()
-	glow.offsets = PackedFloat32Array([0.0, 0.25, 1.0])
-	glow.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.55), Color(1, 1, 1, 0)])
-	var texture := GradientTexture2D.new()
-	texture.gradient = glow
-	texture.width = 32
-	texture.height = 32
-	texture.fill = GradientTexture2D.FILL_RADIAL
-	texture.fill_from = Vector2(0.5, 0.5)
-	texture.fill_to = Vector2(1.0, 0.5)
+	var texture := FX.radial_texture([0.0, 0.25, 1.0], [Color(1, 1, 1, 1), Color(1, 1, 1, 0.55), Color(1, 1, 1, 0)], 32)
 
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(MOTE_BRIGHTNESS, MOTE_BRIGHTNESS, MOTE_BRIGHTNESS), true, true)
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	material.vertex_color_use_as_albedo = true
 	material.albedo_texture = texture
-	material.albedo_color = Color(MOTE_BRIGHTNESS, MOTE_BRIGHTNESS, MOTE_BRIGHTNESS)
 	material.disable_fog = true
 	mote_mesh = QuadMesh.new()
 	mote_mesh.size = Vector2.ONE * MOTE_SIZE
@@ -99,16 +86,12 @@ static func _make_mote_process(emission_radius: float, speed: Vector2, gravity: 
 
 # A sharp star that snaps open on parent and fades. Drawn over everything, or the thing it marks would hide its middle.
 static func play_star_glint(parent: Node3D, size: float) -> void:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	var material := FX.unshaded(Color(2.6, 2.2, 1.0), true, true)
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	material.billboard_keep_scale = true
 	material.no_depth_test = true
 	material.disable_fog = true
 	material.albedo_texture = _get_glint_texture()
-	material.albedo_color = Color(2.6, 2.2, 1.0)
 	var quad := QuadMesh.new()
 	quad.material = material
 	var glint := MeshInstance3D.new()

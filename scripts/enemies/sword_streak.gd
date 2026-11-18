@@ -21,10 +21,7 @@ var material: StandardMaterial3D
 
 func _ready() -> void:
 	mesh = ribbon
-	material = StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	material = FX.unshaded(Color.WHITE, true, true)
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	material.vertex_color_use_as_albedo = true
 	material.disable_fog = true

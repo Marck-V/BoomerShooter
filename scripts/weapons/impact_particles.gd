@@ -33,13 +33,9 @@ func _start(point: Vector3, normal: Vector3, amount_scale: float) -> void:
 
 func _add_sparks(count: int) -> void:
 	if _spark_mesh == null:
-		var material := StandardMaterial3D.new()
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+		var material := FX.unshaded(Color(2.5, 1.8, 0.9), true, true)
 		material.vertex_color_use_as_albedo = true
 		material.use_particle_trails = true
-		material.albedo_color = Color(2.5, 1.8, 0.9)
 		# The trail follows each spark's path, which is what draws the streak
 		_spark_mesh = RibbonTrailMesh.new()
 		_spark_mesh.shape = RibbonTrailMesh.SHAPE_CROSS
@@ -86,24 +82,13 @@ func _add_sparks(count: int) -> void:
 
 func _add_smoke(count: int) -> void:
 	if _smoke_mesh == null:
-		var puff := Gradient.new()
-		puff.offsets = PackedFloat32Array([0.0, 0.5, 1.0])
-		puff.colors = PackedColorArray([
+		var texture := FX.radial_texture([0.0, 0.5, 1.0], [
 			Color(1.0, 1.0, 1.0, 1.0),
 			Color(1.0, 1.0, 1.0, 0.45),
 			Color(1.0, 1.0, 1.0, 0.0),
 		])
-		var texture := GradientTexture2D.new()
-		texture.gradient = puff
-		texture.fill = GradientTexture2D.FILL_RADIAL
-		texture.fill_from = Vector2(0.5, 0.5)
-		texture.fill_to = Vector2(1.0, 0.5)
-		texture.width = 64
-		texture.height = 64
 
-		var material := StandardMaterial3D.new()
-		material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-		material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		var material := FX.unshaded(Color.WHITE, true)
 		material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 		material.particles_anim_h_frames = 1
 		material.particles_anim_v_frames = 1

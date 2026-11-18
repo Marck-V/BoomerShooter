@@ -106,10 +106,7 @@ func draw_debug_gizmos():
 		sphere_mesh.rings = 16
 		debug_sphere.mesh = sphere_mesh
 		
-		var mat = StandardMaterial3D.new()
-		mat.albedo_color = Color(1, 0, 0, 0.1)
-		mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		var mat := FX.unshaded(Color(1, 0, 0, 0.1), true)
 		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
 		debug_sphere.material_override = mat
 		

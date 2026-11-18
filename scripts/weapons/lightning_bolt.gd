@@ -204,13 +204,9 @@ func _make_light(at: Vector3) -> OmniLight3D:
 
 
 func _spawn_sparks() -> void:
-	var spark_material := StandardMaterial3D.new()
-	spark_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	spark_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
-	spark_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var spark_material := FX.unshaded(Color(2.5, 3.0, 4.0), true, true)
 	spark_material.billboard_mode = BaseMaterial3D.BILLBOARD_ENABLED
 	spark_material.vertex_color_use_as_albedo = true
-	spark_material.albedo_color = Color(2.5, 3.0, 4.0)
 	var quad := QuadMesh.new()
 	quad.size = Vector2(0.035, 0.035)
 	quad.material = spark_material

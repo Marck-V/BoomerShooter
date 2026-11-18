@@ -65,12 +65,8 @@ func _ready() -> void:
 	add_child(ring)
 
 	# The wall of energy at the front
-	wall_material = StandardMaterial3D.new()
-	wall_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	wall_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	wall_material.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
+	wall_material = FX.unshaded(Color(color.r * 1.8, color.g * 1.8, color.b * 1.8, 0.45), true, true)
 	wall_material.cull_mode = BaseMaterial3D.CULL_DISABLED
-	wall_material.albedo_color = Color(color.r * 1.8, color.g * 1.8, color.b * 1.8, 0.45)
 	var cylinder := CylinderMesh.new()
 	cylinder.top_radius = 1.0
 	cylinder.bottom_radius = 1.0

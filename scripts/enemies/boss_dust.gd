@@ -99,9 +99,7 @@ func _add_chunks(count: int, size: float) -> void:
 	ramp.gradient = gradient
 	process.color_ramp = ramp
 
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var material := FX.unshaded(Color.WHITE, true)
 	material.vertex_color_use_as_albedo = true
 	var quad := BoxMesh.new()
 	quad.size = Vector3.ONE * size * 0.12
@@ -119,9 +117,7 @@ func _add_chunks(count: int, size: float) -> void:
 
 
 func _make_particles(process: ParticleProcessMaterial, count: int, life: float, puff_size: float, delay: float) -> GPUParticles3D:
-	var material := StandardMaterial3D.new()
-	material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	var material := FX.unshaded(Color.WHITE, true)
 	material.billboard_mode = BaseMaterial3D.BILLBOARD_PARTICLES
 	material.vertex_color_use_as_albedo = true
 	material.albedo_texture = _puff()
@@ -145,16 +141,7 @@ func _make_particles(process: ParticleProcessMaterial, count: int, life: float, 
 # Soft round puff
 static func _puff() -> GradientTexture2D:
 	if _puff_texture == null:
-		var gradient := Gradient.new()
-		gradient.offsets = PackedFloat32Array([0.0, 0.45, 1.0])
-		gradient.colors = PackedColorArray([Color(1, 1, 1, 1), Color(1, 1, 1, 0.55), Color(1, 1, 1, 0)])
-		_puff_texture = GradientTexture2D.new()
-		_puff_texture.gradient = gradient
-		_puff_texture.fill = GradientTexture2D.FILL_RADIAL
-		_puff_texture.fill_from = Vector2(0.5, 0.5)
-		_puff_texture.fill_to = Vector2(1.0, 0.5)
-		_puff_texture.width = 96
-		_puff_texture.height = 96
+		_puff_texture = FX.radial_texture([0.0, 0.45, 1.0], [Color(1, 1, 1, 1), Color(1, 1, 1, 0.55), Color(1, 1, 1, 0)], 96)
 	return _puff_texture
 
 
