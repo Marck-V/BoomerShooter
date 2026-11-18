@@ -142,6 +142,7 @@ bone_idx = 4
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/HeadAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 multiplier = 2.0
 owner_enemy = NodePath("../../../../..")
@@ -159,6 +160,7 @@ bone_idx = 2
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/ChestAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -175,6 +177,7 @@ bone_idx = 1
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/TorsoAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -191,6 +194,7 @@ bone_idx = 32
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftThighAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -207,6 +211,7 @@ bone_idx = 33
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftCalfAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -223,6 +228,7 @@ bone_idx = 35
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightThighAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -239,6 +245,7 @@ bone_idx = 36
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightCalfAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -255,6 +262,7 @@ bone_idx = 6
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftBicepAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -271,6 +279,7 @@ bone_idx = 19
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightBicepAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -287,6 +296,7 @@ bone_idx = 22
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightHandAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -313,6 +323,7 @@ bone_idx = 9
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftHandAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -370,6 +381,7 @@ bone_idx = 5
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftShoulderAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -384,6 +396,7 @@ bone_idx = 18
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightShoulderAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -398,6 +411,7 @@ bone_idx = 7
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftForearmAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -412,6 +426,7 @@ bone_idx = 20
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightForearmAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -426,6 +441,7 @@ bone_idx = 31
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftHipAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -440,6 +456,7 @@ bone_idx = 34
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightHipAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -454,6 +471,7 @@ bone_idx = 41
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/LeftFootAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 
@@ -468,6 +486,7 @@ bone_idx = 42
 [node name="Area3D" type="Area3D" parent="godotman/godot_rig/Skeleton3D/RightFootAttach" node_paths=PackedStringArray("owner_enemy")]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("4_j1mxd")
 owner_enemy = NodePath("../../../../..")
 

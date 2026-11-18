@@ -123,6 +123,7 @@ bone_idx = 6
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/Head" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = SubResource("GDScript_nx6qb")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/Head/Area3D" index="0"]
@@ -137,6 +138,7 @@ bone_idx = 5
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/Neck" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = SubResource("GDScript_nx6qb")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/Neck/Area3D" index="0"]
@@ -151,6 +153,7 @@ bone_idx = 4
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/Chest" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/Chest/Area3D" index="0"]
@@ -165,6 +168,7 @@ bone_idx = 3
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/Torso" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/Torso/Area3D" index="0"]
@@ -179,6 +183,7 @@ bone_idx = 1
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/Hips" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/Hips/Area3D" index="0"]
@@ -193,6 +198,7 @@ bone_idx = 8
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/LeftBicep" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/LeftBicep/Area3D" index="0"]
@@ -207,6 +213,7 @@ bone_idx = 9
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/LeftForearm" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/LeftForearm/Area3D" index="0"]
@@ -221,6 +228,7 @@ bone_idx = 10
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/LeftHand" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/LeftHand/Area3D" index="0"]
@@ -235,6 +243,7 @@ bone_idx = 27
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/RightBicep" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/RightBicep/Area3D" index="0"]
@@ -249,6 +258,7 @@ bone_idx = 28
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/RightForearm" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/RightForearm/Area3D" index="0"]
@@ -263,6 +273,7 @@ bone_idx = 29
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/RightHand" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/RightHand/Area3D" index="0"]
@@ -277,6 +288,7 @@ bone_idx = 45
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/LeftThigh" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/LeftThigh/Area3D" index="0"]
@@ -291,6 +303,7 @@ bone_idx = 46
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/LeftShin" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/LeftShin/Area3D" index="0"]
@@ -305,6 +318,7 @@ bone_idx = 47
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/LeftFoot" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/LeftFoot/Area3D" index="0"]
@@ -319,6 +333,7 @@ bone_idx = 49
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/RightThigh" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/RightThigh/Area3D" index="0"]
@@ -333,6 +348,7 @@ bone_idx = 50
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/RightShin" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/RightShin/Area3D" index="0"]
@@ -347,6 +363,7 @@ bone_idx = 51
 [node name="Area3D" type="Area3D" parent="Rig/Skeleton3D/RightFoot" index="0"]
 collision_layer = 8
 collision_mask = 0
+monitoring = false
 script = ExtResource("3_d01jf")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rig/Skeleton3D/RightFoot/Area3D" index="0"]
